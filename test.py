@@ -10,7 +10,7 @@ def get_info(host='localhost', port=25565):
     s.send('\xFE\x01')
     
     #Read some data
-    d = s.recv(1024)
+    d = s.recv(101)
     s.close()
     
     #Check we've got a 0xFF Disconnect
