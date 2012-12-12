@@ -2,13 +2,14 @@ SERVER_TO_CLIENT = 0x01
 CLIENT_TO_SERVER = 0x02
 
 data_types = {
+    "bool": ('?', 1),
     "ubyte": ('B', 1),
     "byte": ('b', 1),
-    "bool": ('?', 1),
+    "ushort": ('H', 2),
     "short": ('h', 2),
-    "float": ('f', 4),
-    "int": ('i', 4),
     "uint": ('I', 4),
+    "int": ('i', 4),
+    "float": ('f', 4),
     "double": ('d', 8),
     "long": ('q', 8)
 }
@@ -55,7 +56,6 @@ names = {
     0x29: "Entity Effect",
     0x2A: "Remove Entity Effect",
     0x2B: "Set Experience",
-    0x32: "Chunk Allocation",  #Don't know if this is actually used
     0x33: "Chunk Data",
     0x34: "Multi Block Change",
     0x35: "Block Change",
@@ -242,9 +242,7 @@ structs = {
     #Spawn Dropped Item
     0x15: (
         ("int", "entity_id"),
-        ("short", "item"),
-        ("byte", "count"),
-        ("short", "metadata"),
+        ("slot", "slot"),
         ("int", "x"),
         ("int", "y"),
         ("int", "z"),
@@ -252,21 +250,21 @@ structs = {
         ("byte", "pitch"),
         ("byte", "roll"),
         ),
-    #Collect item
+    #Collect Item
     0x16: (
-        ("int", "subject_entity_id"),
-        ("int", "object_entity_id"),
+        ("int", "collected_entity_id"),
+        ("int", "collector_entity_id"),
         ),
-    #Add object/vehicle
+    #Spawn Object/Vehicle
     0x17: (
         ("int", "entity_id"),
         ("byte", "type"),
         ("int", "x"),
         ("int", "y"),
         ("int", "z"),
-        ("int", "thrower_entity_id"),
+        ("object_data", "object_data"),
         ),
-    #Mob spawn
+    #Spawn Mob
     0x18: (
         ("int", "entity_id"),
         ("byte", "type"),
@@ -276,126 +274,159 @@ structs = {
         ("byte", "yaw"),
         ("byte", "pitch"),
         ("byte", "head_yaw"),
+        ("short", "velocity_z"),
+        ("short", "velocity_x"),
+        ("short", "velocity_y"),
         ("metadata", "metadata"),
         ),
-    #Entity: painting
+    #Spawn Painting
     0x19: (
         ("int", "entity_id"),
-        ("string16", "title"),
+        ("string", "title"),
         ("int", "x"),
         ("int", "y"),
         ("int", "z"),
         ("int", "direction"),
         ),
-    #Experience orb
+    #Spawn Experience Orb
     0x1A: (
         ("int", "entity_id"),
         ("int", "x"),
         ("int", "y"),
         ("int", "z"),
-        ("short", "count")),
-    #Entity velocity
+        ("short", "count"),
+        ),
+    #Entity Velocity
     0x1C: (
         ("int", "entity_id"),
         ("short", "x_velocity"),
         ("short", "y_velocity"),
-        ("short", "z_velocity")),
-    #Destroy entity
-    0x1D: ("int", "entity_id"),
+        ("short", "z_velocity"),
+        ),
+    #Destroy Entity
+    0x1D: (
+        ("byte", "entity_count"),
+        ("int", "entity_id"),
+        ),
     #Entity
     0x1E: ("int", "entity_id"),
-    #Entity relative move
+    #Entity Relative Move
     0x1F: (
         ("int", "entity_id"),
         ("byte", "x_change"),
         ("byte", "y_change"),
-        ("byte", "z_change")),
-    #Entity look
+        ("byte", "z_change"),
+        ),
+    #Entity Look
     0x20: (
         ("int", "entity_id"),
         ("byte", "yaw"),
-        ("byte", "pitch")),
-    #Entity look and relative move
+        ("byte", "pitch"),
+        ),
+    #Entity Look and Relative Move
     0x21: (
         ("int", "entity_id"),
         ("byte", "x_change"),
         ("byte", "y_change"),
         ("byte", "z_change"),
         ("byte", "yaw"),
-        ("byte", "pitch")),
-    #Entity teleport
+        ("byte", "pitch"),
+        ),
+    #Entity Teleport
     0x22: (
         ("int", "entity_id"),
         ("int", "x"),
         ("int", "y"),
         ("int", "z"),
         ("byte", "yaw"),
-        ("byte", "pitch")),
-    #Entity head look
+        ("byte", "pitch"),
+        ),
+    #Entity Head Look
     0x23: (
         ("int", "entity_id"),
-        ("byte", "head_yaw")),
-    #Entity status
+        ("byte", "head_yaw"),
+        ),
+    #Entity Status
     0x26: (
         ("int", "entity_id"),
-        ("byte", "status")),
-    #Attach entity
+        ("byte", "entity_status"),
+        ),
+    #Attach Entity
     0x27: (
-        ("int", "subject_entity_id"),
-        ("int", "object_entity_id")),
-    #Entity metadata
+        ("int", "entity_id"),
+        ("int", "vehicle_id"),
+        ),
+    #Entity Metadata
     0x28: (
         ("int", "entity_id"),
-        ("metadata", "metadata")),
-    #Entity effect
+        ("metadata", "metadata"),
+        ),
+    #Entity Effect
     0x29: (
         ("int", "entity_id"),
         ("byte", "effect_id"),
         ("byte", "amplifier"),
-        ("short", "duration")),
-    #Remove entity effect
+        ("short", "duration"),
+        ),
+    #Remove Entity Effect
     0x2a: (
         ("int", "entity_id"),
-        ("byte", "effect_id")),
-    #Experience
+        ("byte", "effect_id"),
+        ),
+    #Set Experience
     0x2b: (
-        ("float", "experience_bar_maybe"),
-        ("short", "level_maybe"),
-        ("short", "total_experience_maybe")),
-    #Pre-chunk
-    0x32: (
-        ("int", "x"),
-        ("int", "z"),
-        ("bool", "load")),
-    #Map chunks
+        ("float", "experience_bar"),
+        ("short", "level"),
+        ("short", "total_experience"),
+        ),
+    #Chunk Data
     0x33: (
         ("int", "x_chunk"),
         ("int", "z_chunk"),
-        ("bool", "ground_up_contiguous"),
-        ("short", "primary_bitmap"),
-        ("short", "secondary_bitmap"),
-        ("int", "data_size"),
-        ("int", "not_used_1")),
-    #Multi-block change
+        ("bool", "ground_up_continuous"),
+        ("ushort", "primary_bitmap"),
+        ("ushort", "add_bitmap"),
+        ("int", "compressed_size"),
+        ("ubyte", "compressed_data"),
+        ),
+    #Multi Block Change
     0x34: (
         ("int", "x_chunk"),
         ("int", "z_chunk"),
         ("short", "record_count"),
-        ("int", "data_size")),
-    #Block change
+        ("int", "data_size"),
+        ("ubyte", "data"),
+        ),
+    #Block Change
     0x35: (
         ("int", "x"),
-        ("ubyte", "y"),
+        ("byte", "y"),
         ("int", "z"),
-        ("byte", "id"),
-        ("byte", "metadata")),
-    #Block action
+        ("short", "block_type"),
+        ("byte", "block_metadata"),
+        ),
+    #Block Action
     0x36: (
         ("int", "x"),
         ("short", "y"),
         ("int", "z"),
-        ("byte", "type_state"),
-        ("byte", "pitch_direction")),
+        ("byte", "byte_1"),
+        ("byte", "byte_2"),
+        ("short", "block_id"),
+        ),
+    #Block Break Animation
+    0x37: (
+        ("int", "entity_id"),
+        ("int", "x"),
+        ("int", "y"),
+        ("int", "z"),
+        ("byte", "destroy_stage"),
+        ),
+    #Map Chunk Bulk
+    0x38: (
+        ("short", "chunk_count"),
+        ("int", "chunk_data_length"),
+        ("byte", ""))
     #Explosion
     0x3C: (
         ("double", "x"),
