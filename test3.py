@@ -1,3 +1,5 @@
+import struct
+
 def ByteToHex( byteStr ):
     """
     Convert a byte string to it's hex string representation e.g. for output.
@@ -15,4 +17,9 @@ def ByteToHex( byteStr ):
     return ''.join( [ "%02X " % ord( x ) for x in byteStr ] ).strip()
 
 
-print "%02X " % ord ('\xAF')
+blarg = 0xFE01
+blarg2 = struct.pack('>H', blarg)
+
+print blarg
+print blarg2
+print ByteToHex(blarg2)

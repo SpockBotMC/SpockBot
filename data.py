@@ -433,60 +433,85 @@ structs = {
         ("double", "y"),
         ("double", "z"),
         ("float", "radius"),
-        ("int", "data_size")),
-    #Sound effect
+        ("int", "record_count"),
+        ("record", "records"),
+        ("float", "player_motion_x"),
+        ("float", "player_motion_y"),
+        ("float", "player_motion_z"),
+        ),
+    #Sound or Particle Effect
     0x3D: (
         ("int", "effect_id"),
         ("int", "x"),
-        ("ubyte", "y"),
+        ("byte", "y"),
         ("int", "z"),
-        ("int", "extra")),
-    #New/invalid state
+        ("int", "data"),
+        ("bool", "no_volume_decrease"),
+        ),
+    #Named Sound Effect
+    0x3E: (
+        ("string", "sound_name"),
+        ("int", "effect_position_x"),
+        ("int", "effect_position_y"),
+        ("int", "effect_position_z"),
+        ("float", "volume"),
+        ("byte", "pitch"),
+        ),
+    #Change Game State
     0x46: (
         ("byte", "reason"),
-        ("byte", "game_mode")),
-    #Thunderbolt
+        ("byte", "game_mode"),
+        ),
+    #Global Entity
     0x47: (
         ("int", "entity_id"),
-        ("bool", "not_used"),
+        ("byte", "global_id"),
         ("int", "x"),
         ("int", "y"),
-        ("int", "z")),
-    #Open window
+        ("int", "z"),
+        ),
+    #Open Window
     0x64: (
         ("byte", "window_id"),
         ("byte", "inventory_type"),
-        ("string16", "window_title"),
-        ("byte", "slots_count")),
-    #Close window
+        ("string", "window_title"),
+        ("byte", "slots_count"),
+        ),
+    #Close Window
     0x65: ("byte", "window_id"),
-    #Window click
+    #Click Window
     0x66: (
         ("byte", "window_id"),
         ("short", "slot"),
         ("byte", "right_click"),
         ("short", "transaction_id"),
         ("bool", "shift"),
-        ("slot", "slot_data")),
-    #Set slot
+        ("slot", "clicked_item"),
+        ),
+    #Set Slot
     0x67: (
         ("byte", "window_id"),
         ("short", "slot"),
-        ("slot", "slot_data")),
-    #Window items
+        ("slot", "slot_data"),
+        ),
+    #Set Window Items
     0x68: (
         ("byte", "window_id"),
-        ("short", "data_size")),
-    #Update progress bar
+        ("short", "count"),
+        ("slot",   "slot_data"),
+        ),
+    #Update Window Property
     0x69: (
         ("byte", "window_id"),
-        ("short", "progress_bar_type"),
-        ("short", "progress")),
-    #Transaction
+        ("short", "property"),
+        ("short", "value"),
+        ),
+    #Confirm Transaction
     0x6A: (
         ("byte", "window_id"),
         ("short", "transaction_id"),
-        ("bool", "accepted")),
+        ("bool", "accepted"),
+        ),
     
     #Creative inventory action
     0x6B: (
