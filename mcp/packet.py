@@ -4,7 +4,7 @@ import mcdata
 import datautils
 
 class Packet:
-	def __init__(self, ident = 0, direction = mcdata.SERVER_TO_CLIENT, data = {}):
+	def __init__(self, ident = 0, direction = mcdata.CLIENT_TO_SERVER, data = {}):
 		self.ident = ident
 		self.direction = direction
 		self.data = data

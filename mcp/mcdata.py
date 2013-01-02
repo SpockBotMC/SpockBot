@@ -603,7 +603,7 @@ structs = {
 		("byte_array", "verify_token"),
 		),
 	#Server List Ping
-	0xFE: ("Magic", "byte"),
+	0xFE: ("byte", "Magic"),
 	#Disconnect
 	0xFF: ("string", "reason"),
 }

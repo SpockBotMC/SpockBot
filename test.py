@@ -1,45 +1,34 @@
 import socket
-import struct
-import data
+from mcp.bound_buffer import BoundBuffer
+from mcp.packet import Packet, read_packet
+from mcp.mcdata import SERVER_LIST_PING_MAGIC
+from mcp.utils import DecodeServerListPing
 
 def get_info(host='localhost', port=25565):
 	#Set up our socket
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.connect((host, port))
 	
+	#Make our buffer
+	bbuff = BoundBuffer()
+
 	#Send 0xFE: Server list ping
-	s.send(data.structs)
+	s.send(Packet(ident = 0xFE, data = {
+		'Magic': SERVER_LIST_PING_MAGIC,
+		}).encode()
+	)
 	
 	#Read some data
+	bbuff.append(s.recv(1024))
 
-	d = s.recv(1024)
-
+	#We don't need the socket anymore
 	s.close()
 
-	#Check we've got a 0xFF Disconnect
+	#Read a packet out of our buffer
+	packet = read_packet(bbuff)
 
-	assert d[0] == '\xFF'
-
-	#Remove the packet ident (0xFF) and the short containing the length of the string
-
-	#Decode UCS-2 string
-
-	d = d[3:].decode('utf-16be')
-
-	#Check the first 3 characters of the string are what we expect
-
-	assert d[:3] == u'\xA7\x31\x00'
-
-	#Split
-
-	d = d[3:].split('\x00')
-
-	#Return a dict of values
-
-	return {'protocol_version': int(d[0]),
-		'server_version': d[1],
-		'motd': d[2],
-		'players': int(d[3]),
-		'max_players': int(d[4])}
+	#This particular packet is a special case, so we have
+	#a utility function do a second decoding step.
+	return DecodeServerListPing(packet)
 
 print get_info(host = 'untamedears.com')
