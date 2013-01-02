@@ -1,1 +1,0 @@
-from data import CLIENT_TO_SERVER, SERVER_TO_CLIENT, SERVER_LIST_PING_MAGIC, structs, names, data_types
