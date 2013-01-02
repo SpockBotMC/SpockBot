@@ -38,22 +38,22 @@ def test(username, password, host='localhost', port=25565):
 		'username': username,
 		'server_host': host,
 		'server_port': port,
-	}).encode()
+		}).encode()
 	)
 	bbuff.append(s.recv(4096))
-	lpack = read_packet(bbuff)
-	pubkey = RSA.importKey(lpack.data['public_key'])
+	packet = read_packet(bbuff)
+	pubkey = RSA.importKey(packet.data['public_key'])
 	sharedSecret = _UserFriendlyRNG.get_random_bytes(16)
 	sha1 = hashlib.sha1()
-	sha1.update(lpack.data['server_id'])
+	sha1.update(packet.data['server_id'])
 	sha1.update(sharedSecret)
-	sha1.update(lpack.data['public_key'])
+	sha1.update(packet.data['public_key'])
 	serverid = utils.javaHexDigest(sha1)
 	url = "http://session.minecraft.net/game/joinserver.jsp?user=" + username + "&sessionId=" + sessionid + "&serverId=" + serverid
 	response = urllib2.urlopen(url).read()
 	print response
 	RSACipher = PKCS1_v1_5.new(pubkey)
-	encryptedSanityToken = RSACipher.encrypt(str(lpack.data['verify_token']))
+	encryptedSanityToken = RSACipher.encrypt(str(packet.data['verify_token']))
 	encryptedSharedSecret = RSACipher.encrypt(str(sharedSecret))
 	s.send(Packet(ident = 0xFC, data = {
 		'shared_secret_length': encryptedSharedSecret.__len__(),

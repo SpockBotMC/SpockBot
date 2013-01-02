@@ -2,6 +2,7 @@ from time import gmtime, strftime
 
 import mcdata
 import datautils
+#from utils import ByteToHex
 
 class Packet:
 	def __init__(self, ident = 0, direction = mcdata.CLIENT_TO_SERVER, data = {}):

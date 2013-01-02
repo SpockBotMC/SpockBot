@@ -1,7 +1,6 @@
 import struct
-
-from utils import ByteToHex
 import mcdata
+#from utils import ByteToHex
 
 def DecodeData(buff, dtype, **kwargs):
 	if dtype in mcdata.data_types:
@@ -30,3 +29,4 @@ def EncodeData(data, dtype):
 
 	elif dtype == 'slot':
 		pass
+
