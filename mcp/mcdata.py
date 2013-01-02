@@ -393,7 +393,7 @@ structs = {
 		("ushort", "primary_bitmap"),
 		("ushort", "add_bitmap"),
 		("int", "compressed_size"),
-		("ubyte", "compressed_data"),
+		("byte_array", "compressed_data"),
 		),
 	#Multi Block Change
 	0x34: (
@@ -432,7 +432,8 @@ structs = {
 	0x38: (
 		("short", "chunk_count"),
 		("int", "chunk_data_length"),
-		("byte", "")
+		("bool", "sky_light_sent"),
+		("byte_array", "chunk_data"),
 		),
 	#Explosion
 	0x3C: (
@@ -541,9 +542,9 @@ structs = {
 		),
 	#Item Data
 	0x83: (
+		("short", "item_type"),
 		("short", "item_id"),
-		("short", "map_id"),
-		("short", "data_size"),
+		("short", "text_length"),
 		("byte", "text"),
 		),
 	#Update Tile Entity
@@ -552,7 +553,7 @@ structs = {
 		("short", "y"),
 		("int", "z"),
 		("byte", "action"),
-		("short", "data_length"),
+		("short", "nbt_data_length"),
 		("byte", "nbt_data"),
 		),
 	#Increment Statistic
@@ -583,23 +584,23 @@ structs = {
 	#Plugin Message
 	0xFA: (
 		("string", "channel"),
-		("short", "length"),
-		("byte", "data"),
+		("short", "data_length"),
+		("byte_array", "data"),
 		),
 	#Encryption Key Response
 	0xFC: (
 		("short", "shared_secret_length"),
-		("byte", "shared_secret"),
+		("byte_array", "shared_secret"),
 		("short", "verify_token_length"),
-		("byte", "verify_token_response"),
+		("byte_array", "verify_token"),
 		),
 	#Encryption Key Request
 	0xFD: (
 		("string", "server_id"),
 		("short", "public_key_length"),
-		("byte", "public_key"),
+		("byte_array", "public_key"),
 		("short", "verify_token_length"),
-		("byte", "verify_token"),
+		("byte_array", "verify_token"),
 		),
 	#Server List Ping
 	0xFE: ("Magic", "byte"),

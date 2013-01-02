@@ -10,31 +10,12 @@ class Packet:
 		return Packet(self.ident, self.direction, self.data)
 
 	def decode(self, buff):
-		self.ident = unpack(buff, 'ubyte')
-
-		for data_type, name in structs[self.ident][self.direction]:
-			self.data[name] = unpack(buff, data_type)
-		
-		#Extension
-		if self.ident in packet_extensions.extensions:
-			packet_extensions.extensions[self.ident].decode_extra(self, bbuff)
+		self.ident = DecodeData(buff 'ubyte')[0]
+		self.data = DecodePacket(buff)
 
 	
 	def encode(self):
-		#Ident
-		output = pack('ubyte', self.ident)
-		
-		#Extension
-		if self.ident in packet_extensions.extensions:
-			append = packet_extensions.extensions[self.ident].encode_extra(self)
-		else:
-			append = ''
-		
-		#Payload
-		for data_type, name in structs[self.ident][self.direction]:
-			output += pack(data_type, self.data[name])
-		
-		return output + append
+		return EncodePacket(self.ident, self.data)
 
 	def __repr__(self):
 		if self.direction == TO_SERVER: s = ">>>"
