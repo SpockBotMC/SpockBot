@@ -14,7 +14,7 @@ data_types = {
 	"short": ('h', 2),
 	"uint": ('I', 4),
 	"int": ('i', 4),
-    "long": ('q', 8),
+	"long": ('q', 8),
 	"float": ('f', 4),
 	"double": ('d', 8),
 }
@@ -545,7 +545,7 @@ structs = {
 		("short", "item_type"),
 		("short", "item_id"),
 		("short", "text_length"),
-		("byte", "text"),
+		("byte_array", "text"),
 		),
 	#Update Tile Entity
 	0x84: (
@@ -554,7 +554,7 @@ structs = {
 		("int", "z"),
 		("byte", "action"),
 		("short", "nbt_data_length"),
-		("byte", "nbt_data"),
+		("nbt", "nbt_data"),
 		),
 	#Increment Statistic
 	0xC8: (
