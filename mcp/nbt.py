@@ -2,11 +2,12 @@
 Handle the NBT (Named Binary Tag) data format
 """
 
-from struct import Struct, error as StructError
-from gzip import GzipFile
-import zlib
-from collections import MutableMapping, MutableSequence, Sequence
 import os, io
+import zlib
+
+from struct import Struct, error as StructError
+from collections import MutableMapping, MutableSequence, Sequence
+from bound_buffer import BoundBuffer
 
 try:
 	unicode
@@ -14,7 +15,6 @@ try:
 except NameError:
 	unicode = str  # compatibility for Python 3
 	basestring = str  # compatibility for Python 3
-
 
 TAG_END = 0
 TAG_BYTE = 1
@@ -467,87 +467,16 @@ class TAG_Compound(TAG, MutableMapping):
 			output.append(("\t"*indent) + "}")
 		return '\n'.join(output)
 
-
 TAGLIST = {TAG_BYTE:TAG_Byte, TAG_SHORT:TAG_Short, TAG_INT:TAG_Int, TAG_LONG:TAG_Long, TAG_FLOAT:TAG_Float, TAG_DOUBLE:TAG_Double, TAG_BYTE_ARRAY:TAG_Byte_Array, TAG_STRING:TAG_String, TAG_LIST:TAG_List, TAG_COMPOUND:TAG_Compound, TAG_INT_ARRAY:TAG_Int_Array}
 
-class NBTFile(TAG_Compound):
-	"""Represent an NBT file object."""
-	def __init__(self, filename=None, buffer=None, fileobj=None):
-		super(NBTFile, self).__init__()
-		self.filename = filename
-		self.type = TAG_Byte(self.id)
-		#make a file object
-		if filename:
-			self.file = GzipFile(filename, 'rb')
-		elif buffer:
-			self.file = buffer
-		elif fileobj:
-			self.file = GzipFile(fileobj=fileobj)
-		else:
-			self.file = None
-		#parse the file given intitially
-		if self.file:
-			self.parse_file()
-			if self.filename and 'close' in dir(self.file):
-				self.file.close()
-			self.file = None
+#Magic to make zlib work with gzip headers
+wbits_length = 16+zlib.MAX_WBITS
 
-	def parse_file(self, filename=None, buffer=None, fileobj=None):
-		"""Completely parse a file, extracting all tags."""
-		if filename:
-			self.file = GzipFile(filename, 'rb')
-		elif buffer:
-			self.file = buffer
-		elif fileobj:
-			self.file = GzipFile(fileobj=fileobj)
-		if self.file:
-			try:
-				type = TAG_Byte(buffer=self.file)
-				if type.value == self.id:
-					name = TAG_String(buffer=self.file).value
-					self._parse_buffer(self.file)
-					self.name = name
-					self.file.close()
-				else:
-					raise MalformedFileError("First record is not a Compound Tag")
-			except StructError as e:
-				raise MalformedFileError("Partial File Parse: file possibly truncated.")
-		else: ValueError("need a file!")
-
-	def write_file(self, filename=None, buffer=None, fileobj=None):
-		"""Write this NBT file to a file."""
-		if buffer:
-			self.filename = None
-			self.file = buffer
-		elif filename:
-			self.filename = filename
-			self.file = GzipFile(filename, "wb")
-		elif fileobj:
-			self.filename = None
-			self.file = GzipFile(fileobj=fileobj, mode="wb")
-		elif self.filename:
-			self.file = GzipFile(self.filename, "wb")
-		elif not self.file:
-			raise ValueError("Need to specify either a filename or a file")
-		#Render tree to file
-		TAG_Byte(self.id)._render_buffer(self.file)
-		TAG_String(self.name)._render_buffer(self.file)
-		self._render_buffer(self.file)
-		#make sure the file is complete
-		if 'flush' in dir(self.file):
-			self.file.flush()
-		if self.filename and 'close' in dir(self.file):
-			self.file.close()
-
-	def __repr__(self):
-		"""
-		Return a string (ascii formated for Python 2, unicode
-		for Python 3) describing the class, name and id for
-		debugging purposes.
-		"""
-		if self.filename:
-			return "<%s(%r) with %s(%r) at 0x%x>" % (self.__class__.__name__, self.filename, \
-					TAG_Compound.__name__, self.name, id(self))
-		else:
-			return "<%s with %s(%r) at 0x%x>" % (self.__class__.__name__, \
-					TAG_Compound.__name__, self.name, id(self))
+#Hacky function to read compressed NBT data out of a buffer
+def read_nbt(buff, length):
+	data = BoundBuffer(zlib.decompress(buff.recv(length), wbits_length))
+	type = TAG_Byte(buffer = data)
+	name = TAG_String(buffer = data).value
+	tag = TAG_Compound(buffer = data)
+	tag.name = name
+	return tag

@@ -27,13 +27,13 @@ Copyright (c) 2010 Thomas Woolford
 BarneyMC
 ========
 
-We use slightly modified versions of large parts Barney Gale's implementation of the MC Protocol, which can be found here: https://github.com/barneygale/barneymc
+We use slightly modified versions of large parts of Barney Gale's implementation of the MC Protocol, which can be found here: https://github.com/barneygale/barneymc
 
 pyCraft
 =======
 
 Large parts of Spock's design were inspired by Ammar Askar's pyCraft, which can be found here: https://github.com/ammaraskar/pyCraft 
-We use his implementation of the Minecraft.net login and encryption functions with slight modifications.
+We use his implementation of the Minecraft.net login and his encryption functions with slight modifications.
 
 Copyright 2012 Ammar Askar
 

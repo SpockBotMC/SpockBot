@@ -6,7 +6,7 @@ class BoundBuffer:
 	def __init__(self, *args):
 		self.buff = (args[0] if args else '')
 	
-	def read(self, bytes):
+	def recv(self, bytes):
 		if len(self.buff) < bytes:
 			raise BufferUnderflowException()
 		o, self.buff = self.buff[:bytes], self.buff[bytes:]
@@ -27,7 +27,11 @@ class BoundBuffer:
 	def revert(self):
 		self.buff = str(self.backup)
 
+	"""
+	Dummy method so that bad functions 
+	can treat buffers like file objects
+	"""
 	def close(self):
 		pass
 	
-	recv = read
+	read = recv
