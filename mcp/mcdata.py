@@ -1,11 +1,9 @@
-#All static values
+#All data formats, structures, and magic values
 
-#Define some magic
 SERVER_TO_CLIENT = 0x01
 CLIENT_TO_SERVER = 0x02
 SERVER_LIST_PING_MAGIC = 0x01
 
-#How to pack data with struct module
 data_types = {
 	"bool": ('?', 1),
 	"ubyte": ('B', 1),
@@ -19,7 +17,14 @@ data_types = {
 	"double": ('d', 8),
 }
 
-#Names of the packet structs
+slot = (
+	("short", "block_id"),
+	("byte", "item_count"),
+	("short", "item_damage"),
+	("short", "nbt_data_length"),
+	("nbt", "nbt_data"),
+)
+
 names = {
 	0x00: "Keep Alive",
 	0x01: "Login Request",
