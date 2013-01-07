@@ -20,7 +20,7 @@ class Packet:
 			for field in mcdata.structs[self.ident][self.direction]:
 				if field[0] in mcdata.data_types or field[0] == 'string':
 					data = datautils.DecodeData(buff, field[0])
-				elif field[0] == 'byte_array':
+				elif field[0] == 'byte_array' or field[0] == 'nbt':
 					#Cheap shortcut used to get byte_array length, will almost certainly break in the future, fix this
 					data = datautils.DecodeData(buff, field[0], length = self.data[field[1]+'_length'])
 				self.data[field[1]] = data
