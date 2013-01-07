@@ -2,8 +2,7 @@
 Handle the NBT (Named Binary Tag) data format
 """
 
-import os, io
-import zlib
+import os, io, zlib
 
 from struct import Struct, error as StructError
 from collections import MutableMapping, MutableSequence, Sequence

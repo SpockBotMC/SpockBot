@@ -1,6 +1,14 @@
 import struct
 import mcdata
+import nbt
 #from utils import ByteToHex
+
+"""
+I want to take a moment to say I really hate all of the code in
+this file and it's only a slight step up from a bunch of independent
+handler functions. One day, I will figure out a better way to do
+this than elif trees.
+"""
 
 def DecodeData(buff, dtype, **kwargs):
 	if dtype in mcdata.data_types:
@@ -15,7 +23,19 @@ def DecodeData(buff, dtype, **kwargs):
 		return buff.recv(kwargs['length'])
 
 	elif dtype == 'slot':
-		pass
+		data = {}
+		for field in mcdata.slot:
+			if field[0] != 'nbt':
+				data[field[1]] = DecodeData(field[0])
+			else:
+				#Same awful hack we use in Packet
+				#Fix when Nick gets a brilliant idea for HOW?!?!?
+				data[field[1]] = DecodeData(field[0], length = data[field[1]+'_length'])
+
+		return data
+
+	elif dtype == 'nbt'
+		return nbt.read_nbt(buff, kwargs['length'])
 
 def EncodeData(data, dtype):
 	if dtype in mcdata.data_types:

@@ -6,4 +6,5 @@ magic = open('bigtest.nbt').read()
 bbuf=BoundBuffer()
 bbuf.append(magic)
 
-print nbt.read_nbt(bbuf, len(magic)).pretty_tree()
+tags = nbt.read_nbt(bbuf, len(magic))
+print tags.pretty_tree()
