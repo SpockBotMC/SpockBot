@@ -35,3 +35,4 @@ class BoundBuffer:
 		pass
 	
 	read = recv
+	write = append

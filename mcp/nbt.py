@@ -7,6 +7,7 @@ import os, io, zlib
 from struct import Struct, error as StructError
 from collections import MutableMapping, MutableSequence, Sequence
 from bound_buffer import BoundBuffer
+#from utils import ByteToHex
 
 try:
 	unicode
@@ -471,11 +472,23 @@ TAGLIST = {TAG_BYTE:TAG_Byte, TAG_SHORT:TAG_Short, TAG_INT:TAG_Int, TAG_LONG:TAG
 #Magic to make zlib work with gzip headers
 wbits_length = 16+zlib.MAX_WBITS
 
-#Hacky function to read compressed NBT data out of a buffer
-def read_nbt(buff, length):
-	data = BoundBuffer(zlib.decompress(buff.recv(length), wbits_length))
-	type = TAG_Byte(buffer = data)
-	name = TAG_String(buffer = data).value
-	tag = TAG_Compound(buffer = data)
+#Hacky function to decode NBT data
+def decode_nbt(data, compressed = True):
+	if compressed:
+		bbuff = BoundBuffer(zlib.decompress(data, wbits_length))
+	else:
+		bbuff = BoundBuffer(data)
+	type = TAG_Byte(buffer = bbuff)
+	name = TAG_String(buffer = bbuff).value
+	tag = TAG_Compound(buffer = bbuff)
 	tag.name = name
 	return tag
+
+#Eventually we should offer the option to render to a string
+#That would make these functions 50% less hacky
+def encode_nbt(data, compressed = True):
+	bbuff = BoundBuffer()
+	TAG_Byte(data.id)._render_buffer(bbuff)
+	TAG_String(data.name)._render_buffer(bbuff)
+	data._render_buffer(bbuff)
+	return bbuff.flush()
