@@ -2,7 +2,7 @@
 Handle the NBT (Named Binary Tag) data format
 """
 
-import os, io, zlib
+import os, io, zlib, gzip
 
 from struct import Struct, error as StructError
 from collections import MutableMapping, MutableSequence, Sequence
@@ -491,4 +491,13 @@ def encode_nbt(data, compressed = True):
 	TAG_Byte(data.id)._render_buffer(bbuff)
 	TAG_String(data.name)._render_buffer(bbuff)
 	data._render_buffer(bbuff)
-	return bbuff.flush()
+	if compressed:
+		#Forced to use gzip to get the correct headers
+		#Which means we have to hack around file objects
+		gzipstring = StringIO()
+		gzipfile = gzip.GzipFile(fileobj = gzipstring, mode = 'wb')
+		gzipfile.write(bbuff.flush())
+		gzipfile.close()
+		return gzipstring.getvalue()
+	else:
+		return bbuff.flush()
