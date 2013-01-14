@@ -1,4 +1,4 @@
-#All data formats, structures, and magic values
+#Most of the data formats, structures, and magic values
 
 SERVER_TO_CLIENT = 0x01
 CLIENT_TO_SERVER = 0x02

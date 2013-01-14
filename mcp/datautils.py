@@ -10,10 +10,12 @@ handler functions. One day, I will figure out a better way to do
 this than elif trees.
 """
 
+endian = '>'
+
 def DecodeData(buff, dtype, **kwargs):
 	if dtype in mcdata.data_types:
 		format = mcdata.data_types[dtype]
-		return struct.unpack('>' + format[0], buff.recv(format[1]))[0]
+		return struct.unpack(endian + format[0], buff.recv(format[1]))[0]
 
 	elif dtype == 'string':
 		length = DecodeData(buff, 'short')*2
@@ -39,7 +41,7 @@ def DecodeData(buff, dtype, **kwargs):
 
 def EncodeData(data, dtype):
 	if dtype in mcdata.data_types:
-		return struct.pack('>' + mcdata.data_types[dtype][0], data)
+		return struct.pack(endian + mcdata.data_types[dtype][0], data)
 
 	elif dtype == 'string':
 		return EncodeData(len(data), 'short') + data.encode("utf-16be")
@@ -48,5 +50,10 @@ def EncodeData(data, dtype):
 		return data
 
 	elif dtype == 'slot':
+		#Put things here
+		pass
+
+	elif dtype == 'nbt':
+		#Here too
 		pass
 
