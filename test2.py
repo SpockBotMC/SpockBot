@@ -34,7 +34,7 @@ def test(username, password, host='localhost', port=25565):
 	s.connect((host, port))
 	bbuff = BoundBuffer()
 	s.send(Packet(ident = 02, data = {
-		'protocol_version': 49,
+		'protocol_version': 51,
 		'username': username,
 		'server_host': host,
 		'server_port': port,
@@ -67,4 +67,4 @@ def test(username, password, host='localhost', port=25565):
 	print utils.ByteToHex(blarg)
 
 
-test(username, password, host='untamedears.com')
+test(username, password, host='192.168.1.108')

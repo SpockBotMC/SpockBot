@@ -59,5 +59,5 @@ def DecodeServerListPing(packet):
 		'server_version': rstring[1],
 		'motd': rstring[2],
 		'players': int(rstring[3]),
-		'max_players': int(rstring[4])
+		'max_players': int(rstring[4]),
 	}

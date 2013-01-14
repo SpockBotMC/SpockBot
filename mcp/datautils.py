@@ -35,7 +35,7 @@ def DecodeData(buff, dtype, **kwargs):
 		return data
 
 	elif dtype == 'nbt':
-		return nbt.read_nbt(buff, kwargs['length'])
+		return nbt.decode_nbt(buff.recv(kwargs['length']))
 
 def EncodeData(data, dtype):
 	if dtype in mcdata.data_types:
