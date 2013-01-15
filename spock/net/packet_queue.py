@@ -6,14 +6,17 @@ class PacketQueue:
 		self.queue = (deque(args[0]) if args else deque())
 
 	def push(self, packet):
-		self.buff.append(packet)
+		self.queue.append(packet)
 
 	def pushbytes(self, data):
-		self.buff.append(read_bytes(data))
+		self.queue.append(read_bytes(data))
 
 	def pop(self):
-		return self.buff.popleft()
+		return self.queue.popleft()
 
 	def popbytes(self):
-		p = self.buff.popleft()
+		p = self.queue.popleft()
 		return p.encode()
+
+	def __len__(self):
+		return self.queue.__len__()

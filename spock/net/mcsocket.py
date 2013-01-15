@@ -1,15 +1,15 @@
 import asyncore
 import socket
 
-recv_bufsize = 4096
+bufsize = 4096
 
 class AsyncSocket(asyncore.dispatcher):
-	def __init__(self, rbuff, pqueue):
+	def __init__(self, rbuff, sbuff):
 		asyncore.dispatcher.__init__(self)
 		self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.sbuff = ''
+		self.sbuff = sbuff
 		self.rbuff = rbuff
-		self.pqueue = pqueue
+		self.tempbuff = ''
 
 	def handle_connect(self):
 		pass
@@ -44,11 +44,13 @@ class CryptoAsyncSocket(AsyncSocket):
 			self.rbuff.append(self.recv(recv_bufsize))
 		self.rbuff.save()
 
+	#TODO: Adapt this code to implicitly work with non-bound buffers
 	def handle_write():
-		if not self.sbuff:
+		if not self.tempbuff:
 			if self.encypted:
-				self.sbuff = self.cipher.decrypt(self.pqueue.popbytes())
+				self.tempbuff = self.cipher.encrypt(self.sbuff.buff)
 			else:
-				self.sbuff = self.pqueue.popbytes()
-		sent = self.send(self.sbuff)
-		self.sbuff = self.sbuff[sent:]
+				self.tempbuff = self.sbuff.buff
+			self.sbuff.buff = ''
+		sent = self.send(self.tempbuff)
+		self.tempbuff = self.tempbuff[sent:]

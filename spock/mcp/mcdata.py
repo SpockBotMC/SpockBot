@@ -1,5 +1,7 @@
 #Most of the data formats, structures, and magic values
 
+
+MC_PROTOCOL_VERSION = 51
 SERVER_TO_CLIENT = 0x01
 CLIENT_TO_SERVER = 0x02
 SERVER_LIST_PING_MAGIC = 0x01
@@ -24,6 +26,13 @@ slot = (
 	("short", "nbt_data_length"),
 	("nbt", "nbt_data"),
 )
+
+chunk_meta = (
+	("int", "chunk_x"),
+	("int", "chunk_z"),
+	("ushort", "primary_bitmap"),
+	("ushort", "add_bitmap"),
+	)
 
 names = {
 	0x00: "Keep Alive",
@@ -589,6 +598,7 @@ structs = {
 		("string", "locale"),
 		("int", "view_distance"),
 		),
+	0xCD: ("byte", "payload"),
 	#Plugin Message
 	0xFA: (
 		("string", "channel"),
