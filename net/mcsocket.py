@@ -4,19 +4,41 @@ import socket
 recv_bufsize = 4096
 
 class AsyncSocket(asyncore.dispatcher):
-	def __init__(self, bbuff, pbuff):
+	def __init__(self, rbuff, pqueue):
 		asyncore.dispatcher.__init__(self)
 		self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.bbuff = bbuff
-		self.pbuff = pbuff
+		self.sbuff = ''
+		self.rbuff = rbuff
+		self.pqueue = pqueue
 
 	def handle_connect(self):
 		pass
 
 	def handle_close(self):
-		self.close()
+		pass
 
 	def handle_read(self):
-		self.bbuff.append(self.recv(4096))
+		self.rbuff.append(self.recv(recv_bufsize))
+		self.rbuff.save()
 
 	def handle_write(self):
+		if not self.sbuff:
+			self.sbuff = self.pqueue.popbytes()
+		sent = self.send(self.sbuff)
+		self.sbuff = self.sbuff[sent:]
+
+
+class EncryptAsyncSocket(AsyncSocket):
+	def __init__(self, rbuff, pqueue, cipher):
+		AsyncSocket.__init__(self, rbuff, pqueue)
+		self.cipher = cipher
+
+	def handle_read(self):
+		self.rbuff.append(self.cipher.decrypt(self.recv(recv_bufsize)))
+		self.rbuff.save()
+
+	def handle_write():
+		if not self.sbuff:
+			self.sbuff = self.cipher.decrypt(self.pqueue.popbytes())
+		sent = self.send(self.sbuff)
+		self.sbuff = self.sbuff[sent:]
