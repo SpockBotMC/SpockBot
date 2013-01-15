@@ -28,17 +28,27 @@ class AsyncSocket(asyncore.dispatcher):
 		self.sbuff = self.sbuff[sent:]
 
 
-class EncryptAsyncSocket(AsyncSocket):
+class CryptoAsyncSocket(AsyncSocket):
 	def __init__(self, rbuff, pqueue, cipher):
 		AsyncSocket.__init__(self, rbuff, pqueue)
 		self.cipher = cipher
+		self.encypted = False
+
+	def enable_encrypt():
+		self.encypted = True
 
 	def handle_read(self):
-		self.rbuff.append(self.cipher.decrypt(self.recv(recv_bufsize)))
+		if self.encypted:
+			self.rbuff.append(self.cipher.decrypt(self.recv(recv_bufsize)))
+		else:
+			self.rbuff.append(self.recv(recv_bufsize))
 		self.rbuff.save()
 
 	def handle_write():
 		if not self.sbuff:
-			self.sbuff = self.cipher.decrypt(self.pqueue.popbytes())
+			if self.encypted:
+				self.sbuff = self.cipher.decrypt(self.pqueue.popbytes())
+			else:
+				self.sbuff = self.pqueue.popbytes()
 		sent = self.send(self.sbuff)
 		self.sbuff = self.sbuff[sent:]
