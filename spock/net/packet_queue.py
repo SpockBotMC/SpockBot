@@ -1,5 +1,5 @@
 from collections import deque
-from mcp.packet import read_bytes
+from spock.mcp.packet import read_bytes
 
 class PacketQueue:
 	def __init__(self, *args):
