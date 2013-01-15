@@ -218,7 +218,7 @@ structs = {
 		("byte", "cursor_position_y"),
 		("byte", "cursor_position_z"),
 		),
-	#Holding Change
+	#Held Item Change
 	0x10: ("short", "slot_id"),
 	#Use Bed
 	0x11: (
@@ -250,7 +250,7 @@ structs = {
 		("short", "current_item"),
 		("metadata", "metadata"),
 		),
-	#Spawn Dropped Item
+	#Spawn Dropped Item - obsolete?
 	0x15: (
 		("int", "entity_id"),
 		("slot", "slot"),
@@ -273,6 +273,8 @@ structs = {
 		("int", "x"),
 		("int", "y"),
 		("int", "z"),
+		("byte", "yaw"),
+		("byte", "pitch"),
 		("object_data", "object_data"),
 		),
 	#Spawn Mob
@@ -405,8 +407,8 @@ structs = {
 		("int", "x_chunk"),
 		("int", "z_chunk"),
 		("short", "record_count"),
-		("int", "data_size"),
-		("ubyte", "data"),
+		("int", "data_length"),
+		("byte_array", "data"),
 		),
 	#Block Change
 	0x35: (
@@ -439,6 +441,7 @@ structs = {
 		("int", "chunk_data_length"),
 		("bool", "sky_light_sent"),
 		("byte_array", "chunk_data"),
+		("chunk_meta", "meta_information"),
 		),
 	#Explosion
 	0x3C: (
