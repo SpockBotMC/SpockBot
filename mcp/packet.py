@@ -1,5 +1,5 @@
 from time import gmtime, strftime
-
+from bound_buffer import BoundBuffer
 import mcdata
 import datautils
 #from utils import ByteToHex
@@ -47,3 +47,6 @@ def read_packet(bbuff, direction = mcdata.SERVER_TO_CLIENT):
 	p = Packet(direction = direction)
 	p.decode(bbuff)
 	return p
+
+def read_bytes(data, direction = mcdata.SERVER_TO_CLIENT):
+	return read_packet(BoundBuffer(data), direction)
