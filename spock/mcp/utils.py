@@ -1,8 +1,7 @@
 import re
 import urllib2
 import urllib
-
-from hashlib import sha1
+import hashlib
 
 # This function courtesy of barneygale
 def javaHexDigest(digest):
@@ -36,6 +35,17 @@ def LoginToMinecraftNet(username, password):
 				'SessionID': sessionid
 	}
 	return toReturn
+
+def HashServerId(serverid, sharedsecret, pubkey):
+	sha1 = hashlib.sha1()
+	sha1.update(serverid)
+	sha1.update(sharedsecret)
+	sha1.update(pubkey)
+	return javaHexDigest(sha1)
+
+def AuthenticateMinecraftSession(username, sessionid, serverid):
+	url = "http://session.minecraft.net/game/joinserver.jsp?user=" + username + "&sessionId=" + sessionid + "&serverId=" + serverid
+	return urllib2.urlopen(url).read()
 
 def ByteToHex( byteStr ):
 	"""

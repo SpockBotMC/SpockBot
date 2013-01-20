@@ -41,6 +41,7 @@ def test(username, password, host='localhost', port=25565):
 		}).encode()
 	)
 	bbuff.append(s.recv(4096))
+	sys.exit(1)
 	packet = read_packet(bbuff)
 	pubkey = RSA.importKey(packet.data['public_key'])
 	sharedSecret = _UserFriendlyRNG.get_random_bytes(16)
