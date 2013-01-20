@@ -14,7 +14,7 @@ from login import username, password
 
 def login(username, password):
 	bufsize = 4096
-	host = '192.168.1.108'
+	host = 'untamedears.com'
 	port = 25565
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.setblocking(0)
