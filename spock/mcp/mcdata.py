@@ -113,82 +113,70 @@ names = {
 }
 
 structs = {
-	#Keep Alive
-	0x00: ("int", "keep_alive_id"),
-	#Login Request
+	#Keep-alive
+	0x00: ("int", "value"),
+	#Login request
 	0x01: (
-		("int", "entity_id"),
-		("string", "level_type"),
-		("byte", "game_mode"),
-		("byte", "dimension"),
-		("byte", "difficulty"),
-		("byte", "not_used"),
-		("byte", "max_players"),
-		),
+			("int", "entity_id"),
+			("string", "level_type"),
+			("byte", "game_mode"),
+			("byte", "dimension"),
+			("byte", "difficulty"),
+			("byte", "not_used"),
+			("ubyte", "max_players")),
 	#Handshake
 	0x02: (
 		("byte", "protocol_version"),
 		("string", "username"),
-		("string", "server_host"),
-		("int", "server_port"),
-		),
-	#Chat Message
-	0x03: ("string", "message"),
-	#Time Update
-	0x04: (
-		("long", "age_of_the_world"),
-		("long", "time_of_day"),
-		),
+		("string", "host"),
+		("int", "port")),
+	#Chat message
+	0x03: ("string", "text"),
+	#Time update
+	0x04: ("long", "time"),
 	#Entity Equipment
 	0x05: (
 		("int", "entity_id"),
 		("short", "slot"),
-		("slot", "item"),
-		),
-	#Spawn Position
+		("slot", "item")),
+	#Spawn position
 	0x06: (
 		("int", "x"),
 		("int", "y"),
-		("int", "z"),
-		),
-	#Use Entity
+		("int", "z")),
+	#Use entity
 	0x07: (
-		("int", "user"),
-		("int", "target"),
-		("bool", "mouse_button"),
-		),
-	#Update Health
+		("int", "subject_entity_id"),
+		("int", "object_entity_id"),
+		("bool", "left_click")),
+	#Update health
 	0x08: (
 		("short", "health"),
 		("short", "food"),
-		("float", "food_saturation"),
-		),
+		("float", "food_saturation")),
 	#Respawn
 	0x09: (
 		("int", "dimension"),
 		("byte", "difficulty"),
 		("byte", "game_mode"),
 		("short", "world_height"),
-		("string", "level_type"),
-		),
+		("string", "level_type")),
 	#Player
 	0x0A: ("bool", "on_ground"),
-	#Player Position
+	#Player position
 	0x0B: (
 		("double", "x"),
 		("double", "y"),
 		("double", "stance"),
 		("double", "z"),
-		("bool", "on_ground"),
-		),
-	#Player Look
+		("bool", "on_ground")),
+	#Player look
 	0x0C: (
 		("float", "yaw"),
 		("float", "pitch"),
-		("bool", "on_ground"),
-		),
-	#Player Position and Look
-	0x0D: {
+		("bool", "on_ground")),
+	#Player position & look
+	0x0D:	{
 		CLIENT_TO_SERVER: (
 			("double", "x"),
 			("double", "y"),
@@ -196,8 +184,7 @@ structs = {
 			("double", "z"),
 			("float", "yaw"),
 			("float", "pitch"),
-			("bool", "on_ground"),
-			),
+			("bool", "on_ground")),
 		SERVER_TO_CLIENT: (
 			("double", "x"),
 			("double", "stance"),
@@ -205,88 +192,77 @@ structs = {
 			("double", "z"),
 			("float", "yaw"),
 			("float", "pitch"),
-			("bool", "on_ground"),
-			),
-		},
-	#Player Digging
+			("bool", "on_ground"))},
+	#Player digging
 	0x0E: (
 		("byte", "status"),
 		("int", "x"),
-		("byte", "y"),
+		("ubyte", "y"),
 		("int", "z"),
-		("byte", "face"),
-		),
-	#Player Block Placement
+		("byte", "face")),
+	#Player block placement
 	0x0F: (
 		("int", "x"),
 		("ubyte", "y"),
 		("int", "z"),
 		("byte", "direction"),
-		("slot", "held_item"),
-		("byte", "cursor_position_x"),
-		("byte", "cursor_position_y"),
-		("byte", "cursor_position_z"),
-		),
-	#Held Item Change
-	0x10: ("short", "slot_id"),
-	#Use Bed
+		("slot", "slot"),
+		("byte", "cursor_x"),
+		("byte", "cursor_y"),
+		("byte", "cursor_z")),
+	#Holding change
+	0x10: ("short", "slot"),
+	#Use bed
 	0x11: (
 		("int", "entity_id"),
-		("byte", "unknown"),
+		("byte", "in_bed"),
 		("int", "x"),
 		("ubyte", "y"),
-		("int", "z"),
-		),
+		("int", "z")),
 	#Animation
 	0x12: (
 		("int", "entity_id"),
-		("byte", "animation"),
-		),
-	#Entity Action
+		("byte", "animation")),
+	#Entity action
 	0x13: (
 		("int", "entity_id"),
-		("byte", "action_id"),
-		),
-	#Spawn Named Entity
+		("byte", "action")),
+	#Named entity spawn
 	0x14: (
 		("int", "entity_id"),
 		("string", "player_name"),
 		("int", "x"),
 		("int", "y"),
 		("int", "z"),
-		("byte", "yaw"),
+		("byte", "rotation"),
 		("byte", "pitch"),
 		("short", "current_item"),
-		("metadata", "metadata"),
-		),
-	#Spawn Dropped Item - obsolete?
+		("metadata", "metadata")),
+	#Pickup spawn
 	0x15: (
 		("int", "entity_id"),
-		("slot", "slot"),
+		("short", "item"),
+		("byte", "count"),
+		("short", "metadata"),
 		("int", "x"),
 		("int", "y"),
 		("int", "z"),
 		("byte", "rotation"),
 		("byte", "pitch"),
-		("byte", "roll"),
-		),
-	#Collect Item
+		("byte", "roll")),
+	#Collect item
 	0x16: (
-		("int", "collected_entity_id"),
-		("int", "collector_entity_id"),
-		),
-	#Spawn Object/Vehicle
+		("int", "subject_entity_id"),
+		("int", "object_entity_id")),
+	#Add object/vehicle
 	0x17: (
 		("int", "entity_id"),
 		("byte", "type"),
 		("int", "x"),
 		("int", "y"),
 		("int", "z"),
-		("byte", "yaw"),
-		("byte", "pitch"),
-		("object_data", "object_data"),
-		),
-	#Spawn Mob
+		("int", "thrower_entity_id")),
+	#Mob spawn
 	0x18: (
 		("int", "entity_id"),
 		("byte", "type"),
@@ -297,257 +273,210 @@ structs = {
 		("byte", "pitch"),
 		("byte", "head_yaw"),
 		("short", "velocity_z"),
-		("short", "velocity_x"),
 		("short", "velocity_y"),
-		("metadata", "metadata"),
-		),
-	#Spawn Painting
+		("short", "velocity_x"),
+		("metadata", "metadata")),
+	#Entity: painting
 	0x19: (
 		("int", "entity_id"),
 		("string", "title"),
 		("int", "x"),
 		("int", "y"),
-		("int", "z"),
-		("int", "direction"),
-		),
-	#Spawn Experience Orb
+		("int", "z"), 
+		("int", "direction")),
+	#Experience orb
 	0x1A: (
 		("int", "entity_id"),
 		("int", "x"),
 		("int", "y"),
 		("int", "z"),
-		("short", "count"),
-		),
-	#Entity Velocity
+		("short", "count")),
+	#Entity velocity
 	0x1C: (
 		("int", "entity_id"),
 		("short", "x_velocity"),
 		("short", "y_velocity"),
-		("short", "z_velocity"),
-		),
-	#Destroy Entity
-	0x1D: (
-		("byte", "entity_count"),
-		("int", "entity_id"),
-		),
+		("short", "z_velocity")),
+	#Destroy entity
+	0x1D: ("byte", "data_size"),	  
 	#Entity
 	0x1E: ("int", "entity_id"),
-	#Entity Relative Move
+	#Entity relative move
 	0x1F: (
 		("int", "entity_id"),
 		("byte", "x_change"),
 		("byte", "y_change"),
-		("byte", "z_change"),
-		),
-	#Entity Look
+		("byte", "z_change")),
+	#Entity look
 	0x20: (
 		("int", "entity_id"),
 		("byte", "yaw"),
-		("byte", "pitch"),
-		),
-	#Entity Look and Relative Move
+		("byte", "pitch")),
+	#Entity look and relative move
 	0x21: (
 		("int", "entity_id"),
 		("byte", "x_change"),
 		("byte", "y_change"),
 		("byte", "z_change"),
 		("byte", "yaw"),
-		("byte", "pitch"),
-		),
-	#Entity Teleport
+		("byte", "pitch")),
+	#Entity teleport
 	0x22: (
 		("int", "entity_id"),
 		("int", "x"),
 		("int", "y"),
 		("int", "z"),
 		("byte", "yaw"),
-		("byte", "pitch"),
-		),
-	#Entity Head Look
+		("byte", "pitch")),
+	#Entity head look
 	0x23: (
 		("int", "entity_id"),
-		("byte", "head_yaw"),
-		),
-	#Entity Status
+		("byte", "head_yaw")),
+	#Entity status
 	0x26: (
 		("int", "entity_id"),
-		("byte", "entity_status"),
-		),
-	#Attach Entity
+		("byte", "status")),
+	#Attach entity
 	0x27: (
-		("int", "entity_id"),
-		("int", "vehicle_id"),
-		),
-	#Entity Metadata
+		("int", "subject_entity_id"),
+		("int", "object_entity_id")),
+	#Entity metadata
 	0x28: (
 		("int", "entity_id"),
-		("metadata", "metadata"),
-		),
-	#Entity Effect
+		("metadata", "metadata")),
+	#Entity effect
 	0x29: (
 		("int", "entity_id"),
 		("byte", "effect_id"),
 		("byte", "amplifier"),
-		("short", "duration"),
-		),
-	#Remove Entity Effect
+		("short", "duration")),
+	#Remove entity effect
 	0x2a: (
 		("int", "entity_id"),
-		("byte", "effect_id"),
-		),
-	#Set Experience
+		("byte", "effect_id")),
+	#Experience
 	0x2b: (
-		("float", "experience_bar"),
-		("short", "level"),
-		("short", "total_experience"),
-		),
-	#Chunk Data
+		("float", "experience_bar_maybe"),
+		("short", "level_maybe"),
+		("short", "total_experience_maybe")),
+	#Map chunks
 	0x33: (
 		("int", "x_chunk"),
 		("int", "z_chunk"),
-		("bool", "ground_up_continuous"),
-		("ushort", "primary_bitmap"),
-		("ushort", "add_bitmap"),
-		("int", "compressed_size"),
-		("byte_array", "compressed_data"),
-		),
-	#Multi Block Change
+		("bool", "ground_up_contiguous"),
+		("short", "primary_bitmap"),
+		("short", "secondary_bitmap"),
+		("int", "data_size")),
+	#Multi-block change
 	0x34: (
 		("int", "x_chunk"),
 		("int", "z_chunk"),
 		("short", "record_count"),
-		("int", "data_length"),
-		("byte_array", "data"),
-		),
-	#Block Change
+		("int", "data_size")),
+	#Block change
 	0x35: (
 		("int", "x"),
-		("byte", "y"),
+		("ubyte", "y"),
 		("int", "z"),
-		("short", "block_type"),
-		("byte", "block_metadata"),
-		),
-	#Block Action
+		("short", "id"),
+		("byte", "metadata")),
+	#Block action
 	0x36: (
 		("int", "x"),
 		("short", "y"),
 		("int", "z"),
-		("byte", "byte_1"),
-		("byte", "byte_2"),
-		("short", "block_id"),
-		),
-	#Block Break Animation
+		("byte", "type_state"),
+		("byte", "pitch_direction"),
+		("short", "block_id")),
+	#Block break animation
 	0x37: (
 		("int", "entity_id"),
 		("int", "x"),
 		("int", "y"),
 		("int", "z"),
-		("byte", "destroy_stage"),
-		),
-	#Map Chunk Bulk
+		("byte", "face")),
+	#Map chunk bulk
 	0x38: (
-		("short", "chunk_count"),
-		("int", "chunk_data_length"),
-		("bool", "sky_light_sent"),
-		("byte_array", "chunk_data"),
-		("chunk_meta", "meta_information"),
-		),
+		("short", "chunk_column_count"),
+		("int", "data_size")),
 	#Explosion
 	0x3C: (
 		("double", "x"),
 		("double", "y"),
 		("double", "z"),
 		("float", "radius"),
-		("int", "record_count"),
-		("record", "records"),
-		("float", "player_motion_x"),
-		("float", "player_motion_y"),
-		("float", "player_motion_z"),
-		),
-	#Sound or Particle Effect
+		("int", "data_size")),
+	#Sound effect
 	0x3D: (
 		("int", "effect_id"),
 		("int", "x"),
-		("byte", "y"),
+		("ubyte", "y"),
 		("int", "z"),
-		("int", "data"),
-		("bool", "no_volume_decrease"),
-		),
-	#Named Sound Effect
+		("int", "extra")),
+	#TODO: Unknown
 	0x3E: (
 		("string", "sound_name"),
-		("int", "effect_position_x"),
-		("int", "effect_position_y"),
-		("int", "effect_position_z"),
-		("float", "volume"),
-		("byte", "pitch"),
-		),
-	#Change Game State
-	0x46: (
-		("byte", "reason"),
-		("byte", "game_mode"),
-		),
-	#Global Entity
-	0x47: (
-		("int", "entity_id"),
-		("byte", "global_id"),
 		("int", "x"),
 		("int", "y"),
 		("int", "z"),
-		),
-	#Open Window
+		("float", "volume"),
+		("byte", "pitch")),
+	#New/invalid state
+	0x46: (
+		("byte", "reason"),
+		("byte", "game_mode")),
+	#Thunderbolt
+	0x47: (
+		("int", "entity_id"),
+		("bool", "not_used"),
+		("int", "x"),
+		("int", "y"),
+		("int", "z")),
+	#Open window
 	0x64: (
 		("byte", "window_id"),
 		("byte", "inventory_type"),
 		("string", "window_title"),
-		("byte", "slots_count"),
-		),
-	#Close Window
+		("byte", "slots_count")),
+	#Close window
 	0x65: ("byte", "window_id"),
-	#Click Window
+	#Window click
 	0x66: (
 		("byte", "window_id"),
 		("short", "slot"),
 		("byte", "right_click"),
 		("short", "transaction_id"),
 		("bool", "shift"),
-		("slot", "clicked_item"),
-		),
-	#Set Slot
+		("slot", "slot_data")),
+	#Set slot
 	0x67: (
 		("byte", "window_id"),
 		("short", "slot"),
-		("slot", "slot_data"),
-		),
-	#Set Window Items
+		("slot", "slot_data")),
+	#Window items
 	0x68: (
 		("byte", "window_id"),
-		("short", "count"),
-		("slot",   "slot_data"),
-		),
-	#Update Window Property
+		("short", "data_size")),
+	#Update progress bar
 	0x69: (
 		("byte", "window_id"),
-		("short", "property"),
-		("short", "value"),
-		),
-	#Confirm Transaction
+		("short", "progress_bar_type"),
+		("short", "progress")),
+	#Transaction
 	0x6A: (
 		("byte", "window_id"),
 		("short", "transaction_id"),
-		("bool", "accepted"),
-		),
-	#Creative Inventory Action
+		("bool", "accepted")),
+	
+	#Creative inventory action
 	0x6B: (
 		("short", "slot"),
-		("slot", "slot_data")
-		),
-	#Enchant Item
+		("slot", "slot_data")),
+	#Enchant item
 	0x6C: (
 		("byte", "window_id"),
-		("byte", "enchantment"),
-		),
-	#Update Sign
+		("byte", "enchantment")),
+	#Update sign
 	0x82: (
 		("int", "x"),
 		("short", "y"),
@@ -555,76 +484,56 @@ structs = {
 		("string", "line_1"),
 		("string", "line_2"),
 		("string", "line_3"),
-		("string", "line_4"),
-		),
-	#Item Data
+		("string", "line_4")),
+	#Map data
 	0x83: (
-		("short", "item_type"),
 		("short", "item_id"),
-		("short", "text_length"),
-		("byte_array", "text"),
-		),
-	#Update Tile Entity
+		("short", "map_id"),
+		("ubyte", "data_size")),
+	#Update tile entity
 	0x84: (
 		("int", "x"),
 		("short", "y"),
 		("int", "z"),
 		("byte", "action"),
-		("short", "nbt_data_length"),
-		("nbt", "nbt_data"),
-		),
-	#Increment Statistic
+		("short", "data_length")),
+	#Increment statistic
 	0xC8: (
 		("int", "statistic_id"),
-		("byte", "amount"),
-		),
-	#Player List Item
+		("byte", "amount")),
+	#User list
 	0xC9: (
 		("string", "player_name"),
 		("bool", "online"),
-		("short", "ping"),
-		),
-	#Player Abilities
+		("short", "ping")),
+	#Player abilities
 	0xCA: (
-		("bool", "invulnerable"),
-		("bool", "is_flying"),
-		("bool", "can_fly"),
-		("bool", "instabreak"),
-		),
+		("ubyte", "flags"),
+		("byte", "walking_speed"),
+		("byte", "flying_speed")),
 	#Tab-complete
 	0xCB: ("string", "text"),
-	#Locale and View Distance
+	#Locale and view distance
 	0xCC: (
 		("string", "locale"),
-		("int", "view_distance"),
-		),
+		("byte", "view_distance"),
+		("byte", "chat_flags"),
+		("byte", "unknown")),
+	#Client statuses
 	0xCD: ("byte", "payload"),
-	#Plugin Message
+	#Plugin message
 	0xFA: (
 		("string", "channel"),
-		("short", "data_length"),
-		("byte_array", "data"),
-		),
-	#Encryption Key Response
-	0xFC: (
-		("short", "shared_secret_length"),
-		("byte_array", "shared_secret"),
-		("short", "verify_token_length"),
-		("byte_array", "verify_token"),
-		),
-	#Encryption Key Request
-	0xFD: (
-		("string", "server_id"),
-		("short", "public_key_length"),
-		("byte_array", "public_key"),
-		("short", "verify_token_length"),
-		("byte_array", "verify_token"),
-		),
-	#Server List Ping
-	0xFE: ("byte", "Magic"),
+		("short", "data_size")),
+	#Encryption response
+	0xFC: (), #Covered entirely in extensions
+	#Encryption request
+	0xFD: ("string", "server_id"),
+	#Server ping
+	0xFE: ("ubyte", "magic"),
 	#Disconnect
-	0xFF: ("string", "reason"),
-}
+	0xFF: ("string", "reason")}
+
 
 #Normalize data structures
 for key, val in structs.iteritems():

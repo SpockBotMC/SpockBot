@@ -32,15 +32,18 @@ def login(username, password):
 		sock.connect((host, port))
 	except socket.error:
 		pass
-	while not poll.poll()[0][1]&select.POLLOUT:
-		pass
-	sock.send(Packet(ident = 02, data = {
+
+	mypacket = Packet(ident = 02, data = {
 			'protocol_version': mcdata.MC_PROTOCOL_VERSION,
 			'username': username,
-			'server_host': host,
-			'server_port': port,
-			}).encode()
-		)
+			'host': host,
+			'port': port,
+			})
+	print utils.ByteToHex(mypacket.encode())
+	print mypacket
+	while not poll.poll()[0][1]&select.POLLOUT:
+		pass
+	sock.send(mypacket.encode())
 
 	while not poll.poll()[0][1]&select.POLLIN:
 		pass

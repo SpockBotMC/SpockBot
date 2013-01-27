@@ -21,7 +21,7 @@ class Packet:
 		#print "###", self.ident
 		
 		#Payload
-		for dype, name in mcdata.structs[self.ident][self.direction]:
+		for dtype, name in mcdata.structs[self.ident][self.direction]:
 			self.data[name] = datautils.unpack(bbuff, dtype)
 		
 		#Extension
@@ -41,7 +41,7 @@ class Packet:
 		
 		#Payload
 		for dtype, name in mcdata.structs[self.ident][self.direction]:
-			output += pack(data_type, self.data[name])
+			output += datautils.pack(dtype, self.data[name])
 
 		return output + append
 

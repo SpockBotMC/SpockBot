@@ -64,7 +64,9 @@ def ByteToHex( byteStr ):
 	return ''.join( [ "%02X " % ord( x ) for x in byteStr ] ).strip()
 
 def DecodeServerListPing(packet):
+	print ByteToHex(packet.data['reason']) + '--'
 	rstring = packet.data['reason'][3:].split('\x00')
+	print rstring
 	return {'protocol_version': int(rstring[0]),
 		'server_version': rstring[1],
 		'motd': rstring[2],

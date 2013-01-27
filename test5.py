@@ -5,7 +5,7 @@ import time
 from spock.mcp.bound_buffer import BoundBuffer
 from spock.mcp.packet import Packet, read_packet
 from spock.mcp.mcdata import SERVER_LIST_PING_MAGIC
-from spock.mcp.utils import DecodeServerListPing
+from spock.mcp.utils import DecodeServerListPing, ByteToHex
 from spock.net.mcsocket import AsyncSocket
 
 def get_info(host='localhost', port=25565):
@@ -26,7 +26,7 @@ def get_info(host='localhost', port=25565):
 	while not select.POLLOUT&poll.poll()[0][1]:
 		pass
 	s.send(Packet(ident = 0xFE, data = {
-		'Magic': SERVER_LIST_PING_MAGIC,
+		'magic': SERVER_LIST_PING_MAGIC,
 		}).encode()
 	)
 	
@@ -35,15 +35,14 @@ def get_info(host='localhost', port=25565):
 		pass
 	print poll.poll()
 	bbuff.append(s.recv(4096))
-
 	#We don't need the socket anymore
 	s.close()
-
+	print ByteToHex(bbuff.buff)
 	#Read a packet out of our buffer
 	packet = read_packet(bbuff)
-
+	print packet
 	#This particular packet is a special case, so we have
 	#a utility function do a second decoding step.
 	return DecodeServerListPing(packet)
 
-print get_info(host = '192.168.1.108')
+print get_info(host = 'untamedears.com')
