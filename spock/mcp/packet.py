@@ -1,5 +1,6 @@
 from time import gmtime, strftime
-from bound_buffer import BoundBuffer
+import bound_buffer
+import packet_extensions
 import mcdata
 import datautils
 #from utils import ByteToHex
@@ -13,29 +14,36 @@ class Packet:
 	def clone(self):
 		return Packet(self.ident, self.direction, self.data)
 
-	def decode(self, buff):
-		self.ident = datautils.DecodeData(buff, 'ubyte')
-		self.data = {}
-		if self.ident in mcdata.structs:
-			for field in mcdata.structs[self.ident][self.direction]:
-				if field[0] in mcdata.data_types or field[0] == 'string':
-					data = datautils.DecodeData(buff, field[0])
-				elif field[0] == 'byte_array' or field[0] == 'nbt':
-					#Cheap shortcut used to get byte_array length, will almost certainly break in the future, fix this
-					data = datautils.DecodeData(buff, field[0], length = self.data[field[1]+'_length'])
-				self.data[field[1]] = data
-		else:
-			print "Something fucked up decoding packets"
+	def decode(self, bbuff):
+		#Ident
+		self.ident = datautils.unpack(bbuff, 'ubyte')
+		
+		#print "###", self.ident
+		
+		#Payload
+		for dype, name in mcdata.structs[self.ident][self.direction]:
+			self.data[name] = datautils.unpack(bbuff, dtype)
+		
+		#Extension
+		if self.ident in packet_extensions.extensions:
+			packet_extensions.extensions[self.ident].decode_extra(self, bbuff)
 
 	
 	def encode(self):
-		if self.ident in mcdata.structs:
-			out = datautils.EncodeData(self.ident, 'ubyte')
-			for field in mcdata.structs[self.ident][self.direction]:
-				out += datautils.EncodeData(self.data[field[1]], field[0])
-			return out
+		#Ident
+		output = datautils.pack('ubyte', self.ident)
+		
+		#Extension
+		if self.ident in packet_extensions.extensions:
+			append = packet_extensions.extensions[self.ident].encode_extra(self)
 		else:
-			print "Something fucked up encoding packets"
+			append = ''
+		
+		#Payload
+		for dtype, name in mcdata.structs[self.ident][self.direction]:
+			output += pack(data_type, self.data[name])
+
+		return output + append
 
 	def __repr__(self):
 		if self.direction == mcdata.CLIENT_TO_SERVER: s = ">>>"
@@ -49,4 +57,4 @@ def read_packet(bbuff, direction = mcdata.SERVER_TO_CLIENT):
 	return p
 
 def decode_packet(data, direction = mcdata.SERVER_TO_CLIENT):
-	return read_packet(BoundBuffer(data), direction)
+	return read_packet(bound_buffer.BoundBuffer(data), direction)
