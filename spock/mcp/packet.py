@@ -27,6 +27,7 @@ class Packet:
 		#Extension
 		if self.ident in packet_extensions.extensions:
 			packet_extensions.extensions[self.ident].decode_extra(self, bbuff)
+		print self.data
 
 	
 	def encode(self):

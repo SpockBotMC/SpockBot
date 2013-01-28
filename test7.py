@@ -8,7 +8,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto.Cipher import PKCS1_v1_5
 
-from spock.mcp.packet import Packet, decode_packet
+from spock.mcp.packet import Packet, decode_packet, read_packet
 from spock.mcp import utils, mcdata, bound_buffer
 from login import username, password
 
@@ -91,16 +91,16 @@ def login(username, password):
 	if (packet.ident != 0x01):
 		logging.error('Server responded with incorrect packet after client status: %s', str(hex(packet.ident)))
 		return
-	data = ''
+	data = bound_buffer.BoundBuffer()
 	while True:
 		while not poll.poll()[0][1]&select.POLLIN:
 			pass
-		data += decipher.decrypt(sock.recv(bufsize))
+		data.append(decipher.decrypt(sock.recv(bufsize)))
+		data.save()
 		try:
-			packet = decode_packet(data)
-			data = ''
-			print packet
+			packet = read_packet(data)
 		except bound_buffer.BufferUnderflowException:
+			data.revert()
 			pass
 
 

@@ -9,8 +9,22 @@ p = Packet(ident = 02, data = {
         'port': 25565,
             })
 
-bbuff = BoundBuffer(p.encode())
+b = Packet(ident = 0xC9, data = {
+    'player_name': 'nickelpro',
+    'online': True, 
+    'ping': 52
+    })
 
-d = read_packet(bbuff)
+bbuff = BoundBuffer(p.encode() + b.encode())
 
-print d
+packet = read_packet(bbuff)
+
+print packet
+
+packet = None
+
+print packet
+
+packet = read_packet(bbuff)
+
+print packet
