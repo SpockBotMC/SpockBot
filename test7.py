@@ -65,9 +65,7 @@ def login(username, password):
 	while not poll.poll()[0][1]&select.POLLOUT:
 		pass
 	sock.send(Packet(ident = 0xFC, data = {
-		'shared_secret_length': encryptedSharedSecret.__len__(),
 		'shared_secret': encryptedSharedSecret,
-		'verify_token_length': encryptedSanityToken.__len__(),
 		'verify_token': encryptedSanityToken,
 		}).encode()
 	)
