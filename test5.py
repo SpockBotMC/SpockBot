@@ -5,7 +5,7 @@ import time
 from spock.mcp.bound_buffer import BoundBuffer
 from spock.mcp.packet import Packet, read_packet
 from spock.mcp.mcdata import SERVER_LIST_PING_MAGIC
-from spock.mcp.utils import DecodeServerListPing, ByteToHex
+from spock.mcp.utils import DecodeSLP
 from spock.net.mcsocket import AsyncSocket
 
 def get_info(host='localhost', port=25565):
@@ -37,12 +37,10 @@ def get_info(host='localhost', port=25565):
 	bbuff.append(s.recv(4096))
 	#We don't need the socket anymore
 	s.close()
-	print ByteToHex(bbuff.buff)
 	#Read a packet out of our buffer
 	packet = read_packet(bbuff)
-	print packet
 	#This particular packet is a special case, so we have
 	#a utility function do a second decoding step.
-	return DecodeServerListPing(packet)
+	return DecodeSLP(packet)
 
 print get_info(host = 'untamedears.com')

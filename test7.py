@@ -32,18 +32,14 @@ def login(username, password):
 		sock.connect((host, port))
 	except socket.error:
 		pass
-
-	mypacket = Packet(ident = 02, data = {
+	while not poll.poll()[0][1]&select.POLLOUT:
+		pass
+	sent = sock.send(Packet(ident = 02, data = {
 			'protocol_version': mcdata.MC_PROTOCOL_VERSION,
 			'username': username,
 			'host': host,
 			'port': port,
-			})
-	print utils.ByteToHex(mypacket.encode())
-	print mypacket
-	while not poll.poll()[0][1]&select.POLLOUT:
-		pass
-	sock.send(mypacket.encode())
+			}).encode())
 
 	while not poll.poll()[0][1]&select.POLLIN:
 		pass
@@ -54,6 +50,7 @@ def login(username, password):
 
 	#Stage 2: Authenticate with session.minecraft.net
 	pubkey = packet.data['public_key']
+	print packet
 	SharedSecret = _UserFriendlyRNG.get_random_bytes(16)
 	serverid = utils.HashServerId(packet.data['server_id'], SharedSecret, pubkey)
 	SessionResponse = utils.AuthenticateMinecraftSession(username, sessionid, serverid)

@@ -1,7 +1,7 @@
 import struct
 import mcdata
 import nbt
-#from utils import ByteToHex
+from utils import ByteToHex
 
 """
 I want to take a moment to say I really hate all of the code in
@@ -65,7 +65,7 @@ def unpack(bbuff, data_type):
 def pack(data_type, data):
 	if data_type in mcdata.data_types:
 		format = mcdata.data_types[data_type]
-		return struct.pack(endian+format[0], data)[0]
+		return struct.pack(endian+format[0], data)
 	
 	if data_type == "string":
 		return pack("short", len(data)) + data.encode('utf-16be')
@@ -113,8 +113,8 @@ def pack(data_type, data):
 
 def unpack_array(bbuff, data_type, count):
 	#fast
-	if data_type in data_types:
-		data_type = data_types[data_type]
+	if data_type in mcdata.data_types:
+		data_type = mcdata.data_types[data_type]
 		length = data_type[1] * count
 		format = data_type[0] * count
 		return struct.unpack_from(format, bbuff.recv(length))
@@ -127,8 +127,8 @@ def unpack_array(bbuff, data_type, count):
 
 def pack_array(data_type, data):
 	#fast
-	if data_type in data_types:
-		data_type = data_types[data_type]
+	if data_type in mcdata.data_types:
+		data_type = mcdata.data_types[data_type]
 		return struct.pack(data_type[0]*len(data), *data)
 	#slow
 	else:
