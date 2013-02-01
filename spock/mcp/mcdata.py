@@ -489,7 +489,7 @@ structs = {
 		("short", "y"),
 		("int", "z"),
 		("byte", "action"),
-		("short", "data_length")),
+		("short", "data_size")),
 	#Increment Statistic
 	0xC8: (
 		("int", "statistic_id"),

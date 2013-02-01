@@ -51,7 +51,7 @@ class Packet:
 		return format % (strftime("%H:%M:%S", gmtime()), s, self.ident, mcdata.names[self.ident], str(self.data))
 
 def read_packet(bbuff, direction = mcdata.SERVER_TO_CLIENT):
-	p = Packet(direction = direction)
+	p = Packet(direction = direction, data = {})
 	p.decode(bbuff)
 	return p
 
