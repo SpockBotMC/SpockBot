@@ -55,8 +55,7 @@ names = {
 	0x11: "Use Bed",
 	0x12: "Animation",
 	0x13: "Entity Action",
-	0x14: "Named Entity Spawn",
-	0x15: "Spawn Dropped Item",
+	0x14: "Spawn Named Entity",
 	0x16: "Collect item",
 	0x17: "Spawn Object/Vehicle",
 	0x18: "Spawn Mob",
@@ -89,7 +88,7 @@ names = {
 	0x47: "Global Entity",
 	0x64: "Open Window",
 	0x65: "Close Window",
-	0x66: "Window Click",
+	0x66: "Click Window",
 	0x67: "Set Slot",
 	0x68: "Set Window Items",
 	0x69: "Update Window Property",
@@ -133,7 +132,9 @@ structs = {
 	#Chat message
 	0x03: ("string", "text"),
 	#Time update
-	0x04: ("long", "time"),
+	0x04: (
+		("long", "world_age"),
+		("long", "time_of_day")),
 	#Entity Equipment
 	0x05: (
 		("int", "entity_id"),
@@ -227,7 +228,7 @@ structs = {
 	0x13: (
 		("int", "entity_id"),
 		("byte", "action")),
-	#Named entity spawn
+	#Spawn Named Entity
 	0x14: (
 		("int", "entity_id"),
 		("string", "player_name"),
@@ -238,31 +239,22 @@ structs = {
 		("byte", "pitch"),
 		("short", "current_item"),
 		("metadata", "metadata")),
-	#Pickup spawn
-	0x15: (
-		("int", "entity_id"),
-		("short", "item"),
-		("byte", "count"),
-		("short", "metadata"),
-		("int", "x"),
-		("int", "y"),
-		("int", "z"),
-		("byte", "rotation"),
-		("byte", "pitch"),
-		("byte", "roll")),
 	#Collect item
 	0x16: (
 		("int", "subject_entity_id"),
 		("int", "object_entity_id")),
-	#Add object/vehicle
+	#Spawn Object/Vehicle
 	0x17: (
 		("int", "entity_id"),
 		("byte", "type"),
 		("int", "x"),
 		("int", "y"),
 		("int", "z"),
-		("int", "thrower_entity_id")),
-	#Mob spawn
+		("byte", "yaw"),
+		("byte", "pitch"),
+		("int", "object_data"),
+		),
+	#Spawn Mob
 	0x18: (
 		("int", "entity_id"),
 		("byte", "type"),
@@ -276,7 +268,7 @@ structs = {
 		("short", "velocity_y"),
 		("short", "velocity_x"),
 		("metadata", "metadata")),
-	#Entity: painting
+	#Spawn Painting
 	0x19: (
 		("int", "entity_id"),
 		("string", "title"),
@@ -284,35 +276,35 @@ structs = {
 		("int", "y"),
 		("int", "z"), 
 		("int", "direction")),
-	#Experience orb
+	#Spawn Experience Orb
 	0x1A: (
 		("int", "entity_id"),
 		("int", "x"),
 		("int", "y"),
 		("int", "z"),
 		("short", "count")),
-	#Entity velocity
+	#Entity Velocity
 	0x1C: (
 		("int", "entity_id"),
 		("short", "x_velocity"),
 		("short", "y_velocity"),
 		("short", "z_velocity")),
-	#Destroy entity
+	#Destroy Entity
 	0x1D: ("byte", "data_size"),	  
 	#Entity
 	0x1E: ("int", "entity_id"),
-	#Entity relative move
+	#Entity Relative Move
 	0x1F: (
 		("int", "entity_id"),
 		("byte", "x_change"),
 		("byte", "y_change"),
 		("byte", "z_change")),
-	#Entity look
+	#Entity Look
 	0x20: (
 		("int", "entity_id"),
 		("byte", "yaw"),
 		("byte", "pitch")),
-	#Entity look and relative move
+	#Entity Look and Relative Move
 	0x21: (
 		("int", "entity_id"),
 		("byte", "x_change"),
@@ -320,7 +312,7 @@ structs = {
 		("byte", "z_change"),
 		("byte", "yaw"),
 		("byte", "pitch")),
-	#Entity teleport
+	#Entity Teleport
 	0x22: (
 		("int", "entity_id"),
 		("int", "x"),
@@ -328,92 +320,94 @@ structs = {
 		("int", "z"),
 		("byte", "yaw"),
 		("byte", "pitch")),
-	#Entity head look
+	#Entity Head Look
 	0x23: (
 		("int", "entity_id"),
 		("byte", "head_yaw")),
-	#Entity status
+	#Entity Status
 	0x26: (
 		("int", "entity_id"),
 		("byte", "status")),
-	#Attach entity
+	#Attach Entity
 	0x27: (
-		("int", "subject_entity_id"),
-		("int", "object_entity_id")),
-	#Entity metadata
+		("int", "entity_id"),
+		("int", "vehicle_id")),
+	#Entity Metadata
 	0x28: (
 		("int", "entity_id"),
 		("metadata", "metadata")),
-	#Entity effect
+	#Entity Effect
 	0x29: (
 		("int", "entity_id"),
 		("byte", "effect_id"),
 		("byte", "amplifier"),
 		("short", "duration")),
-	#Remove entity effect
-	0x2a: (
+	#Remove Entity Effect
+	0x2A: (
 		("int", "entity_id"),
 		("byte", "effect_id")),
-	#Experience
-	0x2b: (
-		("float", "experience_bar_maybe"),
-		("short", "level_maybe"),
-		("short", "total_experience_maybe")),
-	#Map chunks
+	#Set Experience
+	0x2B: (
+		("float", "experience_bar"),
+		("short", "level"),
+		("short", "total_experience")),
+	#Chunk Data
 	0x33: (
 		("int", "x_chunk"),
 		("int", "z_chunk"),
-		("bool", "ground_up_contiguous"),
-		("short", "primary_bitmap"),
-		("short", "secondary_bitmap"),
+		("bool", "ground_up_continuous"),
+		("ushort", "primary_bitmap"),
+		("ushort", "secondary_bitmap"),
 		("int", "data_size")),
-	#Multi-block change
+	#Multi Block Change
 	0x34: (
 		("int", "x_chunk"),
 		("int", "z_chunk"),
 		("short", "record_count"),
 		("int", "data_size")),
-	#Block change
+	#Block Change
 	0x35: (
 		("int", "x"),
 		("ubyte", "y"),
 		("int", "z"),
-		("short", "id"),
+		("short", "block_id"),
 		("byte", "metadata")),
-	#Block action
+	#Block Action
 	0x36: (
 		("int", "x"),
 		("short", "y"),
 		("int", "z"),
-		("byte", "type_state"),
-		("byte", "pitch_direction"),
+		("byte", "byte_1"),
+		("byte", "byte_2"),
 		("short", "block_id")),
-	#Block break animation
+	#Block Break Animation
 	0x37: (
 		("int", "entity_id"),
 		("int", "x"),
 		("int", "y"),
 		("int", "z"),
-		("byte", "face")),
-	#Map chunk bulk
+		("byte", "destroy_stage")),
+	#Map Chunk Bulk
 	0x38: (
 		("short", "chunk_column_count"),
-		("int", "data_size")),
+		("int", "data_size"),
+		("bool", "sky_light_sent")),
 	#Explosion
 	0x3C: (
 		("double", "x"),
 		("double", "y"),
 		("double", "z"),
 		("float", "radius"),
-		("int", "data_size")),
-	#Sound effect
+		("int", "record_count")),
+	#Sound or Particle Effect
 	0x3D: (
 		("int", "effect_id"),
 		("int", "x"),
 		("ubyte", "y"),
 		("int", "z"),
-		("int", "extra")),
-	#TODO: Unknown
+		("int", "extra"),
+		("bool", "relative_volume")),
+	#Named Sound Effect
 	0x3E: (
 		("string", "sound_name"),
 		("int", "x"),
@@ -421,62 +415,61 @@ structs = {
 		("int", "z"),
 		("float", "volume"),
 		("byte", "pitch")),
-	#New/invalid state
+	#Change Game State
 	0x46: (
 		("byte", "reason"),
 		("byte", "game_mode")),
-	#Thunderbolt
+	#Spawn Global Entity
 	0x47: (
 		("int", "entity_id"),
-		("bool", "not_used"),
+		("byte", "type"),
 		("int", "x"),
 		("int", "y"),
 		("int", "z")),
-	#Open window
+	#Open Window
 	0x64: (
 		("byte", "window_id"),
 		("byte", "inventory_type"),
 		("string", "window_title"),
-		("byte", "slots_count")),
-	#Close window
+		("byte", "slot_count")),
+	#Close Window
 	0x65: ("byte", "window_id"),
-	#Window click
+	#Click Window
 	0x66: (
 		("byte", "window_id"),
 		("short", "slot"),
-		("byte", "right_click"),
+		("byte", "mouse_button"),
 		("short", "transaction_id"),
 		("bool", "shift"),
 		("slot", "slot_data")),
-	#Set slot
+	#Set Slot
 	0x67: (
 		("byte", "window_id"),
 		("short", "slot"),
 		("slot", "slot_data")),
-	#Window items
+	#Set Window Items
 	0x68: (
 		("byte", "window_id"),
 		("short", "data_size")),
-	#Update progress bar
+	#Update Window Property
 	0x69: (
 		("byte", "window_id"),
-		("short", "progress_bar_type"),
-		("short", "progress")),
-	#Transaction
+		("short", "property"),
+		("short", "value")),
+	#Confirm Transaction
 	0x6A: (
 		("byte", "window_id"),
 		("short", "transaction_id"),
 		("bool", "accepted")),
-	
-	#Creative inventory action
+	#Creative Inventory Action
 	0x6B: (
 		("short", "slot"),
 		("slot", "slot_data")),
-	#Enchant item
+	#Enchant Item
 	0x6C: (
 		("byte", "window_id"),
 		("byte", "enchantment")),
-	#Update sign
+	#Update Sign
 	0x82: (
 		("int", "x"),
 		("short", "y"),
@@ -485,51 +478,52 @@ structs = {
 		("string", "line_2"),
 		("string", "line_3"),
 		("string", "line_4")),
-	#Map data
+	#Item Data
 	0x83: (
+		("short", "item_type"),
 		("short", "item_id"),
-		("short", "map_id"),
 		("ubyte", "data_size")),
-	#Update tile entity
+	#Update Tile Entity
 	0x84: (
 		("int", "x"),
 		("short", "y"),
 		("int", "z"),
 		("byte", "action"),
 		("short", "data_length")),
-	#Increment statistic
+	#Increment Statistic
 	0xC8: (
 		("int", "statistic_id"),
 		("byte", "amount")),
-	#User list
+	#Player List Item
 	0xC9: (
 		("string", "player_name"),
 		("bool", "online"),
 		("short", "ping")),
-	#Player abilities
+	#Player Abilities
 	0xCA: (
 		("ubyte", "flags"),
 		("byte", "walking_speed"),
 		("byte", "flying_speed")),
-	#Tab-complete
+	#Tab-Complete
 	0xCB: ("string", "text"),
-	#Locale and view distance
+	#Client Settings
 	0xCC: (
 		("string", "locale"),
 		("byte", "view_distance"),
 		("byte", "chat_flags"),
-		("byte", "unknown")),
-	#Client statuses
+		("byte", "difficulty"),
+		("bool", "show_cape")),
+	#Client Status
 	0xCD: ("byte", "payload"),
 	#Plugin message
 	0xFA: (
 		("string", "channel"),
 		("short", "data_size")),
-	#Encryption response
+	#Encryption Response
 	0xFC: (), #Covered entirely in extensions
-	#Encryption request
+	#Encryption Request
 	0xFD: ("string", "server_id"),
-	#Server ping
+	#Server List Ping
 	0xFE: ("ubyte", "magic"),
 	#Disconnect
 	0xFF: ("string", "reason")}

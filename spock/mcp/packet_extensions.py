@@ -27,7 +27,7 @@ class ArrayExtension:
 class Extension17:
 	@classmethod
 	def decode_extra(self, packet, bbuff):
-		if packet.data['thrower_entity_id'] > 0:
+		if packet.data['object_data'] > 0:
 			packet.data['x2'] = unpack(bbuff, 'short')
 			packet.data['y2'] = unpack(bbuff, 'short')
 			packet.data['z2'] = unpack(bbuff, 'short')
@@ -35,7 +35,7 @@ class Extension17:
 	@classmethod
 	def encode_extra(self, packet):
 		append = ''
-		if packet.data['thrower_entity_id'] > 0:
+		if packet.data['object_data'] > 0:
 			for i in ('x2','y2','z2'):
 				append += pack('short', packet.data[i])
 		return append
@@ -115,29 +115,29 @@ class Extension38:
 class Extension3C:
 	@classmethod
 	def decode_extra(self, packet, bbuff):
-		records = unpack_array(bbuff, 'byte', packet.data['data_size']*3)
+		records = unpack_array(bbuff, 'byte', packet.data['record_count']*3)
 		i = 0
 		packet.data["blocks"] = []
-		while i < packet.data['data_size']*3:
+		while i < packet.data['record_count']*3:
 			packet.data["blocks"].append(dict(zip(('x','y','z'), records[i:i+3])))
 			i+=3
 		
-		del packet.data["data_size"]
+		del packet.data["record_count"]
 		
 		for i in range(3):
-			packet.data["unknown_%d" % i] = unpack(bbuff, 'float')
+			packet.data["offset_%d" % i] = unpack(bbuff, 'float')
 		
 	
 	@classmethod
 	def encode_extra(self, packet):
-		packet.data['data_size'] = len(packet.data['blocks'])
+		packet.data['record_count'] = len(packet.data['blocks'])
 		array = []
 		for i in packet.data['blocks']:
 			array += [i['x'], i['y'], i['z']]
 		
 		append = pack_array('byte', array)
 		for i in range(3):
-			append += pack('byte', d['unknown_%d' % i])
+			append += pack('byte', d['offset_%d' % i])
 		
 		return append
 		
