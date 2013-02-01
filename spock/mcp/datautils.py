@@ -3,13 +3,6 @@ import mcdata
 import nbt
 from utils import ByteToHex
 
-"""
-I want to take a moment to say I really hate all of the code in
-this file and it's only a slight step up from a bunch of independent
-handler functions. One day, I will figure out a better way to do
-this than elif trees.
-"""
-
 endian = '>'
 
 def unpack(bbuff, data_type):

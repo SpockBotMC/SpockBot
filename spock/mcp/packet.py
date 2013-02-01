@@ -18,7 +18,7 @@ class Packet:
 		#Ident
 		self.ident = datautils.unpack(bbuff, 'ubyte')
 		
-		#print "###", self.ident
+		#print hex(self.ident)
 		
 		#Payload
 		for dtype, name in mcdata.structs[self.ident][self.direction]:

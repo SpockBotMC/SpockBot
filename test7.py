@@ -14,13 +14,12 @@ from login import username, password
 
 def login(username, password):
 	bufsize = 4096
-	host = 'localhost'
+	host = 'untamedears.com'
 	port = 25565
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	sock.setblocking(0)
 	poll = select.poll()
 	poll.register(sock)
-	sbuff = ''
 
 	LoginResponse = utils.LoginToMinecraftNet(username, password)
 	if (LoginResponse['Response'] != "Good to go!"):
@@ -98,7 +97,15 @@ def login(username, password):
 		data.save()
 		try:
 			packet = read_packet(data)
-			print packet
+			if packet.ident == 0:
+				while not poll.poll()[0][1]&select.POLLOUT:
+					pass
+				sock.send(encipher.encrypt(Packet(ident = 0x00, data = {
+					'value': packet.data['value']
+					}).encode())
+				)
+			if packet.ident == 0xC9 or packet.ident == 0x03:
+				print packet
 		except bound_buffer.BufferUnderflowException:
 			data.revert()
 			pass

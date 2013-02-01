@@ -19,21 +19,6 @@ data_types = {
 	"double": ('d', 8),
 }
 
-slot = (
-	("short", "block_id"),
-	("byte", "item_count"),
-	("short", "item_damage"),
-	("short", "nbt_data_length"),
-	("nbt", "nbt_data"),
-)
-
-chunk_meta = (
-	("int", "chunk_x"),
-	("int", "chunk_z"),
-	("ushort", "primary_bitmap"),
-	("ushort", "add_bitmap"),
-	)
-
 names = {
 	0x00: "Keep Alive",
 	0x01: "Login Request",
@@ -482,7 +467,7 @@ structs = {
 	0x83: (
 		("short", "item_type"),
 		("short", "item_id"),
-		("ubyte", "data_size")),
+		("short", "data_size")),
 	#Update Tile Entity
 	0x84: (
 		("int", "x"),
