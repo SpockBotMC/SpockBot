@@ -31,15 +31,25 @@ class Client:
 		except socket.error as error:
 			logging.info("Error on Connect (this is normal): " + str(error))
 
-	def enable_crypto(self, cipher):
-		self.cipher = cipher
+	def enable_crypto(self, SharedSecret):
+		self.encipher = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
+		self.decipher = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
 		self.encrypted = True
 
+	def push(self, packet):
+		self.sbuff+=packet.encode()
+
+	def run(self, plugins):
+
+
 	def login(self, username, password, host = 'localhost', port=25565):
+		#Stage 0: Login to Minecraft.net
 		LoginResponse = utils.LoginToMinecraftNet(username, password)
 		if (LoginResponse['Response'] != "Good to go!"):
 			logging.error('Login Unsuccessful, Response: %s', LoginResponse['Response'])
 			return
+
+		#Stage 1: Send initial handshake
 		self.username = LoginResponse['Username']
 		self.sessionid = LoginResponse['SessionID']
 		self.connect(host, port)
@@ -52,7 +62,6 @@ class Client:
 				'port': port,
 				}).encode()
 			)
-
 		while not self.poll.poll()[0][1]&select.POLLIN:
 			pass
 		packet = decode_packet(self.sock.recv(bufsize))
@@ -76,9 +85,7 @@ class Client:
 		while not self.poll.poll()[0][1]&select.POLLOUT:
 			pass
 		self.sock.send(Packet(ident = 0xFC, data = {
-			'shared_secret_length': encryptedSharedSecret.__len__(),
 			'shared_secret': encryptedSharedSecret,
-			'verify_token_length': encryptedSanityToken.__len__(),
 			'verify_token': encryptedSanityToken,
 			}).encode()
 		)
@@ -90,8 +97,7 @@ class Client:
 			return
 
 		#Stage 4: Enable encryption and send Client Status
-		self.encipher = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
-		self.decipher = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
+		self.enable_crypto(SharedSecret)
 		while not self.poll.poll()[0][1]&select.POLLOUT:
 			pass
 		self.sock.send(self.encipher.encrypt(Packet(ident = 0xCD, data = {
