@@ -17,8 +17,8 @@ def LoginToMinecraftNet(username, password):
 		url = 'https://login.minecraft.net'
 		header = {'Content-Type': 'application/x-www-form-urlencoded'}
 		data = {'user': username,
-				'password': password,
-				'version': '13'}
+			'password': password,
+			'version': '13'}
 		data = urllib.urlencode(data)
 		req = urllib2.Request(url, data, header)
 		opener = urllib2.build_opener()

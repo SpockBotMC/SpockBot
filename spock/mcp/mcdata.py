@@ -157,8 +157,27 @@ blocks = {
 	0x87: "Brich Wood Stairs",
 	0x88: "Jungle Wood Stairs",
 	0x89: "Command Block",
-	0x8A: ""
-
+	0x8A: "Beacon",
+	0x8B: "Cobblestone Wall",
+	0x8C: "Flower Pot",
+	0x8D: "Carrots",
+	0x8E: "Potatoes",
+	0x8F: "Wood Button",
+	0x90: "Mob Head",
+	0x91: "Anvil",
+	0x92: "Trapped Chest",
+	0x93: "Weighted Plate (Light)",
+	0x94: "Weighted Plate (Heavy)",
+	0x95: "Redstone Comparator (Off)",
+	0x96: "Redstone Comparator (On)",
+	0x97: "Daylight Sensor",
+	0x98: "Redstone Block",
+	0x99: "Nether Quartz Ore",
+	0x9A: "Hopper",
+	0x9B: "Quartz Block",
+	0x9C: "Quartz Stairs",
+	0x9D: "Activator Rail",
+	0x9E: "Dropper",
 }
 
 names = {
