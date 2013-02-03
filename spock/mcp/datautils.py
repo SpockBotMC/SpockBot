@@ -20,7 +20,6 @@ def unpack(bbuff, data_type):
 		if o["id"] > 0:
 			o["amount"] = unpack(bbuff, 'byte')
 			o["damage"] = unpack(bbuff, 'short')
-			#if o['id'] in enchantable:
 			length = unpack(bbuff, 'short')
 			if length > 0:
 				ench = bbuff.recv(length)
