@@ -13,7 +13,7 @@ def fhandle(ident):
 @fhandle(0x01)
 def handle01(client):
 	data = client.sock.recv(client.bufsize)
-	client.rbuff.append(client.decipher.decrypt(data) if client.encrypted else data)
+	client.rbuff.append(client.cipher.decrypt(data) if client.encrypted else data)
 	client.rbuff.save()
 
 #SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send

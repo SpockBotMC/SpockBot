@@ -3,15 +3,13 @@ import socket
 import logging
 
 from Crypto.Random import _UserFriendlyRNG
-from Crypto.Cipher import AES
 
+import cipher
 from spock.net.client_flags import cflags
 from spock.net.flag_handlers import fhandles
 from spock.net.packet_handlers import phandles
 from spock.mcp import mcdata, mcpacket
 from spock import utils, smpmap, bound_buffer
-
-
 
 class Client:
 	def __init__(self):
@@ -24,6 +22,7 @@ class Client:
 
 		self.world = smpmap.World()
 		self.encrypted = False
+		self.SharedSecret = _UserFriendlyRNG.get_random_bytes(16)
 		self.kill = False
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
@@ -59,13 +58,12 @@ class Client:
 			logging.info("Error on Connect (this is normal): " + str(error))
 
 	def enable_crypto(self, SharedSecret):
-		self.encipher = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
-		self.decipher = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
+		self.cipher = cipher.AESCipher(SharedSecret)
 		self.encrypted = True
 
 	def push(self, packet):
 		bytes = packet.encode()
-		self.sbuff += (self.encipher.encrypt(bytes) if self.encrypted else bytes)
+		self.sbuff += (self.cipher.encrypt(bytes) if self.encrypted else bytes)
 
 	def login(self, username, password, host = 'localhost', port=25565):
 		#Stage 1: Login to Minecraft.net
@@ -76,7 +74,6 @@ class Client:
 
 		self.username = LoginResponse['Username']
 		self.sessionid = LoginResponse['SessionID']
-		self.SharedSecret = _UserFriendlyRNG.get_random_bytes(16)
 		self.connect(host, port)
 
 		#Stage 2: Send initial handshake
