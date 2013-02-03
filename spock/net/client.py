@@ -40,7 +40,7 @@ class Client:
 		self.sbuff+=packet.encode()
 
 	def run(self, plugins):
-
+		pass
 
 	def login(self, username, password, host = 'localhost', port=25565):
 		#Stage 0: Login to Minecraft.net

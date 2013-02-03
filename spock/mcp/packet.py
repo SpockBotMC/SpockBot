@@ -47,7 +47,7 @@ class Packet:
 	def __repr__(self):
 		if self.direction == mcdata.CLIENT_TO_SERVER: s = ">>>"
 		else: s = "<<<"
-		format = "[%s] %s 0x%02x: %-"+str(max([len(i) for i in mcdata.names.values()])+1)+"s%s"
+		format = "[%s] %s 0x%02X: %-"+str(max([len(i) for i in mcdata.names.values()])+1)+"s%s"
 		return format % (strftime("%H:%M:%S", gmtime()), s, self.ident, mcdata.names[self.ident], str(self.data))
 
 def read_packet(bbuff, direction = mcdata.SERVER_TO_CLIENT):
