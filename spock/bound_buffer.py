@@ -27,12 +27,8 @@ class BoundBuffer:
 	def revert(self):
 		self.buff = str(self.backup)
 
-	"""
-	Dummy method so that bad functions 
-	can treat buffers like file objects
-	"""
-	def close(self):
-		pass
+	def __len__(self):
+		return self.buff.__len__()
 	
 	read = recv
 	write = append

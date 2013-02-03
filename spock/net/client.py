@@ -6,14 +6,17 @@ from Crypto.Random import _UserFriendlyRNG
 from Crypto.Cipher import AES
 
 from spock.net.client_flags import cflags
+from spock.net.flag_handlers import fhandles
+from spock.net.packet_handlers import phandles
 from spock.mcp import mcdata, mcpacket
-from spock import utils, smpmap
+from spock import utils, smpmap, bound_buffer
 
 
-bufsize = 4096
 
 class Client:
 	def __init__(self):
+		self.bufsize = 4096
+
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(0)
 		self.poll = select.poll()
@@ -22,20 +25,30 @@ class Client:
 		self.world = smpmap.World()
 		self.encrypted = False
 		self.kill = False
+		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
 
 	def run(self):
 		while not self.kill:
 			flags = self.getflags()
-			self.update(flags)
+			flags = self.update(flags)
+
+	def update(self, flags):
+		for name, flag in cflags.iteritems():
+			if flags&flag: fhandles[flag](self)
 
 	def getflags(self):
 		flags = 0
 		poll = self.poll.poll()[0][1]
-		if poll&select.POLLOUT and self.sbuff:
-			flags = flags|cflags['SOCKET_SEND']
-		if poll&select.POLLIN:
-			flags = flags|cflags['SOCKET_RECV']
+		if poll&select.POLLOUT and self.sbuff: flags = flags|cflags['SOCKET_SEND']
+		if poll&select.POLLIN:                 flags = flags|cflags['SOCKET_RECV']
+		if self.rbuff:                         flags = flags|cflags['RBUFF_RECV']
+		return flags
+
+	def dispatch_packet(self, packet):
+		if packet.ident in phandles:
+			phandles[packet.ident].handle(self, packet)
+		print packet
 
 	def connect(self, host = 'localhost', port=25565):
 		self.host = host
