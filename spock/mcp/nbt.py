@@ -6,7 +6,7 @@ import os, io, zlib, gzip, StringIO
 
 from struct import Struct, error as StructError
 from collections import MutableMapping, MutableSequence, Sequence
-from bound_buffer import BoundBuffer
+from spock.bound_buffer import BoundBuffer
 #from utils import ByteToHex
 
 try:
