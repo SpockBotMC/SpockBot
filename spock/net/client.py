@@ -48,7 +48,7 @@ class Client:
 	def dispatch_packet(self, packet):
 		if packet.ident in phandles:
 			phandles[packet.ident].handle(self, packet)
-		print packet
+		#print packet
 
 	def connect(self, host = 'localhost', port=25565):
 		self.host = host
