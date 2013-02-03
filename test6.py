@@ -7,7 +7,7 @@ import select
 
 client = Client()
 bbuff = BoundBuffer()
-client.login(username, password)
+client.login(username, password, 'untamedears.com')
 while True:
 	while not client.poll.poll()[0][1]&select.POLLIN:
 		pass
