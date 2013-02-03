@@ -1,5 +1,5 @@
 from spock.mcp import nbt
-from spock.mcp.bound_buffer import BoundBuffer
+from spock.bound_buffer import BoundBuffer
 
 magic = open('bigtest.nbt').read()
 

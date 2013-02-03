@@ -1,6 +1,6 @@
 from time import gmtime, strftime
-import bound_buffer
-import packet_extensions
+from spock import bound_buffer
+import mcpacket_extensions
 import mcdata
 import datautils
 #from utils import ByteToHex
@@ -25,16 +25,16 @@ class Packet:
 			self.data[name] = datautils.unpack(bbuff, dtype)
 		
 		#Extension
-		if self.ident in packet_extensions.extensions:
-			packet_extensions.extensions[self.ident].decode_extra(self, bbuff)
+		if self.ident in mcpacket_extensions.extensions:
+			mcpacket_extensions.extensions[self.ident].decode_extra(self, bbuff)
 	
 	def encode(self):
 		#Ident
 		output = datautils.pack('ubyte', self.ident)
 		
 		#Extension
-		if self.ident in packet_extensions.extensions:
-			append = packet_extensions.extensions[self.ident].encode_extra(self)
+		if self.ident in mcpacket_extensions.extensions:
+			append = mcpacket_extensions.extensions[self.ident].encode_extra(self)
 		else:
 			append = ''
 		

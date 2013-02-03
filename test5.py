@@ -2,11 +2,10 @@ import socket
 import select
 import thread
 import time
-from spock.mcp.bound_buffer import BoundBuffer
-from spock.mcp.packet import Packet, read_packet
+from spock.utils import DecodeSLP
+from spock.bound_buffer import BoundBuffer
+from spock.mcp.mcpacket import Packet, read_packet
 from spock.mcp.mcdata import SERVER_LIST_PING_MAGIC
-from spock.mcp.utils import DecodeSLP
-from spock.net.mcsocket import AsyncSocket
 
 def get_info(host='localhost', port=25565):
 	#Set up our socket

@@ -1,5 +1,5 @@
-from spock.mcp.packet import Packet, read_packet
-from spock.mcp.bound_buffer import BoundBuffer
+from spock.mcp.mcpacket import Packet, read_packet
+from spock.bound_buffer import BoundBuffer
 from spock.mcp import mcdata
 
 p = Packet(ident = 02, data = {

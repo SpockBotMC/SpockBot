@@ -1,8 +1,8 @@
 import socket
-from spock.mcp.bound_buffer import BoundBuffer
-from spock.mcp.packet import Packet, read_packet
+from spock.bound_buffer import BoundBuffer
+from spock.utils import DecodeSLP
+from spock.mcp.mcpacket import Packet, read_packet
 from spock.mcp.mcdata import SERVER_LIST_PING_MAGIC
-from spock.mcp.utils import DecodeServerListPing
 
 def get_info(host='localhost', port=25565):
 	#Set up our socket

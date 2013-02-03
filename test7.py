@@ -8,8 +8,9 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto.Cipher import PKCS1_v1_5
 
-from spock.mcp.packet import Packet, decode_packet, read_packet
-from spock.mcp import utils, mcdata, bound_buffer
+from spock.mcp.mcpacket import Packet, decode_packet, read_packet
+from spock.mcp import mcdata
+from spock import utils, bound_buffer
 from login import username, password
 
 def login(username, password):

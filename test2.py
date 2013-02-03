@@ -12,9 +12,9 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto.Cipher import PKCS1_v1_5
 
-from spock.mcp.packet import Packet, read_packet
-from spock.mcp.bound_buffer import BoundBuffer
-from spock.mcp import utils
+from spock.mcp.mcpacket import Packet, read_packet
+from spock.bound_buffer import BoundBuffer
+from spock import utils
 from login import username, password
 
 def test(username, password, host='localhost', port=25565):
