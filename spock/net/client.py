@@ -8,8 +8,10 @@ from Crypto.PublicKey import RSA
 from Crypto.Cipher import AES
 from Crypto.Cipher import PKCS1_v1_5
 
+import smpmap
 from spock.mcp.packet import Packet, decode_packet
 from spock.mcp import utils, mcdata
+
 
 bufsize = 4096
 
@@ -20,6 +22,7 @@ class Client:
 		self.poll = select.poll()
 		self.poll.register(self.sock)
 
+		self.world = smpmap.World()
 		self.encrypted = False
 		self.sbuff = ''
 

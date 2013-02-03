@@ -215,14 +215,3 @@ class World:
 			self.columns[(x,z)] = column
 		
 		return column.biome.put(rx, rz, data)
-
-if __name__ == '__main__':
-	world = World()
-	with open('packet0x38.bin', 'rb') as f:
-		#Strip off the packet ID
-		assert f.read(1) == '\x38'
-		
-		#Unpack the rest of the packet
-		world.unpack(f)
-	print "Got %d columns" % len(world.columns)
-	print world.columns[(-16, 14)].chunks
