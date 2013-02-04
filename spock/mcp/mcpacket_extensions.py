@@ -19,7 +19,7 @@ class ArrayExtension:
 	@classmethod
 	def encode_extra(self, packet):
 		packet.data['data_size'] = len(packet.data[self.array_name])
-		return pack_array(self.data_type, packet.data[self.array_name])
+		return pack_array(self.data_type, packet.data['data_size'])
 
 @extension(0x17)
 class Extension17:
@@ -45,7 +45,13 @@ class Extension1D(ArrayExtension):
 	
 @extension(0x33)
 class Extension33(ArrayExtension):
-	data_type = 'ubyte'
+	@classmethod
+	def decode_extra(self, packet, bbuff):
+		packet.data["data"] = bbuff.recv(packet.data['data_size'])
+
+	@classmethod
+	def encode_extra(self, packet):
+		packet.data['data_size'] = len(packet.data['data'])
 
 @extension(0x34)
 class Extension34:
@@ -81,7 +87,7 @@ class Extension34:
 class Extension38:
 	@classmethod
 	def decode_extra(self, packet, bbuff):
-		packet.data["data"] = unpack_array(bbuff, 'ubyte', packet.data['data_size'])
+		packet.data["data"] = bbuff.recv(packet.data['data_size'])
 		
 		packet.data["bitmaps"] = []
 		for i in range(packet.data['chunk_column_count']):
@@ -89,7 +95,7 @@ class Extension38:
 			d['x'] = unpack(bbuff, 'int')
 			d['z'] = unpack(bbuff, 'int')
 			d['primary_bitmap'] = unpack(bbuff, 'short')
-			d['add_bitmap'] = unpack(bbuff, 'short')
+			d['secondary_bitmap'] = unpack(bbuff, 'short')
 			packet.data["bitmaps"].append(d)
 		
 		del packet.data["data_size"]
@@ -98,13 +104,13 @@ class Extension38:
 	def encode_extra(self, packet):
 		packet.data['data_size'] = len(packet.data['data'])
 		
-		append = pack_array('ubyte', packet.data['data'])
+		append = packet.data['data']
 		
 		for d in packet.data["bitmaps"]:
 			append += pack('int', d['x'])
 			append += pack('int', d['z'])
 			append += pack('short', d['primary_bitmap'])
-			append += pack('short', d['add_bitmap'])
+			append += pack('short', d['secondary_bitmap'])
 		
 		return append
 

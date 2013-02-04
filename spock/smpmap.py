@@ -8,6 +8,26 @@ Last updated for 1.4.6
 
 """
 
+"""
+
+Chunks are packed in X, Z, Y order
+The array walks down X, every 16 elements you enter a new Z-level
+ex.
+[0] - [15] are X = 0-15, Z = 0, Y = 0
+[16] - [31] are X = 0-15, Z = 1, Y = 0
+and so on
+
+Every 256 elements you enter a new Y-level
+ex.
+[0]-[255] are X = 0-15, Z = 0-15, Y = 0
+[256]-[511] are X = 0-15, Z = 0-15, Y = 1
+and so on
+
+Chunk Coords * 16 + Block Coords gives you the actual position of the chunk in the world
+
+"""
+
+
 import array
 import struct
 import zlib
@@ -109,7 +129,7 @@ class ChunkColumn:
 		self.chunks = [None]*16
 		self.biome  = BiomeData()
 	
-	def unpack(self, buff, mask1, mask2, skylight=True):
+	def unpack(self, buff, mask1, mask2, skylight=True, ground_up=True):
 		#In the protocol, each section is packed sequentially (i.e. attributes
 		#pertaining to the same chunk are *not* grouped)
 		self.unpack_section(buff, 'block_data',  mask1)
@@ -118,7 +138,8 @@ class ChunkColumn:
 		if skylight:
 			self.unpack_section(buff, 'light_sky', mask1)
 		self.unpack_section(buff, 'block_add',   mask2)
-		self.biome.unpack(buff)
+		if ground_up:
+			self.biome.unpack(buff)
 		
 	def unpack_section(self, buff, section, mask):
 		#Iterate over the bitmask
@@ -137,30 +158,42 @@ class World:
 	def unpack_raw(self, buff, ty):
 		return struct.unpack('>'+ty, buff.read(struct.calcsize(ty)))
 	
-	def unpack(self, buff):
-		chunk_count = self.unpack_raw(buff, 'h')[0] #short
-		data_len    = self.unpack_raw(buff, 'i')[0] #int
-		light_data  = self.unpack_raw(buff, '?')[0] #bool
+	def unpack_bulk(self, packet):
+		light_data  = packet.data['sky_light']
+		ground_up = True
 		
 		# Read compressed data
-		data = buff.read(data_len)
-		data = zlib.decompress(data)
-		data = StringIO(data)
+		data = StringIO(zlib.decompress(packet.data['data']))
 		
-		for i in range(chunk_count):
+		for bitmap in packet.data['bitmaps']:
 			# Read chunk metadata
-			chunk_x, chunk_z, mask1, mask2 = self.unpack_raw(buff, 'iihh')
+			x_chunk = bitmap['x']
+			z_chunk = bitmap['z']
+			mask1 = bitmap['primary_bitmap']
+			mask2 = bitmap['secondary_bitmap']
 			
 			# Grab the relevant column
-			key = (chunk_x, chunk_z)
-			if key in self.columns:
-				column = self.columns[key]
-			else:
-				column = ChunkColumn()
-				self.columns[key] = column
+			key = (x_chunk, z_chunk)
+			if key not in self.columns:
+				self.columns[key] = ChunkColumn()
 			
 			# Unpack the chunk column data!
-			column.unpack(data, mask1, mask2, light_data)
+			self.columns[key].unpack(data, mask1, mask2, light_data, ground_up)
+
+	def unpack_column(self, packet):
+		x_chunk = packet.data['x_chunk']
+		z_chunk = packet.data['z_chunk']
+		ground_up = packet.data['ground_up_continuous']
+		mask1 = packet.data['primary_bitmap']
+		mask2 = packet.data['secondary_bitmap']
+		data = StringIO(zlib.decompress(packet.data['data']))
+		skylight = True
+
+		key = (x_chunk, z_chunk)
+		if key not in self.columns:
+			self.columns[key] = ChunkColumn()
+
+		self.columns[key].unpack(data, mask1, mask2, skylight, ground_up)
 	
 	def get(self, x, y, z, key):
 		x, rx = divmod(x, 16)

@@ -57,6 +57,7 @@ class handle33(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		client.flags += cflags['WLD_UPDT']|cflags['BLK_UPDT']
+		client.world.unpack_column(packet)
 
 #Map Chunk Bulk - Update client World state
 @phandle(0x38)
@@ -64,6 +65,7 @@ class handle38(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		client.flags += cflags['WLD_UPDT']|cflags['BLK_UPDT']
+		client.world.unpack_bulk(packet)
 
 #Player List Item - Update client Playerlist (not actually a list...)
 @phandle(0xC9)
@@ -78,7 +80,6 @@ class handleC9(BaseHandle):
 				del client.playerlist[name]
 			except KeyError:
 				logging.error('Tried to remove %s from playerlist, but player did not exist', name)
-
 
 #Encryption Key Response - Signals encryption was successful, ready to spawn
 @phandle(0xFC)

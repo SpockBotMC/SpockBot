@@ -537,7 +537,7 @@ structs = {
 	0x38: (
 		("short", "chunk_column_count"),
 		("int", "data_size"),
-		("bool", "sky_light_sent")),
+		("bool", "sky_light")),
 	#Explosion
 	0x3C: (
 		("double", "x"),
