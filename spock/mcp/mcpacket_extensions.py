@@ -19,7 +19,7 @@ class ArrayExtension:
 	@classmethod
 	def encode_extra(self, packet):
 		packet.data['data_size'] = len(packet.data[self.array_name])
-		return pack_array(self.data_type, packet.data['data_size'])
+		return pack_array(self.data_type, packet.data[self.array_name])
 
 @extension(0x17)
 class Extension17:
