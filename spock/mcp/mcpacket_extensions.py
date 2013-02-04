@@ -8,7 +8,6 @@ def extension(ident):
 		return cl
 	return inner
 
-
 class ArrayExtension:
 	data_type = None
 	array_name = 'data'
@@ -21,7 +20,6 @@ class ArrayExtension:
 	def encode_extra(self, packet):
 		packet.data['data_size'] = len(packet.data[self.array_name])
 		return pack_array(self.data_type, packet.data[self.array_name])
-
 
 @extension(0x17)
 class Extension17:
@@ -45,7 +43,6 @@ class Extension1D(ArrayExtension):
 	data_type = 'int'
 	array_name = 'entity_ids'
 	
-
 @extension(0x33)
 class Extension33(ArrayExtension):
 	data_type = 'ubyte'

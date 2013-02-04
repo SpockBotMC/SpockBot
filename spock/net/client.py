@@ -12,21 +12,35 @@ from spock.mcp import mcdata, mcpacket
 from spock import utils, smpmap, bound_buffer
 
 class Client:
-	def __init__(self):
-		self.bufsize = 4096
+	def __init__(self, plugins = []):
+		#Initialize plugin list
+		#Plugins should never touch this
+		self.plugin_dispatch = {}
+		for ident in mcdata.structs:
+			self.plugin_dispatch[ident] = []
+		self.plugins = []
+		for plugin in plugins:
+			self.plugins.append(plugin(self))
 
+		#Initialize socket and poll
+		#Plugins should never touch these unless they know what they're doing
+		self.bufsize = 4096
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(0)
 		self.poll = select.poll()
 		self.poll.register(self.sock)
 
-		self.world = smpmap.World()
+		#Initialize Event Loop/Network variables
+		#Plugins should generally not touch these
 		self.encrypted = False
 		self.kill = False
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
-		self.flags = 0
+		self.flags = 0 #OK to read flags, not write
 
+		#World variables
+		#Plugins should read these (but generally not write)
+		self.world = smpmap.World()
 		self.position = {
 			'x': 0,
 			'y': 0,
@@ -36,6 +50,7 @@ class Client:
 			'pitch': 0,
 			'on_ground': False,
 		}
+		self.playerlist = []
 
 	def start(self, username, password, host = 'localhost', port=25565):
 		self.start_session(username, password)
@@ -44,12 +59,14 @@ class Client:
 
 	def event_loop(self):
 		while not self.kill:
+			#Poll
 			self.getflags()
-			self.update()
-
-	def update(self, flags):
-		for name, flag in cflags.iteritems():
-			if self.flags&flag: fhandles[flag](self)
+			#Default dispatch
+			for name, flag in cflags.iteritems():
+				if self.flags&flag: fhandles[flag](self)
+			#Plugin dispatch
+			for plugin in self.plugins:
+				plugin.run()
 
 	def getflags(self):
 		self.flags = 0
@@ -63,7 +80,11 @@ class Client:
 			phandles[packet.ident].handle(self, packet)
 		#if packet.ident == 0x0D:
 		#	print self.position
-		#print packet
+		for plugin in self.plugin_dispatch[packet.ident]:
+			plugin.dispatch_packet(packet)
+
+	def register_dispatch(self, plugin, ident):
+		self.plugin_dispatch[ident].append(plugin)
 
 	def connect(self, host = 'localhost', port=25565):
 		self.host = host

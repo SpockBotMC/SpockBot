@@ -18,13 +18,7 @@ b = Packet(ident = 0xC9, data = {
 bbuff = BoundBuffer(p.encode() + b.encode())
 
 packet = read_packet(bbuff)
-
-print packet
-
-packet = None
-
 print packet
 
 packet = read_packet(bbuff)
-
 print packet

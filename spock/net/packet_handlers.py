@@ -5,7 +5,6 @@ from spock.net.cflags import cflags
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 
-
 phandles = {}
 def phandle(ident):
 	def inner(cl):
