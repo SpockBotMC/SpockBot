@@ -1,6 +1,7 @@
 import logging
 from spock import utils
 from spock.mcp import mcdata, mcpacket
+from spock.net.cflags import cflags
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 
@@ -48,6 +49,7 @@ class PositionUpdate(BaseHandle):
 	def ToClient(self, client, packet):
 		for key in packet.data:
 			client.position[key] = packet.data[key]
+		client.flags += cflags['POS_UPDT']
 	ToServer = ToClient
 
 #Chunk Data - Update client World state
@@ -55,14 +57,14 @@ class PositionUpdate(BaseHandle):
 class handle33(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
-		pass
+		client.flags += cflags['WLD_UPDT']|cflags['BLK_UPDT']
 
 #Map Chunk Bulk - Update client World state
 @phandle(0x38)
 class handle38(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
-		pass
+		client.flags += cflags['WLD_UPDT']|cflags['BLK_UPDT']
 
 #Encryption Key Response - Signals encryption was successful, ready to spawn
 @phandle(0xFC)

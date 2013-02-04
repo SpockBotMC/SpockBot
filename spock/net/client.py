@@ -5,7 +5,7 @@ import logging
 from Crypto.Random import _UserFriendlyRNG
 
 import cipher
-from spock.net.client_flags import cflags
+from spock.net.cflags import cflags
 from spock.net.flag_handlers import fhandles
 from spock.net.packet_handlers import phandles
 from spock.mcp import mcdata, mcpacket
@@ -25,6 +25,7 @@ class Client:
 		self.kill = False
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
+		self.flags = 0
 
 		self.position = {
 			'x': 0,
@@ -37,25 +38,25 @@ class Client:
 		}
 
 	def start(self, username, password, host = 'localhost', port=25565):
-		self.login(username, password, host, port)
+		self.start_session(username, password)
+		self.login(host, port)
 		self.event_loop()
 
 	def event_loop(self):
 		while not self.kill:
-			flags = self.getflags()
-			flags = self.update(flags)
+			self.getflags()
+			self.update()
 
 	def update(self, flags):
 		for name, flag in cflags.iteritems():
-			if flags&flag: fhandles[flag](self)
+			if self.flags&flag: fhandles[flag](self)
 
 	def getflags(self):
-		flags = 0
+		self.flags = 0
 		poll = self.poll.poll()[0][1]
-		if poll&select.POLLOUT and self.sbuff: flags = flags|cflags['SOCKET_SEND']
-		if poll&select.POLLIN:                 flags = flags|cflags['SOCKET_RECV']
-		if self.rbuff:                         flags = flags|cflags['RBUFF_RECV']
-		return flags
+		if poll&select.POLLOUT and self.sbuff: self.flags += cflags['SOCKET_SEND']
+		if poll&select.POLLIN:                 self.flags += cflags['SOCKET_RECV']
+		if self.rbuff:                         self.flags += cflags['RBUFF_RECV']
 
 	def dispatch_packet(self, packet):
 		if packet.ident in phandles:
@@ -82,14 +83,6 @@ class Client:
 		self.dispatch_packet(packet)
 
 	def login(self, username, password, host = 'localhost', port=25565):
-		#Stage 1: Login to Minecraft.net
-		LoginResponse = utils.LoginToMinecraftNet(username, password)
-		if (LoginResponse['Response'] != "Good to go!"):
-			logging.error('Login Unsuccessful, Response: %s', LoginResponse['Response'])
-			return
-
-		self.username = LoginResponse['Username']
-		self.sessionid = LoginResponse['SessionID']
 		self.connect(host, port)
 		self.SharedSecret = _UserFriendlyRNG.get_random_bytes(16)
 
@@ -101,3 +94,13 @@ class Client:
 				'port': port,
 				})
 			)
+
+	def start_session(self, username, password):
+		#Stage 1: Login to Minecraft.net
+		LoginResponse = utils.LoginToMinecraftNet(username, password)
+		if (LoginResponse['Response'] != "Good to go!"):
+			logging.error('Login Unsuccessful, Response: %s', LoginResponse['Response'])
+			return LoginResponse['Response']
+
+		self.username = LoginResponse['Username']
+		self.sessionid = LoginResponse['SessionID']
