@@ -33,7 +33,7 @@ pyCraft
 =======
 
 Large parts of Spock's design were inspired by Ammar Askar's pyCraft, which can be found here: https://github.com/ammaraskar/pyCraft 
-We use his implementation of the Minecraft.net login and his encryption functions with slight modifications.
+We use his implementation of the Minecraft.net login, found in spock/utils.py
 
 Copyright 2012 Ammar Askar
 
