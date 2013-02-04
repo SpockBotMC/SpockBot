@@ -38,7 +38,7 @@ class Client:
 		self.sbuff = ''
 		self.flags = 0 #OK to read flags, not write
 
-		#World variables
+		#State variables
 		#Plugins should read these (but generally not write)
 		self.world = smpmap.World()
 		self.position = {
@@ -50,7 +50,7 @@ class Client:
 			'pitch': 0,
 			'on_ground': False,
 		}
-		self.playerlist = []
+		self.playerlist = {}
 
 	def start(self, username, password, host = 'localhost', port=25565):
 		self.start_session(username, password)
@@ -78,8 +78,6 @@ class Client:
 	def dispatch_packet(self, packet):
 		if packet.ident in phandles:
 			phandles[packet.ident].handle(self, packet)
-		#if packet.ident == 0x0D:
-		#	print self.position
 		for plugin in self.plugin_dispatch[packet.ident]:
 			plugin.dispatch_packet(packet)
 
