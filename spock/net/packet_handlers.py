@@ -21,7 +21,14 @@ class BaseHandle:
 			self.ToServer(client, packet)
 		else:
 			return 0
+	@classmethod
+	def ToClient(self, client, packet):
+		pass
+	@classmethod
+	def ToServer(self, client, packet):
+		pass
 
+#Keep Alive - Reflects data back to server
 @phandle(0x00)
 class handle00(BaseHandle):
 	@classmethod
@@ -31,6 +38,33 @@ class handle00(BaseHandle):
 			})
 		)
 
+#Position Update Packets - Update client Position state
+@phandle(0x0A)
+@phandle(0x0B)
+@phandle(0x0C)
+@phandle(0x0D)
+class PositionUpdate(BaseHandle):
+	@classmethod
+	def ToClient(self, client, packet):
+		for key in packet.data:
+			client.position[key] = packet.data[key]
+	ToServer = ToClient
+
+#Chunk Data - Update client World state
+@phandle(0x33)
+class handle33(BaseHandle):
+	@classmethod
+	def ToClient(self, client, packet):
+		pass
+
+#Map Chunk Bulk - Update client World state
+@phandle(0x38)
+class handle38(BaseHandle):
+	@classmethod
+	def ToClient(self, client, packet):
+		pass
+
+#Encryption Key Response - Signals encryption was successful, ready to spawn
 @phandle(0xFC)
 class handleFC(BaseHandle):
 	@classmethod
@@ -42,7 +76,7 @@ class handleFC(BaseHandle):
 			})
 		)
 
-
+#Encryption Key Request - Request for client to start encryption
 @phandle(0xFD)
 class handleFD(BaseHandle):
 	@classmethod

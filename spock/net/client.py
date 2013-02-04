@@ -22,12 +22,25 @@ class Client:
 
 		self.world = smpmap.World()
 		self.encrypted = False
-		self.SharedSecret = _UserFriendlyRNG.get_random_bytes(16)
 		self.kill = False
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
 
-	def run(self):
+		self.position = {
+			'x': 0,
+			'y': 0,
+			'z': 0,
+			'stance': 0,
+			'yaw': 0,
+			'pitch': 0,
+			'on_ground': False,
+		}
+
+	def start(self, username, password, host = 'localhost', port=25565):
+		self.login(username, password, host, port)
+		self.event_loop()
+
+	def event_loop(self):
 		while not self.kill:
 			flags = self.getflags()
 			flags = self.update(flags)
@@ -47,6 +60,8 @@ class Client:
 	def dispatch_packet(self, packet):
 		if packet.ident in phandles:
 			phandles[packet.ident].handle(self, packet)
+		#if packet.ident == 0x0D:
+		#	print self.position
 		#print packet
 
 	def connect(self, host = 'localhost', port=25565):
@@ -64,6 +79,7 @@ class Client:
 	def push(self, packet):
 		bytes = packet.encode()
 		self.sbuff += (self.cipher.encrypt(bytes) if self.encrypted else bytes)
+		self.dispatch_packet(packet)
 
 	def login(self, username, password, host = 'localhost', port=25565):
 		#Stage 1: Login to Minecraft.net
@@ -75,6 +91,7 @@ class Client:
 		self.username = LoginResponse['Username']
 		self.sessionid = LoginResponse['SessionID']
 		self.connect(host, port)
+		self.SharedSecret = _UserFriendlyRNG.get_random_bytes(16)
 
 		#Stage 2: Send initial handshake
 		self.push(mcpacket.Packet(ident = 02, data = {
@@ -84,5 +101,3 @@ class Client:
 				'port': port,
 				})
 			)
-
-		self.run()

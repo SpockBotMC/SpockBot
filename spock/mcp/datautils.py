@@ -40,7 +40,7 @@ def unpack(bbuff, data_type):
 			if ty == 1: val = unpack(bbuff, 'short')
 			if ty == 2: val = unpack(bbuff, 'int')
 			if ty == 3: val = unpack(bbuff, 'float')
-			if ty == 4: val = unpack(bbuff, 'string16')
+			if ty == 4: val = unpack(bbuff, 'string')
 			if ty == 5:
 				val = {}
 				val["id"] = unpack(bbuff, 'short')
@@ -92,7 +92,7 @@ def pack(data_type, data):
 			if ty == 1: o += pack('short', val)
 			if ty == 2: o += pack('int', val)
 			if ty == 3: o += pack('float', val)
-			if ty == 4: o += pack('string16', val)
+			if ty == 4: o += pack('string', val)
 			if ty == 5:
 				o += pack('short', val['id'])
 				o += pack('byte', val['count'])

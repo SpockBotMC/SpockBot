@@ -1,4 +1,3 @@
-
 from spock.mcp.mcpacket import read_packet
 from spock.bound_buffer import BufferUnderflowException
 
@@ -14,7 +13,6 @@ def fhandle(ident):
 def handle01(client):
 	data = client.sock.recv(client.bufsize)
 	client.rbuff.append(client.cipher.decrypt(data) if client.encrypted else data)
-	client.rbuff.save()
 
 #SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send
 @fhandle(0x02)
@@ -26,7 +24,9 @@ def handle02(client):
 @fhandle(0x04)
 def handle04(client):
 	try:
-		packet = read_packet(client.rbuff)
-		client.dispatch_packet(packet)
+		while True:
+			client.rbuff.save()
+			packet = read_packet(client.rbuff)
+			client.dispatch_packet(packet)
 	except BufferUnderflowException:
 		client.rbuff.revert()
