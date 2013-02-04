@@ -34,7 +34,8 @@ Large parts of spock/mcp/mcpacket.py, spock/mcp/mcdata.py, and spock/mcp/mcpacke
 pyCraft
 =======
 
-Large parts of Spock's design were inspired by Ammar Askar's pyCraft, which can be found here: https://github.com/ammaraskar/pyCraft 
+Large parts of Spock's design were inspired by Ammar Askar's pyCraft, which can be found here: https://github.com/ammaraskar/pyCraft
+
 We use his implementation of the Minecraft.net login, found in spock/utils.py
 
 Copyright 2012 Ammar Askar
