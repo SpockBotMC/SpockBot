@@ -37,6 +37,10 @@ class Client:
 		#State variables
 		#Plugins should read these (but generally not write)
 		self.world = smpmap.World()
+		self.world_time = {
+			'world_age': 0,
+			'time_of_day': 0,
+		}
 		self.position = {
 			'x': 0,
 			'y': 0,
@@ -46,7 +50,19 @@ class Client:
 			'pitch': 0,
 			'on_ground': False,
 		}
+		self.health = {
+			'health': 20,
+			'food': 20,
+			'food_saturation': 5,
+		}
 		self.playerlist = {}
+		self.entitylist = {}
+		self.spawn_position = {
+			'x': 0,
+			'y': 0,
+			'z': 0,
+		}
+		self.login_info = {}
 
 	def start(self, username, password, host = 'localhost', port=25565):
 		self.start_session(username, password)
@@ -74,11 +90,11 @@ class Client:
 	def dispatch_packet(self, packet):
 		if packet.ident in phandles:
 			phandles[packet.ident].handle(self, packet)
-		for plugin in self.plugin_dispatch[packet.ident]:
-			plugin.dispatch_packet(packet)
+		for callback in self.plugin_dispatch[packet.ident]:
+			callback(packet)
 
-	def register_dispatch(self, plugin, ident):
-		self.plugin_dispatch[ident].append(plugin)
+	def register_dispatch(self, callback, ident):
+		self.plugin_dispatch[ident].append(callback)
 
 	def connect(self, host = 'localhost', port=25565):
 		self.host = host

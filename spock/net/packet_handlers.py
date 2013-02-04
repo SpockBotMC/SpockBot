@@ -33,10 +33,38 @@ class BaseHandle:
 class handle00(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
-		client.push(mcpacket.Packet(ident = 0x00, data = {
-			'value': packet.data['value']
-			})
-		)
+		packet.direction = mcdata.CLIENT_TO_SERVER
+		client.push(packet)
+
+#Login Request - Update client state info
+@phandle(0x01)
+class handle01(BaseHandle):
+	@classmethod
+	def ToClient(self, client, packet):
+		client.eid = packet.data['entity_id']
+		del packet.data['entity_id']
+		client.login_info = packet.data
+
+#Time Update - Update client World Time state
+@phandle(0x04)
+class handle04(BaseHandle):
+	@classmethod
+	def ToClient(self, client, packet):
+		client.world_time = packet.data
+
+#Spawn Position - Update client Spawn Position state
+@phandle(0x06)
+class handle06(BaseHandle):
+	@classmethod
+	def ToClient(self, client, packet):
+		client.spawn_position = packet.data
+
+#Update Health - Update client Health state
+@phandle(0x08)
+class handle08(BaseHandle):
+	@classmethod
+	def ToClient(self, client, packet):
+		client.health = packet.data
 
 #Position Update Packets - Update client Position state
 @phandle(0x0A)
@@ -46,8 +74,8 @@ class handle00(BaseHandle):
 class PositionUpdate(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
-		for key in packet.data:
-			client.position[key] = packet.data[key]
+		for key, value in packet.data.iteritems():
+			client.position[key] = value
 		client.flags += cflags['POS_UPDT']
 	ToServer = ToClient
 
