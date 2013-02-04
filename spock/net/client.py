@@ -15,12 +15,8 @@ class Client:
 	def __init__(self, plugins = []):
 		#Initialize plugin list
 		#Plugins should never touch this
-		self.plugin_dispatch = {}
-		for ident in mcdata.structs:
-			self.plugin_dispatch[ident] = []
-		self.plugins = []
-		for plugin in plugins:
-			self.plugins.append(plugin(self))
+		self.plugin_dispatch = {ident: [] for ident in mcdata.structs}
+		self.plugins = [plugin(self) for plugin in plugins]
 
 		#Initialize socket and poll
 		#Plugins should never touch these unless they know what they're doing
