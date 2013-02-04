@@ -1,7 +1,7 @@
 NBT
 ===
 
-We use a slightly modified version of Thomas Woolford's NBT parser, which can be found here: https://github.com/twoolie/NBT
+We use a slightly modified version of Thomas Woolford's NBT parser in spock/mcp/nbt.py, original can be found here: https://github.com/twoolie/NBT
 
 Copyright (c) 2010 Thomas Woolford
 
@@ -28,6 +28,8 @@ BarneyMC
 ========
 
 We use slightly modified versions of large parts of Barney Gale's implementation of the MC Protocol, which can be found here: https://github.com/barneygale/barneymc
+
+Large parts of spock/mcp/mcpacket.py, spock/mcp/mcdata.py, and spock/mcp/mcpacket_extensions.py are verbatim copies of his work simply updated to work with the current protocol
 
 pyCraft
 =======
