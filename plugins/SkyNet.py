@@ -13,3 +13,4 @@ class SkyNetPlugin:
 	def record_event(self, packet):
 		self.cur.execute("""INSERT INTO skynet_events (player_name, online, time) 
 			VALUES (%s, %s, NOW());""", (packet.data['player_name'], packet.data['online'],))
+		self.conn.commit()
