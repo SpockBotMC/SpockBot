@@ -1,5 +1,6 @@
 import logging
-from spock import utils
+import socket
+from spock import utils, smpmap
 from spock.mcp import mcdata, mcpacket
 from spock.net.cflags import cflags
 from Crypto.Cipher import PKCS1_v1_5
@@ -151,3 +152,46 @@ class handleFD(BaseHandle):
 			'verify_token': encryptedSanityToken,
 			})
 		)
+
+#Disconnect - Reset everything after a disconect
+@phandle(0xFF)
+class handleFD(BaseHandle):
+	@classmethod
+	def ToClient(self, client, packet):
+		client.poll.unregister(client.sock)
+		client.sock.close()
+		client.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		client.sock.setblocking(0)
+		client.poll.register(client.sock)
+
+		client.sbuff = ''
+		client.rbuff.flush()
+		client.encrypted = False
+
+		client.world = smpmap.World()
+		client.world_time = {
+			'world_age': 0,
+			'time_of_day': 0,
+		}
+		client.position = {
+			'x': 0,
+			'y': 0,
+			'z': 0,
+			'stance': 0,
+			'yaw': 0,
+			'pitch': 0,
+			'on_ground': False,
+		}
+		client.health = {
+			'health': 20,
+			'food': 20,
+			'food_saturation': 5,
+		}
+		client.playerlist = {}
+		client.entitylist = {}
+		client.spawn_position = {
+			'x': 0,
+			'y': 0,
+			'z': 0,
+		}
+		client.login_info = {}
