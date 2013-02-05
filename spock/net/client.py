@@ -100,7 +100,7 @@ class Client:
 		self.plugin_dispatch[ident].append(callback)
 
 	def register_handler(self, callback):
-		self.plugin_handlers.append(callback):
+		self.plugin_handlers.append(callback)
 
 	def connect(self, host = 'localhost', port=25565):
 		self.host = host

@@ -79,6 +79,13 @@ class PositionUpdate(BaseHandle):
 		client.flags += cflags['POS_UPDT']
 	ToServer = ToClient
 
+class SpawnEntity(BaseHandle):
+	@classmethod
+	def ToClient(self, client, packet):
+		eid = packet.data['entity_id']
+		del packet.data['entity_id']
+		client.entitylist[eid] = packet.data
+
 #Chunk Data - Update client World state
 @phandle(0x33)
 class handle33(BaseHandle):
