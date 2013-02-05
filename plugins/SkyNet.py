@@ -1,5 +1,5 @@
 import psycopg2
-from skylogin import dbname, dbuser, db
+from skylogin import dbname, dbuser, dbpass
 
 class SkyNetPlugin:
 	def __init__(self, client):
