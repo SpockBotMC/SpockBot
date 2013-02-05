@@ -1,4 +1,15 @@
+import psycopg2
+from skylogin import dbname, dbuser, db
+
 class SkyNetPlugin:
 	def __init__(self, client):
+		self.conn = psycopg2.connect(database = dbname, user = dbuser, password = dbpass)
+		self.cur = conn.cursor()
+		self.cur.execute("SET timezone = 'UTC';")
+
 		self.client = client
-		client.register_dispatch(self, 0xC9)
+		client.register_dispatch(self.record_event, 0xC9)
+
+	def record_event(self, packet):
+		self.cur.execute("""INSERT INTO skynet_events (player_name, online, time) 
+			VALUES (%s, %s, NOW());""", (packet.data['player_name'], packet.data['online'],))
