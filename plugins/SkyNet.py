@@ -4,7 +4,7 @@ from skylogin import dbname, dbuser, dbpass
 class SkyNetPlugin:
 	def __init__(self, client):
 		self.conn = psycopg2.connect(database = dbname, user = dbuser, password = dbpass)
-		self.cur = conn.cursor()
+		self.cur = self.conn.cursor()
 		self.cur.execute("SET timezone = 'UTC';")
 
 		self.client = client
