@@ -1,4 +1,5 @@
 #Constantly Changing, just a plugin I use to debug whatever is broken atm
+from spock.mcp.mcdata import structs
 
 class DebugPlugin:
 	def __init__(self, client):
