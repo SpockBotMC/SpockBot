@@ -15,6 +15,7 @@ class Client:
 	def __init__(self, plugins = []):
 		#Initialize plugin list
 		#Plugins should never touch this
+		self.plugin_handlers = []
 		self.plugin_dispatch = {ident: [] for ident in mcdata.structs}
 		self.plugins = [plugin(self) for plugin in plugins]
 
@@ -73,12 +74,12 @@ class Client:
 		while not self.kill:
 			#Poll
 			self.getflags()
-			#Default dispatch
+			#Default handlers
 			for name, flag in cflags.iteritems():
 				if self.flags&flag: fhandles[flag](self)
-			#Plugin dispatch
-			for plugin in self.plugins:
-				plugin.run()
+			#Plugin handlers
+			for callback in self.plugin_handlers:
+				callback()
 
 	def getflags(self):
 		self.flags = 0
@@ -88,13 +89,18 @@ class Client:
 		if self.rbuff:                         self.flags += cflags['RBUFF_RECV']
 
 	def dispatch_packet(self, packet):
+		#Default dispatch
 		if packet.ident in phandles:
 			phandles[packet.ident].handle(self, packet)
+		#Plugin dispatchers
 		for callback in self.plugin_dispatch[packet.ident]:
 			callback(packet)
 
 	def register_dispatch(self, callback, ident):
 		self.plugin_dispatch[ident].append(callback)
+
+	def register_handler(self, callback):
+		self.plugin_handlers.append(callback):
 
 	def connect(self, host = 'localhost', port=25565):
 		self.host = host
