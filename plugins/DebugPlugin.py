@@ -7,7 +7,7 @@ class DebugPlugin:
 		for ident in structs:
 			client.register_dispatch(self.debug, ident)
 	def debug(self, packet):
-		if packet.ident == 0xC9 
+		if (packet.ident == 0xC9 
 		or packet.ident == 0x03
-		or packet.ident == 0xFF:
+		or packet.ident == 0xFF):
 			print packet
