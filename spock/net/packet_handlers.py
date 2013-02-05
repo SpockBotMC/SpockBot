@@ -79,6 +79,7 @@ class PositionUpdate(BaseHandle):
 		client.flags += cflags['POS_UPDT']
 	ToServer = ToClient
 
+
 class SpawnEntity(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):

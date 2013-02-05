@@ -119,7 +119,7 @@ class Client:
 		self.sbuff += (self.cipher.encrypt(bytes) if self.encrypted else bytes)
 		self.dispatch_packet(packet)
 
-	def login(self, username, password, host = 'localhost', port=25565):
+	def login(self, host = 'localhost', port=25565):
 		self.connect(host, port)
 		self.SharedSecret = _UserFriendlyRNG.get_random_bytes(16)
 
