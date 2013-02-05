@@ -9,7 +9,7 @@ class ReConnectPlugin:
 		client.register_dispatch(self.reconnect, 0xFF)
 		client.register_dispatch(self.grab_host, 0x02)
 	def reconnect(self, packet):
-		print "Attempting reconnect"
+		#print "Attempting reconnect"
 		self.client.login(self.host, self.port)
 	#Grabs host and port on handshake
 	def grab_host(self, packet):
