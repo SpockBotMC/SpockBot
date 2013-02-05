@@ -10,4 +10,4 @@ class DebugPlugin:
 		if packet.ident == 0xC9 
 		or packet.ident == 0x03
 		or packet.ident == 0xFF:
-		print packet
+			print packet
