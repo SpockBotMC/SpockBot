@@ -6,8 +6,7 @@ class SkyNetPlugin:
 		self.conn = psycopg2.connect(database = dbname, user = dbuser, password = dbpass)
 		self.cur = self.conn.cursor()
 		self.cur.execute("SET timezone = 'UTC';")
-
-		self.client = client
+		self.conn.commit()
 		client.register_dispatch(self.record_event, 0xC9)
 
 	def record_event(self, packet):
