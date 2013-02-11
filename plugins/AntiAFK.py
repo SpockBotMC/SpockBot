@@ -12,5 +12,5 @@ class AntiAFKPlugin:
 			oldposition = client.position
 			newposition = client.position
 			newposition['x']+=1
-			client.push(Packet(ident=0x0D, data=newposition))
-			client.push(Packet(ident=0x0D, data=oldposition))
+			self.client.push(Packet(ident=0x0D, data=newposition))
+			self.client.push(Packet(ident=0x0D, data=oldposition))
