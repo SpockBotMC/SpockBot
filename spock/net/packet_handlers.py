@@ -67,6 +67,13 @@ class handle08(BaseHandle):
 	def ToClient(self, client, packet):
 		client.health = packet.data
 
+#Respawn - Unload the World
+@phandle(0x09)
+class handle09(BaseHandle):
+	@classmethod
+	def ToClient(self, client, packet):
+		client.world = smpmap.World()
+
 #Position Update Packets - Update client Position state
 @phandle(0x0A)
 @phandle(0x0B)
