@@ -1,4 +1,3 @@
-import socket
 from spock.mcp.mcpacket import Packet
 
 #Naive and enthusiatic attempt to reconnect to a server
