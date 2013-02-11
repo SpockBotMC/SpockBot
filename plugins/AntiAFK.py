@@ -22,5 +22,5 @@ class AntiAFKPlugin:
 			self.client.push(Packet(ident=0x0D, data=newposition))
 
 	def revive(self, packet):
-		if client.health['health']<=0:
+		if self.client.health['health']<=0:
 			self.client.push(Packet(ident=0xCD, data={'payload': 1}))
