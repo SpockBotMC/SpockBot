@@ -7,7 +7,7 @@ class AntiAFKPlugin:
 		client.register_dispatch(self.avoid_afk, 0x03)
 
 	def avoid_afk(self, packet):
-		msg = packet['string'].lower()
+		msg = packet.data['text'].lower()
 		if ('afk' in msg) or ('inactivity' in msg):
 			oldposition = client.position
 			newposition = client.position
