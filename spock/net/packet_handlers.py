@@ -77,7 +77,7 @@ class PositionUpdate(BaseHandle):
 	def ToClient(self, client, packet):
 		for key, value in packet.data.iteritems():
 			client.position[key] = value
-		client.push(mcpacket.Packet(idnet=0x0D, data = client.position))
+		client.push(mcpacket.Packet(ident=0x0D, data = client.position))
 	@classmethod
 	def ToServer(self, client, packet):
 		for key, value in packet.data.iteritems():
