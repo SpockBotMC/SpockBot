@@ -76,9 +76,11 @@ class PositionUpdate(BaseHandle):
 	def ToClient(self, client, packet):
 		for key, value in packet.data.iteritems():
 			client.position[key] = value
-		client.flags += cflags['POS_UPDT']
-	ToServer = ToClient
-
+		client.push(mcpacket.Packet(idnet=0x0D, data = client.position))
+	@classmethod
+	def ToServer(self, client, packet):
+		for key, value in packet.data.iteritems():
+			client.position[key] = value
 
 class SpawnEntity(BaseHandle):
 	@classmethod
