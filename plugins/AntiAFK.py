@@ -8,7 +8,7 @@ class AntiAFKPlugin:
 
 	def avoid_afk(self, packet):
 		msg = packet['string'].lower()
-		if ('afk' in msg) or ('inactivity') in msg:
+		if ('afk' in msg) or ('inactivity' in msg):
 			oldposition = client.position
 			newposition = client.position
 			newposition['x']+=1
