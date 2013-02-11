@@ -12,7 +12,3 @@ class DebugPlugin:
 		or packet.ident == 0xFF
 		or packet.ident == 0x0D):
 			print packet
-		if packet.ident == 0x0D:
-			if packet.direction == mcdata.SERVER_TO_CLIENT:
-				packet.direction = mcdata.CLIENT_TO_SERVER
-				self.client.push(packet)
