@@ -65,6 +65,7 @@ class Client:
 		}
 		self.login_info = {}
 
+	#Convenience method for logging into authenticated servers
 	def start(self, username, password, host = 'localhost', port=25565):
 		self.start_session(username, password)
 		self.login(host, port)
