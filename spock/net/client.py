@@ -33,6 +33,7 @@ class Client:
 		self.kill = False
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
+		self.authenticated = True
 		self.flags = 0 #OK to read flags, not write
 
 		#State variables
@@ -66,7 +67,7 @@ class Client:
 		self.login_info = {}
 
 	#Convenience method for logging into authenticated servers
-	def start(self, username, password, host = 'localhost', port=25565):
+	def start(self, username, password='', host = 'localhost', port=25565):
 		self.start_session(username, password)
 		self.login(host, port)
 		self.event_loop()
@@ -133,12 +134,15 @@ class Client:
 				})
 			)
 
-	def start_session(self, username, password):
+	def start_session(self, username, password=''):
 		#Stage 1: Login to Minecraft.net
-		LoginResponse = utils.LoginToMinecraftNet(username, password)
-		if (LoginResponse['Response'] != "Good to go!"):
-			logging.error('Login Unsuccessful, Response: %s', LoginResponse['Response'])
-			return LoginResponse['Response']
+		if self.authenticated:
+			LoginResponse = utils.LoginToMinecraftNet(username, password)
+			if (LoginResponse['Response'] != "Good to go!"):
+				logging.error('Login Unsuccessful, Response: %s', LoginResponse['Response'])
+				return LoginResponse['Response']
 
-		self.username = LoginResponse['Username']
-		self.sessionid = LoginResponse['SessionID']
+			self.username = LoginResponse['Username']
+			self.sessionid = LoginResponse['SessionID']
+		else:
+			self.username = username

@@ -1,5 +1,6 @@
 import logging
 import socket
+from copy import copy
 from spock import utils, smpmap
 from spock.mcp import mcdata, mcpacket
 from spock.net.cflags import cflags
@@ -34,8 +35,9 @@ class BaseHandle:
 class handle00(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
-		packet.direction = mcdata.CLIENT_TO_SERVER
-		client.push(packet)
+		tosend = copy(packet)
+		tosend.direction = mcdata.CLIENT_TO_SERVER
+		client.push(tosend)
 
 #Login Request - Update client state info
 @phandle(0x01)
@@ -146,11 +148,12 @@ class handleFD(BaseHandle):
 	def ToClient(self, client, packet):
 		#Stage 3: Authenticate with session.minecraft.net
 		pubkey = packet.data['public_key']
-		serverid = utils.HashServerId(packet.data['server_id'], client.SharedSecret, pubkey)
-		SessionResponse = utils.AuthenticateMinecraftSession(client.username, client.sessionid, serverid)
-		if (SessionResponse != 'OK'):
-			logging.error('Session Authentication Failed, Response: %s', SessionResponse)
-			return
+		if client.authenticated:
+			serverid = utils.HashServerId(packet.data['server_id'], client.SharedSecret, pubkey)
+			SessionResponse = utils.AuthenticateMinecraftSession(client.username, client.sessionid, serverid)
+			if (SessionResponse != 'OK'):
+				logging.error('Session Authentication Failed, Response: %s', SessionResponse)
+				return
 
 		#Stage 4: Send an Encryption Response
 		RSACipher = PKCS1_v1_5.new(RSA.importKey(pubkey))
