@@ -1,3 +1,5 @@
+I don't believe in duplicating effort, here are the projects I'm stealing from
+
 NBT
 ===
 
@@ -51,3 +53,8 @@ Copyright 2012 Ammar Askar
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+Python Daemon Module
+====================
+
+Daemon implementation based on Andrew Cuddon's Python daemon, found here: http://www.cuddon.net/2013/01/a-simple-linux-daemon-written-in-python.html
