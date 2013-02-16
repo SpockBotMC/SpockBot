@@ -12,7 +12,7 @@ from spock.mcp import mcdata, mcpacket
 from spock import utils, smpmap, bound_buffer
 
 class Client:
-	def __init__(self, plugins = []):
+	def __init__(self, plugins = [],):
 		#Initialize plugin list
 		#Plugins should never touch this
 		self.plugin_handlers = {flag: [] for name, flag in cflags.iteritems()}
@@ -34,6 +34,11 @@ class Client:
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
 		self.authenticated = True
+		self.proxy = {
+			'enabled': False,
+			'host': '',
+			'port': 0,
+		}
 		self.flags = 0 #OK to read flags, not write
 
 		#State variables
@@ -67,7 +72,7 @@ class Client:
 		self.login_info = {}
 
 	#Convenience method for starting a client
-	def start(self, username, password='', host = 'localhost', port=25565):
+	def start(self, username, password='', host = 'localhost', port = 25565):
 		self.start_session(username, password)
 		self.login(host, port)
 		self.event_loop()
@@ -110,8 +115,12 @@ class Client:
 			self.plugin_handlers[flag].append(callback)
 
 	def connect(self, host = 'localhost', port=25565):
-		self.host = host
-		self.port = port
+		if self.proxy['enabled']:
+			self.host = self.proxy['host']
+			self.port = self.proxy['port']
+		else:
+			self.host = host
+			self.port = port
 		try:
 			self.sock.connect((host, port))
 		except socket.error as error:
@@ -126,7 +135,7 @@ class Client:
 		self.sbuff += (self.cipher.encrypt(bytes) if self.encrypted else bytes)
 		self.dispatch_packet(packet)
 
-	def login(self, host = 'localhost', port=25565):
+	def login(self, host = 'localhost', port = 25565):
 		self.connect(host, port)
 		self.SharedSecret = _UserFriendlyRNG.get_random_bytes(16)
 
@@ -139,7 +148,7 @@ class Client:
 				})
 			)
 
-	def start_session(self, username, password=''):
+	def start_session(self, username, password = ''):
 		#Stage 1: Login to Minecraft.net
 		if self.authenticated:
 			LoginResponse = utils.LoginToMinecraftNet(username, password)
@@ -151,3 +160,8 @@ class Client:
 			self.sessionid = LoginResponse['SessionID']
 		else:
 			self.username = username
+
+	def enable_proxy(self, host, port):
+		self.proxy['enabled'] = True
+		self.proxy['host'] = host
+		self.proxy['port'] = port
