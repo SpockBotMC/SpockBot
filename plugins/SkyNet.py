@@ -21,11 +21,11 @@ class SkyNetPlugin:
 		self.cur.execute("""INSERT INTO skynet_events (player_name, online, time) 
 			VALUES (%s, %s, NOW());""", (packet.data['player_name'], packet.data['online'],))
 		self.conn.commit()
-		self.playerlist = copy(self.client.playerlist)
+		self.player_list = copy(self.client.playerlist)
 
 	def log_off(self, *args):
-		for player in self.playerlist:
+		for player in self.player_list:
 			self.cur.execute("""INSERT INTO skynet_events (player_name, online, time) 
 				VALUES (%s, False, NOW());""", (player,))
 			self.cur.commit()
-		self.playerlist = {}
+		self.player_list = {}
