@@ -1,5 +1,4 @@
 from spock.mcp.mcpacket import Packet
-from copy import copy
 
 #Very bad and naive Anti-AFK plugin
 class AntiAFKPlugin:

@@ -1,5 +1,6 @@
 from spock.mcp.mcpacket import read_packet
 from spock.bound_buffer import BufferUnderflowException
+from cflags import cflags
 
 fhandles = {}
 def fhandle(ident):
@@ -9,19 +10,19 @@ def fhandle(ident):
 	return inner
 
 #SOCKET_RECV - Socket is ready to recieve data
-@fhandle(0x01)
+@fhandle(cflags['SOCKET_RECV'])
 def handle01(client):
 	data = client.sock.recv(client.bufsize)
 	client.rbuff.append(client.cipher.decrypt(data) if client.encrypted else data)
 
 #SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send
-@fhandle(0x02)
+@fhandle(cflags['SOCKET_SEND'])
 def handle02(client):
 	sent = client.sock.send(client.sbuff)
 	client.sbuff = client.sbuff[sent:]
 
 #RBUFF_RECV - Read buffer has data ready to be unpacked
-@fhandle(0x04)
+@fhandle(cflags['RBUFF_RECV'])
 def handle04(client):
 	try:
 		while True:

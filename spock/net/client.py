@@ -1,6 +1,7 @@
 import select
 import socket
 import logging
+import copy
 
 from Crypto.Random import _UserFriendlyRNG
 
@@ -15,7 +16,7 @@ class Client:
 	def __init__(self, plugins = []):
 		#Initialize plugin list
 		#Plugins should never touch this
-		self.plugin_handlers = []
+		self.plugin_handlers = {flag: [] for name, flag in cflags.iteritems()}
 		self.plugin_dispatch = {ident: [] for ident in mcdata.structs}
 		self.plugins = [plugin(self) for plugin in plugins]
 
@@ -66,7 +67,7 @@ class Client:
 		}
 		self.login_info = {}
 
-	#Convenience method for logging into authenticated servers
+	#Convenience method for starting a client
 	def start(self, username, password='', host = 'localhost', port=25565):
 		self.start_session(username, password)
 		self.login(host, port)
@@ -76,16 +77,19 @@ class Client:
 		while not self.kill:
 			#Poll
 			self.getflags()
-			#Default handlers
 			for name, flag in cflags.iteritems():
-				if self.flags&flag: fhandles[flag](self)
-			#Plugin handlers
-			for callback in self.plugin_handlers:
-				callback()
+				if self.flags&flag:
+					#Default handlers
+					if flag in fhandles: fhandles[flag](self)
+					#Plugin handlers
+					for callback in self.plugin_handlers[flag]:
+						callback()
 
 	def getflags(self):
 		self.flags = 0
 		poll = self.poll.poll()[0][1]
+		if poll&select.POLLERR:                self.flags += cflags['SOCKET_ERR']
+		if poll&select.POLLOUT:                self.flags += cflags['SOCKET_HUP']
 		if poll&select.POLLOUT and self.sbuff: self.flags += cflags['SOCKET_SEND']
 		if poll&select.POLLIN:                 self.flags += cflags['SOCKET_RECV']
 		if self.rbuff:                         self.flags += cflags['RBUFF_RECV']
@@ -93,16 +97,16 @@ class Client:
 	def dispatch_packet(self, packet):
 		#Default dispatch
 		if packet.ident in phandles:
-			phandles[packet.ident].handle(self, packet)
+			phandles[packet.ident].handle(self, copy.copy(packet))
 		#Plugin dispatchers
 		for callback in self.plugin_dispatch[packet.ident]:
-			callback(packet)
+			callback(copy.copy(packet))
 
 	def register_dispatch(self, callback, ident):
 		self.plugin_dispatch[ident].append(callback)
 
-	def register_handler(self, callback):
-		self.plugin_handlers.append(callback)
+	def register_handler(self, callback, flag):
+		self.plugin_handlers[flag].append(callback)
 
 	def connect(self, host = 'localhost', port=25565):
 		self.host = host

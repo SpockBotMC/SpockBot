@@ -1,9 +1,7 @@
 import logging
 import socket
-from copy import copy
 from spock import utils, smpmap
 from spock.mcp import mcdata, mcpacket
-from spock.net.cflags import cflags
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 
@@ -35,9 +33,8 @@ class BaseHandle:
 class handle00(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
-		tosend = copy(packet)
-		tosend.direction = mcdata.CLIENT_TO_SERVER
-		client.push(tosend)
+		packet.direction = mcdata.CLIENT_TO_SERVER
+		client.push(packet)
 
 #Login Request - Update client state info
 @phandle(0x01)
@@ -104,7 +101,6 @@ class SpawnEntity(BaseHandle):
 class handle33(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
-		client.flags += cflags['WLD_UPDT']|cflags['BLK_UPDT']
 		client.world.unpack_column(packet)
 
 #Map Chunk Bulk - Update client World state
@@ -112,7 +108,6 @@ class handle33(BaseHandle):
 class handle38(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
-		client.flags += cflags['WLD_UPDT']|cflags['BLK_UPDT']
 		client.world.unpack_bulk(packet)
 
 #Player List Item - Update client Playerlist (not actually a list...)
