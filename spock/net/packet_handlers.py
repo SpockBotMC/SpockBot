@@ -165,40 +165,4 @@ class handleFD(BaseHandle):
 class handleFD(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
-		client.poll.unregister(client.sock)
-		client.sock.close()
-		client.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		client.sock.setblocking(0)
-		client.poll.register(client.sock)
-
-		client.sbuff = ''
-		client.rbuff.flush()
-		client.encrypted = False
-
-		client.world = smpmap.World()
-		client.world_time = {
-			'world_age': 0,
-			'time_of_day': 0,
-		}
-		client.position = {
-			'x': 0,
-			'y': 0,
-			'z': 0,
-			'stance': 0,
-			'yaw': 0,
-			'pitch': 0,
-			'on_ground': False,
-		}
-		client.health = {
-			'health': 20,
-			'food': 20,
-			'food_saturation': 5,
-		}
-		client.playerlist = {}
-		client.entitylist = {}
-		client.spawn_position = {
-			'x': 0,
-			'y': 0,
-			'z': 0,
-		}
-		client.login_info = {}
+		utils.ResetClient(client)

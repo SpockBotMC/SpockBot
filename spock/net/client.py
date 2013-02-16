@@ -89,7 +89,7 @@ class Client:
 		self.flags = 0
 		poll = self.poll.poll()[0][1]
 		if poll&select.POLLERR:                self.flags += cflags['SOCKET_ERR']
-		if poll&select.POLLOUT:                self.flags += cflags['SOCKET_HUP']
+		if poll&select.POLLHUP:                self.flags += cflags['SOCKET_HUP']
 		if poll&select.POLLOUT and self.sbuff: self.flags += cflags['SOCKET_SEND']
 		if poll&select.POLLIN:                 self.flags += cflags['SOCKET_RECV']
 		if self.rbuff:                         self.flags += cflags['RBUFF_RECV']
