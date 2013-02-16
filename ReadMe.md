@@ -6,8 +6,11 @@ Inspired by remyroy's COPS, a Minecraft client in Python. Protocol implementatio
 Protocol stuff lives in spock/mcp  
 Client stuff lives in spock/net
 
-Client could loosely be called "event-driven", plugins should register "dispatchers" to be called to handle specific packets.
-Plugins can also register callbacks to extend the event loop and implement behavior based on event flags.
+Client could loosely be called "event-driven", plugins should register "dispatchers" to be called to handle specific packets and "handlers" to handle flags (In practice mostly socket errors and hangups)
+
+In comparison to other popular MC bots like Mineflayer Spock is much more "bare-bones", in that Spock expects plugins to understand and send packets on their own. The default handlers only mirror Keep Alives and Position Updates from the server (without which the bot would get kicked and be unable to move, respectively). This means that writing Spock plugins require a fairly intricate understanding of the MC protocol. Eventually a more friendly API will be built by extending the Client class provided by Spock but that's awhile off.
+
+A bot dispatching/controlling daemon is also on my TODO list
 
 I'll write a real ReadMe and API docs when everything is done and stable-ish.
 For now you can check out the plugins folder to get a vague idea of what plugins should look like, find me on #mcdevs if you have questions

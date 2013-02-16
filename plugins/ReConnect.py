@@ -14,5 +14,5 @@ class ReConnectPlugin:
 
 	#Grabs host and port on handshake
 	def grab_host(self, packet):
-		self.host = self.client.host
-		self.port = self.client.port
+		self.host = packet.data['host']
+		self.port = packet.data['port']
