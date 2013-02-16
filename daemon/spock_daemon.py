@@ -3,7 +3,7 @@ import sys
 from daemon import DaemonClass
 
 from spock.net.client import Client
-from plugins import ReConnect, AntiAFK, SkyNet
+from plugins import ReConnect, AntiAFK, SkyNet, DebugPlugin
 from login import username, password
 
 SETTINGS = {
@@ -18,7 +18,7 @@ class Spock_Daemon(DaemonClass):
 		DaemonClass.__init__(self, SETTINGS)
 
 	def run(self):
-		plugins = [ReConnect.ReConnectPlugin, AntiAFK.AntiAFKPlugin, SkyNet.SkyNetPlugin]
+		plugins = [ReConnect.ReConnectPlugin, AntiAFK.AntiAFKPlugin, SkyNet.SkyNetPlugin, DebugPlugin.DebugPlugin]
 		client = Client(plugins)
 		client.start(username, password, host = 'untamedears.com')
 		self.cleanup()
