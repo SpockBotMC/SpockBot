@@ -31,7 +31,7 @@ def handleSRECV(client):
 		data = client.sock.recv(client.bufsize)
 		client.rbuff.append(client.cipher.decrypt(data) if client.encrypted else data)
 	except socket.error as error:
-		logging.error(str(error))
+		logging.info(str(error))
 
 #SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send
 @fhandle(cflags['SOCKET_SEND'])
@@ -40,7 +40,7 @@ def handleSEND(client):
 		sent = client.sock.send(client.sbuff)
 		client.sbuff = client.sbuff[sent:]
 	except socket.error as error:
-		logging.error(str(error))
+		logging.info(str(error))
 
 #RBUFF_RECV - Read buffer has data ready to be unpacked
 @fhandle(cflags['RBUFF_RECV'])

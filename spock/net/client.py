@@ -1,7 +1,6 @@
 import select
 import socket
 import logging
-import copy
 
 from Crypto.Random import _UserFriendlyRNG
 
@@ -97,16 +96,18 @@ class Client:
 	def dispatch_packet(self, packet):
 		#Default dispatch
 		if packet.ident in phandles:
-			phandles[packet.ident].handle(self, copy.copy(packet))
+			phandles[packet.ident].handle(self, packet.clone())
 		#Plugin dispatchers
 		for callback in self.plugin_dispatch[packet.ident]:
-			callback(copy.copy(packet))
+			callback(packet.clone())
 
-	def register_dispatch(self, callback, ident):
-		self.plugin_dispatch[ident].append(callback)
+	def register_dispatch(self, callback, *idents):
+		for ident in idents:
+			self.plugin_dispatch[ident].append(callback)
 
-	def register_handler(self, callback, flag):
-		self.plugin_handlers[flag].append(callback)
+	def register_handler(self, callback, *flags):
+		for flag in flags:
+			self.plugin_handlers[flag].append(callback)
 
 	def connect(self, host = 'localhost', port=25565):
 		self.host = host
