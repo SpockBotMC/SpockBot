@@ -27,5 +27,5 @@ class SkyNetPlugin:
 		for player in self.player_list:
 			self.cur.execute("""INSERT INTO skynet_events (player_name, online, time) 
 				VALUES (%s, False, NOW());""", (player,))
-			self.cur.commit()
+			self.conn.commit()
 		self.player_list = {}
