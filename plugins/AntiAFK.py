@@ -10,7 +10,7 @@ class AntiAFKPlugin:
 
 	def avoid_afk(self, packet):
 		msg = packet.data['text'].lower()
-		if ('AFK Plugin' in msg):
+		if ('afk plugin' in msg):
 			self.client.push(Packet(ident=0x03, data={
 				"text": "/help"
 				})
