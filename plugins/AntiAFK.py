@@ -12,7 +12,7 @@ class AntiAFKPlugin:
 		msg = packet.data['text'].lower()
 		if ('afk plugin' in msg):
 			self.client.push(Packet(ident=0x03, data={
-				"text": "/help"
+				"text": "Hello, I am Spock_Bot, this message is to avoid AFKGC"
 				})
 			)
 
