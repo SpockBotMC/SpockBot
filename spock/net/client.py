@@ -72,7 +72,7 @@ class Client:
 		self.login_info = {}
 
 	#Convenience method for starting a client
-	def start(self, username, password='', host = 'localhost', port = 25565):
+	def start(self, username, password = '', host = 'localhost', port = 25565):
 		self.start_session(username, password)
 		self.login(host, port)
 		self.event_loop()
