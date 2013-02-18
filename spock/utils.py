@@ -48,7 +48,10 @@ def HashServerId(serverid, sharedsecret, pubkey):
 
 def AuthenticateMinecraftSession(username, sessionid, serverid):
 	url = "http://session.minecraft.net/game/joinserver.jsp?user=" + username + "&sessionId=" + sessionid + "&serverId=" + serverid
-	return urllib2.urlopen(url).read()
+	try:
+		return urllib2.urlopen(url).read()
+	except urllib2.URLError:
+		return 'Couldn\'t connect to session.minecraft.net'
 
 def ByteToHex( byteStr ):
 	"""
