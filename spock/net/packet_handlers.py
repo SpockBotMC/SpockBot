@@ -148,6 +148,7 @@ class handleFD(BaseHandle):
 			SessionResponse = utils.AuthenticateMinecraftSession(client.username, client.sessionid, serverid)
 			if (SessionResponse != 'OK'):
 				logging.error('Session Authentication Failed, Response: %s', SessionResponse)
+				client.auth_err = True
 				return
 
 		#Stage 4: Send an Encryption Response

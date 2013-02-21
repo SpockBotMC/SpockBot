@@ -5,7 +5,8 @@ from spock.net.cflags import cflags
 class ReConnectPlugin:
 	def __init__(self, client):
 		self.client = client
-		client.register_handler(self.reconnect, cflags['SOCKET_ERR'], cflags['SOCKET_HUP'])
+		client.register_handler(self.reconnect, 
+			cflags['SOCKET_ERR'], cflags['SOCKET_HUP'], cflags['LOGIN_ERR'], cflags['AUTH_ERR'])
 		client.register_dispatch(self.reconnect, 0xFF)
 		client.register_dispatch(self.grab_host, 0x02)
 

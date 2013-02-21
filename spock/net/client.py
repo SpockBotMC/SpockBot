@@ -31,6 +31,8 @@ class Client:
 		#Plugins should generally not touch these
 		self.encrypted = False
 		self.kill = False
+		self.auth_err = False
+		self.login_err = False
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
 		self.authenticated = True
@@ -97,6 +99,8 @@ class Client:
 		if poll&select.POLLOUT and self.sbuff: self.flags += cflags['SOCKET_SEND']
 		if poll&select.POLLIN:                 self.flags += cflags['SOCKET_RECV']
 		if self.rbuff:                         self.flags += cflags['RBUFF_RECV']
+		if self.login_err:                     self.flags += cflags['LOGIN_ERR']; self.login_err = False
+		if self.auth_err:                      self.flags += cflags['AUTH_ERR']; self.auth_err = False
 
 	def dispatch_packet(self, packet):
 		#Default dispatch
@@ -154,7 +158,8 @@ class Client:
 			LoginResponse = utils.LoginToMinecraftNet(username, password)
 			if (LoginResponse['Response'] != "Good to go!"):
 				logging.error('Login Unsuccessful, Response: %s', LoginResponse['Response'])
-				return LoginResponse['Response']
+				self.login_err = True
+				return
 
 			self.username = LoginResponse['Username']
 			self.sessionid = LoginResponse['SessionID']

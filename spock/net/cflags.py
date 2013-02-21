@@ -3,9 +3,9 @@ cflags = {
 	'SOCKET_HUP':  0x0002, # Socket Hung up (select.POLLHUP set)
 	'SOCKET_RECV': 0x0004, # Socket is ready to recieve data (select.POLLIN set)
 	'SOCKET_SEND': 0x0008, # Socket is ready to send data (select.POLLOUT set) and Send buffer contains data to send
-	'RBUFF_RECV':  0x0010, # Read buffer has data ready to be unpacked
-	'UNDEFINED06': 0x0020,
-	'UNDEFINED07': 0x0040,
+	'LOGIN_ERR':   0x0010, # Error while logging into Minecraft.net
+	'AUTH_ERR':    0x0020, # Error authenticating session
+	'RBUFF_RECV':  0x0040, # Read buffer has data ready to be unpacked
 	'UNDEFINED08': 0x0080,
 	'UNDEFINED09': 0x0100,
 	'UNDEFINED10': 0x0200,
