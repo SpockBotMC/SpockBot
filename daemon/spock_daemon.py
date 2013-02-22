@@ -8,8 +8,8 @@ from login import username, password
 
 SETTINGS = {
     'APP' :     'spockd',
-    'PIDFILE' : '/home/nickg/spockd.pid',
-    'LOG' :     '/home/nickg/spockd.log',
+    'PIDFILE' : '/home/Nick/spockd.pid',
+    'LOG' :     '/home/Nick/spockd.log',
 }
 
 # Subclass the daemon class

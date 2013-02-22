@@ -159,7 +159,7 @@ class Client:
 			if (LoginResponse['Response'] != "Good to go!"):
 				logging.error('Login Unsuccessful, Response: %s', LoginResponse['Response'])
 				self.login_err = True
-				return
+				return LoginResponse
 
 			self.username = LoginResponse['Username']
 			self.sessionid = LoginResponse['SessionID']
