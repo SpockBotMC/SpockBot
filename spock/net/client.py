@@ -80,7 +80,7 @@ class Client:
 		self.event_loop()
 
 	def event_loop(self):
-		while not self.kill:
+		while not self.flags&cflags['KILL_EVENT']:
 			#Poll
 			self.getflags()
 			for name, flag in cflags.iteritems():
@@ -101,6 +101,7 @@ class Client:
 		if self.rbuff:                         self.flags += cflags['RBUFF_RECV']
 		if self.login_err:                     self.flags += cflags['LOGIN_ERR']; self.login_err = False
 		if self.auth_err:                      self.flags += cflags['AUTH_ERR']; self.auth_err = False
+		if self.kill:                          self.flags += cflags['KILL_EVENT']
 
 	def dispatch_packet(self, packet):
 		#Default dispatch

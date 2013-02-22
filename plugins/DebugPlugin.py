@@ -1,4 +1,5 @@
 #Constantly Changing, just a plugin I use to debug whatever is broken atm
+import sys
 from spock.mcp.mcdata import structs
 
 class DebugPlugin:
@@ -11,4 +12,4 @@ class DebugPlugin:
 		or packet.ident == 0x03
 		or packet.ident == 0xFF
 		or packet.ident == 0x0D):
-			print packet
+			sys.stdout.write(str(packet))

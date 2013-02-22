@@ -5,9 +5,9 @@ cflags = {
 	'SOCKET_SEND': 0x0008, # Socket is ready to send data (select.POLLOUT set) and Send buffer contains data to send
 	'LOGIN_ERR':   0x0010, # Error while logging into Minecraft.net
 	'AUTH_ERR':    0x0020, # Error authenticating session
-	'RBUFF_RECV':  0x0040, # Read buffer has data ready to be unpacked
+	'KILL_EVENT':  0x0040, # Kill event recieved
 	'UNDEFINED08': 0x0080,
-	'UNDEFINED09': 0x0100,
+	'RBUFF_RECV':  0x0100, # Read buffer has data ready to be unpacked
 	'UNDEFINED10': 0x0200,
 	'UNDEFINED11': 0x0400,
 	'UNDEFINED12': 0x0800,

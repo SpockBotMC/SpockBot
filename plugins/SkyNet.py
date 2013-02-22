@@ -10,7 +10,7 @@ class SkyNetPlugin:
 
 		client.register_dispatch(self.record_event, 0xC9)
 		client.register_dispatch(self.log_off, 0xFF)
-		client.register_handler(self.log_off, cflags['SOCKET_ERR'], cflags['SOCKET_HUP'])
+		client.register_handler(self.log_off, cflags['SOCKET_ERR'], cflags['SOCKET_HUP'], cflags['KILL_EVENT'])
 
 		self.conn = psycopg2.connect(database = dbname, user = dbuser, password = dbpass)
 		self.cur = self.conn.cursor()
