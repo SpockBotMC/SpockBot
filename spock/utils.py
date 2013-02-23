@@ -3,11 +3,8 @@ import urllib2
 import urllib
 import hashlib
 import socket
-import logging
 
 from spock import smpmap
-from spock.mcp.mcpacket import read_packet
-from spock.bound_buffer import BufferUnderflowException
 
 # This function courtesy of barneygale
 def javaHexDigest(digest):
