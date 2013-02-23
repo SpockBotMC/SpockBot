@@ -1,7 +1,6 @@
 import select
 import socket
 import logging
-import time
 
 from Crypto.Random import _UserFriendlyRNG
 
@@ -16,7 +15,10 @@ rmask = select.POLLIN|select.POLLERR|select.POLLHUP
 smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
 
 class Client:
-	def __init__(self, plugins = [],):
+	def __init__(self, plugins = [], daemon = False):
+		#Initialize daemon mode
+		self.daemon = daemon
+
 		#Initialize plugin list
 		#Plugins should never touch this
 		self.plugin_handlers = {flag: [] for name, flag in cflags.iteritems()}
@@ -99,13 +101,12 @@ class Client:
 		self.flags = 0
 		if self.sbuff:
 			self.poll.register(self.sock, smask)
-			poll = self.poll.poll()[0][1]
 		else:
 			self.poll.register(self.sock, rmask)
-			poll = self.poll.poll(self.timeout)
-			if poll: poll = poll[0][1]
 
+		poll = self.poll.poll(self.timeout)
 		if poll:
+			poll = poll[0][1]
 			if poll&select.POLLERR:                self.flags += cflags['SOCKET_ERR']
 			if poll&select.POLLHUP:                self.flags += cflags['SOCKET_HUP']
 			if poll&select.POLLOUT and self.sbuff: self.flags += cflags['SOCKET_SEND']
