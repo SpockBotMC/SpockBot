@@ -1,6 +1,7 @@
 import select
 import socket
 import logging
+import time
 
 from Crypto.Random import _UserFriendlyRNG
 
@@ -10,6 +11,9 @@ from spock.net.flag_handlers import fhandles
 from spock.net.packet_handlers import phandles
 from spock.mcp import mcdata, mcpacket
 from spock import utils, smpmap, bound_buffer
+
+rmask = select.POLLIN|select.POLLERR|select.POLLHUP
+smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
 
 class Client:
 	def __init__(self, plugins = [],):
@@ -22,10 +26,11 @@ class Client:
 		#Initialize socket and poll
 		#Plugins should never touch these unless they know what they're doing
 		self.bufsize = 4096
+		self.timeout = 1
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(0)
 		self.poll = select.poll()
-		self.poll.register(self.sock)
+		self.poll.register(self.sock, smask)
 
 		#Initialize Event Loop/Network variables
 		#Plugins should generally not touch these
@@ -81,23 +86,30 @@ class Client:
 
 	def event_loop(self):
 		while not self.flags&cflags['KILL_EVENT']:
-			#Poll
 			self.getflags()
-			for name, flag in cflags.iteritems():
-				if self.flags&flag:
-					#Default handlers
-					if flag in fhandles: fhandles[flag](self)
-					#Plugin handlers
-					for callback in self.plugin_handlers[flag]:
-						callback()
+			if self.flags:
+				for name, flag in cflags.iteritems():
+					if self.flags&flag:
+						#Default handlers
+						if flag in fhandles: fhandles[flag](self)
+						#Plugin handlers
+						for callback in self.plugin_handlers[flag]: callback()
 
 	def getflags(self):
 		self.flags = 0
-		poll = self.poll.poll()[0][1]
-		if poll&select.POLLERR:                self.flags += cflags['SOCKET_ERR']
-		if poll&select.POLLHUP:                self.flags += cflags['SOCKET_HUP']
-		if poll&select.POLLOUT and self.sbuff: self.flags += cflags['SOCKET_SEND']
-		if poll&select.POLLIN:                 self.flags += cflags['SOCKET_RECV']
+		if not self.sbuff:
+			self.poll.register(self.sock, rmask)
+			poll = self.poll.poll(self.timeout)
+			if poll:
+				poll = poll[0][1]
+		else:
+			self.poll.register(self.sock, smask)
+			poll = self.poll.poll()[0][1]
+		if poll:
+			if poll&select.POLLERR:                self.flags += cflags['SOCKET_ERR']
+			if poll&select.POLLHUP:                self.flags += cflags['SOCKET_HUP']
+			if poll&select.POLLOUT and self.sbuff: self.flags += cflags['SOCKET_SEND']
+			if poll&select.POLLIN:                 self.flags += cflags['SOCKET_RECV']
 		if self.rbuff:                         self.flags += cflags['RBUFF_RECV']
 		if self.login_err:                     self.flags += cflags['LOGIN_ERR']; self.login_err = False
 		if self.auth_err:                      self.flags += cflags['AUTH_ERR']; self.auth_err = False
@@ -127,7 +139,7 @@ class Client:
 			self.host = host
 			self.port = port
 		try:
-			self.sock.connect((host, port))
+			self.sock.connect((self.host, self.port))
 		except socket.error as error:
 			logging.info("Error on Connect (this is normal): " + str(error))
 

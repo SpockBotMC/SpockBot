@@ -3,8 +3,11 @@ import urllib2
 import urllib
 import hashlib
 import socket
+import logging
 
 from spock import smpmap
+from spock.mcp.mcpacket import read_packet
+from spock.bound_buffer import BufferUnderflowException
 
 # This function courtesy of barneygale
 def javaHexDigest(digest):
@@ -79,6 +82,7 @@ def DecodeSLP(packet):
 	}
 
 def ResetClient(client):
+
 	client.poll.unregister(client.sock)
 	client.sock.close()
 	client.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
