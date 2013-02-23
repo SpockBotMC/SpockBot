@@ -97,14 +97,14 @@ class Client:
 
 	def getflags(self):
 		self.flags = 0
-		if not self.sbuff:
-			self.poll.register(self.sock, rmask)
-			poll = self.poll.poll(self.timeout)
-			if poll:
-				poll = poll[0][1]
-		else:
+		if self.sbuff:
 			self.poll.register(self.sock, smask)
 			poll = self.poll.poll()[0][1]
+		else:
+			self.poll.register(self.sock, rmask)
+			poll = self.poll.poll(self.timeout)
+			if poll: poll = poll[0][1]
+
 		if poll:
 			if poll&select.POLLERR:                self.flags += cflags['SOCKET_ERR']
 			if poll&select.POLLHUP:                self.flags += cflags['SOCKET_HUP']
