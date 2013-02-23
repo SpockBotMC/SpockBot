@@ -19,7 +19,7 @@ class Spock_Daemon(DaemonClass):
 
 	def run(self):
 		plugins = [ReConnect.ReConnectPlugin, AntiAFK.AntiAFKPlugin, SkyNet.SkyNetPlugin, DebugPlugin.DebugPlugin]
-		client = Client(plugins)
+		client = Client(plugins = plugins)
 		client.start(username, password, host = 'untamedears.com')
 		self.cleanup()
 

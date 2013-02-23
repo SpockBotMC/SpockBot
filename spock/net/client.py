@@ -15,9 +15,19 @@ rmask = select.POLLIN|select.POLLERR|select.POLLHUP
 smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
 
 class Client:
-	def __init__(self, plugins = [], daemon = False):
-		#Initialize daemon mode
-		self.daemon = daemon
+	def __init__(self, **kwargs):
+		#Grab some settings
+		plugins = kwargs.get('plugins', [])
+		self.authenticated = kwargs.get('authenticated', True)
+		self.daemon = kwargs.get('daemon', False)
+		self.bufsize = kwargs.get('bufsize', 4096)
+		self.timeout = kwargs.get('timeout', 1)
+		self.proxy = kwargs.get('proxy', {
+			'enabled': False,
+			'host': '',
+			'port': 0,
+			}
+		)
 
 		#Initialize plugin list
 		#Plugins should never touch this
@@ -27,8 +37,6 @@ class Client:
 
 		#Initialize socket and poll
 		#Plugins should never touch these unless they know what they're doing
-		self.bufsize = 4096
-		self.timeout = 1
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(0)
 		self.poll = select.poll()
@@ -42,12 +50,6 @@ class Client:
 		self.login_err = False
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
-		self.authenticated = True
-		self.proxy = {
-			'enabled': False,
-			'host': '',
-			'port': 0,
-		}
 		self.flags = 0 #OK to read flags, not write
 
 		#State variables
