@@ -12,5 +12,5 @@ class DebugPlugin:
 		or packet.ident == 0x03
 		or packet.ident == 0xFF
 		or packet.ident == 0x0D):
-			sys.stdout.write(str(packet)+'\n')
-			sys.stdout.flush()
+			sys.stdout.write(str(packet))
+			#print packet
