@@ -23,7 +23,7 @@ ex.
 [256]-[511] are X = 0-15, Z = 0-15, Y = 1
 and so on
 
-Chunk Coords * 16 + Block Coords gives you the actual position of the chunk in the world
+Chunk Coords * 16 + Block Coords gives you the actual position of the block in the world
 
 """
 
@@ -159,7 +159,7 @@ class World:
 		return struct.unpack('>'+ty, buff.read(struct.calcsize(ty)))
 	
 	def unpack_bulk(self, packet):
-		light_data  = packet.data['sky_light']
+		skylight = packet.data['sky_light']
 		ground_up = True
 		
 		# Read compressed data
@@ -178,7 +178,7 @@ class World:
 				self.columns[key] = ChunkColumn()
 			
 			# Unpack the chunk column data!
-			self.columns[key].unpack(data, mask1, mask2, light_data, ground_up)
+			self.columns[key].unpack(data, mask1, mask2, skylight, ground_up)
 
 	def unpack_column(self, packet):
 		x_chunk = packet.data['x_chunk']

@@ -1,5 +1,6 @@
 import select
 import socket
+import signal
 import logging
 
 from Crypto.Random import _UserFriendlyRNG
@@ -16,6 +17,10 @@ smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
 
 class Client:
 	def __init__(self, **kwargs):
+		#Signal handlers
+		signal.signal(signal.SIGINT, self.signal_handler)
+		signal.signal(signal.SIGTERM, self.signal_handler)
+
 		#Grab some settings
 		plugins = kwargs.get('plugins', [])
 		self.authenticated = kwargs.get('authenticated', True)
@@ -89,7 +94,7 @@ class Client:
 		self.event_loop()
 
 	def event_loop(self):
-		while not self.flags&cflags['KILL_EVENT']:
+		while not (self.flags&cflags['KILL_EVENT'] and self.kill):
 			self.getflags()
 			if self.flags:
 				for name, flag in cflags.iteritems():
@@ -97,7 +102,7 @@ class Client:
 						#Default handlers
 						if flag in fhandles: fhandles[flag](self)
 						#Plugin handlers
-						for callback in self.plugin_handlers[flag]: callback()
+						for callback in self.plugin_handlers[flag]: callback(flag)
 
 	def getflags(self):
 		self.flags = 0
@@ -105,8 +110,11 @@ class Client:
 			self.poll.register(self.sock, smask)
 		else:
 			self.poll.register(self.sock, rmask)
-
-		poll = self.poll.poll(self.timeout)
+		try:
+			poll = self.poll.poll(self.timeout)
+		except select.error, e:
+			logging.error(str(e))
+			poll = []
 		if poll:
 			poll = poll[0][1]
 			if poll&select.POLLERR:                self.flags += cflags['SOCKET_ERR']
@@ -161,12 +169,12 @@ class Client:
 
 		#Stage 2: Send initial handshake
 		self.push(mcpacket.Packet(ident = 02, data = {
-				'protocol_version': mcdata.MC_PROTOCOL_VERSION,
-				'username': self.username,
-				'host': host,
-				'port': port,
-				})
-			)
+			'protocol_version': mcdata.MC_PROTOCOL_VERSION,
+			'username': self.username,
+			'host': host,
+			'port': port,
+			})
+		)
 
 	def start_session(self, username, password = ''):
 		#Stage 1: Login to Minecraft.net
@@ -186,3 +194,6 @@ class Client:
 		self.proxy['enabled'] = True
 		self.proxy['host'] = host
 		self.proxy['port'] = port
+
+	def signal_handler(self, *args):
+		self.kill = True
