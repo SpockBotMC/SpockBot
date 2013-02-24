@@ -1,5 +1,7 @@
 import socket
 import logging
+import os
+from os import path
 from spock.mcp.mcpacket import read_packet
 from spock.bound_buffer import BufferUnderflowException
 from spock import utils
@@ -41,6 +43,11 @@ def handleSEND(client):
 		client.sbuff = client.sbuff[sent:]
 	except socket.error as error:
 		logging.info(str(error))
+
+@fhandle(cflags['KILL_EVENT'])
+def handleKILEV(client):
+	if client.pidfile and path.exists(client.pidfile):
+		os.remove(client.pidfile)
 
 #RBUFF_RECV - Read buffer has data ready to be unpacked
 @fhandle(cflags['RBUFF_RECV'])

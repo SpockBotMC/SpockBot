@@ -132,12 +132,6 @@ def daemonize(defaultdir = '/tmp'):
 	except OSError:
 		sys.exit(1)
 
-	dev_null = (os.devnull if (hasattr(os, "devnull")) else '/dev/null')
-	in_null = open(dev_null, 'r')
-	out_null = open(dev_null, 'w')
-	sys.stdin = in_null
-	sys.stdout = out_null
-	sys.stderr = out_null
 	os.chdir(defaultdir)
 	os.setsid()
 	os.umask(0)
@@ -148,6 +142,9 @@ def daemonize(defaultdir = '/tmp'):
 			sys.exit(0)
 	except OSError:
 		sys.exit(1)
+
+	dev_null = open((os.devnull if hasattr(os, "devnull") else '/dev/null'), 'r+')
+	sys.stdin = sys.stdout = sys.stderr = dev_null
 
 	Random.atfork()
 

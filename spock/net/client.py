@@ -1,6 +1,8 @@
 import select
 import socket
 import signal
+import sys
+import os
 import logging
 
 from Crypto.Random import _UserFriendlyRNG
@@ -23,6 +25,7 @@ class Client:
 
 		#Grab some settings
 		self.daemon = kwargs.get('daemon', False)
+		self.logfile = kwargs.get('argfile', '')
 		self.pidfile = kwargs.get('pidfile', '')
 		plugins = kwargs.get('plugins', [])
 		self.authenticated = kwargs.get('authenticated', True)
@@ -90,7 +93,7 @@ class Client:
 
 	#Convenience method for starting a client
 	def start(self, username, password = '', host = 'localhost', port = 25565):
-		if self.daemon: self.start_daemon(self.pidfile)
+		if self.daemon: self.start_daemon()
 		self.start_session(username, password)
 		self.login(host, port)
 		self.event_loop()
@@ -105,6 +108,9 @@ class Client:
 						if flag in fhandles: fhandles[flag](self)
 						#Plugin handlers
 						for callback in self.plugin_handlers[flag]: callback(flag)
+			if self.daemon:
+				sys.stdout.flush()
+				sys.stderr.flush()
 
 	def getflags(self):
 		self.flags = 0
@@ -192,10 +198,15 @@ class Client:
 		else:
 			self.username = username
 
-	def start_daemon(self, pidfile = ''):
+	def start_daemon(self):
 		self.daemon = True
-		self.pidfile = pidfile
-		utils.daemonize()
+		self.pid = utils.daemonize()
+		if self.logfile:
+			sys.stdout = sys.stderr = open(self.logfile, 'w')
+		if self.pidfile:
+			pidf = open(self.pidfile, 'w')
+			pidf.write(str(self.pid))
+			pidf.close()
 
 	def enable_proxy(self, host, port):
 		self.proxy['enabled'] = True

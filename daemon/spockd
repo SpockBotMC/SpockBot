@@ -1,0 +1,41 @@
+#!/usr/bin/python
+import sys, os, signal
+from os import path
+from spock.net.client import Client
+from plugins import DebugPlugin, ReConnect, EchoPacket, Gravity, AntiAFK
+from login import username, password
+
+home = path.expanduser('~')
+spockd_dir = path.join(home, '.spockd')
+if not path.exists(spockd_dir):
+	os.makedirs(spockd_dir)
+
+def handle_start(name, client):
+	folder = path.join(spockd_dir, name)
+	pidfile = path.join(folder, name+'.pid')
+	logfile = path.join(folder, name+'.log')
+	if path.exists(pidfile):
+			print "PID already exists for that name"
+			sys.exit(1)
+	if not path.exists(folder):
+		os.makedirs(folder)
+
+	client.daemon = True
+	client.pidfile = pidfile
+	client.logfile = logfile
+	client.start(username, password)
+
+def handle_stop(name):
+	folder = path.join(spockd_dir, name)
+	pidfile = path.join(folder, name+'.pid')
+	pid = int(open(pidfile, 'r').readline())
+	os.kill(pid, signal.SIGTERM)
+
+
+plugins = [ReConnect.ReConnectPlugin, DebugPlugin.DebugPlugin, AntiAFK.AntiAFKPlugin]
+client = Client(plugins = plugins)
+
+if sys.argv[1] == 'start':
+	handle_start("nickelpro2", client)
+if sys.argv[1] == 'stop':
+	handle_stop("nickelpro2")
