@@ -22,9 +22,10 @@ class Client:
 		signal.signal(signal.SIGTERM, self.signal_handler)
 
 		#Grab some settings
+		self.daemon = kwargs.get('daemon', False)
+		self.pidfile = kwargs.get('pidfile', '')
 		plugins = kwargs.get('plugins', [])
 		self.authenticated = kwargs.get('authenticated', True)
-		self.daemon = kwargs.get('daemon', False)
 		self.bufsize = kwargs.get('bufsize', 4096)
 		self.timeout = kwargs.get('timeout', 1)
 		self.proxy = kwargs.get('proxy', {
@@ -89,6 +90,7 @@ class Client:
 
 	#Convenience method for starting a client
 	def start(self, username, password = '', host = 'localhost', port = 25565):
+		if self.daemon: self.start_daemon(self.pidfile)
 		self.start_session(username, password)
 		self.login(host, port)
 		self.event_loop()
@@ -189,6 +191,11 @@ class Client:
 			self.sessionid = LoginResponse['SessionID']
 		else:
 			self.username = username
+
+	def start_daemon(self, pidfile = ''):
+		self.daemon = True
+		self.pidfile = pidfile
+		utils.daemonize()
 
 	def enable_proxy(self, host, port):
 		self.proxy['enabled'] = True

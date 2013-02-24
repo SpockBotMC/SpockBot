@@ -3,6 +3,10 @@ import urllib2
 import urllib
 import hashlib
 import socket
+import os
+import sys
+
+from Crypto import Random
 
 from spock import smpmap
 
@@ -79,7 +83,6 @@ def DecodeSLP(packet):
 	}
 
 def ResetClient(client):
-
 	client.poll.unregister(client.sock)
 	client.sock.close()
 	client.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -117,3 +120,39 @@ def ResetClient(client):
 		'z': 0,
 	}
 	client.login_info = {}
+
+#My ghetto daemon function, does most of the things a good daemon needs to do
+#The program itself needs to do things like check for and make a PID file, this 
+#just does the actual daemonizing step
+def daemonize(defaultdir = '/tmp'):
+	try:
+		pid = os.fork()
+		if pid > 0:
+			sys.exit(0)
+	except OSError:
+		sys.exit(1)
+
+	dev_null = (os.devnull if (hasattr(os, "devnull")) else '/dev/null')
+	in_null = open(dev_null, 'r')
+	out_null = open(dev_null, 'w')
+	sys.stdin = in_null
+	sys.stdout = out_null
+	sys.stderr = out_null
+	os.chdir(defaultdir)
+	os.setsid()
+	os.umask(0)
+
+	try:
+		pid = os.fork()
+		if pid > 0:
+			sys.exit(0)
+	except OSError:
+		sys.exit(1)
+
+	Random.atfork()
+
+	sys.stdout.flush()
+	sys.stdin.flush()
+	sys.stderr.flush()
+
+	return os.getpid()
