@@ -207,6 +207,7 @@ class Client:
 	def start_session(self, username, password = ''):
 		#Stage 1: Login to Minecraft.net
 		if self.authenticated:
+			print "Attempting login with username:", username, "and password:", password
 			LoginResponse = utils.LoginToMinecraftNet(username, password)
 			if (LoginResponse['Response'] != "Good to go!"):
 				logging.error('Login Unsuccessful, Response: %s', LoginResponse['Response'])
