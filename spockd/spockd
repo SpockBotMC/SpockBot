@@ -37,6 +37,7 @@ class spockd:
 			'proc': path.join(spockd_dir, 'proc'),
 			'bots': path.join(spockd_dir, 'bots'),
 			'logins': path.join(spockd_dir, 'logins'),
+			'hosts': path.join(spockd_dir, 'hosts'),
 		}
 		self.inpipe = path.join(self.dirs['spockd'], 'inpipe')
 		self.outpipe = path.join(self.dirs['spockd'], 'outpipe')
@@ -50,8 +51,11 @@ class spockd:
 		self.start_parser.add_argument('name')
 		self.start_parser.add_argument('-b', '--bot', required = True)
 		self.start_parser.add_argument('-l', '--login', default = '')
-		self.start_parser.add_argument('-u', '--user', default = '')
-		self.start_parser.add_argument('-p', '--pass', default = '')
+		self.start_parser.add_argument('-U', '--user', default = '')
+		self.start_parser.add_argument('-P', '--pass', default = '')
+		self.start_parser.add_argument('-c', '--host', default = 'localhost')
+		self.start_parser.add_argument('-p', '--port', default = 25565)
+		self.start_parser.add_argument('-C', '--khost', default = '')
 
 		self.stop_parser = sub_parsers.add_parser('stop')
 		self.stop_parser.add_argument('name')
@@ -134,6 +138,8 @@ class spockd:
 
 
 	def handle_start(self, args):
+		username = ''
+		password = ''
 		if args['login']:
 			f = path.join(self.dirs['logins'], args['login'])
 			if not path.exists(f):
@@ -146,11 +152,30 @@ class spockd:
 				if line[0].lower() == 'password' or line[0].lower() == 'pass':
 					password = line[2]
 			f.close()
-		elif args['user'] and args['pass']:
+		if not username and args['user']:
 			username = args['user']
+		if not password and args['pass']:
 			password = args['pass']
-		else:
+		if not (password and username):
 			return "Not enough login information"
+
+		host = ''
+		port = 0
+		if args['khost']:
+			f = path.join(self.dirs['hosts'], args['khost'])
+			if not path.exists(f):
+				return "No khost file named: " + args['login']
+			f = open(f, 'r')
+			for line in f.readlines():
+				line = line.split()
+				if line[0].lower() == 'host':
+					username = line[2]
+				if line[0].lower() == 'port':
+					password = int(line[2])
+		if not host:
+			host = args['host']
+		if not port:
+			port = args['port']
 
 		module = path.join(self.dirs['bots'], args['bot'])
 		if not path.exists(module):
@@ -178,7 +203,7 @@ class spockd:
 			client.daemon = True
 			client.pidfile = pidfile
 			client.logfile = logfile
-			client.start(username, password)
+			client.start(username, password, host, port)
 
 		print "Created bot", name, "with PID:", pid
 		self.pids[pid] = name
