@@ -1,0 +1,134 @@
+#!/usr/bin/python
+
+import os, sys, signal, time
+from os import path
+from spock.utils import daemonize
+
+signals = []
+
+def handleSignal(sig, handle):
+	signals.append(sig)
+	signal.signal(sig, handle)
+
+class spockd:
+	def __init__(self):
+		self.args = self.parseargs()
+
+		self.stop = False
+		self.pids = {}
+		self.names = {}
+		spockd_dir = path.join(path.expanduser('~'), '.spockd')
+		self.dirs = {
+			'spockd': spockd_dir,
+			'proc': path.join(spockd_dir, 'proc'),
+			'bots': path.join(spockd_dir, 'bots'),
+			'logins': path.join(spockd_dir, 'logins'),
+		}
+		self.inpipe = path.join(self.dirs['spockd'], 'inpipe')
+		self.outpipe = path.join(self.dirs['spockd'], 'outpipe')
+		self.pidfile = path.join(self.dirs['spockd'], 'spockd.pid')
+		self.logfile = path.join(self.dirs['spockd'], 'spockd.log')
+
+	def parseargs(self):
+		args = {}
+		args['daemon'] = (True if (len(sys.argv)>1 and sys.argv[1] == '-D') else False)
+		return args
+
+	def start(self):
+		for dpath in self.dirs.values():
+			if not path.exists(dpath):
+				os.makedirs(dpath)
+
+		if path.exists(self.pidfile):
+			print "spockd PID already exists"
+			sys.exit(0)
+
+		f = open(self.pidfile, 'w')
+		f.write(str(os.getpid()))
+		f.close()
+
+		if not path.exists(self.inpipe):
+			os.mkfifo(self.inpipe)
+		if not path.exists(self.outpipe):
+			os.mkfifo(self.outpipe)
+
+		self.run()
+
+	def run(self):
+		if self.args['daemon']:
+			daemonize()
+			sys.stdout = sys.stderr = open(self.logfile, 'w')
+		while not self.stop:
+			readpipe = open(self.inpipe, 'r')
+			cmd = readpipe.read()
+			readpipe.close()
+			toreturn = self.run_cmd(cmd)
+			writepipe = open(self.outpipe, 'w')
+			writepipe.write(toreturn)
+			writepipe.close()
+
+	def run_cmd(self, cmd):
+		print cmd
+		return cmd
+
+	def handle_start(self, name, client):
+		folder = path.join(spockd_dir, name)
+		pidfile = path.join(folder, name+'.pid')
+		logfile = path.join(folder, name+'.log')
+		if path.exists(pidfile):
+			print "PID already exists for that name"
+		sys.exit(1)
+		if not path.exists(folder):
+			os.makedirs(folder)
+
+		client.daemon = True
+		client.pidfile = pidfile
+		client.logfile = logfile
+		pid == os.fork()
+		#Child process
+		if pid == 0:
+			#Set the signal handlers back to default
+			for sig in signals:
+				signal.signal(sig, signal.SIG_DFL)
+			client.start(username, password)
+		self.pids[pid] = name
+		self.names[name] = pid
+
+	def handle_stop(self, name):
+		folder = path.join(spockd_dir, name)
+		pidfile = path.join(folder, name+'.pid')
+		pid = int(open(pidfile, 'r').readline())
+		os.kill(pid, signal.SIGTERM)
+
+	def handleSIGCHLD(self, *args):
+		pid = os.waitpid(-1, 0)[0]
+		name = self.pids[pid]
+		del self.pids[pid]
+		del self.names[name]
+		print "Child PID", pid, "has terminated"
+
+	def handleSIGTERM(self, *args):
+		for pid in self.pids:
+			print "Sending SIGTERM to PID:", pid
+			os.kill(pid, signal.SIGTERM)
+		while self.pids:
+			print "Waiting for all children to terminate..."
+			time.sleep(1)
+		print "All children terminated, shutting down"
+		os.remove(self.pidfile)
+		os.remove(self.inpipe)
+		os.remove(self.outpipe)
+		sys.exit(0)
+
+	handleSIGINT = handleSIGTERM
+
+
+spock_daemon = spockd()
+
+handleSignal(signal.SIGCHLD, spock_daemon.handleSIGCHLD)
+handleSignal(signal.SIGTERM, spock_daemon.handleSIGTERM)
+handleSignal(signal.SIGINT, spock_daemon.handleSIGINT)
+
+if __name__ == "__main__":
+	spock_daemon.start()
+	

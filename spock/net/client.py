@@ -19,10 +19,6 @@ smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
 
 class Client:
 	def __init__(self, **kwargs):
-		#Signal handlers
-		signal.signal(signal.SIGINT, self.signal_handler)
-		signal.signal(signal.SIGTERM, self.signal_handler)
-
 		#Grab some settings
 		self.daemon = kwargs.get('daemon', False)
 		self.logfile = kwargs.get('argfile', '')
@@ -99,6 +95,10 @@ class Client:
 		self.event_loop()
 
 	def event_loop(self):
+		#Set up signal handlers
+		signal.signal(signal.SIGINT, self.signal_handler)
+		signal.signal(signal.SIGTERM, self.signal_handler)
+
 		while not (self.flags&cflags['KILL_EVENT'] and self.kill):
 			self.getflags()
 			if self.flags:
