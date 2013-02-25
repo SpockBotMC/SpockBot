@@ -170,10 +170,10 @@ class Client:
 		)
 		while self.sbuff:
 			self.getflags()
-			if self.flags&cflags['SOCKET_SEND']:
-				fhandles[cflags['SOCKET_SEND']](self)
-			elif (self.flags&cflags['SOCKET_ERR'])|(self.flags&cflags['SOCKET_HUP']):
+			if self.flags&(cflags['SOCKET_ERR']|cflags['SOCKET_HUP']):
 				break
+			elif self.flags&cflags['SOCKET_SEND']:
+				fhandles[cflags['SOCKET_SEND']](self)
 		self.sock.close()
 
 		if self.pidfile and os.path.exists(self.pidfile):
@@ -236,4 +236,5 @@ class Client:
 		self.proxy['port'] = port
 
 	def signal_handler(self, *args):
+		print self.kill, args
 		self.kill = True

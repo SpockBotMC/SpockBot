@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 import os, sys, signal, time, argparse
 from os import path
 from spock.utils import daemonize
@@ -105,8 +104,8 @@ class spockd:
 	def run_cmd(self, cmd):
 		if not cmd:
 			return "No Command"
-		cmd = cmd.lower().split()
-		op = cmd[0]
+		cmd = cmd.split()
+		op = cmd[0].lower()
 		if not op in self.commands:
 			return "Invalid Command"
 		args = vars(self.parser.parse_args(cmd))
@@ -122,9 +121,9 @@ class spockd:
 			f = open(f, 'r')
 			for line in f.readlines():
 				line = line.split()
-				if line[0].lower() == 'username' or line[0].lower == 'user':
+				if line[0].lower() == 'username' or line[0].lower() == 'user':
 					username = line[2]
-				if line[0].lower() == 'password' or line[0].lower == 'pass':
+				if line[0].lower() == 'password' or line[0].lower() == 'pass':
 					password = line[2]
 			f.close()
 		elif args['user']!=None and args['pass']!=None:
