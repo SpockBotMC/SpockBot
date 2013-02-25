@@ -6,9 +6,19 @@ from spock.utils import daemonize
 
 signals = []
 
+
+from spock.net.client import Client
+from plugins import DebugPlugin, ReConnect, AntiAFK
+plugins = [ReConnect.ReConnectPlugin, DebugPlugin.DebugPlugin, AntiAFK.AntiAFKPlugin]
+testclient = Client(plugins = plugins)
+
 def handleSignal(sig, handle):
 	signals.append(sig)
 	signal.signal(sig, handle)
+
+def printreturn(val):
+	print str(val)
+	return val
 
 class spockd:
 	def __init__(self):
@@ -28,6 +38,13 @@ class spockd:
 		self.outpipe = path.join(self.dirs['spockd'], 'outpipe')
 		self.pidfile = path.join(self.dirs['spockd'], 'spockd.pid')
 		self.logfile = path.join(self.dirs['spockd'], 'spockd.log')
+
+		self.commands = {
+			'start': self.handle_start,
+			'stop': self.handle_stop,
+			#'restart': self.handle_restart,
+			#'status': self.handle_status,
+		}
 
 	def parseargs(self):
 		args = {}
@@ -68,37 +85,48 @@ class spockd:
 			writepipe.close()
 
 	def run_cmd(self, cmd):
-		print cmd
-		return cmd
+		if not cmd:
+			return 'No command'
+		cmd = cmd.split()
+		op = cmd[0]
+		if op.lower() == 'start':
+			username = cmd[1]
+			password = cmd[2]
+			pid = self.handle_start(username, testclient, username, password)
+			return "Bot started with PID: " + str(pid)
 
-	def handle_start(self, name, client):
-		folder = path.join(spockd_dir, name)
+	def handle_start(self, name, client, username, password = ''):
+		folder = path.join(self.dirs['proc'], name)
 		pidfile = path.join(folder, name+'.pid')
 		logfile = path.join(folder, name+'.log')
 		if path.exists(pidfile):
-			print "PID already exists for that name"
-		sys.exit(1)
+			return "PID already exists for that name"
 		if not path.exists(folder):
 			os.makedirs(folder)
 
-		client.daemon = True
-		client.pidfile = pidfile
-		client.logfile = logfile
-		pid == os.fork()
+		pid = os.fork()
 		#Child process
 		if pid == 0:
 			#Set the signal handlers back to default
 			for sig in signals:
 				signal.signal(sig, signal.SIG_DFL)
+			client.daemon = True
+			client.pidfile = pidfile
+			client.logfile = logfile
 			client.start(username, password)
+
 		self.pids[pid] = name
 		self.names[name] = pid
+		return pid
 
 	def handle_stop(self, name):
-		folder = path.join(spockd_dir, name)
+		folder = path.join(self.dirs['proc'], name)
 		pidfile = path.join(folder, name+'.pid')
-		pid = int(open(pidfile, 'r').readline())
-		os.kill(pid, signal.SIGTERM)
+		if path.exists(pidfile):
+			pid = int(open(pidfile, 'r').readline())
+			os.kill(pid, signal.SIGTERM)
+		else:
+			return "No PID exists for that name"
 
 	def handleSIGCHLD(self, *args):
 		pid = os.waitpid(-1, 0)[0]

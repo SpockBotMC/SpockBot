@@ -112,6 +112,8 @@ class Client:
 				sys.stdout.flush()
 				sys.stderr.flush()
 
+		sys.exit(0)
+
 	def getflags(self):
 		self.flags = 0
 		if self.sbuff:
@@ -198,9 +200,11 @@ class Client:
 		else:
 			self.username = username
 
-	def start_daemon(self):
+	def start_daemon(self, daemonize = False):
 		self.daemon = True
-		self.pid = utils.daemonize()
+		if daemonize:
+			utils.daemonize()
+		self.pid = os.getpid()
 		if self.logfile:
 			sys.stdout = sys.stderr = open(self.logfile, 'w')
 		if self.pidfile:
