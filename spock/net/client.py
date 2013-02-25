@@ -93,6 +93,7 @@ class Client:
 		self.start_session(username, password)
 		self.login(host, port)
 		self.event_loop()
+		self.exit()
 
 	def event_loop(self):
 		#Set up signal handlers
@@ -111,8 +112,6 @@ class Client:
 			if self.daemon:
 				sys.stdout.flush()
 				sys.stderr.flush()
-
-		sys.exit(0)
 
 	def getflags(self):
 		self.flags = 0
@@ -163,6 +162,25 @@ class Client:
 			self.sock.connect((self.host, self.port))
 		except socket.error as error:
 			logging.info("Error on Connect (this is normal): " + str(error))
+
+	def exit(self):
+		self.push(mcpacket.Packet(ident = 0xFF, data = {
+			'reason': 'KILL_EVENT recieved'
+			})
+		)
+		while self.sbuff:
+			self.getflags()
+			if self.flags&cflags['SOCKET_SEND']:
+				fhandles[cflags['SOCKET_SEND']](self)
+			elif (self.flags&cflags['SOCKET_ERR'])|(self.flags&cflags['SOCKET_HUP']):
+				break
+		self.sock.close()
+
+		if self.pidfile and os.path.exists(self.pidfile):
+			os.remove(self.pidfile)
+
+		sys.exit(0)
+
 
 	def enable_crypto(self, SharedSecret):
 		self.cipher = cipher.AESCipher(SharedSecret)
