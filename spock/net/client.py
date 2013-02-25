@@ -5,7 +5,7 @@ import sys
 import os
 import logging
 
-from Crypto.Random import _UserFriendlyRNG
+from Crypto import Random
 
 import cipher
 from spock.net.cflags import cflags
@@ -193,7 +193,7 @@ class Client:
 
 	def login(self, host = 'localhost', port = 25565):
 		self.connect(host, port)
-		self.SharedSecret = _UserFriendlyRNG.get_random_bytes(16)
+		self.SharedSecret = Random._UserFriendlyRNG.get_random_bytes(16)
 
 		#Stage 2: Send initial handshake
 		self.push(mcpacket.Packet(ident = 02, data = {
@@ -222,6 +222,8 @@ class Client:
 		self.daemon = True
 		if daemonize:
 			utils.daemonize()
+			Random.atfork()
+
 		self.pid = os.getpid()
 		if self.logfile:
 			sys.stdout = sys.stderr = open(self.logfile, 'w')
@@ -236,5 +238,4 @@ class Client:
 		self.proxy['port'] = port
 
 	def signal_handler(self, *args):
-		print self.kill, args
 		self.kill = True

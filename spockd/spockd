@@ -1,14 +1,9 @@
 #!/usr/bin/python
-import os, sys, signal, time, argparse
+import os, sys, signal, time, argparse, imp
 from os import path
 from spock.utils import daemonize
 
 signals = []
-
-from spock.net.client import Client
-from plugins import DebugPlugin, ReConnect, AntiAFK
-plugins = [ReConnect.ReConnectPlugin, DebugPlugin.DebugPlugin, AntiAFK.AntiAFKPlugin]
-testclient = Client(plugins = plugins)
 
 def handleSignal(sig, handle):
 	signals.append(sig)
@@ -17,6 +12,17 @@ def handleSignal(sig, handle):
 def printreturn(val):
 	print str(val)
 	return val
+
+class ParsingError(Exception):
+	pass
+
+class spockparser(argparse.ArgumentParser):
+	def exit(*args):
+		raise ParsingError
+	
+	def _print_message(*args):
+		pass
+
 
 class spockd:
 	def __init__(self):
@@ -37,18 +43,18 @@ class spockd:
 		self.pidfile = path.join(self.dirs['spockd'], 'spockd.pid')
 		self.logfile = path.join(self.dirs['spockd'], 'spockd.log')
 
-		self.parser = argparse.ArgumentParser()
+		self.parser = spockparser()
 		sub_parsers = self.parser.add_subparsers()
 
-		start_parser = sub_parsers.add_parser('start')
-		start_parser.add_argument('name')
-		start_parser.add_argument('-b', '--bot')
-		start_parser.add_argument('-l', '--login')
-		start_parser.add_argument('-u', '--user')
-		start_parser.add_argument('-p', '--pass')
+		self.start_parser = sub_parsers.add_parser('start')
+		self.start_parser.add_argument('name')
+		self.start_parser.add_argument('-b', '--bot', required = True)
+		self.start_parser.add_argument('-l', '--login', default = '')
+		self.start_parser.add_argument('-u', '--user', default = '')
+		self.start_parser.add_argument('-p', '--pass', default = '')
 
-		stop_parser = sub_parsers.add_parser('stop')
-		stop_parser.add_argument('name')
+		self.stop_parser = sub_parsers.add_parser('stop')
+		self.stop_parser.add_argument('name')
 
 
 		self.commands = {
@@ -87,6 +93,9 @@ class spockd:
 		if self.args['daemon']:
 			daemonize()
 			sys.stdout = sys.stderr = open(self.logfile, 'w')
+			print "Entered daemon mode"
+			sys.stdout.flush()
+			sys.stderr.flush()
 		while not self.stop:
 			try:
 				readpipe = open(self.inpipe, 'r')
@@ -96,6 +105,9 @@ class spockd:
 				writepipe = open(self.outpipe, 'w')
 				writepipe.write(toreturn)
 				writepipe.close()
+				if self.args['daemon']:
+					sys.stdout.flush()
+					sys.stderr.flush()
 			except IOError, e:
 				if e.errno != 4:
 					print str(e)
@@ -108,16 +120,24 @@ class spockd:
 		op = cmd[0].lower()
 		if not op in self.commands:
 			return "Invalid Command"
-		args = vars(self.parser.parse_args(cmd))
-		toreturn = self.commands[op](args)
+		try:
+			args = vars(self.parser.parse_args(cmd))
+			toreturn = self.commands[op](args)
+		except ParsingError, e:
+			toreturn = ("Error parsing arguments\n"
+				+self.parser.format_usage()
+				+self.start_parser.format_usage()
+				+self.stop_parser.format_usage()
+			)
+
 		return str(toreturn)
 
 
 	def handle_start(self, args):
-		if args['login'] != None:
+		if args['login']:
 			f = path.join(self.dirs['logins'], args['login'])
 			if not path.exists(f):
-				return "No such login"
+				return "No login file named: " + args['login']
 			f = open(f, 'r')
 			for line in f.readlines():
 				line = line.split()
@@ -126,11 +146,19 @@ class spockd:
 				if line[0].lower() == 'password' or line[0].lower() == 'pass':
 					password = line[2]
 			f.close()
-		elif args['user']!=None and args['pass']!=None:
+		elif args['user'] and args['pass']:
 			username = args['user']
 			password = args['pass']
 		else:
 			return "Not enough login information"
+
+		module = path.join(self.dirs['bots'], args['bot'])
+		if not path.exists(module):
+			module+='.py'
+			if not path.exists(module):
+				return "No bot file named: " + args['bot']
+		botmod = imp.load_source('botmod', module)
+		client = botmod.bot
 
 		name = args['name']
 		folder = path.join(self.dirs['proc'], name)
@@ -147,11 +175,12 @@ class spockd:
 			#Set the signal handlers back to default
 			for sig in signals:
 				signal.signal(sig, signal.SIG_DFL)
-			testclient.daemon = True
-			testclient.pidfile = pidfile
-			testclient.logfile = logfile
-			testclient.start(username, password)
+			client.daemon = True
+			client.pidfile = pidfile
+			client.logfile = logfile
+			client.start(username, password)
 
+		print "Created bot", name, "with PID:", pid
 		self.pids[pid] = name
 		self.names[name] = pid
 		return pid
@@ -163,9 +192,9 @@ class spockd:
 		if path.exists(pidfile):
 			pid = int(open(pidfile, 'r').readline())
 			os.kill(pid, signal.SIGTERM)
-			return "SIGTERM sent to PID: " + str(pid)
+			return printreturn("SIGTERM sent to " + name + ", PID: " + str(pid))
 		else:
-			return "No PID exists for that name"
+			return "No PID exists for name: " + name
 
 	def exit(self):
 		for pid in self.pids:
@@ -185,7 +214,7 @@ class spockd:
 		name = self.pids[pid]
 		del self.pids[pid]
 		del self.names[name]
-		print "Child PID", pid, "has terminated"
+		print "Child", name, "with PID", pid, "has terminated"
 
 	def handleSIGTERM(self, *args):
 		self.exit()
@@ -201,4 +230,3 @@ handleSignal(signal.SIGINT, spock_daemon.handleSIGINT)
 
 if __name__ == '__main__':
 	spock_daemon.start()
-	

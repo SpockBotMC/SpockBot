@@ -6,8 +6,6 @@ import socket
 import os
 import sys
 
-from Crypto import Random
-
 from spock import smpmap
 
 # This function courtesy of barneygale
@@ -145,8 +143,6 @@ def daemonize(defaultdir = '/tmp'):
 
 	dev_null = open((os.devnull if hasattr(os, "devnull") else '/dev/null'), 'r+')
 	sys.stdin = sys.stdout = sys.stderr = dev_null
-
-	Random.atfork()
 
 	sys.stdout.flush()
 	sys.stdin.flush()
