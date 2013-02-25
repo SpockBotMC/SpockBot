@@ -12,13 +12,12 @@ Client could loosely be called "event-driven", plugins should register "dispatch
 
 In comparison to other popular MC bots like Mineflayer Spock is much more "bare-bones", in that Spock expects plugins to understand and send packets on their own. The default handlers only mirror Keep Alives and Position Updates from the server (without which the bot would get kicked and be unable to move, respectively). This means that writing Spock plugins require a fairly intricate understanding of the MC protocol. Eventually a more friendly API will be built by extending the Client class provided by Spock but that's awhile off.
 
-spockd
-======
-
-A daemon for spinning up bots, can be controlled with spockctl. Currently under heavy development
-
 I'll write a real ReadMe and API docs when everything is done and stable-ish.
 For now you can check out the plugins folder to get a vague idea of what plugins should look like, find me on #mcdevs if you have questions
+
+##spockd
+
+A daemon for spinning up bots, can be controlled with spockctl. Currently under heavy development
 
 ###Legal
 
