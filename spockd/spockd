@@ -56,15 +56,18 @@ class spockd:
 		self.start_parser.add_argument('-C', '--khost', default = '')
 		self.start_parser.add_argument('-c', '--host', default = 'localhost')
 		self.start_parser.add_argument('-p', '--port', default = 25565)
+
 		self.stop_parser = sub_parsers.add_parser('stop')
 		self.stop_parser.add_argument('name')
 
+		self.status_parser = sub_parsers.add_parser('status')
+		self.status_parser.add_argument('name')
 
 		self.commands = {
 			'start': self.handle_start,
 			'stop': self.handle_stop,
+			'status': self.handle_status,
 			#'restart': self.handle_restart,
-			#'status': self.handle_status,
 		}
 
 	def parseargs(self):
@@ -220,6 +223,15 @@ class spockd:
 		pid = int(open(pidfile, 'r').readline())
 		os.kill(pid, signal.SIGTERM)
 		return printreturn("SIGTERM sent to " + name + ", PID: " + str(pid))
+
+	def handle_status(self, args):
+		name = args['name']
+		folder = path.join(self.dirs['proc'], name)
+		pidfile = path.join(folder, name+'.pid')
+		if not path.exists(pidfile):
+			return "No PID file exists for name: " + name
+		pid = int(open(pidfile, 'r').readline())
+		return name +" PID: " + str(pid)
 
 	def exit(self):
 		for pid in self.pids:
