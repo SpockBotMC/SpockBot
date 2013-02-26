@@ -24,7 +24,7 @@ class spockparser(argparse.ArgumentParser):
 		pass
 
 
-class spockd:
+class spockd(object):
 	def __init__(self):
 		self.args = self.parseargs()
 

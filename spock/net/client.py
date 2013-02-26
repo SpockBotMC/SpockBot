@@ -17,7 +17,7 @@ from spock import utils, smpmap, bound_buffer
 rmask = select.POLLIN|select.POLLERR|select.POLLHUP
 smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
 
-class Client:
+class Client(object):
 	def __init__(self, **kwargs):
 		#Grab some settings
 		self.daemon = kwargs.get('daemon', False)

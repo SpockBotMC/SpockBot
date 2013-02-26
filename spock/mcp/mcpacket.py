@@ -5,7 +5,7 @@ import mcdata
 import datautils
 #from utils import ByteToHex
 
-class Packet:
+class Packet(object):
 	def __init__(self, ident = 0, direction = mcdata.CLIENT_TO_SERVER, data = {}):
 		self.ident = ident
 		self.direction = direction
