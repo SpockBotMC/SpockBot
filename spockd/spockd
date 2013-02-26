@@ -53,10 +53,9 @@ class spockd:
 		self.start_parser.add_argument('-l', '--login', default = '')
 		self.start_parser.add_argument('-U', '--user', default = '')
 		self.start_parser.add_argument('-P', '--pass', default = '')
+		self.start_parser.add_argument('-C', '--khost', default = '')
 		self.start_parser.add_argument('-c', '--host', default = 'localhost')
 		self.start_parser.add_argument('-p', '--port', default = 25565)
-		self.start_parser.add_argument('-C', '--khost', default = '')
-
 		self.stop_parser = sub_parsers.add_parser('stop')
 		self.stop_parser.add_argument('name')
 
@@ -74,32 +73,34 @@ class spockd:
 		return args
 
 	def start(self):
+
 		for dpath in self.dirs.values():
 			if not path.exists(dpath):
 				os.makedirs(dpath)
 
 		if path.exists(self.pidfile):
 			print "spockd PID already exists"
-			sys.exit(0)
-
-		f = open(self.pidfile, 'w')
-		f.write(str(os.getpid()))
-		f.close()
+			sys.exit(1)
 
 		if not path.exists(self.inpipe):
 			os.mkfifo(self.inpipe)
 		if not path.exists(self.outpipe):
 			os.mkfifo(self.outpipe)
 
-		self.run()
-
-	def run(self):
 		if self.args['daemon']:
 			daemonize()
 			sys.stdout = sys.stderr = open(self.logfile, 'w')
 			print "Entered daemon mode"
 			sys.stdout.flush()
 			sys.stderr.flush()
+
+		f = open(self.pidfile, 'w')
+		f.write(str(os.getpid()))
+		f.close()
+
+		self.run()
+
+	def run(self):
 		while not self.stop:
 			try:
 				readpipe = open(self.inpipe, 'r')
@@ -214,12 +215,11 @@ class spockd:
 		name = args['name']
 		folder = path.join(self.dirs['proc'], name)
 		pidfile = path.join(folder, name+'.pid')
-		if path.exists(pidfile):
-			pid = int(open(pidfile, 'r').readline())
-			os.kill(pid, signal.SIGTERM)
-			return printreturn("SIGTERM sent to " + name + ", PID: " + str(pid))
-		else:
+		if not path.exists(pidfile):
 			return "No PID exists for name: " + name
+		pid = int(open(pidfile, 'r').readline())
+		os.kill(pid, signal.SIGTERM)
+		return printreturn("SIGTERM sent to " + name + ", PID: " + str(pid))
 
 	def exit(self):
 		for pid in self.pids:
