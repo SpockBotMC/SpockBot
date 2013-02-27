@@ -169,6 +169,7 @@ class Client(object):
 			self.host = host
 			self.port = port
 		try:
+			print "Attempting to connect to host:", self.host, "port:", self.port
 			self.sock.connect((self.host, self.port))
 		except socket.error as error:
 			logging.info("Error on Connect (this is normal): " + str(error))
