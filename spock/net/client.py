@@ -219,6 +219,7 @@ class Client(object):
 		if self.authenticated:
 			print "Attempting login with username:", username, "and password:", password
 			LoginResponse = utils.LoginToMinecraftNet(username, password)
+			print LoginResponse
 			if (LoginResponse['Response'] != "Good to go!"):
 				logging.error('Login Unsuccessful, Response: %s', LoginResponse['Response'])
 				self.login_err = True

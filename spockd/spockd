@@ -227,6 +227,7 @@ class spockd(object):
 		return pid
 
 	def handle_stop(self, args):
+		name = args['name']
 		if not self.check_pid(name):
 			return "No PID exists for name: " + name
 		pid = self.bots[name]['pid']
