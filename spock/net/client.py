@@ -11,6 +11,7 @@ import cipher
 from spock.net.cflags import cflags
 from spock.net.flag_handlers import fhandles
 from spock.net.packet_handlers import phandles
+from spock.net.timer import Timer
 from spock.mcp import mcdata, mcpacket
 from spock import utils, smpmap, bound_buffer
 
@@ -56,6 +57,8 @@ class Client(object):
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
 		self.flags = 0 #OK to read flags, not write
+
+		self.timers = []
 
 		#State variables
 		#Plugins should read these (but generally not write)
@@ -109,6 +112,11 @@ class Client(object):
 						if flag in fhandles: fhandles[flag](self)
 						#Plugin handlers
 						for callback in self.plugin_handlers[flag]: callback(flag)
+			for index, timer in enumerate(self.timers):
+				if timer.update():
+					timer.fire()
+				if not timer.check():
+					del timers[index]
 			if self.daemon:
 				sys.stdout.flush()
 				sys.stderr.flush()
@@ -150,6 +158,9 @@ class Client(object):
 	def register_handler(self, callback, *flags):
 		for flag in flags:
 			self.plugin_handlers[flag].append(callback)
+
+	def register_timer(self, timer):
+		self.timers.append(timer)
 
 	def connect(self, host = 'localhost', port=25565):
 		if self.proxy['enabled']:
