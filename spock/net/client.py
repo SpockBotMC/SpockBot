@@ -159,7 +159,7 @@ class Client(object):
 		for flag in flags:
 			self.plugin_handlers[flag].append(callback)
 
-	def register_evtimer(self, timer):
+	def register_timer(self, timer):
 		self.timers.append(timer)
 
 	def connect(self, host = 'localhost', port=25565):
