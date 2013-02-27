@@ -30,7 +30,7 @@ class spockd(object):
 
 		self.stop = False
 		self.pids = {}
-		self.names = {}
+		self.bots = {}
 		spockd_dir = path.join(path.expanduser('~'), '.spockd')
 		self.dirs = {
 			'spockd': spockd_dir,
@@ -63,11 +63,14 @@ class spockd(object):
 		self.status_parser = sub_parsers.add_parser('status')
 		self.status_parser.add_argument('name')
 
+		self.restart_parser = sub_parsers.add_parser('restart')
+		self.restart_parser.add_argument('name')
+
 		self.commands = {
 			'start': self.handle_start,
 			'stop': self.handle_stop,
 			'status': self.handle_status,
-			#'restart': self.handle_restart,
+			'restart': self.handle_restart,
 		}
 
 	def parseargs(self):
@@ -156,9 +159,9 @@ class spockd(object):
 				if line[0].lower() == 'password' or line[0].lower() == 'pass':
 					password = line[2]
 			f.close()
-		if not username and args['user']:
+		if args['user']:
 			username = args['user']
-		if not password and args['pass']:
+		if args['pass']:
 			password = args['pass']
 		if not (password and username):
 			return "Not enough login information"
@@ -168,7 +171,7 @@ class spockd(object):
 		if args['khost']:
 			f = path.join(self.dirs['hosts'], args['khost'])
 			if not path.exists(f):
-				return "No khost file named: " + args['login']
+				return "No khost file named: " + args['khost']
 			f = open(f, 'r')
 			for line in f.readlines():
 				line = line.split()
@@ -176,10 +179,10 @@ class spockd(object):
 					host = line[2]
 				if line[0].lower() == 'port':
 					port = int(line[2])
-		if not host:
+		if args['host']:
 			host = args['host']
-		if not port:
-			port = args['port']
+		if args['port']:
+			port = int(args['port'])
 
 		module = path.join(self.dirs['bots'], args['bot'])
 		if not path.exists(module):
@@ -211,27 +214,43 @@ class spockd(object):
 
 		print "Created bot", name, "with PID:", pid
 		self.pids[pid] = name
-		self.names[name] = pid
+		self.bots[name] = {
+			'pid': pid,
+			'bot': args['bot'],
+			'login': args['login'],
+			'user': username,
+			'pass': password,
+			'khost': args['khost'],
+			'host': host,
+			'port': port,
+		}
 		return pid
 
 	def handle_stop(self, args):
 		name = args['name']
-		folder = path.join(self.dirs['proc'], name)
-		pidfile = path.join(folder, name+'.pid')
-		if not path.exists(pidfile):
+		if not self.check_pid(name):
 			return "No PID exists for name: " + name
-		pid = int(open(pidfile, 'r').readline())
+		pid = self.bots[name]['pid']
 		os.kill(pid, signal.SIGTERM)
 		return printreturn("SIGTERM sent to " + name + ", PID: " + str(pid))
 
 	def handle_status(self, args):
 		name = args['name']
-		folder = path.join(self.dirs['proc'], name)
-		pidfile = path.join(folder, name+'.pid')
-		if not path.exists(pidfile):
-			return "No PID file exists for name: " + name
-		pid = int(open(pidfile, 'r').readline())
+		if not self.check_pid(name):
+			return "No PID exists for name: " + name
+		pid = self.bots[args['name']]['pid']
 		return name +" PID: " + str(pid)
+
+	def handle_restart(self, args):
+		name = args['name']
+		if not self.check_pid(name):
+			return "No PID file exists for name: " + name
+		newbot = self.bots[name].copy()
+		newbot['name'] = name
+		self.handle_stop(newbot)
+		while self.check_pid(name):
+			time.sleep(1)
+		return self.handle_start(newbot)
 
 	def exit(self):
 		for pid in self.pids:
@@ -246,11 +265,16 @@ class spockd(object):
 		os.remove(self.outpipe)
 		sys.exit(0)
 
+	def check_pid(self, name):
+		folder = path.join(self.dirs['proc'], name)
+		pidfile = path.join(folder, name+'.pid')
+		return path.exists(pidfile)
+
 	def handleSIGCHLD(self, *args):
 		pid = os.waitpid(-1, 0)[0]
 		name = self.pids[pid]
 		del self.pids[pid]
-		del self.names[name]
+		del self.bots[name]
 		print "Child", name, "with PID", pid, "has terminated"
 
 	def handleSIGTERM(self, *args):
