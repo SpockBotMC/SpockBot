@@ -21,7 +21,7 @@ A daemon for spinning up bots, can be controlled with spockctl. Currently under 
 
 ##riker
 
-A client that extends spock (is planned) to provide several useful features such as a pathfinding/movement API, as well as simple facilities like automatic session keep alives
+A client that extends spock (is planned) to provide several useful features such as a pathfinding/movement API, as well as services like automatic session keep alives
 
 ###Legal
 
