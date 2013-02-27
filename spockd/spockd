@@ -61,7 +61,7 @@ class spockd(object):
 		self.stop_parser.add_argument('name')
 
 		self.status_parser = sub_parsers.add_parser('status')
-		self.status_parser.add_argument('name')
+		self.status_parser.add_argument('name', nargs='?')
 
 		self.restart_parser = sub_parsers.add_parser('restart')
 		self.restart_parser.add_argument('name')
@@ -227,7 +227,6 @@ class spockd(object):
 		return pid
 
 	def handle_stop(self, args):
-		name = args['name']
 		if not self.check_pid(name):
 			return "No PID exists for name: " + name
 		pid = self.bots[name]['pid']
@@ -235,6 +234,11 @@ class spockd(object):
 		return printreturn("SIGTERM sent to " + name + ", PID: " + str(pid))
 
 	def handle_status(self, args):
+		if not args['name']:
+			toreturn = ''
+			for name, bot in self.bots.iteritems():
+				toreturn += str.format('{}: {}\n', name, str(bot['bot']))
+			return toreturn.rstrip()
 		name = args['name']
 		if not self.check_pid(name):
 			return "No PID exists for name: " + name
