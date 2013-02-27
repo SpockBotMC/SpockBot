@@ -54,8 +54,8 @@ class spockd(object):
 		self.start_parser.add_argument('-U', '--user', default = '')
 		self.start_parser.add_argument('-P', '--pass', default = '')
 		self.start_parser.add_argument('-C', '--khost', default = '')
-		self.start_parser.add_argument('-c', '--host', default = 'localhost')
-		self.start_parser.add_argument('-p', '--port', default = 25565)
+		self.start_parser.add_argument('-c', '--host', default = '')
+		self.start_parser.add_argument('-p', '--port', default = 0)
 
 		self.stop_parser = sub_parsers.add_parser('stop')
 		self.stop_parser.add_argument('name')
@@ -166,8 +166,8 @@ class spockd(object):
 		if not (password and username):
 			return "Not enough login information"
 
-		host = ''
-		port = 0
+		host = 'localhost'
+		port = 25565
 		if args['khost']:
 			f = path.join(self.dirs['hosts'], args['khost'])
 			if not path.exists(f):
