@@ -146,6 +146,7 @@ class handleFD(BaseHandle):
 		if client.authenticated:
 			serverid = utils.HashServerId(packet.data['server_id'], client.SharedSecret, pubkey)
 			SessionResponse = utils.AuthenticateMinecraftSession(client.username, client.sessionid, serverid)
+			print SessionResponse
 			if (SessionResponse != 'OK'):
 				logging.error('Session Authentication Failed, Response: %s', SessionResponse)
 				client.auth_err = True

@@ -247,7 +247,6 @@ class spockd(object):
 		return name +" PID: " + str(pid)
 
 	def handle_restart(self, args):
-		print args
 		name = args['name']
 		if not self.check_pid(name):
 			return "No PID file exists for name: " + name
