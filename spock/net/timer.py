@@ -1,10 +1,11 @@
 import time
+import threading
 
-class Timer(object):
+class EventTimer(object):
 	def __init__(self, wait_time, callback, runs = 1):
-		self.runs = runs
-		self.callback = callback
 		self.wait_time = wait_time
+		self.callback = callback
+		self.runs = runs
 		self.end_time = time.time() + self.wait_time
 
 	def update(self):
@@ -16,7 +17,25 @@ class Timer(object):
 
 	def fire(self):
 		self.callback()
-		if self.runs>0: self.runs-=1
+		if self.runs:
+			self.runs-=1
+			self.reset()
 
 	def reset(self):
 		self.end_time = time.time() + self.wait_time
+
+class ThreadedTimer(threading.Thread):
+	def __init__(self, wait_time, callback, runs = 1):
+		super(ThreadedTimer, self).__init__()
+		self.wait_time = wait_time
+		self.callback = callback
+		self.runs = runs
+		self.start()
+
+	def run(self):
+		while self.runs:
+			time.sleep(self.wait_time)
+			self.callback()
+			if self.runs:
+				self.runs-=1
+

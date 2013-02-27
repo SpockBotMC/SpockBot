@@ -1,12 +1,12 @@
 import spock.net.client
-from spock.net.timer import Timer
+from spock.net.timer import ThreadedTimer
 from packet_queue import PacketQueue
 
 class RikerClient(spock.net.client.Client):
 	def __init__(self):
 		super(RikerClient, self).__init__()
 		self.move_queue = PacketQueue()
-		self.register_timer(Timer(.05, self._send_move, -1))
+		self.register_timer(ThreadedTimer(.05, self._send_move, -1))
 
 	def push_move(self, packet):
 		self.move_queue.push(packet)

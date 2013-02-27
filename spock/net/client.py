@@ -58,7 +58,7 @@ class Client(object):
 		self.sbuff = ''
 		self.flags = 0 #OK to read flags, not write
 
-		self.timers = []
+		self.event_timers = []
 
 		#State variables
 		#Plugins should read these (but generally not write)
@@ -112,7 +112,7 @@ class Client(object):
 						if flag in fhandles: fhandles[flag](self)
 						#Plugin handlers
 						for callback in self.plugin_handlers[flag]: callback(flag)
-			for index, timer in enumerate(self.timers):
+			for index, timer in enumerate(self.event_timers):
 				if timer.update():
 					timer.fire()
 				if not timer.check():
