@@ -30,7 +30,6 @@ class ThreadedTimer(threading.Thread):
 		self.wait_time = wait_time
 		self.callback = callback
 		self.runs = runs
-		self.start()
 
 	def run(self):
 		while self.runs:
