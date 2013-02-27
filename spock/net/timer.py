@@ -18,7 +18,5 @@ class Timer(object):
 		self.callback()
 		if self.runs>0: self.runs-=1
 
-
 	def reset(self):
 		self.end_time = time.time() + self.wait_time
-
