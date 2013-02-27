@@ -270,9 +270,7 @@ class spockd(object):
 		sys.exit(0)
 
 	def check_pid(self, name):
-		folder = path.join(self.dirs['proc'], name)
-		pidfile = path.join(folder, name+'.pid')
-		return path.exists(pidfile)
+		return (name in self.bots)
 
 	def handleSIGCHLD(self, *args):
 		pid = os.waitpid(-1, 0)[0]

@@ -11,7 +11,6 @@ import cipher
 from spock.net.cflags import cflags
 from spock.net.flag_handlers import fhandles
 from spock.net.packet_handlers import phandles
-from spock.net.timer import Timer
 from spock.mcp import mcdata, mcpacket
 from spock import utils, smpmap, bound_buffer
 
