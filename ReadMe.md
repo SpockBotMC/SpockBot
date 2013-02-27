@@ -19,6 +19,10 @@ For now you can check out the plugins folder to get a vague idea of what plugins
 
 A daemon for spinning up bots, can be controlled with spockctl. Currently under heavy development
 
+##riker
+
+A client that extends spock (is planned) to provide several useful features such as a pathfinding/movement API, as well as simple facilities like automatic session keep alives
+
 ###Legal
 
 License is MIT and can be found in license.md
