@@ -41,8 +41,10 @@ class NoLaggPlugin:
 			#Remove this function from the dispatch list and put the next one on
 			self.client.plugin_dispatch[0x03].remove(self.handle_memory)
 			self.client.register_dispatch(self.handle_ticks, 0x03)
+		print self.toreturn
 
 	def handle_ticks(self, packet):
+		print self.toreturn
 		msg = re.sub('\xa7.', '', packet.data['text'])
 		match = re.match('Ticks per second: ([0-9]+\.[0-9]+) \[([0-9]+\.[0-9]+)\%\]', msg)
 		if match:
@@ -54,6 +56,7 @@ class NoLaggPlugin:
 			self.client.register_dispatch(self.handle_chunks, 0x03)
 
 	def handle_chunks(self, packet):
+		print self.toreturn
 		msg = re.sub('\xa7.', '', packet.data['text'])
 		match = re.match('Chunks: ([0-9]+) \[([0-9]+) U\](?: \[[\+|\-][0-9]+\]){3} \[([0-9]+) lighting\]', msg)
 		if match:
@@ -66,6 +69,7 @@ class NoLaggPlugin:
 			self.client.register_dispatch(self.handle_entities, 0x03)
 
 	def handle_entities(self, packet):
+		print self.toreturn
 		msg = re.sub('\xa7.', '', packet.data['text'])
 		match = re.match('Entities: ([0-9]+)(?: \[([0-9]+) [A-Za-z]+\])(?: \[([0-9]+) [A-Za-z]+\])(?: \[([0-9]+) [A-Za-z]+\])(?: \[([0-9]+) [A-Za-z]+\])', msg)
 		if match:
@@ -80,6 +84,7 @@ class NoLaggPlugin:
 			self.client.register_dispatch(self.handle_compress, 0x03)
 
 	def handle_compress(self, packet):
+		print self.toreturn
 		msg = re.sub('\xa7.', '', packet.data['text'])
 		match = re.match('Packet compression busy: ([0-9]+\.[0-9]+)\% busy', msg)
 		if match:
