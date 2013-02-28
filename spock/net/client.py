@@ -36,6 +36,7 @@ class Client(object):
 
 		#Initialize plugin list
 		#Plugins should never touch this
+		self.timers = []
 		self.plugin_handlers = {flag: [] for name, flag in cflags.iteritems()}
 		self.plugin_dispatch = {ident: [] for ident in mcdata.structs}
 		self.plugins = [plugin(self) for plugin in plugins]
@@ -56,8 +57,6 @@ class Client(object):
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
 		self.flags = 0 #OK to read flags, not write
-
-		self.event_timers = []
 
 		#State variables
 		#Plugins should read these (but generally not write)
@@ -101,6 +100,8 @@ class Client(object):
 		#Set up signal handlers
 		signal.signal(signal.SIGINT, self.signal_handler)
 		signal.signal(signal.SIGTERM, self.signal_handler)
+		#Fire off plugins that need to run after init
+		for callback in self.plugin_handlers[cflags['START_EVENT']]: callback(flag)
 
 		while not (self.flags&cflags['KILL_EVENT'] and self.kill):
 			self.getflags()
@@ -111,11 +112,11 @@ class Client(object):
 						if flag in fhandles: fhandles[flag](self)
 						#Plugin handlers
 						for callback in self.plugin_handlers[flag]: callback(flag)
-			for index, timer in enumerate(self.event_timers):
+			for index, timer in enumerate(self.timers):
 				if timer.update():
 					timer.fire()
 				if not timer.check():
-					del timers[index]
+					del self.timers[index]
 			if self.daemon:
 				sys.stdout.flush()
 				sys.stderr.flush()
