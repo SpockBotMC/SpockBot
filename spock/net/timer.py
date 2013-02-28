@@ -63,7 +63,6 @@ class ThreadedTimer(threading.Thread):
 		self.runs = runs
 
 	def run(self):
-		print bool(self.runs)
 		while not self.stop_event.is_set() and self.runs:
 			self.stop_event.wait(self.wait_time)
 			if not self.stop_event.is_set():
