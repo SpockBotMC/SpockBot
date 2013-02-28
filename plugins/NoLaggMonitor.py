@@ -43,6 +43,7 @@ class NoLaggPlugin:
 			self.client.plugin_dispatch[0x03].remove(self.handle_memory)
 			self.client.register_dispatch(self.handle_ticks, 0x03)
 		print self.toreturn
+		print self.client.plugin_dispatch[0x03]
 
 	def handle_ticks(self, packet):
 		print self.toreturn
