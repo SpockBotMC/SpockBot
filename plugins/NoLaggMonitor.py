@@ -1,7 +1,7 @@
 from spock.mcp.mcpacket import Packet
 from spock.net.timer import ThreadedTimer
 
-class AntiAFKPlugin:
+class NoLaggPlugin:
 	def __init__(self, client):
 		time = 300
 		timer = ThreadedTimer(300, self.send_nolagg, -1)
