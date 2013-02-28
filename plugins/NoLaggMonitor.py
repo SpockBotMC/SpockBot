@@ -23,7 +23,7 @@ class NoLaggPlugin:
 
 	def start_nolagg(self, *args):
 		self.client.push(self.packet)
-		ThreadedTimer(self.stop_event, 1, self.stop_nolagg).start()
+		ThreadedTimer(self.stop_event, 5, self.stop_nolagg).start()
 
 	def stop_nolagg(self, *args):
 		self.client.push(self.packet)
