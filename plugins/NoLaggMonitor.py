@@ -11,14 +11,13 @@ class NoLaggPlugin:
 			"text": "/nolagg stats"
 			})
 		self.stop_event = threading.Event()
-		self.timer = ThreadedTimer(self.stop_event, 300, self.check_nolagg, -1)
 		client.register_dispatch(self.start_timer, 0x01)
 		client.register_handler(self.stop_timer, cflags['SOCKET_ERR'], cflags['SOCKET_HUP'], cflags['KILL_EVENT'])
 		client.register_dispatch(self.stop_timer, 0xFF)
 
 	def start_timer(self, *args):
 		self.stop_event.clear()
-		self.timer.start()
+		ThreadedTimer(self.stop_event, 300, self.check_nolagg, -1).start()
 
 	def stop_timer(self, *args):
 		self.stop_event.set()
