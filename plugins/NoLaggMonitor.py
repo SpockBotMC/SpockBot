@@ -81,7 +81,7 @@ class NoLaggPlugin:
 
 	def handle_compress(self, packet):
 		msg = re.sub('\xa7.', '', packet.data['text'])
-		match = re.match('Packet compression busy: ([0-9]+\.[0-9]+)\% busy')
+		match = re.match('Packet compression busy: ([0-9]+\.[0-9]+)\% busy', msg)
 		if match:
 			matchlist = match.groups()
 			self.toreturn['PacketCompr'] = float(matchlist[0])
