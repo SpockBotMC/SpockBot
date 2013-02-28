@@ -32,6 +32,7 @@ class NoLaggPlugin:
 		self.toreturn = {}
 		msg = re.sub('\xa7.', '', packet.data['text'])
 		match = re.match('Memory: \|* ([0-9]+)/([0-9]+) ([A-Z]+)', msg)
+		print match
 		if match:
 			matchlist = match.groups()
 			self.toreturn['UsedMem'] = int(matchlist[0])
