@@ -17,6 +17,7 @@ class NoLaggPlugin:
 		client.register_dispatch(self.stop_timer, 0xFF)
 
 	def start_timer(self, *args):
+		print args
 		self.stop_event.clear()
 		self.timer.start()
 
