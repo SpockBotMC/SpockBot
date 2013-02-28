@@ -17,7 +17,6 @@ class NoLaggPlugin:
 		client.register_dispatch(self.stop_timer, 0xFF)
 
 	def start_timer(self, *args):
-		print args
 		self.stop_event.clear()
 		self.timer.start()
 
@@ -35,7 +34,6 @@ class NoLaggPlugin:
 		self.toreturn = {}
 		msg = re.sub('\xa7.', '', packet.data['text'])
 		match = re.match('Memory: \|* ([0-9]+)/([0-9]+) ([A-Z]+)', msg)
-		print match
 		if match:
 			matchlist = match.groups()
 			self.toreturn['UsedMem'] = int(matchlist[0])
@@ -45,11 +43,8 @@ class NoLaggPlugin:
 			#Remove this function from the dispatch list and put the next one on
 			self.client.plugin_dispatch[0x03].remove(self.handle_memory)
 			self.client.register_dispatch(self.handle_ticks, 0x03)
-		print self.toreturn
-		print self.client.plugin_dispatch[0x03]
 
 	def handle_ticks(self, packet):
-		print self.toreturn
 		msg = re.sub('\xa7.', '', packet.data['text'])
 		match = re.match('Ticks per second: ([0-9]+\.[0-9]+) \[([0-9]+\.[0-9]+)\%\]', msg)
 		if match:
@@ -61,7 +56,6 @@ class NoLaggPlugin:
 			self.client.register_dispatch(self.handle_chunks, 0x03)
 
 	def handle_chunks(self, packet):
-		print self.toreturn
 		msg = re.sub('\xa7.', '', packet.data['text'])
 		match = re.match('Chunks: ([0-9]+) \[([0-9]+) U\](?: \[[\+|\-][0-9]+\]){3} \[([0-9]+) lighting\]', msg)
 		if match:
@@ -74,7 +68,6 @@ class NoLaggPlugin:
 			self.client.register_dispatch(self.handle_entities, 0x03)
 
 	def handle_entities(self, packet):
-		print self.toreturn
 		msg = re.sub('\xa7.', '', packet.data['text'])
 		match = re.match('Entities: ([0-9]+)(?: \[([0-9]+) [A-Za-z]+\])(?: \[([0-9]+) [A-Za-z]+\])(?: \[([0-9]+) [A-Za-z]+\])(?: \[([0-9]+) [A-Za-z]+\])', msg)
 		if match:
@@ -89,14 +82,13 @@ class NoLaggPlugin:
 			self.client.register_dispatch(self.handle_compress, 0x03)
 
 	def handle_compress(self, packet):
-		print self.toreturn
 		msg = re.sub('\xa7.', '', packet.data['text'])
 		match = re.match('Packet compression busy: ([0-9]+\.[0-9]+)\% busy', msg)
 		if match:
 			matchlist = match.groups()
 			self.toreturn['PacketCompr'] = float(matchlist[0])
 
-			self.client.plugin_dispatch[0x03].remove(self.handle_handle_compress)
+			self.client.plugin_dispatch[0x03].remove(self.handle_compress)
 			self.record_stats()
 
 	#SQL to log stats will go here
