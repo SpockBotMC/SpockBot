@@ -26,7 +26,7 @@ class NoLaggPlugin:
 	#This is a very special case
 	def check_nolagg(self, *args):
 		self.client.push(self.packet)
-		if self.handle_memory not in self.client.plugin_dispatch:
+		if self.handle_memory not in self.client.plugin_dispatch[0x03]:
 			self.client.register_dispatch(self.handle_memory, 0x03)
 
 	def handle_memory(self, packet):
