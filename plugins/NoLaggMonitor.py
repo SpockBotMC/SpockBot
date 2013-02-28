@@ -17,7 +17,7 @@ class NoLaggPlugin:
 
 	def start_timer(self, *args):
 		self.stop_event.clear()
-		ThreadedTimer(self.stop_event, 300, self.check_nolagg, -1).start()
+		ThreadedTimer(self.stop_event, 40, self.check_nolagg, -1).start()
 
 	def stop_timer(self, *args):
 		self.stop_event.set()
@@ -26,7 +26,8 @@ class NoLaggPlugin:
 	#This is a very special case
 	def check_nolagg(self, *args):
 		self.client.push(self.packet)
-		self.client.register_dispatch(self.handle_memory, 0x03)
+		if self.handle_memory not in self.client.plugin_dispatch:
+			self.client.register_dispatch(self.handle_memory, 0x03)
 
 	def handle_memory(self, packet):
 		self.toreturn = {}
