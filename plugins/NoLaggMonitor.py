@@ -16,14 +16,14 @@ class NoLaggPlugin:
 
 	def start_timer(self, *args):
 		self.stop_event.clear()
-		ThreadedTimer(self.stop_event, 10, self.start_nolagg, -1).start()
+		ThreadedTimer(self.stop_event, 20, self.start_nolagg, -1).start()
 
 	def stop_timer(self, *args):
 		self.stop_event.set()
 
 	def start_nolagg(self, *args):
 		self.client.push(self.packet)
-		ThreadedTimer(self.stop_event, 5, self.stop_nolagg).start()
+		ThreadedTimer(self.stop_event, 10, self.stop_nolagg).start()
 
 	def stop_nolagg(self, *args):
 		self.client.push(self.packet)
