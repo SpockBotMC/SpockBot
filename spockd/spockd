@@ -23,7 +23,6 @@ class spockparser(argparse.ArgumentParser):
 	def _print_message(*args):
 		pass
 
-
 class spockd(object):
 	def __init__(self):
 		self.args = self.parseargs()
