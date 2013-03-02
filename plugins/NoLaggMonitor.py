@@ -109,4 +109,5 @@ class NoLaggPlugin:
 				self.toreturn['PacketCompr'],
 			)
 		)
+		self.conn.commit()
 		self.toreturn = {}
