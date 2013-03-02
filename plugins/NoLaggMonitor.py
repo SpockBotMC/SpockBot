@@ -1,5 +1,7 @@
 import threading
 import re
+import psycopg2
+from skylogin import dbname, dbuser, dbpass
 from spock.mcp.mcpacket import Packet
 from spock.net.cflags import cflags
 from spock.net.timer import ThreadedTimer
@@ -14,6 +16,11 @@ class NoLaggPlugin:
 		client.register_dispatch(self.start_timer, 0x01)
 		client.register_handler(self.stop_timer, cflags['SOCKET_ERR'], cflags['SOCKET_HUP'], cflags['KILL_EVENT'])
 		client.register_dispatch(self.stop_timer, 0xFF)
+
+		self.conn = psycopg2.connect(database = dbname, user = dbuser, password = dbpass)
+		self.cur = self.conn.cursor()
+		self.cur.execute("SET timezone = 'UTC';")
+		self.conn.commit()
 
 	def start_timer(self, *args):
 		self.stop_event.clear()
@@ -92,5 +99,14 @@ class NoLaggPlugin:
 
 	#SQL to log stats will go here
 	def record_stats(self):
-		print self.toreturn
+		self.cur.execute("""INSERT INTO skynet_stats (Time, UsedMem, TotalMem, MemUnit, Tps, PercentTps, 
+			LoadedChunks, UnLoadedChunks, LightingChunks, TotalEntities, Mobs, Items, TNT, Players, PacketCompr) 
+			VALUES (NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""", (
+				self.toreturn['UsedMem'], self.toreturn['TotalMem'], self.toreturn['MemUnit'],
+				self.toreturn['Tps'], self.toreturn['PercentTps'],
+				self.toreturn['LoadedChunks'], self.toreturn['UnLoadedChunks'], self.toreturn['LightingChunks'],
+				self.toreturn['TotalEntities'], self.toreturn['Mobs'], self.toreturn['TNT'], self.toreturn['Players'],
+				self.toreturn['PacketCompr'],
+			)
+		)
 		self.toreturn = {}
