@@ -94,22 +94,19 @@ class NoLaggPlugin:
 			matchlist = match.groups()
 			self.toreturn['PacketCompr'] = float(matchlist[0])
 
-			print self.toreturn
-
 			self.client.plugin_dispatch[0x03].remove(self.handle_compress)
 			self.record_stats()
 
 	#SQL to log stats will go here
 	def record_stats(self):
-		print self.toreturn
-		self.cur.execute("""INSERT INTO skynet_stats (Time, UsedMem, TotalMem, MemUnit, Tps, PercentTps, 
-			LoadedChunks, UnLoadedChunks, LightingChunks, TotalEntities, Mobs, Items, TNT, Players, PacketCompr) 
-			VALUES (NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""", (
-				self.toreturn['UsedMem'], self.toreturn['TotalMem'], self.toreturn['MemUnit'],
-				self.toreturn['Tps'], self.toreturn['PercentTps'],
-				self.toreturn['LoadedChunks'], self.toreturn['UnLoadedChunks'], self.toreturn['LightingChunks'],
-				self.toreturn['TotalEntities'], self.toreturn['Mobs'], self.toreturn['TNT'], self.toreturn['Players'],
-				self.toreturn['PacketCompr'],
+		self.cur.execute("""INSERT INTO skynet_stats ("Time", "UsedMem", "TotalMem", "MemUnit", "Tps", "PercentTps", 
+		"LoadedChunks", "UnLoadedChunks", "LightingChunks", "TotalEntities", "Mobs", "Items", "TNT", "Players", "PacketCompr") 
+		VALUES (NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""", (
+			self.toreturn['UsedMem'], self.toreturn['TotalMem'], self.toreturn['MemUnit'],
+			self.toreturn['Tps'], self.toreturn['PercentTps'],
+			self.toreturn['LoadedChunks'], self.toreturn['UnLoadedChunks'], self.toreturn['LightingChunks'],
+			self.toreturn['TotalEntities'], self.toreturn['Mobs'], self.toreturn['Items'], self.toreturn['TNT'], self.toreturn['Players'],
+			self.toreturn['PacketCompr'],
 			)
 		)
 		self.conn.commit()
