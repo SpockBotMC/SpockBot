@@ -23,6 +23,9 @@ class EventTimer(object):
 		if self.runs:
 			self.reset()
 
+	def stop(self):
+		self.runs = 0
+
 	def reset(self):
 		self.end_time = time.time() + self.wait_time
 
@@ -48,6 +51,9 @@ class TickTimer(object):
 			self.runs-=1
 		if self.runs:
 			self.reset()
+
+	def stop(self):
+		self.runs = 0
 
 	def reset(self):
 		self.end_tick = self.client.world_time['world_age'] + self.wait_ticks

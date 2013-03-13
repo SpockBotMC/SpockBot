@@ -23,11 +23,11 @@ class NoLaggPlugin:
 		self.conn.commit()
 
 	def start_timer(self, *args):
-		self.stop_event.clear()
 		ThreadedTimer(self.stop_event, 300, self.check_nolagg, -1).start()
 
 	def stop_timer(self, *args):
 		self.stop_event.set()
+		self.stop_event = threading.Event()
 
 	#Never ever, ever, do what I'm about to do
 	#This is a very special case
@@ -47,7 +47,6 @@ class NoLaggPlugin:
 			self.toreturn['MemUnit'] = matchlist[2]
 
 			#Remove this function from the dispatch list and put the next one on
-			self.client.plugin_dispatch[0x03].remove(self.handle_memory)
 			self.client.register_dispatch(self.handle_ticks, 0x03)
 
 	def handle_ticks(self, packet):
@@ -67,7 +66,7 @@ class NoLaggPlugin:
 		if match:
 			matchlist = match.groups()
 			self.toreturn['LoadedChunks'] = int(matchlist[0])
-			self.toreturn['UnLoadedChunks'] = int(matchlist[1])
+			self.toreturn['LoadedUChunks'] = int(matchlist[1])
 			self.toreturn['LightingChunks'] = int(matchlist[2])
 
 			self.client.plugin_dispatch[0x03].remove(self.handle_chunks)
@@ -100,11 +99,11 @@ class NoLaggPlugin:
 	#SQL to log stats will go here
 	def record_stats(self):
 		self.cur.execute("""INSERT INTO skynet_stats ("Time", "UsedMem", "TotalMem", "MemUnit", "Tps", "PercentTps", 
-		"LoadedChunks", "UnLoadedChunks", "LightingChunks", "TotalEntities", "Mobs", "Items", "TNT", "Players", "PacketCompr") 
+		"LoadedChunks", "LoadedUChunks", "LightingChunks", "TotalEntities", "Mobs", "Items", "TNT", "Players", "PacketCompr") 
 		VALUES (NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""", (
 			self.toreturn['UsedMem'], self.toreturn['TotalMem'], self.toreturn['MemUnit'],
 			self.toreturn['Tps'], self.toreturn['PercentTps'],
-			self.toreturn['LoadedChunks'], self.toreturn['UnLoadedChunks'], self.toreturn['LightingChunks'],
+			self.toreturn['LoadedChunks'], self.toreturn['LoadedUChunks'], self.toreturn['LightingChunks'],
 			self.toreturn['TotalEntities'], self.toreturn['Mobs'], self.toreturn['Items'], self.toreturn['TNT'], self.toreturn['Players'],
 			self.toreturn['PacketCompr'],
 			)

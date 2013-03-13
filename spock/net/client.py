@@ -11,6 +11,7 @@ import cipher
 from spock.net.cflags import cflags
 from spock.net.flag_handlers import fhandles
 from spock.net.packet_handlers import phandles
+from spock.net import timer
 from spock.mcp import mcdata, mcpacket
 from spock import utils, smpmap, bound_buffer
 
@@ -217,6 +218,9 @@ class Client(object):
 		)
 
 	def start_session(self, username, password = ''):
+		self.mc_username = username
+		self.mc_password = password
+
 		#Stage 1: Login to Minecraft.net
 		if self.authenticated:
 			print "Attempting login with username:", username, "and password:", password

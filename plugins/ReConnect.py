@@ -6,11 +6,16 @@ class ReConnectPlugin:
 	def __init__(self, client):
 		self.client = client
 		self.kill = False
-		client.register_handler(self.reconnect, 
-			cflags['SOCKET_ERR'], cflags['SOCKET_HUP'], cflags['LOGIN_ERR'], cflags['AUTH_ERR'])
+		client.register_handler(self.session_reconnect, cflags['AUTH_ERR'])
+		client.register_handler(self.reconnect, cflags['SOCKET_ERR'], cflags['SOCKET_HUP'])
 		client.register_handler(self.stop, cflags['KILL_EVENT'])
 		client.register_dispatch(self.reconnect, 0xFF)
 		client.register_dispatch(self.grab_host, 0x02)
+
+	def session_reconnect(self, *args):
+		if not self.kill:
+			self.client.start_session(self.client.mc_username, self.client.mc_password)
+			self.client.login(self.host, self.port)
 
 	def reconnect(self, *args):
 		if not self.kill:
