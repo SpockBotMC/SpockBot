@@ -47,6 +47,7 @@ class NoLaggPlugin:
 			self.toreturn['MemUnit'] = matchlist[2]
 
 			#Remove this function from the dispatch list and put the next one on
+			self.client.plugin_dispatch[0x03].remove(self.handle_memory)
 			self.client.register_dispatch(self.handle_ticks, 0x03)
 
 	def handle_ticks(self, packet):
