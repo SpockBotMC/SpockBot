@@ -593,7 +593,8 @@ structs = {
 		("byte", "window_id"),
 		("byte", "inventory_type"),
 		("string", "window_title"),
-		("byte", "slot_count")),
+		("byte", "slot_count"),
+		("bool", "use_title")),
 	#Close Window
 	0x65: ("byte", "window_id"),
 	#Click Window
