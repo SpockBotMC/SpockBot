@@ -230,7 +230,7 @@ names = {
 	0x3C: "Explosion",
 	0x3D: "Sound Or Particle Effect",
 	0x3E: "Named Sound Effect",
-	0x3F: "Particle"
+	0x3F: "Particle",
 	0x46: "Changed Game State",
 	0x47: "Global Entity",
 	0x64: "Open Window",
@@ -254,7 +254,7 @@ names = {
 	0xCE: "Create Scoreboard",
 	0xCF: "Update Score",
 	0xD0: "Display Scoreboard",
-	0xD1: "Teams"
+	0xD1: "Teams",
 	0xFA: "Plugin Message",
 	0xFC: "Encryption Key Response",
 	0xFD: "Encryption Key Request",
