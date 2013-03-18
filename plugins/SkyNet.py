@@ -25,7 +25,7 @@ class SkyNetPlugin:
 
 	def log_off(self, *args):
 		for player in self.player_list:
-			self.cur.execute("""INSERT INTO skynet_events (player_name, online, time) 
+			self.cur.execute("""INSERT INTO skynet_events (player_name, online, time)
 				VALUES (%s, False, NOW());""", (player,))
 			self.conn.commit()
 		self.player_list = {}

@@ -172,6 +172,20 @@ class Extension84(ArrayExtension):
 	data_type = 'ubyte'
 	array_name = 'nbt'
 
+@extension(0xD1)
+class ExtensionD1:
+	@classmethod
+	def decode_extra(self, packet, bbuff):
+		if packet.data['mode'] == 0 or packet.data['mode'] == 2:
+			packet.data['display_name'] = unpack(bbuff, 'string')
+			packet.data['team_prefix'] = unpack(bbuff, 'string')
+			packet.data['team_suffix'] = unpack(bbuff, 'string')
+		if packet.data['mode'] == 0 or packet.data['mode'] == 3 or packet.data['mode'] == 4:
+			packet.data['player_count'] = count = unpack(bbuff, 'short')
+			packet.data['players'] = []
+			for i in xrange(count):
+				packet.data['players'].append(unpack(bbuff, 'string'))
+
 @extension(0xFA)	
 class ExtensionFA(ArrayExtension):
 	data_type = 'byte'
