@@ -1,4 +1,7 @@
+import threading
 from spock.mcp.mcpacket import Packet
+from spock.net.cflags import cflags
+from spock.net.timer import ThreadedTimer
 
 class RKAFKPlugin:
 	def __int__(self, client):
@@ -17,3 +20,10 @@ class RKAFKPlugin:
 		self.stop_event.set()
 		self.stop_event = threading.Event()
 
+	def move(self, *args):
+		self.client.push_move(Packet(ident =0x0C, data = {
+			'yaw': 0,
+			'pitch': 0,
+			'on_ground': False,
+			})
+		)
