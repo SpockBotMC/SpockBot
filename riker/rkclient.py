@@ -7,7 +7,6 @@ class RikerClient(spock.net.client.Client):
 		super(RikerClient, self).__init__()
 		self.move_queue = PacketQueue()
 		ThreadedTimer(.05, self._send_move, -1).start()
-		self.register_timer(TickTimer(self, 6000, self._keep_session_alive, -1))
 
 	def push_move(self, packet):
 		self.move_queue.push(packet)
