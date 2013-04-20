@@ -19,14 +19,14 @@ def handle_stop():
 		print "spockd PID file does not exist"
 		sys.exit(1)
 	pid = int(open(spock_pid, 'r').readline())
-	print "Stopping spockd PID: " + pid
+	print "Stopping spockd PID: " + str(pid)
 	os.kill(pid, signal.SIGTERM)
 	return pid
 
 def handle_status():
 	if path.exists(spock_pid):
 		pid = int(open(spock_pid, 'r').readline())
-		print "spockd PID: " + pid
+		print "spockd PID: " + str(pid)
 	else:
 		print "spockd PID file does not exist"
 
