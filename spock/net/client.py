@@ -22,7 +22,7 @@ class Client(object):
 	def __init__(self, **kwargs):
 		#Grab some settings
 		self.daemon = kwargs.get('daemon', False)
-		self.logfile = kwargs.get('argfile', '')
+		self.logfile = kwargs.get('logfile', '')
 		self.pidfile = kwargs.get('pidfile', '')
 		plugins = kwargs.get('plugins', [])
 		self.authenticated = kwargs.get('authenticated', True)
