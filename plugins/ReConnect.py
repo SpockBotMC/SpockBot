@@ -1,3 +1,4 @@
+from time import sleep
 from spock.mcp.mcpacket import Packet
 from spock.net.cflags import cflags
 
