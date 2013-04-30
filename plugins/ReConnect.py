@@ -1,5 +1,4 @@
 import threading
-from spock import utils
 from spock.mcp.mcpacket import Packet
 from spock.net.cflags import cflags
 from spock.net.timer import EventTimer
