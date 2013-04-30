@@ -12,7 +12,6 @@ class RKAFKPlugin:
 		client.register_handler(self.stop_timer, cflags['SOCKET_ERR'], cflags['SOCKET_HUP'], cflags['KILL_EVENT'])
 		client.register_dispatch(self.stop_timer, 0xFF)
 
-
 	def start_timer(self, *args):
 		ThreadedTimer(self.stop_event, 1, self.move, -1).start()
 
@@ -21,7 +20,7 @@ class RKAFKPlugin:
 		self.stop_event = threading.Event()
 
 	def move(self, *args):
-		self.client.push_move(Packet(ident =0x0C, data = {
+		self.client.push_move(Packet(ident = 0x0C, data = {
 			'yaw': 0,
 			'pitch': 0,
 			'on_ground': False,
