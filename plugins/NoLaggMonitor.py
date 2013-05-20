@@ -1,6 +1,7 @@
 import threading
 import re
 import psycopg2
+import logging
 from skylogin import dbname, dbuser, dbpass
 from spock.mcp.mcpacket import Packet
 from spock.net.cflags import cflags
@@ -14,8 +15,8 @@ class NoLaggPlugin:
 			})
 		self.stop_event = threading.Event()
 		client.register_dispatch(self.start_timer, 0x01)
-		client.register_handler(self.stop_timer, cflags['SOCKET_ERR'], cflags['SOCKET_HUP'], cflags['KILL_EVENT'])
-		client.register_dispatch(self.stop_timer, 0xFF)
+		client.register_handler(self.stop, cflags['SOCKET_ERR'], cflags['SOCKET_HUP'], cflags['KILL_EVENT'])
+		client.register_dispatch(self.stop, 0xFF)
 
 		self.conn = psycopg2.connect(database = dbname, user = dbuser, password = dbpass)
 		self.cur = self.conn.cursor()
@@ -25,19 +26,28 @@ class NoLaggPlugin:
 	def start_timer(self, *args):
 		ThreadedTimer(self.stop_event, 300, self.check_nolagg, -1).start()
 
-	def stop_timer(self, *args):
+	def stop(self, *args):
 		self.stop_event.set()
 		self.stop_event = threading.Event()
+		if self.handle_memory in self.client.plugin_dispatch[0x03]: self.client.plugin_dispatch[0x03].remove(self.handle_memory)
+		if self.handle_ticks in self.client.plugin_dispatch[0x03]: self.client.plugin_dispatch[0x03].remove(self.handle_ticks)
+		if self.handle_chunks in self.client.plugin_dispatch[0x03]: self.client.plugin_dispatch[0x03].remove(self.handle_chunks)
+		if self.handle_entities in self.client.plugin_dispatch[0x03]: self.client.plugin_dispatch[0x03].remove(self.handle_entities)
+		if self.handle_compress in self.client.plugin_dispatch[0x03]: self.client.plugin_dispatch[0x03].remove(self.handle_compress)
 
 	#Never ever, ever, do what I'm about to do
 	#This is a very special case
 	def check_nolagg(self, *args):
-		self.client.push(self.packet)
-		if self.handle_memory not in self.client.plugin_dispatch[0x03]:
+		if (self.handle_memory not in self.client.plugin_dispatch[0x03]
+		and self.handle_ticks not in self.client.plugin_dispatch[0x03]
+		and self.handle_chunks not in self.client.plugin_dispatch[0x03]
+		and self.handle_entities not in self.client.plugin_dispatch[0x03]
+		and self.handle_compress not in self.client.plugin_dispatch[0x03]):
+			self.toreturn = {}
+			self.client.push(self.packet)
 			self.client.register_dispatch(self.handle_memory, 0x03)
 
 	def handle_memory(self, packet):
-		self.toreturn = {}
 		msg = re.sub('\xa7.', '', packet.data['text'])
 		match = re.match('Memory: \|* ([0-9]+)/([0-9]+) ([A-Z]+)', msg)
 		if match:
@@ -99,15 +109,18 @@ class NoLaggPlugin:
 
 	#SQL to log stats will go here
 	def record_stats(self):
-		self.cur.execute("""INSERT INTO skynet_stats ("Time", "UsedMem", "TotalMem", "MemUnit", "Tps", "PercentTps", 
-		"LoadedChunks", "LoadedUChunks", "LightingChunks", "TotalEntities", "Mobs", "Items", "TNT", "Players", "PacketCompr") 
-		VALUES (NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""", (
-			self.toreturn['UsedMem'], self.toreturn['TotalMem'], self.toreturn['MemUnit'],
-			self.toreturn['Tps'], self.toreturn['PercentTps'],
-			self.toreturn['LoadedChunks'], self.toreturn['LoadedUChunks'], self.toreturn['LightingChunks'],
-			self.toreturn['TotalEntities'], self.toreturn['Mobs'], self.toreturn['Items'], self.toreturn['TNT'], self.toreturn['Players'],
-			self.toreturn['PacketCompr'],
+		try:
+			self.cur.execute("""INSERT INTO skynet_stats ("Time", "UsedMem", "TotalMem", "MemUnit", "Tps", "PercentTps", 
+			"LoadedChunks", "LoadedUChunks", "LightingChunks", "TotalEntities", "Mobs", "Items", "TNT", "Players", "PacketCompr") 
+			VALUES (NOW(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);""", (
+				self.toreturn['UsedMem'], self.toreturn['TotalMem'], self.toreturn['MemUnit'],
+				self.toreturn['Tps'], self.toreturn['PercentTps'],
+				self.toreturn['LoadedChunks'], self.toreturn['LoadedUChunks'], self.toreturn['LightingChunks'],
+				self.toreturn['TotalEntities'], self.toreturn['Mobs'], self.toreturn['Items'], self.toreturn['TNT'], self.toreturn['Players'],
+				self.toreturn['PacketCompr'],
+				)
 			)
-		)
-		self.conn.commit()
-		self.toreturn = {}
+			self.conn.commit()
+		except Exception as error:
+			self.conn.rollback()
+			logging.error(str(error))
