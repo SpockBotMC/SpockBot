@@ -1,6 +1,6 @@
 #Most of the data formats, structures, and magic values
 
-MC_PROTOCOL_VERSION = 60
+MC_PROTOCOL_VERSION = 61
 SERVER_TO_CLIENT = 0x01
 CLIENT_TO_SERVER = 0x02
 SERVER_LIST_PING_MAGIC = 0x01
@@ -303,7 +303,7 @@ structs = {
 		("bool", "left_click")),
 	#Update health
 	0x08: (
-		("short", "health"),
+		("float", "health"),
 		("short", "food"),
 		("float", "food_saturation")),
 	#Respawn
