@@ -303,7 +303,7 @@ structs = {
 		("bool", "left_click")),
 	#Update health
 	0x08: (
-		("float", "health"),
+		("short", "health"),
 		("short", "food"),
 		("float", "food_saturation")),
 	#Respawn
