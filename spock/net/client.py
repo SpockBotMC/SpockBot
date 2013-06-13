@@ -107,11 +107,10 @@ class Client(object):
 		while not (self.flags&cflags['KILL_EVENT'] and self.kill):
 			self.getflags()
 			if self.flags:
-				i = 0
 				for name, flag in cflags.iteritems():
 					if self.flags&flag:
 						#Default handlers
-						if flag in fhandles: fhandles[flag](self); i+=1; print i, name
+						if flag in fhandles: fhandles[flag](self)
 						#Plugin handlers
 						for callback in self.plugin_handlers[flag]: callback(flag)
 			for index, timer in enumerate(self.timers):
