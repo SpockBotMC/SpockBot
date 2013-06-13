@@ -5,4 +5,4 @@ class EchoPacketPlugin:
 		client.register_dispatch(self.echopacket, *structs)
 
 	def echopacket(self, packet):
-		print packet
+		print(packet)

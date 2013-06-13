@@ -12,9 +12,9 @@ class GravityPlugin:
 		client.register_dispatch(self.fall, 0x38)
 
 	def fall(self, packet):
-		print "Entering fall func"
+		print("Entering fall func")
 		if not self.client.position['on_ground']:
-			print "Trying to Fall"
+			print("Trying to Fall")
 			y = int(math.floor(self.client.position['y']))
 			x = int(math.floor(self.client.position['x']))
 			z = int(math.floor(self.client.position['z']))
@@ -36,7 +36,7 @@ class GravityPlugin:
 					'z': self.client.position['z'],
 					'stance': (ground+2),
 					'on_ground': True,
-					}))		
+					}))
 
 	def findground(self, x,y,z):
 		blockid = 0

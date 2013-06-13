@@ -1,6 +1,7 @@
 import re
-import urllib2
-import urllib
+import urllib.request
+import urllib.parse
+import urllib.error
 import hashlib
 import socket
 import os
@@ -10,7 +11,7 @@ from spock import smpmap
 
 # This function courtesy of barneygale
 def javaHexDigest(digest):
-	d = long(digest.hexdigest(), 16)
+	d = int(digest.hexdigest(), 16)
 	if d >> 39 * 4 & 0x8:
 		d = "-%x" % ((-d) & (2 ** (40 * 4) - 1))
 	else:
@@ -24,12 +25,12 @@ def LoginToMinecraftNet(username, password):
 		data = {'user': username,
 			'password': password,
 			'version': '13'}
-		data = urllib.urlencode(data)
-		req = urllib2.Request(url, data, header)
-		opener = urllib2.build_opener()
+		data = urllib.parse.urlencode(data)
+		req = urllib.request.Request(url, data.encode('ascii'), header)
+		opener = urllib.request.build_opener()
 		response = opener.open(req, None, 10)
-		response = response.read()
-	except urllib2.URLError:
+		response = response.read().decode('ascii')
+	except urllib.error.URLError:
 		return {'Response': "Can't connect to minecraft.net"}
 	if (not "deprecated" in response.lower()):
 		return {'Response': response}
@@ -43,7 +44,7 @@ def LoginToMinecraftNet(username, password):
 
 def HashServerId(serverid, sharedsecret, pubkey):
 	sha1 = hashlib.sha1()
-	sha1.update(serverid)
+	sha1.update(serverid.encode('ascii'))
 	sha1.update(sharedsecret)
 	sha1.update(pubkey)
 	return javaHexDigest(sha1)
@@ -51,8 +52,8 @@ def HashServerId(serverid, sharedsecret, pubkey):
 def AuthenticateMinecraftSession(username, sessionid, serverid):
 	url = "http://session.minecraft.net/game/joinserver.jsp?user=" + username + "&sessionId=" + sessionid + "&serverId=" + serverid
 	try:
-		return urllib2.urlopen(url).read()
-	except urllib2.URLError:
+		return urllib.request.urlopen(url).read().decode('ascii')
+	except urllib.error.URLError:
 		return 'Couldn\'t connect to session.minecraft.net'
 
 def ByteToHex( byteStr ):
@@ -87,7 +88,7 @@ def ResetClient(client):
 	client.sock.setblocking(0)
 	client.poll.register(client.sock)
 
-	client.sbuff = ''
+	client.sbuff = b''
 	client.rbuff.flush()
 	client.encrypted = False
 

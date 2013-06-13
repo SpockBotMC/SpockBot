@@ -1,5 +1,4 @@
-from datautils import *
-from mcdata import *
+from spock.mcp.datautils import unpack, pack, unpack_array, pack_array
 
 extensions = {}
 def extension(ident):
@@ -161,7 +160,7 @@ class Extension82:
 		for i in range(4):
 			packet.data["line_%s" % (i+1)] = packet.data["text"][i]
 		del packet.data["text"]
-		return ''
+		return b''
 
 @extension(0x83)
 class Extension83(ArrayExtension):
@@ -201,7 +200,7 @@ class ExtensionFC:
 	
 	@classmethod
 	def encode_extra(self, packet):
-		append = ''
+		append = b''
 		for k in ('shared_secret', 'verify_token'):
 			append += pack('short', len(packet.data[k]))
 			append += packet.data[k]
@@ -218,7 +217,7 @@ class ExtensionFD:
 	
 	@classmethod
 	def encode_extra(self, packet):
-		append = ''
+		append = b''
 		for k in ('public_key', 'verify_token'):
 			append += pack('short', len(packet.data[k]))
 			append += pack_array('ubyte', packet.data[k])

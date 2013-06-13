@@ -1,8 +1,6 @@
 from time import gmtime, strftime
 from spock import bound_buffer
-import mcpacket_extensions
-import mcdata
-import datautils
+from spock.mcp import mcpacket_extensions, datautils, mcdata
 #from utils import ByteToHex
 
 class Packet(object):
@@ -36,7 +34,7 @@ class Packet(object):
 		if self.ident in mcpacket_extensions.extensions:
 			append = mcpacket_extensions.extensions[self.ident].encode_extra(self)
 		else:
-			append = ''
+			append = b''
 		
 		#Payload
 		for dtype, name in mcdata.structs[self.ident][self.direction]:

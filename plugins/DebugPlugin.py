@@ -10,11 +10,11 @@ class DebugPlugin:
 		client.register_handler(self.dying, cflags['KILL_EVENT'])
 
 	def dying(self, *args):
-		print "I'm dying!"
+		print("I'm dying!")
 
 	def debug(self, packet):
 		if (packet.ident == 0xC9 
 		or packet.ident == 0x03
 		or packet.ident == 0xFF
 		or packet.ident == 0x0D):
-			print packet
+			print(packet)

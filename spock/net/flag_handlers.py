@@ -1,9 +1,9 @@
 import socket
 import logging
 from spock.mcp.mcpacket import read_packet, Packet
+from spock.net.cflags import cflags
 from spock.bound_buffer import BufferUnderflowException
 from spock import utils
-from cflags import cflags
 
 fhandles = {}
 def fhandle(ident):
@@ -15,13 +15,17 @@ def fhandle(ident):
 #SOCKET_ERR - Socket Error has occured
 @fhandle(cflags['SOCKET_ERR'])
 def handleERR(client):
-	#print "Socket Error has occured"
+	if client.sock_quit and not client.kill:
+		print("Socket Error has occured, stopping...")
+		client.kill = True
 	utils.ResetClient(client)
 
 #SOCKET_HUP - Socket has hung up
 @fhandle(cflags['SOCKET_HUP'])
 def handleHUP(client):
-	#print "Socket has hung up"
+	if client.sock_quit and not client.kill:
+		print("Socket has hung up, stopping...")
+		client.kill = True
 	utils.ResetClient(client)
 
 #SOCKET_RECV - Socket is ready to recieve data

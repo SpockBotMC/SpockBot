@@ -31,11 +31,7 @@ Chunk Coords * 16 + Block Coords gives you the actual position of the block in t
 import array
 import struct
 import zlib
-
-try:
-	from cStringIO import StringIO
-except ImportError:
-	from StringIO import StringIO
+from io import BytesIO
 
 class BiomeData:
 	""" A 16x16 array stored in each ChunkColumn. """
@@ -163,7 +159,7 @@ class World:
 		ground_up = True
 		
 		# Read compressed data
-		data = StringIO(zlib.decompress(packet.data['data']))
+		data = BytesIO(zlib.decompress(packet.data['data']))
 		
 		for bitmap in packet.data['bitmaps']:
 			# Read chunk metadata
@@ -186,7 +182,7 @@ class World:
 		ground_up = packet.data['ground_up_continuous']
 		mask1 = packet.data['primary_bitmap']
 		mask2 = packet.data['secondary_bitmap']
-		data = StringIO(zlib.decompress(packet.data['data']))
+		data = BytesIO(zlib.decompress(packet.data['data']))
 		skylight = True
 
 		key = (x_chunk, z_chunk)

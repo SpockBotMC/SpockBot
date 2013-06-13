@@ -1,6 +1,5 @@
 import struct
-import mcdata
-import nbt
+from spock.mcp import mcdata, nbt
 #from spock.utils import ByteToHex
 
 endian = '>'

@@ -712,7 +712,7 @@ structs = {
 
 
 #Normalize data structures
-for key, val in structs.iteritems():
+for key, val in structs.items():
 	if isinstance(val, dict):
 		for k in (SERVER_TO_CLIENT, CLIENT_TO_SERVER):
 			if len(val[k]) and not isinstance(val[k][0], tuple):

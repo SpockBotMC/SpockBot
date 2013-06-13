@@ -7,11 +7,10 @@ import logging
 
 from Crypto import Random
 
-import cipher
 from spock.net.cflags import cflags
 from spock.net.flag_handlers import fhandles
 from spock.net.packet_handlers import phandles
-from spock.net import timer
+from spock.net import timer, cipher
 from spock.mcp import mcdata, mcpacket
 from spock import utils, smpmap, bound_buffer
 
@@ -28,6 +27,8 @@ class Client(object):
 		self.authenticated = kwargs.get('authenticated', True)
 		self.bufsize = kwargs.get('bufsize', 4096)
 		self.timeout = kwargs.get('timeout', 1)
+		self.sess_quit = kwargs.get('sess_quit', True)
+		self.sock_quit = kwargs.get('sock_quit', True)
 		self.proxy = kwargs.get('proxy', {
 			'enabled': False,
 			'host': '',
@@ -38,7 +39,7 @@ class Client(object):
 		#Initialize plugin list
 		#Plugins should never touch this
 		self.timers = []
-		self.plugin_handlers = {flag: [] for name, flag in cflags.iteritems()}
+		self.plugin_handlers = {flag: [] for name, flag in cflags.items()}
 		self.plugin_dispatch = {ident: [] for ident in mcdata.structs}
 		self.plugins = [plugin(self) for plugin in plugins]
 
@@ -53,10 +54,10 @@ class Client(object):
 		#Plugins should generally not touch these
 		self.encrypted = False
 		self.kill = False
+		self.sess_err = False
 		self.auth_err = False
-		self.login_err = False
 		self.rbuff = bound_buffer.BoundBuffer()
-		self.sbuff = ''
+		self.sbuff = b''
 		self.flags = 0
 
 		#Game State variables
@@ -87,14 +88,13 @@ class Client(object):
 			'y': 0,
 			'z': 0,
 		}
-		self.login_info = {}
 
 	#Convenience method for starting a client
 	def start(self, username, password = '', host = 'localhost', port = 25565):
 		if self.daemon: self.start_daemon()
-		self.start_session(username, password)
-		self.login(host, port)
-		self.event_loop()
+		if (self.start_session(username, password)['Response'] == "Good to go!"):
+			self.login(host, port)
+			self.event_loop()
 		self.exit()
 
 	def event_loop(self):
@@ -107,7 +107,7 @@ class Client(object):
 		while not (self.flags&cflags['KILL_EVENT'] and self.kill):
 			self.getflags()
 			if self.flags:
-				for name, flag in cflags.iteritems():
+				for name, flag in cflags.items():
 					if self.flags&flag:
 						#Default handlers
 						if flag in fhandles: fhandles[flag](self)
@@ -130,7 +130,7 @@ class Client(object):
 			self.poll.register(self.sock, rmask)
 		try:
 			poll = self.poll.poll(self.timeout)
-		except select.error, e:
+		except select.error as e:
 			logging.error(str(e))
 			poll = []
 		if poll:
@@ -139,7 +139,7 @@ class Client(object):
 			if poll&select.POLLHUP:                self.flags += cflags['SOCKET_HUP']
 			if poll&select.POLLOUT and self.sbuff: self.flags += cflags['SOCKET_SEND']
 			if poll&select.POLLIN:                 self.flags += cflags['SOCKET_RECV']
-		if self.login_err:                     self.flags += cflags['LOGIN_ERR']; self.login_err = False
+		if self.sess_err:                      self.flags += cflags['SESS_ERR']; self.sess_err = False
 		if self.auth_err:                      self.flags += cflags['AUTH_ERR']; self.auth_err = False
 		if self.kill:                          self.flags += cflags['KILL_EVENT']
 
@@ -170,23 +170,25 @@ class Client(object):
 			self.host = host
 			self.port = port
 		try:
-			print "Attempting to connect to host:", self.host, "port:", self.port
+			print("Attempting to connect to host:", self.host, "port:", self.port)
 			self.sock.connect((self.host, self.port))
 		except socket.error as error:
 			logging.info("Error on Connect (this is normal): " + str(error))
 
 	def exit(self):
-		self.push(mcpacket.Packet(ident = 0xFF, data = {
-			'reason': 'KILL_EVENT recieved'
-			})
-		)
-		while self.sbuff:
-			self.getflags()
-			if self.flags&(cflags['SOCKET_ERR']|cflags['SOCKET_HUP']):
-				break
-			elif self.flags&cflags['SOCKET_SEND']:
-				fhandles[cflags['SOCKET_SEND']](self)
-		self.sock.close()
+		self.getflags()
+		if not self.flags&cflags['SOCKET_HUP']:
+			self.push(mcpacket.Packet(ident = 0xFF, data = {
+				'reason': 'KILL_EVENT recieved'
+				})
+			)
+			while self.sbuff:
+				self.getflags()
+				if self.flags&(cflags['SOCKET_ERR']|cflags['SOCKET_HUP']):
+					break
+				elif self.flags&cflags['SOCKET_SEND']:
+					fhandles[cflags['SOCKET_SEND']](self)
+			self.sock.close()
 
 		if self.pidfile and os.path.exists(self.pidfile):
 			os.remove(self.pidfile)
@@ -208,12 +210,16 @@ class Client(object):
 
 		#Stage 1: Login to Minecraft.net
 		if self.authenticated:
-			print "Attempting login with username:", username, "and password:", password
+			print("Attempting login with username:", username, "and password:", password)
 			LoginResponse = utils.LoginToMinecraftNet(username, password)
-			print LoginResponse
-			if (LoginResponse['Response'] != "Good to go!"):
-				logging.error('Login Unsuccessful, Response: %s', LoginResponse['Response'])
-				self.login_err = True
+			if (LoginResponse['Response'] == "Good to go!"):
+				print(LoginResponse)
+			else:
+				print('Login Unsuccessful, Response:', LoginResponse['Response'])
+				self.sess_err = True
+				if self.sess_quit:
+					print("Session error, stopping...")
+					self.kill = True
 				return LoginResponse
 
 			self.username = LoginResponse['Username']
@@ -221,12 +227,14 @@ class Client(object):
 		else:
 			self.username = username
 
+		return LoginResponse
+
 	def login(self, host = 'localhost', port = 25565):
 		self.connect(host, port)
 		self.SharedSecret = Random._UserFriendlyRNG.get_random_bytes(16)
 
 		#Stage 2: Send initial handshake
-		self.push(mcpacket.Packet(ident = 02, data = {
+		self.push(mcpacket.Packet(ident = 0x02, data = {
 			'protocol_version': mcdata.MC_PROTOCOL_VERSION,
 			'username': self.username,
 			'host': host,

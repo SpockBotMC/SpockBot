@@ -81,12 +81,12 @@ class handle09(BaseHandle):
 class PositionUpdate(BaseHandle):
 	@classmethod
 	def ToClient(self, client, packet):
-		for key, value in packet.data.iteritems():
+		for key, value in packet.data.items():
 			client.position[key] = value
 		client.push(mcpacket.Packet(ident=0x0D, data = client.position))
 	@classmethod
 	def ToServer(self, client, packet):
-		for key, value in packet.data.iteritems():
+		for key, value in packet.data.items():
 			client.position[key] = value
 
 class SpawnEntity(BaseHandle):
@@ -146,7 +146,7 @@ class handleFD(BaseHandle):
 		if client.authenticated:
 			serverid = utils.HashServerId(packet.data['server_id'], client.SharedSecret, pubkey)
 			SessionResponse = utils.AuthenticateMinecraftSession(client.username, client.sessionid, serverid)
-			print SessionResponse
+			print(SessionResponse)
 			if (SessionResponse != 'OK'):
 				logging.error('Session Authentication Failed, Response: %s', SessionResponse)
 				client.auth_err = True
@@ -154,8 +154,8 @@ class handleFD(BaseHandle):
 
 		#Stage 4: Send an Encryption Response
 		RSACipher = PKCS1_v1_5.new(RSA.importKey(pubkey))
-		encryptedSanityToken = RSACipher.encrypt(str(packet.data['verify_token']))
-		encryptedSharedSecret = RSACipher.encrypt(str(client.SharedSecret))
+		encryptedSanityToken = RSACipher.encrypt(packet.data['verify_token'])
+		encryptedSharedSecret = RSACipher.encrypt(client.SharedSecret)
 		client.push(mcpacket.Packet(ident = 0xFC, data = {
 			'shared_secret': encryptedSharedSecret,
 			'verify_token': encryptedSanityToken,
