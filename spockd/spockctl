@@ -1,0 +1,79 @@
+#!/usr/bin/python
+import sys, os, signal, argparse, time
+from os import path
+
+spockd_dir = path.join(path.expanduser('~'), '.spockd')
+spock_pid = path.join(spockd_dir, 'spockd.pid')
+inpipe = path.join(spockd_dir, 'inpipe')
+outpipe = path.join(spockd_dir, 'outpipe')
+
+def handle_start():
+	if path.exists(spock_pid):
+		print "spockd PID file already exists"
+		sys.exit(1)
+	print "Starting spockd"
+	os.system('spockd -D')
+
+def handle_stop():
+	if not path.exists(spock_pid):
+		print "spockd PID file does not exist"
+		sys.exit(1)
+	pid = int(open(spock_pid, 'r').readline())
+	print "Stopping spockd PID: " + str(pid)
+	os.kill(pid, signal.SIGTERM)
+	return pid
+
+def handle_status():
+	if path.exists(spock_pid):
+		pid = int(open(spock_pid, 'r').readline())
+		print "spockd PID: " + str(pid)
+	else:
+		print "spockd PID file does not exist"
+
+def handle_restart():
+	alive = True
+	pid = handle_stop()
+	while alive:
+		try:
+			os.kill(pid, 0)
+			time.sleep(1)
+		except OSError:
+			alive = False
+	handle_start()
+
+ops = {
+	'start': handle_start,
+	'stop': handle_stop,
+	'status': handle_status,
+	'restart': handle_restart,
+}
+
+if len(sys.argv)<2 or sys.argv[1] == '-h':
+	print "Valid ops {start, stop, restart, status}"
+	sys.exit(1)
+
+if sys.argv[1] == '-k':
+	if len(sys.argv)>3:
+		print "Too many args"
+		sys.exit(1)
+	op = sys.argv[2]
+	if not op in ops:
+		print "Invalid Op"
+		sys.exit(1)
+	ops[op]()
+	sys.exit(0)
+
+if not path.exists(spock_pid):
+	print "spockd PID does not exist"
+	sys.exit(1)
+
+cmd = ' '.join(sys.argv[1:])
+
+writepipe = open(inpipe, 'w')
+writepipe.write(cmd)
+writepipe.close()
+readpipe = open(outpipe, 'r')
+returnval = readpipe.read()
+readpipe.close()
+print returnval
+sys.exit(0)
