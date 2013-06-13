@@ -79,10 +79,11 @@ class Client(object):
 		}
 
 	#Convenience method for starting a client
-	def start(self, username, password = '', host = 'localhost', port = 25565):
+	def start(self, host = 'localhost', port = 25565):
 		if self.daemon: self.start_daemon()
-		if (self.start_session(username, password)['Response'] == "Good to go!"):
-			self.login(host, port)
+		if (self.start_session(self.mc_username, self.mc_password)['Response'] == "Good to go!"):
+			self.connect(host, port)
+			self.handshake()
 			self.event_loop()
 		self.exit()
 
@@ -218,16 +219,15 @@ class Client(object):
 
 		return LoginResponse
 
-	def login(self, host = 'localhost', port = 25565):
-		self.connect(host, port)
+	def handshake(self):
 		self.SharedSecret = Random._UserFriendlyRNG.get_random_bytes(16)
 
 		#Stage 2: Send initial handshake
 		self.push(mcpacket.Packet(ident = 0x02, data = {
 			'protocol_version': mcdata.MC_PROTOCOL_VERSION,
 			'username': self.username,
-			'host': host,
-			'port': port,
+			'host': self.host,
+			'port': self.port,
 			})
 		)
 
