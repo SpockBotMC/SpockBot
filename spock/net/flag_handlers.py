@@ -32,6 +32,13 @@ def handleSRECV(client):
 		client.rbuff.append(client.cipher.decrypt(data) if client.encrypted else data)
 	except socket.error as error:
 		logging.info(str(error))
+	try:
+		while True:
+			client.rbuff.save()
+			packet = read_packet(client.rbuff)
+			client.dispatch_packet(packet)
+	except BufferUnderflowException:
+		client.rbuff.revert()
 
 #SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send
 @fhandle(cflags['SOCKET_SEND'])
@@ -41,14 +48,3 @@ def handleSEND(client):
 		client.sbuff = client.sbuff[sent:]
 	except socket.error as error:
 		logging.info(str(error))
-
-#RBUFF_RECV - Read buffer has data ready to be unpacked
-@fhandle(cflags['RBUFF_RECV'])
-def handleBRECV(client):
-	try:
-		while True:
-			client.rbuff.save()
-			packet = read_packet(client.rbuff)
-			client.dispatch_packet(packet)
-	except BufferUnderflowException:
-		client.rbuff.revert()

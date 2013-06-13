@@ -57,9 +57,9 @@ class Client(object):
 		self.login_err = False
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = ''
-		self.flags = 0 #OK to read flags, not write
+		self.flags = 0
 
-		#State variables
+		#Game State variables
 		#Plugins should read these (but generally not write)
 		self.world = smpmap.World()
 		self.world_time = {
@@ -107,10 +107,11 @@ class Client(object):
 		while not (self.flags&cflags['KILL_EVENT'] and self.kill):
 			self.getflags()
 			if self.flags:
+				i = 0
 				for name, flag in cflags.iteritems():
 					if self.flags&flag:
 						#Default handlers
-						if flag in fhandles: fhandles[flag](self)
+						if flag in fhandles: fhandles[flag](self); i+=1; print i, name
 						#Plugin handlers
 						for callback in self.plugin_handlers[flag]: callback(flag)
 			for index, timer in enumerate(self.timers):
@@ -139,7 +140,6 @@ class Client(object):
 			if poll&select.POLLHUP:                self.flags += cflags['SOCKET_HUP']
 			if poll&select.POLLOUT and self.sbuff: self.flags += cflags['SOCKET_SEND']
 			if poll&select.POLLIN:                 self.flags += cflags['SOCKET_RECV']
-		if self.rbuff:                         self.flags += cflags['RBUFF_RECV']
 		if self.login_err:                     self.flags += cflags['LOGIN_ERR']; self.login_err = False
 		if self.auth_err:                      self.flags += cflags['AUTH_ERR']; self.auth_err = False
 		if self.kill:                          self.flags += cflags['KILL_EVENT']
@@ -194,7 +194,6 @@ class Client(object):
 
 		sys.exit(0)
 
-
 	def enable_crypto(self, SharedSecret):
 		self.cipher = cipher.AESCipher(SharedSecret)
 		self.encrypted = True
@@ -203,19 +202,6 @@ class Client(object):
 		bytes = packet.encode()
 		self.sbuff += (self.cipher.encrypt(bytes) if self.encrypted else bytes)
 		self.dispatch_packet(packet)
-
-	def login(self, host = 'localhost', port = 25565):
-		self.connect(host, port)
-		self.SharedSecret = Random._UserFriendlyRNG.get_random_bytes(16)
-
-		#Stage 2: Send initial handshake
-		self.push(mcpacket.Packet(ident = 02, data = {
-			'protocol_version': mcdata.MC_PROTOCOL_VERSION,
-			'username': self.username,
-			'host': host,
-			'port': port,
-			})
-		)
 
 	def start_session(self, username, password = ''):
 		self.mc_username = username
@@ -235,6 +221,19 @@ class Client(object):
 			self.sessionid = LoginResponse['SessionID']
 		else:
 			self.username = username
+
+	def login(self, host = 'localhost', port = 25565):
+		self.connect(host, port)
+		self.SharedSecret = Random._UserFriendlyRNG.get_random_bytes(16)
+
+		#Stage 2: Send initial handshake
+		self.push(mcpacket.Packet(ident = 02, data = {
+			'protocol_version': mcdata.MC_PROTOCOL_VERSION,
+			'username': self.username,
+			'host': host,
+			'port': port,
+			})
+		)
 
 	def start_daemon(self, daemonize = False):
 		self.daemon = True
