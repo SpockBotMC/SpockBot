@@ -10,7 +10,7 @@ from Crypto import Random
 from spock.net.cflags import cflags
 from spock.net.flag_handlers import fhandles
 from spock.net.packet_handlers import phandles
-from spock.net import timer, cipher
+from spock.net import timer, cipher, defaults
 from spock.mcp import mcdata, mcpacket
 from spock import utils, smpmap, bound_buffer
 
@@ -20,28 +20,17 @@ smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
 class Client(object):
 	def __init__(self, **kwargs):
 		#Grab some settings
-		self.daemon = kwargs.get('daemon', False)
-		self.logfile = kwargs.get('logfile', '')
-		self.pidfile = kwargs.get('pidfile', '')
-		plugins = kwargs.get('plugins', [])
-		self.authenticated = kwargs.get('authenticated', True)
-		self.bufsize = kwargs.get('bufsize', 4096)
-		self.timeout = kwargs.get('timeout', 1)
-		self.sess_quit = kwargs.get('sess_quit', True)
-		self.sock_quit = kwargs.get('sock_quit', True)
-		self.proxy = kwargs.get('proxy', {
-			'enabled': False,
-			'host': '',
-			'port': 0,
-			}
-		)
+		settings = kwargs.get('settings', {})
+		for setting in defaults.defstruct:
+			val = kwargs.get(setting[1], settings.get(setting[1], setting[2]))
+			setattr(self, setting[0], val)
 
 		#Initialize plugin list
 		#Plugins should never touch this
 		self.timers = []
 		self.plugin_handlers = {flag: [] for name, flag in cflags.items()}
 		self.plugin_dispatch = {ident: [] for ident in mcdata.structs}
-		self.plugins = [plugin(self) for plugin in plugins]
+		self.plugins = [plugin(self) for plugin in self.plugins]
 
 		#Initialize socket and poll
 		#Plugins should never touch these unless they know what they're doing
@@ -162,7 +151,7 @@ class Client(object):
 	def register_timer(self, timer):
 		self.timers.append(timer)
 
-	def connect(self, host = 'localhost', port=25565):
+	def connect(self, host = 'localhost', port = 25565):
 		if self.proxy['enabled']:
 			self.host = self.proxy['host']
 			self.port = self.proxy['port']
