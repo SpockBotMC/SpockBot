@@ -125,13 +125,13 @@ class Client(object):
 			poll = []
 		if poll:
 			poll = poll[0][1]
-			if poll&select.POLLERR:                self.flags += cflags['SOCKET_ERR']
-			if poll&select.POLLHUP:                self.flags += cflags['SOCKET_HUP']
-			if poll&select.POLLOUT and self.sbuff: self.flags += cflags['SOCKET_SEND']
-			if poll&select.POLLIN:                 self.flags += cflags['SOCKET_RECV']
-		if self.sess_err:                      self.flags += cflags['SESS_ERR']; self.sess_err = False
-		if self.auth_err:                      self.flags += cflags['AUTH_ERR']; self.auth_err = False
-		if self.kill:                          self.flags += cflags['KILL_EVENT']
+			if poll&select.POLLERR: self.flags += cflags['SOCKET_ERR']
+			if poll&select.POLLHUP: self.flags += cflags['SOCKET_HUP']
+			if poll&select.POLLOUT: self.flags += cflags['SOCKET_SEND']
+			if poll&select.POLLIN:  self.flags += cflags['SOCKET_RECV']
+		if self.sess_err:               self.flags += cflags['SESS_ERR']; self.sess_err = False
+		if self.auth_err:               self.flags += cflags['AUTH_ERR']; self.auth_err = False
+		if self.kill:                   self.flags += cflags['KILL_EVENT']
 
 	def dispatch_packet(self, packet):
 		#Default dispatch
