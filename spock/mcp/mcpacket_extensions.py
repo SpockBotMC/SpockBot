@@ -41,7 +41,21 @@ class Extension17:
 class Extension1D(ArrayExtension):
 	data_type = 'int'
 	array_name = 'entity_ids'
-	
+
+@extension(0x2C)
+class Extension2C:
+	@classmethod
+	def decode_extra(self, packet, bbuff):
+		packet.data['list_elements'] = []
+		for i in range(packet.data['list_length']):
+			packet.data['list_elements'].append({
+				'uuid_msb': unpack(bbuff, 'long'),
+				'uuid_lsb': unpack(bbuff, 'long'),
+				'amount': unpack(bbuff, 'double'),
+				'operation': unpack(bbuff, 'byte'),
+			})
+
+
 @extension(0x33)
 class Extension33(ArrayExtension):
 	@classmethod

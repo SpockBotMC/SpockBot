@@ -72,6 +72,10 @@ def ByteToHex( byteStr ):
 
 	return ''.join( [ "%02X " % ord( x ) for x in byteStr ] ).strip()
 
+#TODO: Support 1.6 Server List Ping
+def EncodeSLP(packet):
+	pass
+
 def DecodeSLP(packet):
 	rstring = packet.data['reason'][3:].split('\x00')
 	return {'protocol_version': int(rstring[0]),

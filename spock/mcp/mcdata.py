@@ -1,6 +1,6 @@
 #Most of the data formats, structures, and magic values
 
-MC_PROTOCOL_VERSION = 61
+MC_PROTOCOL_VERSION = 74
 SERVER_TO_CLIENT = 0x01
 CLIENT_TO_SERVER = 0x02
 SERVER_LIST_PING_MAGIC = 0x01
@@ -303,7 +303,7 @@ structs = {
 		("bool", "left_click")),
 	#Update health
 	0x08: (
-		("short", "health"),
+		("float", "health"),
 		("short", "food"),
 		("float", "food_saturation")),
 	#Respawn
@@ -378,7 +378,8 @@ structs = {
 	#Entity action
 	0x13: (
 		("int", "entity_id"),
-		("byte", "action")),
+		("byte", "action"),
+		("int", "jump_boost")),
 	#Spawn Named Entity
 	0x14: (
 		("int", "entity_id"),
@@ -434,6 +435,12 @@ structs = {
 		("int", "y"),
 		("int", "z"),
 		("short", "count")),
+	#Steer Vehicle
+	0x1B: (
+		("float", "sideways"),
+		("float", "forward"),
+		("bool", "jump"),
+		("bool", "unmount")),
 	#Entity Velocity
 	0x1C: (
 		("int", "entity_id"),
@@ -482,7 +489,8 @@ structs = {
 	#Attach Entity
 	0x27: (
 		("int", "entity_id"),
-		("int", "vehicle_id")),
+		("int", "vehicle_id"),
+		("ubyte", "leash")),
 	#Entity Metadata
 	0x28: (
 		("int", "entity_id"),
@@ -502,6 +510,13 @@ structs = {
 		("float", "experience_bar"),
 		("short", "level"),
 		("short", "total_experience")),
+	#Entity Properties
+	0x2C: (
+		("int", "entity_id"),
+		("int", "property_count"),
+		("string", "key"),
+		("double", "value"),
+		("short", "list_length"))
 	#Chunk Data
 	0x33: (
 		("int", "x_chunk"),
@@ -594,7 +609,8 @@ structs = {
 		("byte", "inventory_type"),
 		("string", "window_title"),
 		("byte", "slot_count"),
-		("bool", "use_title")),
+		("bool", "use_title"),
+		("int", "entity_id")),
 	#Close Window
 	0x65: ("byte", "window_id"),
 	#Click Window
@@ -653,10 +669,17 @@ structs = {
 		("int", "z"),
 		("byte", "action"),
 		("short", "data_size")),
+	#Tile Editor Open
+	#Purpose unkown, set on sign placement
+	0x85: (
+		("byte", "tile_entity_id"),
+		("int", "x"),
+		("int", "y"),
+		("int", "z")),
 	#Increment Statistic
 	0xC8: (
 		("int", "statistic_id"),
-		("byte", "amount")),
+		("int", "amount")),
 	#Player List Item
 	0xC9: (
 		("string", "player_name"),
@@ -665,8 +688,8 @@ structs = {
 	#Player Abilities
 	0xCA: (
 		("ubyte", "flags"),
-		("byte", "walking_speed"),
-		("byte", "flying_speed")),
+		("float", "flying_speed"),
+		("float", "walking_speed")),
 	#Tab-Complete
 	0xCB: ("string", "text"),
 	#Client Settings
@@ -708,7 +731,8 @@ structs = {
 	#Server List Ping
 	0xFE: ("ubyte", "magic"),
 	#Disconnect
-	0xFF: ("string", "reason")}
+	0xFF: ("string", "reason")
+}
 
 
 #Normalize data structures
