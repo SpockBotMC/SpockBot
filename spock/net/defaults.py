@@ -2,7 +2,7 @@
 #3 values = Attribute name, setting name, default value
 defstruct = [
 	('plugins', []),
-	('plugin_settings', []),
+	('plugin_settings', {}),
 	('mc_username', 'username', 'Bot'),
 	('mc_password', 'password', ''),
 	('daemon', False),
