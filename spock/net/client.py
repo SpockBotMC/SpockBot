@@ -207,6 +207,9 @@ class Client(object):
 			else:
 				print('Login Unsuccessful, Response:', LoginResponse['Response'])
 				self.login_err = True
+				if self.sess_quit:
+					print("Session error, stopping...")
+					self.kill = True
 				return LoginResponse
 
 			self.username = LoginResponse['Username']
