@@ -43,7 +43,7 @@ class Client(object):
 		#Plugins should generally not touch these
 		self.encrypted = False
 		self.kill = False
-		self.sess_err = False
+		self.login_err = False
 		self.auth_err = False
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = b''
@@ -129,7 +129,7 @@ class Client(object):
 			if poll&select.POLLHUP: self.flags += cflags['SOCKET_HUP']
 			if poll&select.POLLOUT: self.flags += cflags['SOCKET_SEND']
 			if poll&select.POLLIN:  self.flags += cflags['SOCKET_RECV']
-		if self.sess_err:               self.flags += cflags['SESS_ERR']; self.sess_err = False
+		if self.login_err:              self.flags += cflags['LOGIN_ERR']; self.login_err = False
 		if self.auth_err:               self.flags += cflags['AUTH_ERR']; self.auth_err = False
 		if self.kill:                   self.flags += cflags['KILL_EVENT']
 
@@ -206,10 +206,7 @@ class Client(object):
 				print(LoginResponse)
 			else:
 				print('Login Unsuccessful, Response:', LoginResponse['Response'])
-				self.sess_err = True
-				if self.sess_quit:
-					print("Session error, stopping...")
-					self.kill = True
+				self.login_err = True
 				return LoginResponse
 
 			self.username = LoginResponse['Username']
