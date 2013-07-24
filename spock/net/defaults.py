@@ -1,3 +1,5 @@
+#2 values = Attribute&Setting name, default value
+#3 values = Attribute name, setting name, default value
 defstruct = [
 	('plugins', []),
 	('plugin_settings', []),
