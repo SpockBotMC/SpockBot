@@ -46,14 +46,22 @@ class Extension1D(ArrayExtension):
 class Extension2C:
 	@classmethod
 	def decode_extra(self, packet, bbuff):
-		packet.data['list_elements'] = []
-		for i in range(packet.data['list_length']):
-			packet.data['list_elements'].append({
-				'uuid_msb': unpack(bbuff, 'long'),
-				'uuid_lsb': unpack(bbuff, 'long'),
-				'amount': unpack(bbuff, 'double'),
-				'operation': unpack(bbuff, 'byte'),
-			})
+		packet.data['properties'] = []
+		for i in range(packet.data['property_count']):
+			prop = {
+				'key': unpack(bbuff, 'string'),
+				'value': unpack(bbuff, 'double'),
+				'list_length': unpack(bbuff, 'short'),
+				'list_elements': [],
+			}
+			for i in range(prop['list_length']):
+				prop['list_elements'].append({
+					'uuid_msb': unpack(bbuff, 'long'),
+					'uuid_lsb': unpack(bbuff, 'long'),
+					'amount': unpack(bbuff, 'double'),
+					'operation': unpack(bbuff, 'byte'),
+				})
+			packet.data['properties'].append(prop)
 
 
 @extension(0x33)

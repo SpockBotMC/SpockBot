@@ -207,6 +207,7 @@ names = {
 	0x18: "Spawn Mob",
 	0x19: "Spawn Painting",
 	0x1A: "Spawn Experience Orb",
+	0x1B: "Steer Vehicle",
 	0x1C: "Entity Velocity",
 	0x1D: "Destroy Entity",
 	0x1E: "Entity",
@@ -221,6 +222,7 @@ names = {
 	0x29: "Entity Effect",
 	0x2A: "Remove Entity Effect",
 	0x2B: "Set Experience",
+	0x2C: "Entity Properties",
 	0x33: "Chunk Data",
 	0x34: "Multi Block Change",
 	0x35: "Block Change",
@@ -245,6 +247,7 @@ names = {
 	0x82: "Update Sign",
 	0x83: "Item Data",
 	0x84: "Update Tile Entity",
+	0x85: "Tile Editor Open",
 	0xC8: "Increment Statistic",
 	0xC9: "Player List Item",
 	0xCA: "Player Abilities",
@@ -513,10 +516,7 @@ structs = {
 	#Entity Properties
 	0x2C: (
 		("int", "entity_id"),
-		("int", "property_count"),
-		("string", "key"),
-		("double", "value"),
-		("short", "list_length"))
+		("int", "property_count")),
 	#Chunk Data
 	0x33: (
 		("int", "x_chunk"),
