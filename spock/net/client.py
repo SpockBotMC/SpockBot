@@ -30,8 +30,7 @@ class Client(object):
 		self.timers = []
 		self.plugin_handlers = {flag: [] for name, flag in cflags.items()}
 		self.plugin_dispatch = {ident: [] for ident in mcdata.structs}
-		self.plugins = [plugin(self) for plugin in self.plugins]
-
+		self.plugins = [plugin(self, self.plugin_settings.get(plugin, {})) for plugin in self.plugins]
 		#Initialize socket and poll
 		#Plugins should never touch these unless they know what they're doing
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
