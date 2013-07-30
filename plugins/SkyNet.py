@@ -4,7 +4,7 @@ from skylogin import dbname, dbuser, dbpass
 from spock.net.cflags import cflags
 
 class SkyNetPlugin:
-	def __init__(self, client):
+	def __init__(self, client, settings):
 		self.client = client
 		self.player_list = {}
 

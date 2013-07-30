@@ -5,7 +5,7 @@ from spock.net.timer import EventTimer
 
 #Will relentlessly try to reconnect to a server
 class ReConnectPlugin:
-	def __init__(self, client):
+	def __init__(self, client, settings):
 		self.client = client
 		self.lock = False
 		self.kill = False

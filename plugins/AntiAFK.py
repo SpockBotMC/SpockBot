@@ -2,7 +2,7 @@ from spock.mcp.mcpacket import Packet
 
 #Very bad and naive Anti-AFK plugin
 class AntiAFKPlugin:
-	def __init__(self, client):
+	def __init__(self, client, settings):
 		self.client = client
 		client.register_dispatch(self.avoid_afk, 0x03)
 		client.register_dispatch(self.revive, 0x08)

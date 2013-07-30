@@ -8,7 +8,7 @@ from spock.net.cflags import cflags
 from spock.net.timer import ThreadedTimer
 
 class NoLaggPlugin:
-	def __init__(self, client):
+	def __init__(self, client, settings):
 		self.client = client
 		self.packet = Packet(ident = 0x03, data = {
 			"text": "/nolagg stats"

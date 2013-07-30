@@ -4,7 +4,7 @@ from spock.mcp.mcdata import structs
 from spock.net.cflags import cflags
 
 class DebugPlugin:
-	def __init__(self, client):
+	def __init__(self, client, settings):
 		self.client = client
 		client.register_dispatch(self.debug, *structs)
 		client.register_handler(self.dying, cflags['KILL_EVENT'])

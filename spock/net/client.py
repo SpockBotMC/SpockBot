@@ -168,7 +168,7 @@ class Client(object):
 		self.getflags()
 		if not self.flags&cflags['SOCKET_HUP']:
 			self.push(mcpacket.Packet(ident = 0xFF, data = {
-				'reason': 'KILL_EVENT recieved'
+				'reason': 'disconnect.quitting'
 				})
 			)
 			while self.sbuff:

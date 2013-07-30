@@ -3,7 +3,7 @@ from spock.net.packet_handlers import phandles, PositionUpdate
 from spock.mcp.mcpacket import Packet
 
 class GravityPlugin:
-	def __init__(self, client):
+	def __init__(self, client, settings):
 		self.client = client
 		for ident, handler in phandles.iteritems():
 			if handler == PositionUpdate:
