@@ -7,9 +7,10 @@ import logging
 
 from Crypto import Random
 
-from spock.net.cflags import cflags
+from spock.net.cflags import cflags, cevents
 from spock.net.flag_handlers import fhandles
 from spock.net.packet_handlers import phandles
+from spock.net.event import Event
 from spock.net import timer, cipher, defaults
 from spock.mcp import mcdata, mcpacket
 from spock import utils, smpmap, bound_buffer
@@ -28,9 +29,10 @@ class Client(object):
 		#Initialize plugin list
 		#Plugins should never touch this
 		self.timers = []
-		self.plugin_handlers = {flag: [] for name, flag in cflags.items()}
-		self.plugin_dispatch = {ident: [] for ident in mcdata.structs}
-		self.plugins = [plugin(self, self.plugin_settings.get(plugin, {})) for plugin in self.plugins]
+		self.event_handlers = {ident: [] for ident in mcdata.structs}
+		self.event_handlers.update({event: [] for event in cevents})
+		self.plugins = [plugin(self, self.plugin_settings.get(plugin, None)) for plugin in self.plugins]
+
 		#Initialize socket and poll
 		#Plugins should never touch these unless they know what they're doing
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,7 +48,6 @@ class Client(object):
 		self.auth_err = False
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = b''
-		self.flags = 0
 
 		#Game State variables
 		#Plugins should read these (but generally not write)
@@ -91,17 +92,14 @@ class Client(object):
 		signal.signal(signal.SIGINT, self.signal_handler)
 		signal.signal(signal.SIGTERM, self.signal_handler)
 		#Fire off plugins that need to run after init
-		for callback in self.plugin_handlers[cflags['START_EVENT']]: callback(flag)
+		self.emit('start')
 
-		while not (self.flags&cflags['KILL_EVENT'] and self.kill):
-			self.getflags()
-			if self.flags:
+		while not self.kill:
+			flags = self.get_flags()
+			if flags:
 				for name, flag in cflags.items():
-					if self.flags&flag:
-						#Default handlers
-						if flag in fhandles: fhandles[flag](self)
-						#Plugin handlers
-						for callback in self.plugin_handlers[flag]: callback(flag)
+					if flags&flag:
+						self.emit(name)
 			for index, timer in enumerate(self.timers):
 				if timer.update():
 					timer.fire()
@@ -111,7 +109,7 @@ class Client(object):
 				sys.stdout.flush()
 				sys.stderr.flush()
 
-	def getflags(self):
+	def get_flags(self):
 		self.flags = 0
 		if self.sbuff:
 			self.poll.register(self.sock, smask)
@@ -130,23 +128,20 @@ class Client(object):
 			if poll&select.POLLIN:  self.flags += cflags['SOCKET_RECV']
 		if self.login_err:              self.flags += cflags['LOGIN_ERR']; self.login_err = False
 		if self.auth_err:               self.flags += cflags['AUTH_ERR']; self.auth_err = False
-		if self.kill:                   self.flags += cflags['KILL_EVENT']
 
-	def dispatch_packet(self, packet):
-		#Default dispatch
-		if packet.ident in phandles:
-			phandles[packet.ident].handle(self, packet.clone())
-		#Plugin dispatchers
-		for callback in self.plugin_dispatch[packet.ident]:
-			callback(packet.clone())
+	def emit(self, name, data=None):
+		event = (data if name in mcdata.structs else Event(name, data))
+		for handler in self.event_handlers[name]:
+			handler(event)
 
-	def register_dispatch(self, callback, *idents):
-		for ident in idents:
-			self.plugin_dispatch[ident].append(callback)
+	def reg_event_handler(self, events, handlers):
+		if isinstance(events, str) or not hasattr(events, '__iter__'): 
+			events = [events]
+		if not hasattr(handlers, '__iter__'):
+			handlers = [handlers]
 
-	def register_handler(self, callback, *flags):
-		for flag in flags:
-			self.plugin_handlers[flag].append(callback)
+		for event in events:
+			self.event_handlers[event].extend(handlers)
 
 	def register_timer(self, timer):
 		self.timers.append(timer)
@@ -164,18 +159,22 @@ class Client(object):
 		except socket.error as error:
 			logging.info("Error on Connect (this is normal): " + str(error))
 
+	def kill(self):
+		self.emit('kill')
+		self.kill = True
+
 	def exit(self):
-		self.getflags()
-		if not self.flags&cflags['SOCKET_HUP']:
+		flags = self.get_flags()
+		if not flags&cflags['SOCKET_HUP']:
 			self.push(mcpacket.Packet(ident = 0xFF, data = {
 				'reason': 'disconnect.quitting'
 				})
 			)
 			while self.sbuff:
-				self.getflags()
-				if self.flags&(cflags['SOCKET_ERR']|cflags['SOCKET_HUP']):
+				flags = self.get_flags()
+				if flags&(cflags['SOCKET_ERR']|cflags['SOCKET_HUP']):
 					break
-				elif self.flags&cflags['SOCKET_SEND']:
+				elif flags&cflags['SOCKET_SEND']:
 					fhandles[cflags['SOCKET_SEND']](self)
 			self.sock.close()
 
