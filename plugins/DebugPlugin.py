@@ -8,7 +8,7 @@ class DebugPlugin:
 		self.client = client
 		client.reg_event_handler((0xC9, 0x03, 0xFF, 0x0D), self.debug)
 
-	def debug(self, packet):
+	def debug(self, name, packet):
 		if (packet.ident == 0xC9 
 		or packet.ident == 0x03
 		or packet.ident == 0xFF

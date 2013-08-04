@@ -7,11 +7,9 @@ import logging
 
 from Crypto import Random
 
-from spock.net.cflags import cflags, cevents
-from spock.net.flag_handlers import fhandles
-from spock.net.packet_handlers import phandles
+from spock.net.eventhandlers import ClientEventHandlers
 from spock.net.event import Event
-from spock.net import timer, cipher, defaults
+from spock.net import timer, cipher, cflags
 from spock.mcp import mcdata, mcpacket
 from spock import utils, smpmap, bound_buffer
 
@@ -22,7 +20,7 @@ class Client(object):
 	def __init__(self, **kwargs):
 		#Grab some settings
 		settings = kwargs.get('settings', {})
-		for setting in defaults.defstruct:
+		for setting in cflags.defstruct:
 			val = kwargs.get(setting[1], settings.get(setting[1], setting[2]))
 			setattr(self, setting[0], val)
 
@@ -30,9 +28,10 @@ class Client(object):
 		#Plugins should never touch this
 		self.timers = []
 		self.event_handlers = {ident: [] for ident in mcdata.structs}
-		self.event_handlers.update({event: [] for event in cevents})
-		self.event_handlers.update({event: [] for event in cflags})
+		self.event_handlers.update({event: [] for event in cflags.cevents})
+		self.event_handlers.update({event: [] for event in cflags.cflags})
 		self.plugins = [plugin(self, self.plugin_settings.get(plugin, None)) for plugin in self.plugins]
+		self.plugins.insert(0, ClientEventHandlers(self))
 
 		#Initialize socket and poll
 		#Plugins should never touch these unless they know what they're doing
@@ -98,7 +97,7 @@ class Client(object):
 		while not self.kill:
 			flags = self.get_flags()
 			if flags:
-				for name, flag in cflags.items():
+				for name, flag in cflags.cflags.items():
 					if flags&flag:
 						self.emit(name)
 			for index, timer in enumerate(self.timers):
@@ -123,21 +122,18 @@ class Client(object):
 			poll = []
 		if poll:
 			poll = poll[0][1]
-			if poll&select.POLLERR: flags += cflags['SOCKET_ERR']
-			if poll&select.POLLHUP: flags += cflags['SOCKET_HUP']
-			if poll&select.POLLOUT: flags += cflags['SOCKET_SEND']
-			if poll&select.POLLIN:  flags += cflags['SOCKET_RECV']
-		if self.login_err:              flags += cflags['LOGIN_ERR']; self.login_err = False
-		if self.auth_err:               flags += cflags['AUTH_ERR']; self.auth_err = False
+			if poll&select.POLLERR: flags += cflags.cflags['SOCKET_ERR']
+			if poll&select.POLLHUP: flags += cflags.cflags['SOCKET_HUP']
+			if poll&select.POLLOUT: flags += cflags.cflags['SOCKET_SEND']
+			if poll&select.POLLIN:  flags += cflags.cflags['SOCKET_RECV']
+		if self.login_err:              flags += cflags.cflags['LOGIN_ERR']; self.login_err = False
+		if self.auth_err:               flags += cflags.cflags['AUTH_ERR']; self.auth_err = False
 		return flags
 
 	def emit(self, name, data=None):
-		if name in fhandles: fhandles[name](self)
-		if name in phandles: phandles[name].handle(self, data)
-
 		event = (data if name in mcdata.structs else Event(name, data))
 		for handler in self.event_handlers[name]:
-			handler(event)
+			handler(name, data)
 
 	def reg_event_handler(self, events, handlers):
 		if isinstance(events, str) or not hasattr(events, '__iter__'): 
@@ -170,17 +166,17 @@ class Client(object):
 
 	def exit(self):
 		flags = self.get_flags()
-		if not flags&cflags['SOCKET_HUP']:
+		if not flags&cflags.cflags['SOCKET_HUP']:
 			self.push(mcpacket.Packet(ident = 0xFF, data = {
 				'reason': 'disconnect.quitting'
 				})
 			)
 			while self.sbuff:
 				flags = self.get_flags()
-				if flags&(cflags['SOCKET_ERR']|cflags['SOCKET_HUP']):
+				if flags&(cflags.cflags['SOCKET_ERR']|cflags.cflags['SOCKET_HUP']):
 					break
-				elif flags&cflags['SOCKET_SEND']:
-					fhandles['SOCKET_SEND'](self)
+				elif flags&cflags.cflags['SOCKET_SEND']:
+					self.emit('SOCKET_SEND')
 			self.sock.close()
 
 		if self.pidfile and os.path.exists(self.pidfile):

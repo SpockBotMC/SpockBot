@@ -1,18 +1,71 @@
 import logging
 import socket
-from spock import utils, smpmap
+from spock import utils, smpmap, bound_buffer
 from spock.mcp import mcdata, mcpacket
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 
-phandles = {}
-def phandle(ident):
+handles = {}
+def handle(ident):
 	def inner(cl):
-		phandles[ident] = cl
+		handles[ident] = cl
 		return cl
 	return inner
 
-class BaseHandle:
+class ClientEventHandlers:
+	def __init__(self, client):
+		self.client = client
+		client.reg_event_handler([event for event in handles], self.handle_event)
+
+	def handle_event(self, name, data):
+		handles[name].handle(self.client, data)
+
+#SOCKET_ERR - Socket Error has occured
+@handle('SOCKET_ERR')
+class handleERR:
+	def handle(client, data):
+		if client.sock_quit and not client.kill:
+			print("Socket Error has occured, stopping...")
+			client.kill = True
+		utils.ResetClient(client)
+
+#SOCKET_HUP - Socket has hung up
+@handle('SOCKET_HUP')
+class handleHUP:
+	def handle(client, data):
+		if client.sock_quit and not client.kill:
+			print("Socket has hung up, stopping...")
+			client.kill = True
+		utils.ResetClient(client)
+
+#SOCKET_RECV - Socket is ready to recieve data
+@handle('SOCKET_RECV')
+class handleSRECV:
+	def handle(client, data):
+		try:
+			data = client.sock.recv(client.bufsize)
+			client.rbuff.append(client.cipher.decrypt(data) if client.encrypted else data)
+		except socket.error as error:
+			logging.info(str(error))
+		try:
+			while True:
+				client.rbuff.save()
+				packet = mcpacket.read_packet(client.rbuff)
+				client.emit(packet.ident, packet)
+		except bound_buffer.BufferUnderflowException:
+			client.rbuff.revert()
+
+#SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send
+@handle('SOCKET_SEND')
+class handleSEND:
+	def handle(client, data):
+		try:
+			sent = client.sock.send(client.sbuff)
+			client.sbuff = client.sbuff[sent:]
+		except socket.error as error:
+			logging.info(str(error))
+
+class BasePacketHandle:
 	@classmethod
 	def handle(self, client, packet):
 		if packet.direction == mcdata.SERVER_TO_CLIENT:
@@ -29,16 +82,16 @@ class BaseHandle:
 		pass
 
 #Keep Alive - Reflects data back to server
-@phandle(0x00)
-class handle00(BaseHandle):
+@handle(0x00)
+class handle00(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		packet.direction = mcdata.CLIENT_TO_SERVER
 		client.push(packet)
 
 #Login Request - Update client state info
-@phandle(0x01)
-class handle01(BaseHandle):
+@handle(0x01)
+class handle01(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		client.eid = packet.data['entity_id']
@@ -46,39 +99,39 @@ class handle01(BaseHandle):
 		client.login_info = packet.data
 
 #Time Update - Update client World Time state
-@phandle(0x04)
-class handle04(BaseHandle):
+@handle(0x04)
+class handle04(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		client.world_time = packet.data
 
 #Spawn Position - Update client Spawn Position state
-@phandle(0x06)
-class handle06(BaseHandle):
+@handle(0x06)
+class handle06(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		client.spawn_position = packet.data
 
 #Update Health - Update client Health state
-@phandle(0x08)
-class handle08(BaseHandle):
+@handle(0x08)
+class handle08(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		client.health = packet.data
 
 #Respawn - Unload the World
-@phandle(0x09)
-class handle09(BaseHandle):
+@handle(0x09)
+class handle09(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		client.world = smpmap.World()
 
 #Position Update Packets - Update client Position state
-@phandle(0x0A)
-@phandle(0x0B)
-@phandle(0x0C)
-@phandle(0x0D)
-class PositionUpdate(BaseHandle):
+@handle(0x0A)
+@handle(0x0B)
+@handle(0x0C)
+@handle(0x0D)
+class PositionUpdate(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		for key, value in packet.data.items():
@@ -89,7 +142,7 @@ class PositionUpdate(BaseHandle):
 		for key, value in packet.data.items():
 			client.position[key] = value
 
-class SpawnEntity(BaseHandle):
+class SpawnEntity(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		eid = packet.data['entity_id']
@@ -97,22 +150,22 @@ class SpawnEntity(BaseHandle):
 		client.entitylist[eid] = packet.data
 
 #Chunk Data - Update client World state
-@phandle(0x33)
-class handle33(BaseHandle):
+@handle(0x33)
+class handle33(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		client.world.unpack_column(packet)
 
 #Map Chunk Bulk - Update client World state
-@phandle(0x38)
-class handle38(BaseHandle):
+@handle(0x38)
+class handle38(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		client.world.unpack_bulk(packet)
 
 #Player List Item - Update client Playerlist (not actually a list...)
-@phandle(0xC9)
-class handleC9(BaseHandle):
+@handle(0xC9)
+class handleC9(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		name = packet.data['player_name']
@@ -125,8 +178,8 @@ class handleC9(BaseHandle):
 				logging.error('Tried to remove %s from playerlist, but player did not exist', name)
 
 #Encryption Key Response - Signals encryption was successful, ready to spawn
-@phandle(0xFC)
-class handleFC(BaseHandle):
+@handle(0xFC)
+class handleFC(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		#Stage 5: Enable encryption and send Client Status
@@ -137,8 +190,8 @@ class handleFC(BaseHandle):
 		)
 
 #Encryption Key Request - Request for client to start encryption
-@phandle(0xFD)
-class handleFD(BaseHandle):
+@handle(0xFD)
+class handleFD(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		#Stage 3: Authenticate with session.minecraft.net
@@ -163,8 +216,8 @@ class handleFD(BaseHandle):
 		)
 
 #Disconnect - Reset everything after a disconect
-@phandle(0xFF)
-class handleFD(BaseHandle):
+@handle(0xFF)
+class handleFD(BasePacketHandle):
 	@classmethod
 	def ToClient(self, client, packet):
 		utils.ResetClient(client)
