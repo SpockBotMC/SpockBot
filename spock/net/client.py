@@ -31,6 +31,7 @@ class Client(object):
 		self.timers = []
 		self.event_handlers = {ident: [] for ident in mcdata.structs}
 		self.event_handlers.update({event: [] for event in cevents})
+		self.event_handlers.update({event: [] for event in cflags})
 		self.plugins = [plugin(self, self.plugin_settings.get(plugin, None)) for plugin in self.plugins]
 
 		#Initialize socket and poll
@@ -110,7 +111,7 @@ class Client(object):
 				sys.stderr.flush()
 
 	def get_flags(self):
-		self.flags = 0
+		flags = 0
 		if self.sbuff:
 			self.poll.register(self.sock, smask)
 		else:
@@ -122,14 +123,18 @@ class Client(object):
 			poll = []
 		if poll:
 			poll = poll[0][1]
-			if poll&select.POLLERR: self.flags += cflags['SOCKET_ERR']
-			if poll&select.POLLHUP: self.flags += cflags['SOCKET_HUP']
-			if poll&select.POLLOUT: self.flags += cflags['SOCKET_SEND']
-			if poll&select.POLLIN:  self.flags += cflags['SOCKET_RECV']
-		if self.login_err:              self.flags += cflags['LOGIN_ERR']; self.login_err = False
-		if self.auth_err:               self.flags += cflags['AUTH_ERR']; self.auth_err = False
+			if poll&select.POLLERR: flags += cflags['SOCKET_ERR']
+			if poll&select.POLLHUP: flags += cflags['SOCKET_HUP']
+			if poll&select.POLLOUT: flags += cflags['SOCKET_SEND']
+			if poll&select.POLLIN:  flags += cflags['SOCKET_RECV']
+		if self.login_err:              flags += cflags['LOGIN_ERR']; self.login_err = False
+		if self.auth_err:               flags += cflags['AUTH_ERR']; self.auth_err = False
+		return flags
 
 	def emit(self, name, data=None):
+		if name in fhandles: fhandles[name](self)
+		if name in phandles: phandles[name].handle(self, data)
+
 		event = (data if name in mcdata.structs else Event(name, data))
 		for handler in self.event_handlers[name]:
 			handler(event)
@@ -175,7 +180,7 @@ class Client(object):
 				if flags&(cflags['SOCKET_ERR']|cflags['SOCKET_HUP']):
 					break
 				elif flags&cflags['SOCKET_SEND']:
-					fhandles[cflags['SOCKET_SEND']](self)
+					fhandles['SOCKET_SEND'](self)
 			self.sock.close()
 
 		if self.pidfile and os.path.exists(self.pidfile):
@@ -190,7 +195,7 @@ class Client(object):
 	def push(self, packet):
 		bytes = packet.encode()
 		self.sbuff += (self.cipher.encrypt(bytes) if self.encrypted else bytes)
-		self.dispatch_packet(packet)
+		self.emit(packet.ident, packet)
 
 	def start_session(self, username, password = ''):
 		self.mc_username = username

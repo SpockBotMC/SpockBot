@@ -13,7 +13,7 @@ def fhandle(ident):
 	return inner
 
 #SOCKET_ERR - Socket Error has occured
-@fhandle(cflags['SOCKET_ERR'])
+@fhandle('SOCKET_ERR')
 def handleERR(client):
 	if client.sock_quit and not client.kill:
 		print("Socket Error has occured, stopping...")
@@ -21,7 +21,7 @@ def handleERR(client):
 	utils.ResetClient(client)
 
 #SOCKET_HUP - Socket has hung up
-@fhandle(cflags['SOCKET_HUP'])
+@fhandle('SOCKET_HUP')
 def handleHUP(client):
 	if client.sock_quit and not client.kill:
 		print("Socket has hung up, stopping...")
@@ -29,7 +29,7 @@ def handleHUP(client):
 	utils.ResetClient(client)
 
 #SOCKET_RECV - Socket is ready to recieve data
-@fhandle(cflags['SOCKET_RECV'])
+@fhandle('SOCKET_RECV')
 def handleSRECV(client):
 	try:
 		data = client.sock.recv(client.bufsize)
@@ -40,12 +40,12 @@ def handleSRECV(client):
 		while True:
 			client.rbuff.save()
 			packet = read_packet(client.rbuff)
-			client.dispatch_packet(packet)
+			client.emit(packet.ident, packet)
 	except BufferUnderflowException:
 		client.rbuff.revert()
 
 #SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send
-@fhandle(cflags['SOCKET_SEND'])
+@fhandle('SOCKET_SEND')
 def handleSEND(client):
 	try:
 		sent = client.sock.send(client.sbuff)

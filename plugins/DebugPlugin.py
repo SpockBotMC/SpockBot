@@ -6,11 +6,7 @@ from spock.net.cflags import cflags
 class DebugPlugin:
 	def __init__(self, client, settings):
 		self.client = client
-		client.register_dispatch(self.debug, *structs)
-		client.register_handler(self.dying, cflags['KILL_EVENT'])
-
-	def dying(self, *args):
-		print("I'm dying!")
+		client.reg_event_handler((0xC9, 0x03, 0xFF, 0x0D), self.debug)
 
 	def debug(self, packet):
 		if (packet.ident == 0xC9 
