@@ -35,9 +35,11 @@ class Client(object):
 
 		#Initialize socket and poll
 		#Plugins should never touch these unless they know what they're doing
+		self.rpipe, self.wpipe = os.pipe()
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(0)
 		self.poll = select.poll()
+		self.poll.register(self.rpipe, rmask)
 		self.poll.register(self.sock, smask)
 
 		#Initialize Event Loop/Network variables
@@ -96,10 +98,8 @@ class Client(object):
 
 		while not self.kill:
 			flags = self.get_flags()
-			if flags:
-				for name, flag in cflags.cflags.items():
-					if flags&flag:
-						self.emit(name)
+			for flag in flags:
+				self.emit(flag)
 			for index, timer in enumerate(self.timers):
 				if timer.update():
 					timer.fire()
@@ -110,7 +110,7 @@ class Client(object):
 				sys.stderr.flush()
 
 	def get_flags(self):
-		flags = 0
+		flags = []
 		if self.sbuff:
 			self.poll.register(self.sock, smask)
 		else:
@@ -122,12 +122,12 @@ class Client(object):
 			poll = []
 		if poll:
 			poll = poll[0][1]
-			if poll&select.POLLERR: flags += cflags.cflags['SOCKET_ERR']
-			if poll&select.POLLHUP: flags += cflags.cflags['SOCKET_HUP']
-			if poll&select.POLLOUT: flags += cflags.cflags['SOCKET_SEND']
-			if poll&select.POLLIN:  flags += cflags.cflags['SOCKET_RECV']
-		if self.login_err:              flags += cflags.cflags['LOGIN_ERR']; self.login_err = False
-		if self.auth_err:               flags += cflags.cflags['AUTH_ERR']; self.auth_err = False
+			if poll&select.POLLERR: flags.append('SOCKET_ERR')
+			if poll&select.POLLHUP: flags.append('SOCKET_HUP')
+			if poll&select.POLLOUT: flags.append('SOCKET_SEND')
+			if poll&select.POLLIN:  flags.append('SOCKET_RECV')
+		if self.login_err:              flags.append('LOGIN_ERR'); self.login_err = False
+		if self.auth_err:               flags.append('AUTH_ERR'); self.auth_err = False
 		return flags
 
 	def emit(self, name, data=None):
@@ -166,16 +166,16 @@ class Client(object):
 
 	def exit(self):
 		flags = self.get_flags()
-		if not flags&cflags.cflags['SOCKET_HUP']:
+		if not 'SOCKET_HUP' in flags:
 			self.push(mcpacket.Packet(ident = 0xFF, data = {
 				'reason': 'disconnect.quitting'
 				})
 			)
 			while self.sbuff:
 				flags = self.get_flags()
-				if flags&(cflags.cflags['SOCKET_ERR']|cflags.cflags['SOCKET_HUP']):
+				if ('SOCKET_ERR' in flags) or ('SOCKET_HUP' in flags):
 					break
-				elif flags&cflags.cflags['SOCKET_SEND']:
+				elif 'SOCKET_SEND' in flags:
 					self.emit('SOCKET_SEND')
 			self.sock.close()
 
