@@ -83,7 +83,6 @@ defstruct = [
 	('pidfile', ''),
 	('authenticated', True),
 	('bufsize', 4096),
-	('timeout', -1),
 	('sock_quit', True),
 	('sess_quit', True),
 	('proxy', {

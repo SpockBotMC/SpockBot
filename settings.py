@@ -8,7 +8,6 @@ default_settings = {
 	'pidfile': '',         #Where to put pidfile for daemon
 	'authenticated': True, #Authenticate with minecraft.net
 	'bufsize': 4096,       #Size of socket buffer
-	'timeout': -1,         #Poll timeout, only change if necessary for plugin
 	'sock_quit': True,     #Stop bot on socket error or hangup
 	'sess_quit': True,     #Stop bot on failed session login
 	'proxy': {             #!!WILL BREAK!! Proxy server to forward through, unimplemented

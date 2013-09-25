@@ -13,13 +13,16 @@ class EventTimer(object):
 		if self.runs == 0: return False
 		return self.end_time<=time.time()
 
+	def countdown(self):
+		return self.end_time - time.time()
+
 	def check(self):
 		return self.runs
 
 	def fire(self):
 		self.callback()
-		if self.runs>0:
-			self.runs-=1
+		if self.runs > 0:
+			self.runs -= 1
 		if self.runs:
 			self.reset()
 

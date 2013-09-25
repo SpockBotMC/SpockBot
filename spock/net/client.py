@@ -116,7 +116,7 @@ class Client(object):
 		else:
 			self.poll.register(self.sock, rmask)
 		try:
-			poll = self.poll.poll(self.timeout)
+			poll = self.poll.poll(self.get_timeout())
 		except select.error as e:
 			logging.error(str(e))
 			poll = []
@@ -126,9 +126,17 @@ class Client(object):
 			if poll&select.POLLHUP: flags.append('SOCKET_HUP')
 			if poll&select.POLLOUT: flags.append('SOCKET_SEND')
 			if poll&select.POLLIN:  flags.append('SOCKET_RECV')
-		if self.login_err:              flags.append('LOGIN_ERR'); self.login_err = False
-		if self.auth_err:               flags.append('AUTH_ERR'); self.auth_err = False
+		if self.login_err:          flags.append('LOGIN_ERR'); self.login_err = False
+		if self.auth_err:           flags.append('AUTH_ERR'); self.auth_err = False
 		return flags
+
+	def get_timeout(self):
+		timeout = -1
+		for timer in timers:
+			if timeout > timer.countdown() or timout == -1:
+					timeout = timer.countdown():
+
+		return timeout
 
 	def emit(self, name, data=None):
 		event = (data if name in mcdata.structs else Event(name, data))
