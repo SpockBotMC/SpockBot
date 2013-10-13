@@ -35,7 +35,6 @@ class Client(object):
 
 		#Initialize socket and poll
 		#Plugins should never touch these unless they know what they're doing
-		self.rpipe, self.wpipe = os.pipe()
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(0)
 		self.poll = select.poll()
