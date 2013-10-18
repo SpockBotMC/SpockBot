@@ -1,3 +1,5 @@
+from spock.plugins.defaults import DefaultPlugins
+
 cflags = {
 	'SOCKET_ERR':  0x0001, # Socket Error (select.POLLERR set)
 	'SOCKET_HUP':  0x0002, # Socket Hung up (select.POLLHUP set)
@@ -74,7 +76,7 @@ cevents = [
 #2 values = Attribute&Setting name, default value
 #3 values = Attribute name, setting name, default value
 defstruct = [
-	('plugins', []),
+	('plugins', DefaultPlugins),
 	('plugin_settings', {}),
 	('mc_username', 'username', 'Bot'),
 	('mc_password', 'password', ''),
@@ -91,6 +93,9 @@ defstruct = [
 		'port': 0,
 	}),
 ]
+
+class SettingsDummy:
+	pass
 
 for index, setting in enumerate(defstruct):
 	if len(setting) == 2:

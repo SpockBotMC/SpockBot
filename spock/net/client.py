@@ -2,11 +2,11 @@ import select
 import socket
 import signal
 import sys
-import os
-import logging
 
 from Crypto import Random
 
+from spock.net.extensions.pluginloader import PluginLoader
+from spock.net.auth.yggdrasil import YggAuth
 from spock.net.eventhandlers import ClientEventHandlers
 from spock.net.event import Event
 from spock.net import timer, cipher, cflags
@@ -19,6 +19,7 @@ smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
 class Client(object):
 	def __init__(self, **kwargs):
 		#Grab some settings
+		self.settings = cflags.SettingsDummy()
 		settings = kwargs.get('settings', {})
 		for setting in cflags.defstruct:
 			val = kwargs.get(setting[1], settings.get(setting[1], setting[2]))
@@ -30,23 +31,23 @@ class Client(object):
 		self.event_handlers = {ident: [] for ident in mcdata.structs}
 		self.event_handlers.update({event: [] for event in cflags.cevents})
 		self.event_handlers.update({event: [] for event in cflags.cflags})
-		self.plugins = [plugin(self, self.plugin_settings.get(plugin, None)) for plugin in self.plugins]
-		self.plugins.insert(0, ClientEventHandlers(self))
+		self.plugins.insert(0, ClientEventHandlers)
+		PluginLoader(self, self.plugins)
 
 		#Initialize socket and poll
 		#Plugins should never touch these unless they know what they're doing
+		self.auth = YggAuth()
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(0)
 		self.poll = select.poll()
-		self.poll.register(self.rpipe, rmask)
 		self.poll.register(self.sock, smask)
 
 		#Initialize Event Loop/Network variables
 		#Plugins should generally not touch these
 		self.encrypted = False
 		self.kill = False
-		self.login_err = False
 		self.auth_err = False
+		self.sess_err = False
 		self.rbuff = bound_buffer.BoundBuffer()
 		self.sbuff = b''
 
@@ -57,32 +58,11 @@ class Client(object):
 			'world_age': 0,
 			'time_of_day': 0,
 		}
-		self.position = {
-			'x': 0,
-			'y': 0,
-			'z': 0,
-			'stance': 0,
-			'yaw': 0,
-			'pitch': 0,
-			'on_ground': False,
-		}
-		self.health = {
-			'health': 20,
-			'food': 20,
-			'food_saturation': 5,
-		}
-		self.playerlist = {}
 		self.entitylist = {}
-		self.spawn_position = {
-			'x': 0,
-			'y': 0,
-			'z': 0,
-		}
 
 	#Convenience method for starting a client
 	def start(self, host = 'localhost', port = 25565):
-		if self.daemon: self.start_daemon()
-		if (self.start_session(self.mc_username, self.mc_password)['Response'] == "Good to go!"):
+		if 'error' not in self.start_session(self.mc_username, self.mc_password):
 			self.connect(host, port)
 			self.handshake()
 			self.event_loop()
@@ -104,9 +84,6 @@ class Client(object):
 					timer.fire()
 				if not timer.check():
 					del self.timers[index]
-			if self.daemon:
-				sys.stdout.flush()
-				sys.stderr.flush()
 
 	def get_flags(self):
 		flags = []
@@ -117,7 +94,7 @@ class Client(object):
 		try:
 			poll = self.poll.poll(self.get_timeout())
 		except select.error as e:
-			logging.error(str(e))
+			print(str(e))
 			poll = []
 		if poll:
 			poll = poll[0][1]
@@ -125,15 +102,15 @@ class Client(object):
 			if poll&select.POLLHUP: flags.append('SOCKET_HUP')
 			if poll&select.POLLOUT: flags.append('SOCKET_SEND')
 			if poll&select.POLLIN:  flags.append('SOCKET_RECV')
-		if self.login_err:          flags.append('LOGIN_ERR'); self.login_err = False
 		if self.auth_err:           flags.append('AUTH_ERR'); self.auth_err = False
+		if self.sess_err:           flags.append('SESS_ERR'); self.sess_err = False
 		return flags
 
 	def get_timeout(self):
 		timeout = -1
-		for timer in timers:
+		for timer in self.timers:
 			if timeout > timer.countdown() or timout == -1:
-					timeout = timer.countdown():
+					timeout = timer.countdown()
 
 		return timeout
 
@@ -165,7 +142,8 @@ class Client(object):
 			print("Attempting to connect to host:", self.host, "port:", self.port)
 			self.sock.connect((self.host, self.port))
 		except socket.error as error:
-			logging.info("Error on Connect (this is normal): " + str(error))
+			#print("Error on Connect (this is normal):", str(error))
+			pass
 
 	def kill(self):
 		self.emit('kill')
@@ -186,9 +164,6 @@ class Client(object):
 					self.emit('SOCKET_SEND')
 			self.sock.close()
 
-		if self.pidfile and os.path.exists(self.pidfile):
-			os.remove(self.pidfile)
-
 		sys.exit(0)
 
 	def enable_crypto(self, SharedSecret):
@@ -207,23 +182,45 @@ class Client(object):
 		#Stage 1: Login to Minecraft.net
 		if self.authenticated:
 			print("Attempting login with username:", username, "and password:", password)
-			LoginResponse = utils.LoginToMinecraftNet(username, password)
-			if (LoginResponse['Response'] == "Good to go!"):
-				print(LoginResponse)
+			rep = self.auth.authenticate(username, password)
+			if 'error' not in rep:
+				print(rep)
 			else:
-				print('Login Unsuccessful, Response:', LoginResponse['Response'])
-				self.login_err = True
+				print('Login Unsuccessful, Response:', rep)
+				self.auth_err = True
 				if self.sess_quit:
-					print("Session error, stopping...")
+					print("Authentication error, stopping...")
 					self.kill = True
-				return LoginResponse
+				return rep
 
-			self.username = LoginResponse['Username']
-			self.sessionid = LoginResponse['SessionID']
+			self.username = rep['selectedProfile']['name']
+			self.sessionid = ':'.join((
+				'token', 
+				rep['accessToken'], 
+				rep['selectedProfile']['id']
+			))
 		else:
 			self.username = username
 
-		return LoginResponse
+		return rep
+
+	def reset(self):
+		self.poll.unregister(self.sock)
+		self.sock.close()
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.sock.setblocking(0)
+		self.poll.register(self.sock)
+	
+		self.sbuff = b''
+		self.rbuff.flush()
+		self.encrypted = False
+		self.world = smpmap.World()
+		self.world_time = {
+			'world_age': 0,
+			'time_of_day': 0,
+		}
+		self.playerlist = {}
+		self.entitylist = {}
 
 	def handshake(self):
 		self.SharedSecret = Random._UserFriendlyRNG.get_random_bytes(16)
@@ -236,20 +233,6 @@ class Client(object):
 			'port': self.port,
 			})
 		)
-
-	def start_daemon(self, daemonize = False):
-		self.daemon = True
-		if daemonize:
-			utils.daemonize()
-			Random.atfork()
-
-		self.pid = os.getpid()
-		if self.logfile:
-			sys.stdout = sys.stderr = open(self.logfile, 'w')
-		if self.pidfile:
-			pidf = open(self.pidfile, 'w')
-			pidf.write(str(self.pid))
-			pidf.close()
 
 	def enable_proxy(self, host, port):
 		self.proxy['enabled'] = True

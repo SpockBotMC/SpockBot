@@ -1,6 +1,6 @@
 #Most of the data formats, structures, and magic values
 
-MC_PROTOCOL_VERSION = 74
+MC_PROTOCOL_VERSION = 78
 SERVER_TO_CLIENT = 0x01
 CLIENT_TO_SERVER = 0x02
 SERVER_LIST_PING_MAGIC = 0x01
