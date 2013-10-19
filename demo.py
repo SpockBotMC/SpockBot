@@ -3,8 +3,7 @@ from spock.plugins.defaults import DefaultPlugins
 from plugins import DebugPlugin
 from login import username, password
 
-print(*DefaultPlugins)
 plugins = DefaultPlugins
 plugins.extend([DebugPlugin.TestRequire3, DebugPlugin.DebugPlugin, DebugPlugin.TestRequire1])
 client = Client(plugins = plugins, username = username, password = password)
-client.start(host = 'mc.civcraft.vg')
+client.start()
