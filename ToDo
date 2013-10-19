@@ -1,0 +1,19 @@
+Personal reminders of shit that needs doing
+
+* World API -> Movement API
+* Reorganize net.plugins folder, seperate "core" plugins from "helper" plugins
+* Figure out inventories
+* "Friendly" emit plugin
+* Timer plugin, fix timers in general
+* More specific platform support epoll/kqueue/libuv
+* Get rid of cflags
+* Find better homes from spock.utils, spock.smpmap, spock.bound_buffer
+* DOCUMENTATION: At least make a docs folder
+* Make demo less shit
+* Throw out nbt.py, build something much simpler
+* packet_extensions needs more intuitive "array" handling
+* datautils, just, fix it...
+* Spin mcp out into own package/project?
+* Arbitrary proto version support
+* Support legacy authentication?
+* Consider Python 2.7 support
