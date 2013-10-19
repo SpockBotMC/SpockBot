@@ -1,8 +1,9 @@
-from spock.plugins import clientinfo, reflect, core, auth
+from spock.plugins import clientinfo, reflect, net, auth, start
 
 DefaultPlugins = [
-	core.CoreClientPlugin,
+	net.NetPlugin,
 	auth.AuthPlugin,
 	clientinfo.ClientInfoPlugin,
 	reflect.ReflectPlugin,
+	start.StartPlugin
 ]

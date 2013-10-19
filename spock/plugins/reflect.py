@@ -2,7 +2,7 @@ from spock.mcp import mcdata, mcpacket
 
 class ReflectPlugin:
 	def __init__(self, ploader, settings):
-		self.client = ploader.requires('Client')
+		self.net = ploader.requires('Net')
 		self.client_info = ploader.requires('ClientInfo')
 		ploader.reg_event_handler(0x00, self.handle00)
 		ploader.reg_event_handler(
@@ -14,12 +14,12 @@ class ReflectPlugin:
 	def handle00(self, name, packet):
 		if packet.direction == mcdata.SERVER_TO_CLIENT:
 			packet.direction = mcdata.CLIENT_TO_SERVER
-			self.client.push(packet)
+			self.net.push(packet)
 
 	#Position Update Packets - Reflect new position back to server
 	def handle_position_update(self, name, packet):
 		if packet.direction == mcdata.SERVER_TO_CLIENT:
-			self.client.push(mcpacket.Packet(
+			self.net.push(mcpacket.Packet(
 				ident = 0x0D, 
 				data = self.client_info.position
 			))

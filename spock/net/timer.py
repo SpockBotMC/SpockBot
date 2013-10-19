@@ -34,16 +34,16 @@ class EventTimer(object):
 
 #Tick based timer handled by the client
 class TickTimer(object):
-	def __init__(self, client, wait_ticks, callback, runs = 1):
-		self.client = client
+	def __init__(self, world, wait_ticks, callback, runs = 1):
+		self.world = world
 		self.wait_ticks = wait_ticks
 		self.callback = callback
 		self.runs = runs
-		self.end_tick = client.world_time['world_age'] + self.wait_ticks
+		self.end_tick = self.world.age + self.wait_ticks
 
 	def update(self):
 		if self.runs == 0: return False
-		return self.end_tick<=self.client.world_time['world_age']
+		return self.end_tick<=self.world.age
 
 	def check(self):
 		return self.runs
@@ -59,10 +59,10 @@ class TickTimer(object):
 		self.runs = 0
 
 	def reset(self):
-		self.end_tick = self.client.world_time['world_age'] + self.wait_ticks
+		self.end_tick = self.world.age + self.wait_ticks
 
 #Time based timer handled in a seperate thread, does not need to be registered with the client
-#Threaded timers can be very tricky with daemon code, only use if you know what you're doing
+#Threaded timers can be very tricky, only use if you know what you're doing
 class ThreadedTimer(threading.Thread):
 	def __init__(self, stop_event, wait_time, callback, runs = 1):
 		super(ThreadedTimer, self).__init__()

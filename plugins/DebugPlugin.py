@@ -8,12 +8,12 @@ from spock.plugins.plutils import pl_announce
 class TestRequire1:
 	def __init__(self, pl_loader, settings):
 		print('dummytest1 loaded, requires provided:', pl_loader.requires('dummytest3'))
-		pl_loader.provides(self, 'dummytest1')
+		pl_loader.provides('dummytest1', self)
 
 @pl_announce('dummytest3')
 class TestRequire3:
 	def __init__(self, pl_loader, settings):
-		pl_loader.provides(self, 'dummytest3')
+		pl_loader.provides('dummytest3', self)
 		print('dummytest3 loaded')
 
 class DebugPlugin:

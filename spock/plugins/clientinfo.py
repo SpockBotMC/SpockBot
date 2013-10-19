@@ -31,6 +31,10 @@ class ClientInfo:
 		}
 		self.player_list = {}
 
+	def reset(self):
+		self.__init__()
+
+
 @pl_announce('ClientInfo')
 class ClientInfoPlugin:
 	def __init__(self, ploader, settings):	
@@ -42,9 +46,13 @@ class ClientInfoPlugin:
 			self.handle_position_update
 		)
 		ploader.reg_event_handler(0xC9, self.handleC9)
+		ploader.reg_event_handler(
+			(0xFF, 'SOCKET_ERR', 'SOCKET_HUP'),
+			self.handle_disconnect
+		)
 
 		self.client_info = ClientInfo()
-		ploader.provides(self.client_info, 'ClientInfo')
+		ploader.provides('ClientInfo', self.client_info)
 
 	#Login Request - Update client state info
 	def handle01(self, name, packet):
@@ -79,3 +87,6 @@ class ClientInfoPlugin:
 					'Tried to remove', name, 
 					'from playerlist, but player did not exist'
 				)
+
+	def handle_disconnect(self, name, packet):
+		self.client_info.reset()

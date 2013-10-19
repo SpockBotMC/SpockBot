@@ -24,8 +24,8 @@ class PluginLoader:
 
 		return self.extensions[ident]
 
-	def provides(self, plugin, ident):
-		self.extensions[ident] = plugin
+	def provides(self, ident, obj):
+		self.extensions[ident] = obj
 
 	def reg_event_handler(self, events, handlers):
 		self.client.reg_event_handler(events, handlers)
