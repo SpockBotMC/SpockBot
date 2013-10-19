@@ -1,3 +1,8 @@
+"""
+Hilariously out of date, I'll update this when it's not 3:30 in the morning
+In the meantime, go look at plugins in spock.net.plugins for more up-to-date plugin examples
+"""
+
 import threading
 from spock.mcp.mcpacket import Packet
 from spock.net.cflags import cflags
