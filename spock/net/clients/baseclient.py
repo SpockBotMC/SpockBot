@@ -19,9 +19,7 @@ class BaseClient(object):
 
 		#Initialize plugin list
 		self.timers = []
-		self.event_handlers = {ident: [] for ident in mcdata.structs}
-		self.event_handlers.update({event: [] for event in cflags.cevents})
-		self.event_handlers.update({event: [] for event in cflags.cflags})
+		self.event_handlers = {}
 		PluginLoader(self, self.plugins)
 
 		#Initialize socket
@@ -81,9 +79,11 @@ class BaseClient(object):
 
 		return timeout
 
-	def emit(self, name, data=None):
-		for handler in self.event_handlers[name]:
-			handler(name, (data.clone() if data else data))
+	def emit(self, event, data=None):
+		if event not in self.event_handlers:
+			self.event_handlers[event] = []
+		for handler in self.event_handlers[event]:
+			handler(event, (data.clone() if data else data))
 
 	def reg_event_handler(self, events, handlers):
 		if isinstance(events, str) or not hasattr(events, '__iter__'): 
@@ -92,6 +92,8 @@ class BaseClient(object):
 			handlers = [handlers]
 
 		for event in events:
+			if event not in self.event_handlers:
+				self.event_handlers[event] = []
 			self.event_handlers[event].extend(handlers)
 
 	def register_timer(self, timer):

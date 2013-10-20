@@ -1,4 +1,4 @@
-import os
+import sys
 
 if sys.platform != 'win32':
 	from spock.net.clients.pollclient import PollClient
