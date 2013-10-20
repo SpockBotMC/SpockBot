@@ -1,5 +1,6 @@
 #Constantly Changing, just a plugin I use to debug whatever is broken atm
 import sys
+import time
 from spock.mcp.mcdata import structs
 from spock.net.cflags import cflags
 from spock.plugins.plutils import pl_announce
@@ -19,7 +20,7 @@ class TestRequire3:
 class DebugPlugin:
 	def __init__(self, pl_loader, settings):
 		print('DebugPlugin loaded, requires provided:', pl_loader.requires('dummytest1'))
-		pl_loader.reg_event_handler((0xC9, 0x03, 0xFF, 0x0D), self.debug)
+		pl_loader.reg_event_handler((0x03, 0xFF, 0x0D), self.debug)
 
 	def debug(self, name, packet):
 		if (packet.ident == 0xC9 

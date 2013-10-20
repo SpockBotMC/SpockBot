@@ -2,10 +2,10 @@ import select
 import socket
 import signal
 import sys
+import copy
 
 from spock.net.pluginloader import PluginLoader
 from spock.net import cflags
-from spock.mcp import mcdata
 from spock import utils
 
 class BaseClient(object):
@@ -44,9 +44,8 @@ class BaseClient(object):
 			for flag in flags:
 				self.emit(flag)
 			for index, timer in enumerate(self.timers):
-				if timer.update():
-					timer.fire()
-				if not timer.check():
+				timer.update()
+				if not timer.get_runs():
 					del self.timers[index]
 
 	def get_flags(self):
@@ -74,16 +73,18 @@ class BaseClient(object):
 	def get_timeout(self):
 		timeout = -1
 		for timer in self.timers:
-			if timeout > timer.countdown() or timout == -1:
+			if timeout > timer.countdown() or timeout == -1:
 					timeout = timer.countdown()
 
 		return timeout
 
-	def emit(self, event, data=None):
+	def emit(self, event, data = None):
 		if event not in self.event_handlers:
 			self.event_handlers[event] = []
 		for handler in self.event_handlers[event]:
-			handler(event, (data.clone() if data else data))
+			handler(event, (data.clone() if hasattr(data, 'clone') 
+				else copy.copy(data)
+			))
 
 	def reg_event_handler(self, events, handlers):
 		if isinstance(events, str) or not hasattr(events, '__iter__'): 
@@ -96,14 +97,14 @@ class BaseClient(object):
 				self.event_handlers[event] = []
 			self.event_handlers[event].extend(handlers)
 
-	def register_timer(self, timer):
+	def reg_timer(self, timer):
 		self.timers.append(timer)
 
 	def kill(self):
 		self.emit('kill')
 		self.kill = True
 
-	def reset(self):
+	def net_reset(self):
 		self.sock.close()
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(0)

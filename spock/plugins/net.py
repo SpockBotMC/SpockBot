@@ -67,7 +67,7 @@ class NetCore:
 		self.client.sock.close()
 
 	def reset(self):
-		self.client.reset()
+		self.client.net_reset()
 		self.__init__(self.client)
 
 

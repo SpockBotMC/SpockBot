@@ -1,4 +1,5 @@
 import select
+import socket
 from spock.net.clients import baseclient
 
 rmask = select.POLLIN|select.POLLERR|select.POLLHUP
@@ -32,7 +33,7 @@ class PollClient(baseclient.BaseClient):
 		if self.sess_err:           flags.append('SESS_ERR'); self.sess_err = False
 		return flags
 
-	def reset(self):
+	def net_reset(self):
 		self.poll.unregister(self.sock)
 		self.sock.close()
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
