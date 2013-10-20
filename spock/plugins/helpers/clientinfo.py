@@ -1,3 +1,5 @@
+#Maybe this should be in core?
+
 from spock.plugins.plutils import pl_announce
 
 class ClientInfo:

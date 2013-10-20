@@ -2,7 +2,6 @@
 import sys
 import time
 from spock.mcp.mcdata import structs
-from spock.net.cflags import cflags
 from spock.plugins.plutils import pl_announce
 
 @pl_announce('dummytest1')
