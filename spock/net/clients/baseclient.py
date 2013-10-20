@@ -5,15 +5,15 @@ import sys
 import copy
 
 from spock.net.pluginloader import PluginLoader
-from spock.net import cflags
+from spock.net import clsettings
 from spock import utils
 
 class BaseClient(object):
 	def __init__(self, **kwargs):
 		#Grab some settings
-		self.settings = cflags.SettingsDummy()
+		self.settings = clsettings.SettingsDummy()
 		settings = kwargs.get('settings', {})
-		for setting in cflags.defstruct:
+		for setting in clsettings.defstruct:
 			val = kwargs.get(setting[1], settings.get(setting[1], setting[2]))
 			setattr(self, setting[0], val)
 
