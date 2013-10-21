@@ -6,7 +6,7 @@ import os, io, zlib, gzip
 
 from struct import Struct, error as StructError
 from collections import MutableMapping, MutableSequence, Sequence
-from spock.bound_buffer import BoundBuffer
+from spock import utils
 #from utils import ByteToHex
 
 try:
@@ -475,9 +475,9 @@ wbits_length = 16+zlib.MAX_WBITS
 #Hacky function to decode NBT data
 def decode_nbt(data, compressed = True):
 	if compressed:
-		bbuff = BoundBuffer(zlib.decompress(data, wbits_length))
+		bbuff = utils.BoundBuffer(zlib.decompress(data, wbits_length))
 	else:
-		bbuff = BoundBuffer(data)
+		bbuff = utils.BoundBuffer(data)
 	type = TAG_Byte(buffer = bbuff)
 	name = TAG_String(buffer = bbuff).value
 	tag = TAG_Compound(buffer = bbuff)
@@ -487,7 +487,7 @@ def decode_nbt(data, compressed = True):
 #Eventually we should offer the option to render to a string
 #That would make these functions 50% less hacky
 def encode_nbt(data, compressed = True):
-	bbuff = BoundBuffer()
+	bbuff = utils.BoundBuffer()
 	TAG_Byte(data.id)._render_buffer(bbuff)
 	TAG_String(data.name)._render_buffer(bbuff)
 	data._render_buffer(bbuff)

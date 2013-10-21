@@ -7,6 +7,6 @@ default_settings = {
 	'bufsize': 4096,       #Size of socket buffer
 	'sock_quit': True,     #Stop bot on socket error or hangup
 	'sess_quit': True,     #Stop bot on failed session login
-	'plugins': [*DefaultPlugins],         #Plugins
+	'plugins': DefaultPlugins,         #Plugins
 	'plugin_settings': {}, #Extra settings for plugins
 }

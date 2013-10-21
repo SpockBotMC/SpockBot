@@ -1,5 +1,5 @@
 from time import gmtime, strftime
-from spock import bound_buffer
+from spock import utils
 from spock.mcp import mcpacket_extensions, datautils, mcdata
 #from utils import ByteToHex
 
@@ -54,4 +54,4 @@ def read_packet(bbuff, direction = mcdata.SERVER_TO_CLIENT):
 	return p
 
 def decode_packet(data, direction = mcdata.SERVER_TO_CLIENT):
-	return read_packet(bound_buffer.BoundBuffer(data), direction)
+	return read_packet(utils.BoundBuffer(data), direction)

@@ -1,6 +1,6 @@
 import socket
+from spock import utils
 from spock.plugins.plutils import pl_announce
-from spock import utils, bound_buffer
 from spock.mcp import mcpacket
 from Crypto.Cipher import AES
 
@@ -22,7 +22,7 @@ class NetCore:
 		self.port = None
 		self.encrypted = False
 		self.sbuff = b''
-		self.rbuff = bound_buffer.BoundBuffer()
+		self.rbuff = utils.BoundBuffer()
 
 	def connect(self, host = 'localhost', port = 25565):
 		self.host = host
@@ -101,7 +101,7 @@ class NetPlugin:
 				self.net.rbuff.save()
 				packet = mcpacket.read_packet(self.net.rbuff)
 				self.client.emit(packet.ident, packet)
-		except bound_buffer.BufferUnderflowException:
+		except utils.BufferUnderflowException:
 			self.net.rbuff.revert()
 
 	#SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send

@@ -1,9 +1,21 @@
+import hashlib
+import urllib.request as request
+from urllib.error import URLError
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 from Crypto import Random
 from spock import utils
 from spock.mcp import mcdata, mcpacket, yggdrasil
 from spock.plugins.plutils import pl_announce
+
+# This function courtesy of barneygale
+def JavaHexDigest(digest):
+	d = int(digest.hexdigest(), 16)
+	if d >> 39 * 4 & 0x8:
+		d = "-%x" % ((-d) & (2 ** (40 * 4) - 1))
+	else:
+		d = "%x" % d
+	return d
 
 class MCAuth:
 	def __init__(self, client):
@@ -14,7 +26,10 @@ class MCAuth:
 
 	def start_session(self, username, password = ''):
 		if self.client.authenticated:
-			print("Attempting login with username:", username, "and password:", password)
+			print(
+				"Attempting login with username:", username, 
+				"and password:", password
+			)
 			rep = self.auth.authenticate(username, password)
 			if 'error' not in rep:
 				print(rep)
@@ -65,17 +80,22 @@ class AuthPlugin:
 	def handleFD(self, name, packet):
 		pubkey = packet.data['public_key']
 		if self.client.authenticated:
-			serverid = utils.HashServerId(
-				packet.data['server_id'], 
-				self.auth.shared_secret, 
-				pubkey
-			)
+			serverid = JavaHexDigest(hashlib.sha1(
+				packet.data['server_id'].encode('ascii')
+				+ self.auth.shared_secret
+				+ pubkey
+			))
 			print('Attempting to authenticate session with session.minecraft.net')
-			rep = utils.AuthenticateMinecraftSession(
-				self.auth.username, 
-				self.auth.sessionid, 
-				serverid
+			url = (
+				"http://session.minecraft.net/game/joinserver.jsp?"
+				+ "user=" + self.auth.username
+				+ "&sessionId=" + self.auth.sessionid
+				+ "&serverId=" + serverid
 			)
+			try:
+				rep = request.urlopen(url).read().decode('ascii')
+			except URLError:
+				rep = 'Couldn\'t connect to session.minecraft.net'
 			if rep != 'OK':
 				print('Session Authentication Failed, Response:', rep)
 				self.client.auth_err = True
