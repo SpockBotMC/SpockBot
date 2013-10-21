@@ -1,3 +1,4 @@
+#Lacking a better place to put this, bbuff can live here for now
 class BufferUnderflowException(Exception):
 	pass
 
