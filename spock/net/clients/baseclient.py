@@ -4,6 +4,7 @@ import signal
 import sys
 import copy
 
+from spock.mcp.mcdata import packet_structs
 from spock.net.pluginloader import PluginLoader
 from spock.net import clsettings
 from spock import utils
@@ -36,8 +37,6 @@ class BaseClient(object):
 		#Set up signal handlers
 		signal.signal(signal.SIGINT, self.signal_handler)
 		signal.signal(signal.SIGTERM, self.signal_handler)
-		#Fire off plugins that need to run after init
-		self.emit('start')
 
 		while not self.kill:
 			flags = self.get_flags()
@@ -52,9 +51,9 @@ class BaseClient(object):
 		flags = []
 		if self.send:
 			self.send = False
-			slist = [[self.sock], [self.sock], []]
+			slist = (self.sock,), (self.sock,), ()
 		else:
-			slist = [[self.sock], [], []]
+			slist = (self.sock,), (), ()
 		timeout = self.get_timeout()
 		if timeout>0: 
 			slist.append(timeout)
@@ -83,19 +82,15 @@ class BaseClient(object):
 			self.event_handlers[event] = []
 		for handler in self.event_handlers[event]:
 			handler(event, (data.clone() if hasattr(data, 'clone') 
-				else copy.copy(data)
+				else copy.deepcopy(data)
 			))
 
 	def reg_event_handler(self, events, handlers):
-		if isinstance(events, str) or not hasattr(events, '__iter__'): 
-			events = [events]
-		if not hasattr(handlers, '__iter__'):
-			handlers = [handlers]
-
 		for event in events:
 			if event not in self.event_handlers:
 				self.event_handlers[event] = []
-			self.event_handlers[event].extend(handlers)
+			for handler in handlers:
+				self.event_handlers[event].append(handler)
 
 	def reg_timer(self, timer):
 		self.timers.append(timer)

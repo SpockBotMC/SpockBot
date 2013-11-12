@@ -1,15 +1,5 @@
 """
 
-This module intends to give an overview of how chunks are packed and unpacked
-in the minecraft smp protocol. It provides a simple world manager that makes
-use of the smp packet format internally.
-
-Last updated for 1.4.6
-
-"""
-
-"""
-
 Chunks are packed in X, Z, Y order
 The array walks down X, every 16 elements you enter a new Z-level
 ex.
@@ -27,11 +17,10 @@ Chunk Coords * 16 + Block Coords gives you the actual position of the block in t
 
 """
 
-
 import array
 import struct
 import zlib
-from io import BytesIO
+from spock import utils
 
 class BiomeData:
 	""" A 16x16 array stored in each ChunkColumn. """
@@ -154,14 +143,14 @@ class World:
 	def unpack_raw(self, buff, ty):
 		return struct.unpack('>'+ty, buff.read(struct.calcsize(ty)))
 	
-	def unpack_bulk(self, packet):
-		skylight = packet.data['sky_light']
+	def unpack_bulk(self, data):
+		skylight = data['sky_light']
 		ground_up = True
 		
 		# Read compressed data
-		data = BytesIO(zlib.decompress(packet.data['data']))
+		data = utils.BoundBuffer(zlib.decompress(data['data']))
 		
-		for bitmap in packet.data['bitmaps']:
+		for bitmap in data['bitmaps']:
 			# Read chunk metadata
 			x_chunk = bitmap['x']
 			z_chunk = bitmap['z']
@@ -173,16 +162,16 @@ class World:
 			if key not in self.columns:
 				self.columns[key] = ChunkColumn()
 			
-			# Unpack the chunk column data!
+			# Unpack the chunk column data
 			self.columns[key].unpack(data, mask1, mask2, skylight, ground_up)
 
-	def unpack_column(self, packet):
-		x_chunk = packet.data['x_chunk']
-		z_chunk = packet.data['z_chunk']
-		ground_up = packet.data['ground_up_continuous']
-		mask1 = packet.data['primary_bitmap']
-		mask2 = packet.data['secondary_bitmap']
-		data = BytesIO(zlib.decompress(packet.data['data']))
+	def unpack_column(self, data):
+		x_chunk = data['x_chunk']
+		z_chunk = data['z_chunk']
+		ground_up = data['ground_up_continuous']
+		mask1 = data['primary_bitmap']
+		mask2 = data['secondary_bitmap']
+		data = BoundBuffer(zlib.decompress(data['data']))
 		skylight = True
 
 		key = (x_chunk, z_chunk)

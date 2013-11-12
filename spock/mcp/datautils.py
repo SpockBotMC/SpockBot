@@ -1,129 +1,158 @@
 import struct
+import zlib
+from spock import utils
 from spock.mcp import mcdata, nbt
-#from spock.utils import ByteToHex
+
+#Unpack/Pack functions return None on error
+
+# Minecraft varints are 32-bit signed values
+# packed into Google Protobuf varints
+def unpack_varint(bbuff):
+	total = 0
+	shift = 0
+	val = 0x80
+	while val&0x80:
+		val = struct.unpack('B', bbuff.read(1))[0]
+		total |= ((val&0x7F)<<shift)
+		shift += 7
+	if total >= (1<<32):
+		return None
+	if total&(1<<31):
+		total = total - (1<<32)
+	return total
+
+def pack_varint(val):
+	if val >= (1<<31) or val < -(1<<31):
+		return None
+	o = b''
+	if val < 0:
+		val = (1<<32)+val
+	while val>=0x80:
+		bits = val&0x7F
+		val >>= 7
+		o += struct.pack('B', (0x80|bits))
+	bits = val&0x7F
+	o += struct.pack('B', bits)
+	return o
+
+# Slots are dictionaries that hold info about
+# inventory items, they also have funky
+# enchantment data stored in gziped NBT structs
+def unpack_slot(bbuff):
+	slot = {}
+	slot['id'] = unpack('short', bbuff)
+	if slot[['id'] != -1:
+		slot['amount'] = unpack('byte', bbuff)
+		slot['damage'] = unpack('short', bbuff)
+		length = unpack('short', bbuff)
+		if length > 0:
+			data = bbuff.recv(length)
+			try:
+				ench_bbuff = utils.BoundBuffer(
+					#Adding 16 to the window bits field tells zlib
+					#to take care of the gzip headers for us
+					zlib.decompress(data, 16+zlib.MAX_WBITS)
+				)
+				assert(unpack('byte', ench_bbuff) == nbt.TAG_COMPOUND)
+				name = nbt.TAG_String(buffer = ench_bbuff)
+				ench = nbt.TAG_Compound(buffer = ench_bbuff)
+				ench.name = name
+				slot['enchants'] = ench
+			except:
+				slot['enchant_data'] = data
+	return slot
+
+def pack_slot(slot):
+	o = pack('short', data['id'])
+	if data['id'] != -1:
+		o += pack('byte', data['amount'])
+		o += pack('short', data['damage'])
+		if 'enchantment_data' in data:
+			o += pack('short', len(data['enchant_data']))
+			o += data['enchant_data']
+		elif 'enchants' in data:
+			ench = data['enchants']
+			bbuff = utils.BoundBuffer()
+			TAG_Byte(ench.id)._render_buffer(bbuff)
+			TAG_String(ench.name)._render_buffer(bbuff)
+			ench._render_buffer(bbuff)
+			#Python zlib.compress doesn't provide wbits for some reason
+			#So we'll use a compression object instead, no biggie
+			compress = zlib.compressobj(wbits = 16+zlib.MAX_WBITS)
+			ench = compress.compress(bbuff.flush())
+			ench += compress.flush()
+			o += pack('short', len(ench))
+			o += ench
+		else:
+			o += pack('short', -1)
+	return o
+
+# Metadata is a dictionary list thing that 
+# holds metadata about entities. Currently 
+# implemented as a list/tuple thing, might 
+# switch to dicts
+metadata_lookup = 'byte', 'short', 'int', 'float', 'string', 'slot'
+
+def unpack_metadata(bbuff):
+	metadata = []
+	head = unpack(bbuff, 'ubyte')
+	while head != 127:
+		key = head & 0x1F # Lower 5 bits
+		typ = head >> 5 # Upper 3 bits
+		if typ < len(metadata_lookup) and typ >= 0:
+			val = unpack(metadata_lookup[typ], bbuff)
+		elif typ == 6:
+			val = [unpack(bbuff, 'int') for i in range(3)]
+		else:
+			return None
+		metadata.append((key, (typ, val)))
+		head = unpack(bbuff, 'ubyte')
+	return metadata
+
+def pack_metadata(metadata):
+	o = b''
+	for key, tmp in data:
+		typ, val = tmp
+		o += pack('ubyte', (typ << 5)|key)
+		if typ < len(metadata_lookup) and typ >= 0:
+			o += pack(metadata_lookup[typ], bbuff)
+		elif typ == 6:
+			for i in range(3):
+				o += pack('int', val[i])
+		else:
+			return None
+	o += pack('byte', 127)
+	return o
 
 endian = '>'
 
-def unpack(bbuff, data_type):
+def unpack(data_type, bbuff):
 	if data_type in mcdata.data_types:
 		format = mcdata.data_types[data_type]
 		return struct.unpack(endian+format[0], bbuff.recv(format[1]))[0]
-	
-	if data_type == "string":
-		length = unpack(bbuff, 'short')
-		return bbuff.recv(2*length).decode('utf-16be')
-
-	if data_type == "slot":
-		o = {}
-		o["id"] = unpack(bbuff, 'short')
-		if o["id"] > 0:
-			o["amount"] = unpack(bbuff, 'byte')
-			o["damage"] = unpack(bbuff, 'short')
-			length = unpack(bbuff, 'short')
-			if length > 0:
-				ench = bbuff.recv(length)
-				try:
-					ench = nbt.decode_nbt(ench)
-					o["enchantments"] = ench
-				except:
-					o["enchantment_data"] = ench
-		return o
-
-	if data_type == "metadata":
-		metadata = []
-		x = unpack(bbuff, 'ubyte')
-		while x != 127:
-			key = x & 0x1F # Lower 5 bits
-			ty = x >> 5 # Upper 3 bits
-			if ty == 0: val = unpack(bbuff, 'byte')
-			if ty == 1: val = unpack(bbuff, 'short')
-			if ty == 2: val = unpack(bbuff, 'int')
-			if ty == 3: val = unpack(bbuff, 'float')
-			if ty == 4: val = unpack(bbuff, 'string')
-			if ty == 5:
-				val = {}
-				val["id"] = unpack(bbuff, 'short')
-				val["count"] = unpack(bbuff, 'byte')
-				val["damage"] = unpack(bbuff, 'short')
-			if ty == 6:
-				val = []
-				for i in range(3):
-					val.append(unpack(bbuff, 'int'))
-			metadata.append((key, (ty, val)))
-			x = unpack(bbuff, 'byte')
-		return metadata
+	elif data_type == 'string':
+		return bbuff.recv(unpack(bbuff, 'short')).decode('utf-8')
+	elif data_type == 'varint':
+		return unpack_varint(bbuff)
+	elif data_type == 'slot':
+		return unpack_slot(data)
+	elif data_type == 'metadata':
+		return unpack_metadata(bbuff)
+	else:
+		return None
 
 def pack(data_type, data):
 	if data_type in mcdata.data_types:
 		format = mcdata.data_types[data_type]
 		return struct.pack(endian+format[0], data)
-	
-	if data_type == "string":
-		return pack("short", len(data)) + data.encode('utf-16be')
-
-	if data_type == "slot":
-		o = pack('short', data['id'])
-		if data['id'] > 0:
-			o += pack('byte', data['amount'])
-			o += pack('short', data['damage'])
-			#if data['id'] in enchantable:
-			if 'enchantment_data' in data:
-
-				o += pack('short', len(data['enchantment_data']))
-				o += data['enchantment_data']
-
-			elif 'enchantments' in data:
-				ench = nbt.encode_nbt(data['enchantments'])
-				o += pack('short', len(ench))
-				o += ench
-			else:
-				o += pack('short', -1)
-				
-		return o
-	if data_type == "metadata":
-		o = ''
-		for key, tmp in data:
-			ty, val = tmp
-			x = key | (ty << 5)
-			o += pack('ubyte', x)
-
-			if ty == 0: o += pack('byte', val)
-			if ty == 1: o += pack('short', val)
-			if ty == 2: o += pack('int', val)
-			if ty == 3: o += pack('float', val)
-			if ty == 4: o += pack('string', val)
-			if ty == 5:
-				o += pack('short', val['id'])
-				o += pack('byte', val['count'])
-				o += pack('short', val['damage'])
-			if ty == 6:
-				for i in range(3):
-					o += pack('int', val[i])
-		o += pack('byte', 127)
-		return o
-
-def unpack_array(bbuff, data_type, count):
-	#fast
-	if data_type in mcdata.data_types:
-		data_type = mcdata.data_types[data_type]
-		length = data_type[1] * count
-		format = data_type[0] * count
-		return struct.unpack_from(format, bbuff.recv(length))
-	#slow
+	elif data_type == 'string':
+		data = data.encode('utf-8')
+		return pack('short', len(data)) + data
+	elif data_type == 'varint':
+		return pack_varint(bbuff)
+	elif data_type == 'slot':
+		return pack_slot(data)
+	elif data_type == 'metadata':
+		return pack_metadata(data)
 	else:
-		a = []
-		for i in range(count):
-			a.append(unpack(bbuff, data_type))
-		return a
-
-def pack_array(data_type, data):
-	#fast
-	if data_type in mcdata.data_types:
-		data_type = mcdata.data_types[data_type]
-		return struct.pack(data_type[0]*len(data), *data)
-	#slow
-	else:
-		o = ''
-		for d in data:
-			o += pack(data_type, d)
-		return o
+		return None

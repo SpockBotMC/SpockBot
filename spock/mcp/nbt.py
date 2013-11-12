@@ -2,12 +2,8 @@
 Handle the NBT (Named Binary Tag) data format
 """
 
-import os, io, zlib, gzip
-
 from struct import Struct, error as StructError
 from collections import MutableMapping, MutableSequence, Sequence
-from spock import utils
-#from utils import ByteToHex
 
 try:
 	unicode
@@ -15,6 +11,7 @@ try:
 except NameError:
 	unicode = str  # compatibility for Python 3
 	basestring = str  # compatibility for Python 3
+
 
 TAG_END = 0
 TAG_BYTE = 1
@@ -91,6 +88,19 @@ class _TAG_Numeric(TAG):
 
 	def _render_buffer(self, buffer):
 		buffer.write(self.fmt.pack(self.value))
+
+class _TAG_End(TAG):
+	id = TAG_END
+	fmt = Struct(">b")
+
+	def _parse_buffer(self, buffer):
+		# Note: buffer.read() may raise an IOError, for example if buffer is a corrupt gzip.GzipFile
+		value = self.fmt.unpack(buffer.read(1))[0]
+		if value != 0:
+			raise ValueError("A Tag End must be rendered as '0', not as '%d'." % (value))
+
+	def _render_buffer(self, buffer):
+		buffer.write(b'\x00')
 
 #== Value Tags ==#
 class TAG_Byte(_TAG_Numeric):
@@ -221,7 +231,7 @@ class TAG_Int_Array(TAG, MutableSequence):
 	def __setitem__(self, key, value):
 		self.value[key] = value
 
-	def __delitem__(self, key, value):
+	def __delitem__(self, key):
 		del(self.value[key])
 
 	def insert(self, key, value):
@@ -284,12 +294,13 @@ class TAG_List(TAG, MutableSequence):
 		super(TAG_List, self).__init__(value, name)
 		if type:
 			self.tagID = type.id
-		else: self.tagID = None
+		else:
+			self.tagID = None
 		self.tags = []
 		if buffer:
 			self._parse_buffer(buffer)
-		if not self.tagID:
-			raise ValueError("No type specified for list")
+		if self.tagID == None:
+			raise ValueError("No type specified for list: %s" % (name))
 
 	#Parsers and Generators
 	def _parse_buffer(self, buffer):
@@ -420,6 +431,7 @@ class TAG_Compound(TAG, MutableMapping):
 			raise TypeError("key needs to be either name of tag, or index of tag, not a %s" % type(key).__name__)
 
 	def __setitem__(self, key, value):
+		assert isinstance(value, TAG), "value must be an nbt.TAG"
 		if isinstance(key, int):
 			# Just try it. The proper error will be raised if it doesn't work.
 			self.tags[key] = value
@@ -433,13 +445,9 @@ class TAG_Compound(TAG, MutableMapping):
 
 	def __delitem__(self, key):
 		if isinstance(key, int):
-			self.tags = self.tags[:key] + self.tags[key:]
+			del(self.tags[key])
 		elif isinstance(key, basestring):
-			for i, tag in enumerate(self.tags):
-				if tag.name == key:
-					self.tags = self.tags[:i] + self.tags[i:]
-					return
-			raise KeyError("A tag with this name does not exist")
+			self.tags.remove(self.__getitem__(key))
 		else:
 			raise ValueError("key needs to be either name of tag, or index of tag")
 
@@ -467,37 +475,5 @@ class TAG_Compound(TAG, MutableMapping):
 			output.append(("\t"*indent) + "}")
 		return '\n'.join(output)
 
-TAGLIST = {TAG_BYTE:TAG_Byte, TAG_SHORT:TAG_Short, TAG_INT:TAG_Int, TAG_LONG:TAG_Long, TAG_FLOAT:TAG_Float, TAG_DOUBLE:TAG_Double, TAG_BYTE_ARRAY:TAG_Byte_Array, TAG_STRING:TAG_String, TAG_LIST:TAG_List, TAG_COMPOUND:TAG_Compound, TAG_INT_ARRAY:TAG_Int_Array}
 
-#Magic to make zlib work with gzip headers
-wbits_length = 16+zlib.MAX_WBITS
-
-#Hacky function to decode NBT data
-def decode_nbt(data, compressed = True):
-	if compressed:
-		bbuff = utils.BoundBuffer(zlib.decompress(data, wbits_length))
-	else:
-		bbuff = utils.BoundBuffer(data)
-	type = TAG_Byte(buffer = bbuff)
-	name = TAG_String(buffer = bbuff).value
-	tag = TAG_Compound(buffer = bbuff)
-	tag.name = name
-	return tag
-
-#Eventually we should offer the option to render to a string
-#That would make these functions 50% less hacky
-def encode_nbt(data, compressed = True):
-	bbuff = utils.BoundBuffer()
-	TAG_Byte(data.id)._render_buffer(bbuff)
-	TAG_String(data.name)._render_buffer(bbuff)
-	data._render_buffer(bbuff)
-	if compressed:
-		#Forced to use gzip to get the correct headers
-		#Which means we have to hack around file objects
-		gzipstring = io.StringIO()
-		gzipfile = gzip.GzipFile(fileobj = gzipstring, mode = 'wb')
-		gzipfile.write(bbuff.flush())
-		gzipfile.close()
-		return gzipstring.getvalue()
-	else:
-		return bbuff.flush()
+TAGLIST = {TAG_END: _TAG_End, TAG_BYTE:TAG_Byte, TAG_SHORT:TAG_Short, TAG_INT:TAG_Int, TAG_LONG:TAG_Long, TAG_FLOAT:TAG_Float, TAG_DOUBLE:TAG_Double, TAG_BYTE_ARRAY:TAG_Byte_Array, TAG_STRING:TAG_String, TAG_LIST:TAG_List, TAG_COMPOUND:TAG_Compound, TAG_INT_ARRAY:TAG_Int_Array}

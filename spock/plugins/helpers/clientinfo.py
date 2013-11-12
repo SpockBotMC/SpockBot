@@ -1,5 +1,3 @@
-#Maybe this should be in core?
-
 from spock.plugins.plutils import pl_announce
 
 class ClientInfo:
@@ -40,6 +38,7 @@ class ClientInfo:
 @pl_announce('ClientInfo')
 class ClientInfoPlugin:
 	def __init__(self, ploader, settings):	
+		self.emit = ploader.requires('Client').emit
 		ploader.reg_event_handler(0x01, self.handle01)
 		ploader.reg_event_handler(0x06, self.handle06)
 		ploader.reg_event_handler(0x08, self.handle08)
@@ -62,19 +61,24 @@ class ClientInfoPlugin:
 		del packet.data['not_used']
 		del packet.data['entity_id']
 		self.client_info.game_info = packet.data
+		self.emit('cl_login', packet.data)
 
 	#Spawn Position - Update client Spawn Position state
 	def handle06(self, name, packet):
 		self.client_info.spawn_position = packet.data
+		self.emit('cl_spawn_update', packet.data)
+
 
 	#Update Health - Update client Health state
 	def handle08(self, name, packet):
 		self.client_info.health = packet.data
+		self.emit('cl_health_update', packet.data)
 
 	#Position Update Packets - Update client Position state
 	def handle_position_update(self, name, packet):
 		for key, value in packet.data.items():
 			self.client_info.position[key] = value
+		self.emit('cl_position_update', self.client_info.position)
 
 	#Player List Item - Update PlayerList (not actually a list...)
 	def handleC9(self, name, packet):
@@ -89,6 +93,7 @@ class ClientInfoPlugin:
 					'Tried to remove', name, 
 					'from playerlist, but player did not exist'
 				)
+		self.emit('cl_plist_update', self.client_info.player_list)
 
 	def handle_disconnect(self, name, packet):
 		self.client_info.reset()

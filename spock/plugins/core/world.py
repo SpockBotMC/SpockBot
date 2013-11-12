@@ -23,8 +23,8 @@ class WorldPlugin:
 		ploader.provides('World', self.world)
 		ploader.reg_event_handler(0x04, self.handle04)
 		ploader.reg_event_handler(0x09, self.handle09)
-		ploader.reg_event_handler(0x33, self.handle33)
-		ploader.reg_event_handler(0x38, self.handle38)
+		#ploader.reg_event_handler(0x33, self.handle33)
+		#ploader.reg_event_handler(0x38, self.handle38)
 		ploader.reg_event_handler(
 			(0xFF, 'SOCKET_ERR', 'SOCKET_HUP'),
 			self.handle_disconnect
@@ -41,11 +41,11 @@ class WorldPlugin:
 
 	#Chunk Data - Update client World state
 	def handle33(self, name, packet):
-		self.world.map.unpack_column(packet)
+		self.world.map.unpack_column(packet.data)
 
 	#Map Chunk Bulk - Update client World state
 	def handle38(self, name, packet):
-		self.world.map.unpack_bulk(packet)
+		self.world.map.unpack_bulk(packet.data)
 
 	def handle_disconnect(self, name, data):
 		self.world.reset()

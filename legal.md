@@ -29,6 +29,4 @@ Copyright (c) 2010 Thomas Woolford
 BarneyMC
 ========
 
-We use slightly modified versions of large parts of Barney Gale's implementation of the MC Protocol, which can be found here: https://github.com/barneygale/barneymc
-
-Large parts of spock/mcp/mcpacket.py, spock/mcp/mcdata.py, and spock/mcp/mcpacket_extensions.py are verbatim copies of his work simply updated to work with the current protocol
+The Minecraft protocol implementation found in spock/mcp is largely modeled after Barney Gale's implementation from barneymc and retains many of its naming conventions. However, much of the code has been rewritten following the massive Minecraft 1.7 networking update. Barney's original implementation can be found here: https://github.com/barneygale/barneymc

@@ -1,5 +1,13 @@
 Personal reminders of things that needs doing
 
+
+**FOR 1.7
+* Session authentication
+* Read packet up to reported size, if can't decode, throwaway.
+* Set max throwaways until shutdown
+* Remove decompression from mcmap, moved to mcpacket_extensions
+
+
 * World API -> Movement API
 * Figure out inventories
 * "Friendly" emit plugin
@@ -7,9 +15,6 @@ Personal reminders of things that needs doing
 * BoundBuffer and pl_announce could use better homes
 * DOCUMENTATION: ~~At least make a docs folder~~ Docs folder made!
 * Make demo less shit
-* Throw out nbt.py, build something much simpler
-* packet_extensions needs more intuitive "array" handling
-* datautils, just, fix it...
 * Spin mcp and mcmap out into their own packages/projects?
 * Arbitrary proto version support
 * Support legacy authentication?

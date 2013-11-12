@@ -1,10 +1,10 @@
 import socket
 from spock import utils
 from spock.plugins.plutils import pl_announce
-from spock.mcp import mcpacket
+from spock.mcp import mcpacket, mcdata
 from Crypto.Cipher import AES
 
-class AESCipher():
+class AESCipher:
 	def __init__(self, SharedSecret):
 		self.encipher = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
 		self.decipher = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
@@ -20,7 +20,9 @@ class NetCore:
 		self.client = client
 		self.host = None
 		self.port = None
+		self.connected = False
 		self.encrypted = False
+		self.proto_state = mcdata.HANDSHAKE_STATE
 		self.sbuff = b''
 		self.rbuff = utils.BoundBuffer()
 
@@ -30,15 +32,32 @@ class NetCore:
 		try:
 			print("Attempting to connect to host:", host, "port:", port)
 			self.client.sock.connect((self.host, self.port))
+			self.connected = True
 		except socket.error as error:
 			#print("Error on Connect (this is normal):", str(error))
 			pass
 
+	def change_state(self, state):
+		self.proto_state = state
+
 	def push(self, packet):
-		bytes = packet.encode()
-		self.sbuff += (self.cipher.encrypt(bytes) if self.encrypted else bytes)
+		data = packet.encode()
+		self.sbuff += (self.cipher.encrypt(data) if self.encrypted else data)
 		self.client.emit(packet.ident, packet)
 		self.client.send = True
+
+	def read_packet(self, data = b''):
+		self.rbuff.append(self.cipher.decrypt(data) if self.encrypted else data)
+		try:
+			while True:
+				self.rbuff.save()
+				packet = mcpacket.Packet(ident = (
+					self.proto_state,
+					mcdata.SERVER_TO_CLIENT,
+				)).decode(self.rbuff)
+				self.client.emit(packet.ident(), packet)
+		except utils.BufferUnderflowException:
+			self.rbuff.revert()
 
 	def enable_crypto(self, secret_key):
 		self.cipher = AESCipher(secret_key)
@@ -48,23 +67,9 @@ class NetCore:
 		self.cipher = None
 		self.encrypted = False
 
-	def disconnect(self, force = False):
-		if force:
-			self.client.sock.close()
-			return
-
-		flags = self.client.get_flags()
-		if 'SOCKET_HUP' not in flags:
-			self.push(mcpacket.Packet(ident = 0xFF, data = {
-				'reason': 'disconnect.quitting'
-			}))
-			while self.sbuff:
-				flags = self.client.get_flags()
-				if ('SOCKET_ERR' in flags) or ('SOCKET_HUP' in flags):
-					break
-				elif 'SOCKET_SEND' in flags:
-					self.client.emit('SOCKET_SEND')
+	def disconnect(self):
 		self.client.sock.close()
+		self.reset()
 
 	def reset(self):
 		self.client.net_reset()
@@ -90,19 +95,10 @@ class NetPlugin:
 			if not data: #Just because we have to support socket.select
 				self.client.emit('SOCKET_HUP')
 				return
-			self.net.rbuff.append(
-				self.net.cipher.decrypt(data) if self.net.encrypted else data
-			)
+			self.net.read_packet(data)
 		except socket.error as error:
 			#TODO: Do something here?
 			pass
-		try:
-			while True:
-				self.net.rbuff.save()
-				packet = mcpacket.read_packet(self.net.rbuff)
-				self.client.emit(packet.ident, packet)
-		except utils.BufferUnderflowException:
-			self.net.rbuff.revert()
 
 	#SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send
 	def handleSEND(self, name, event):
