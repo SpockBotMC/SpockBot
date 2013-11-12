@@ -1,5 +1,6 @@
 import hashlib
 import urllib.request as request
+import json
 from urllib.error import URLError
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
@@ -21,8 +22,9 @@ class MCAuth:
 	def __init__(self, client):
 		self.client = client
 		self.username = None
+		self.selected_profile = None
 		self.shared_secret = None
-		self.auth = yggdrasil.YggAuth()
+		self.ygg = yggdrasil.YggAuth()
 
 	def start_session(self, username, password = ''):
 		if self.client.authenticated:
@@ -30,7 +32,7 @@ class MCAuth:
 				"Attempting login with username:", username, 
 				"and password:", password
 			)
-			rep = self.auth.authenticate(username, password)
+			rep = self.ygg.authenticate(username, password)
 			if 'error' not in rep:
 				print(rep)
 			else:
@@ -41,12 +43,8 @@ class MCAuth:
 					self.client.kill = True
 				return rep
 
+			self.selected_profile = rep['selectedProfile']
 			self.username = rep['selectedProfile']['name']
-			self.sessionid = ':'.join((
-				'token', 
-				rep['accessToken'], 
-				rep['selectedProfile']['id']
-			))
 		else:
 			self.username = username
 
@@ -64,20 +62,14 @@ class AuthPlugin:
 		self.client = ploader.requires('Client')
 		self.auth = MCAuth(self.client)
 		self.auth.gen_shared_secret()
-		ploader.reg_event_handler(0xFD, self.handleFD)
-		ploader.reg_event_handler(0xFC, self.handleFC)
+		ploader.reg_event_handler(
+			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x01), 
+			self.handle01
+		)
 		ploader.provides('Auth', self.auth)
 
-	#Encryption Key Response - Signals encryption was successful, ready to spawn
-	def handleFC(self, name, packet):
-		if packet.direction == mcdata.SERVER_TO_CLIENT:
-			self.net.enable_crypto(self.auth.shared_secret)
-			self.net.push(mcpacket.Packet(ident = 0xCD, data = {
-				'payload': 0,
-			}))
-
 	#Encryption Key Request - Request for client to start encryption
-	def handleFD(self, name, packet):
+	def handle01(self, name, packet):
 		pubkey = packet.data['public_key']
 		if self.client.authenticated:
 			serverid = JavaHexDigest(hashlib.sha1(
@@ -85,25 +77,31 @@ class AuthPlugin:
 				+ self.auth.shared_secret
 				+ pubkey
 			))
-			print('Attempting to authenticate session with session.minecraft.net')
-			url = (
-				"http://session.minecraft.net/game/joinserver.jsp?"
-				+ "user=" + self.auth.username
-				+ "&sessionId=" + self.auth.sessionid
-				+ "&serverId=" + serverid
-			)
+			print('Attempting to authenticate session with serversession.mojang.com')
+			url = "https://sessionserver.mojang.com/session/minecraft/join"
+			data = json.dumps({
+				'accessToken': self.auth.ygg.access_token
+				'selectedProfile': self.auth.selected_profile
+				'serverId': serverid
+			}).encode('utf-8')
+			headers = {'Content-Type': 'application/json'}
+			req = request.Request(url, data, headers, method='POST')
 			try:
-				rep = request.urlopen(url).read().decode('ascii')
+				rep = request.urlopen(req).read().decode('ascii')
 			except URLError:
 				rep = 'Couldn\'t connect to session.minecraft.net'
-			if rep != 'OK':
-				print('Session Authentication Failed, Response:', rep)
-				self.client.auth_err = True
-				return
+			#if rep != 'OK':
+			#	print('Session Authentication Failed, Response:', rep)
+			#	self.client.auth_err = True
+			#	return
 			print(rep)
 
 		rsa_cipher = PKCS1_v1_5.new(RSA.importKey(pubkey))
-		self.net.push(mcpacket.Packet(ident = 0xFC, data = {
-			'shared_secret': rsa_cipher.encrypt(self.auth.shared_secret),
-			'verify_token': rsa_cipher.encrypt(packet.data['verify_token']),
-		}))
+		self.net.push(mcpacket.Packet(
+			ident = (mcdata.CLIENT_TO_SERVER, mcdata.LOGIN_STATE, 0x01), 
+			data = {
+				'shared_secret': rsa_cipher.encrypt(self.auth.shared_secret),
+				'verify_token': rsa_cipher.encrypt(packet.data['verify_token']),
+			}
+		))
+		self.net.enable_crypto()

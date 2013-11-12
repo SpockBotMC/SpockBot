@@ -219,7 +219,7 @@ packet_structs = {
 			#Encryption Response
 			0x01: (
 				#Extension
-					#byte string 'public_key'
+					#byte string 'shared_secret'
 					#byte string 'verify token'
 			),
 		},
