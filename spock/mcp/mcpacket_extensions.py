@@ -25,9 +25,9 @@ class ExtensionLSTC01:
 		return packet
 	
 	def encode_extra(packet):
-		o  = pack('short', len(packet.data['public_key']))
+		o  = datautils.pack('short', len(packet.data['public_key']))
 		o += packet.data['public_key']
-		o += pack('short', len(packet.data['verify_token']))
+		o += datautils.pack('short', len(packet.data['verify_token']))
 		o += packet.data['verify_token']
 		return o
 
@@ -42,9 +42,9 @@ class ExtensionLCTS01:
 		return packet
 	
 	def encode_extra(packet):
-		o  = pack('short', len(packet.data['shared_secret']))
+		o  = datautils.pack('short', len(packet.data['shared_secret']))
 		o += packet.data['shared_secret']
-		o += pack('short', len(packet.data['verify_token']))
+		o += datautils.pack('short', len(packet.data['verify_token']))
 		o += packet.data['verify_token']
 		return o
 
@@ -53,16 +53,16 @@ class ExtensionLCTS01:
 class ExtensionPSTC0E:
 	def decode_extra(packet, bbuff):
 		if packet.data['obj_data']:
-			packet['speed_x'] = datautils.unpack('short', bbuff)
-			packet['speed_y'] = datautils.unpack('short', bbuff)
-			packet['speed_z'] = datautils.unpack('short', bbuff)
+			packet.data['speed_x'] = datautils.unpack('short', bbuff)
+			packet.data['speed_y'] = datautils.unpack('short', bbuff)
+			packet.data['speed_z'] = datautils.unpack('short', bbuff)
 		return packet
 
 	def encode_extra(packet):
 		if packet.data['obj_data']:
-			o  = datautils.pack('short', packet['speed_x'])
-			o += datautils.pack('short', packet['speed_y'])
-			o += datautils.pack('short', packet['speed_z'])
+			o  = datautils.pack('short', packet.data['speed_x'])
+			o += datautils.pack('short', packet.data['speed_y'])
+			o += datautils.pack('short', packet.data['speed_z'])
 		return o
 
 #Play  SERVER_TO_CLIENT 0x13 Destroy Entities
@@ -70,7 +70,7 @@ class ExtensionPSTC0E:
 class ExtensionPSTC13:
 	def decode_extra(packet, bbuff):
 		count = datautils.unpack('byte', bbuff)
-		packet['eids'] = [
+		packet.data['eids'] = [
 			datautils.unpack('int', bbuff) for i in range(count)
 		]
 		return packet
@@ -90,7 +90,7 @@ class ExtensionPSTC20:
 			prop = {
 				'key': datautils.unpack('string', bbuff),
 				'value': datautils.unpack('double', bbuff),
-				'modifiers': []
+				'modifiers': [],
 			}
 			for j in range(datautils.unpack('short', bbuff)):
 				a, b = struct.unpack('>QQ', bbuff.recv(16))
@@ -137,10 +137,10 @@ class ExtensionPSTC21:
 class ExtensionPSTC22:
 	def decode_extra(packet, bbuff):
 		count = datautils.unpack('short', bbuff)
-		assert(count == 4*datautils.unpack('int', bbuff))
+		assert(datautils.unpack('int', bbuff) == 4*count)
 		packet.data['blocks'] = []
 		for i in range(count):
-			data = unpack('uint', bbuff)
+			data = datautils.unpack('uint', bbuff)
 			packet.data['blocks'].append({
 				'metadata': (data	 )&0xF,
 				'type':	    (data>> 4)&0xFFF,
@@ -172,10 +172,10 @@ class ExtensionPSTC26:
 		packet.data['sky_light'] = datautils.unpack('bool', bbuff)
 		packet.data['data'] = zlib.decompress(bbuff.recv(size))
 		packet.data['metadata'] = [{
-			'chunk_x': datautils.unpack('int', bbuff)
-			'chunk_y': datautils.unpack('int', bbuff)
-			'primary_bitmap': datautils.unpack('ushort', bbuff)
-			'add_bitmap': datautils.unpack('ushort', bbuff)
+			'chunk_x': datautils.unpack('int', bbuff),
+			'chunk_y': datautils.unpack('int', bbuff),
+			'primary_bitmap': datautils.unpack('ushort', bbuff),
+			'add_bitmap': datautils.unpack('ushort', bbuff),
 		} for i in range(count)]
 		return packet
 
@@ -247,7 +247,7 @@ class ExtensionPSTC35:
 	def decode_extra(packet, bbuff):
 		data = bbuff.recv(datautils.unpack('short', bbuff))
 		data = utils.BoundBuffer(zlib.decompress(data, 16+zlib.MAX_WBITS))
-		assert(unpack('byte', data) == nbt.TAG_COMPOUND)
+		assert(datautils.unpack('byte', data) == nbt.TAG_COMPOUND)
 		name = nbt.TAG_String(buffer = data)
 		nbt_data = nbt.TAG_Compound(buffer = data)
 		nbt_data.name = name

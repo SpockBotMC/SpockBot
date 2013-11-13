@@ -1,7 +1,7 @@
 #Constantly Changing, just a plugin I use to debug whatever is broken atm
 import sys
 import time
-from spock.mcp.mcdata import structs
+from spock.mcp import mcdata
 from spock.plugins.plutils import pl_announce
 
 @pl_announce('dummytest1')
@@ -18,12 +18,9 @@ class TestRequire3:
 
 class DebugPlugin:
 	def __init__(self, pl_loader, settings):
-		print('DebugPlugin loaded, requires provided:', pl_loader.requires('dummytest1'))
-		pl_loader.reg_event_handler((0x03, 0xFF, 0x0D), self.debug)
+		for packet in mcdata.hashed_structs:
+			pl_loader.reg_event_handler(packet, self.debug)
 
 	def debug(self, name, packet):
-		if (packet.ident == 0xC9 
-		or packet.ident == 0x03
-		or packet.ident == 0xFF
-		or packet.ident == 0x0D):
+		if packet.ident() != (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26):
 			print(packet)

@@ -80,9 +80,9 @@ class AuthPlugin:
 			print('Attempting to authenticate session with serversession.mojang.com')
 			url = "https://sessionserver.mojang.com/session/minecraft/join"
 			data = json.dumps({
-				'accessToken': self.auth.ygg.access_token
-				'selectedProfile': self.auth.selected_profile
-				'serverId': serverid
+				'accessToken': self.auth.ygg.access_token,
+				'selectedProfile': self.auth.selected_profile,
+				'serverId': serverid,
 			}).encode('utf-8')
 			headers = {'Content-Type': 'application/json'}
 			req = request.Request(url, data, headers, method='POST')
@@ -98,10 +98,10 @@ class AuthPlugin:
 
 		rsa_cipher = PKCS1_v1_5.new(RSA.importKey(pubkey))
 		self.net.push(mcpacket.Packet(
-			ident = (mcdata.CLIENT_TO_SERVER, mcdata.LOGIN_STATE, 0x01), 
+			ident = (mcdata.LOGIN_STATE, mcdata.CLIENT_TO_SERVER, 0x01), 
 			data = {
 				'shared_secret': rsa_cipher.encrypt(self.auth.shared_secret),
 				'verify_token': rsa_cipher.encrypt(packet.data['verify_token']),
 			}
 		))
-		self.net.enable_crypto()
+		self.net.enable_crypto(self.auth.shared_secret)

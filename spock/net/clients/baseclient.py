@@ -85,7 +85,12 @@ class BaseClient(object):
 				else copy.deepcopy(data)
 			))
 
-	def reg_event_handler(self, events, handlers):
+	def reg_event_handler(self, event, handler):
+		if event not in self.event_handlers:
+			self.event_handlers[event] = []
+		self.event_handlers[event].append(handler)
+
+	def reg_many_handlers(self, events, handlers):
 		for event in events:
 			if event not in self.event_handlers:
 				self.event_handlers[event] = []

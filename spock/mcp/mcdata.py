@@ -48,7 +48,7 @@ packet_names = {
 		SERVER_TO_CLIENT: {
 			0x00: 'Disconnect',
 			0x01: 'Encryption Request',
-			0x02: 'Login Request',
+			0x02: 'Login Success',
 		},
 		CLIENT_TO_SERVER: {
 			0x00: 'Login Start',
@@ -86,7 +86,8 @@ packet_names = {
 			0x19: 'Entity Head Look',
 			0x1A: 'Entity Status',
 			0x1B: 'Attach Entity',
-			0x1D: 'Entity Metadata',
+			0x1C: 'Entity Metadata',
+			0x1D: 'Entity Effect',
 			0x1E: 'Remove Entity Effect',
 			0x1F: 'Set Experience',
 			0x20: 'Entity Properties',
@@ -430,6 +431,11 @@ packet_structs = {
 				('bool', 'leash'),
 			),
 			#Entity Metadata
+			0x1C: (
+				('int', 'eid'),
+				('metadata', 'metadata')
+			),
+			#Entity Effect
 			0x1D: (
 				('int'  , 'eid'),
 				('byte' , 'effect'),

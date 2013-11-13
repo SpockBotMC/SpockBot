@@ -43,7 +43,7 @@ class NetCore:
 	def push(self, packet):
 		data = packet.encode()
 		self.sbuff += (self.cipher.encrypt(data) if self.encrypted else data)
-		self.client.emit(packet.ident, packet)
+		self.client.emit(packet.ident(), packet)
 		self.client.send = True
 
 	def read_packet(self, data = b''):
@@ -87,6 +87,14 @@ class NetPlugin:
 		ploader.reg_event_handler('SOCKET_SEND', self.handleSEND)
 		ploader.reg_event_handler('SOCKET_ERR', self.handleERR)
 		ploader.reg_event_handler('SOCKET_HUP', self.handleHUP)
+		ploader.reg_event_handler(
+			(mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00),
+			self.handle00
+		)
+		ploader.reg_event_handler(
+			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x02),
+			self.handle02
+		)
 
 	#SOCKET_RECV - Socket is ready to recieve data
 	def handleRECV(self, name, event):
@@ -122,3 +130,11 @@ class NetPlugin:
 			print("Socket has hung up, stopping...")
 			self.client.kill = True
 		self.net.reset()
+
+	#Handshake - Change to whatever the next state is going to be
+	def handle00(self, name, packet):
+		self.net.change_state(packet.data['next_state'])
+
+	#Login Success - Change to Play state
+	def handle02(self, name, packet):
+		self.net.change_state(mcdata.PLAY_STATE)

@@ -41,7 +41,7 @@ def pack_varint(val):
 def unpack_slot(bbuff):
 	slot = {}
 	slot['id'] = unpack('short', bbuff)
-	if slot[['id'] != -1:
+	if slot['id'] != -1:
 		slot['amount'] = unpack('byte', bbuff)
 		slot['damage'] = unpack('short', bbuff)
 		length = unpack('short', bbuff)
@@ -95,18 +95,18 @@ metadata_lookup = 'byte', 'short', 'int', 'float', 'string', 'slot'
 
 def unpack_metadata(bbuff):
 	metadata = []
-	head = unpack(bbuff, 'ubyte')
+	head = unpack('ubyte', bbuff)
 	while head != 127:
 		key = head & 0x1F # Lower 5 bits
 		typ = head >> 5 # Upper 3 bits
 		if typ < len(metadata_lookup) and typ >= 0:
 			val = unpack(metadata_lookup[typ], bbuff)
 		elif typ == 6:
-			val = [unpack(bbuff, 'int') for i in range(3)]
+			val = [unpack('int', bbuff) for i in range(3)]
 		else:
 			return None
 		metadata.append((key, (typ, val)))
-		head = unpack(bbuff, 'ubyte')
+		head = unpack('ubyte', bbuff)
 	return metadata
 
 def pack_metadata(metadata):
@@ -131,11 +131,11 @@ def unpack(data_type, bbuff):
 		format = mcdata.data_types[data_type]
 		return struct.unpack(endian+format[0], bbuff.recv(format[1]))[0]
 	elif data_type == 'string':
-		return bbuff.recv(unpack(bbuff, 'short')).decode('utf-8')
+		return bbuff.recv(unpack('varint', bbuff)).decode('utf-8')
 	elif data_type == 'varint':
 		return unpack_varint(bbuff)
 	elif data_type == 'slot':
-		return unpack_slot(data)
+		return unpack_slot(bbuff)
 	elif data_type == 'metadata':
 		return unpack_metadata(bbuff)
 	else:
@@ -147,9 +147,9 @@ def pack(data_type, data):
 		return struct.pack(endian+format[0], data)
 	elif data_type == 'string':
 		data = data.encode('utf-8')
-		return pack('short', len(data)) + data
+		return pack('varint', len(data)) + data
 	elif data_type == 'varint':
-		return pack_varint(bbuff)
+		return pack_varint(data)
 	elif data_type == 'slot':
 		return pack_slot(data)
 	elif data_type == 'metadata':

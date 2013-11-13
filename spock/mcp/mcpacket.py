@@ -8,14 +8,14 @@ from spock.mcp.mcpacket_extensions import hashed_extensions
 class Packet(object):
 	def __init__(self,
 		ident = [mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00],
-		data = {}
+		data = None
 	):
 		self.__ident = list(ident)
 		#Quick hack to fake default ident
 		if len(self.__ident) == 2:
 			self.__ident.append(0x00)
 		self.__hashed_ident = tuple(self.__ident)
-		self.data = data
+		self.data = data if data else {}
 
 	def clone(self):
 		return Packet(self.__ident, copy.deepcopy(self.data))
@@ -29,13 +29,13 @@ class Packet(object):
 	def decode(self, bbuff):
 		pbuff = utils.BoundBuffer(bbuff.recv(datautils.unpack('varint', bbuff)))
 		#Ident
-		self.__ident[2] = datautils.unpack(pbuff, 'ubyte')
+		self.__ident[2] = datautils.unpack('ubyte', pbuff)
 		self.__hashed_ident = tuple(self.__ident)
 		#Payload
 		for dtype, name in mcdata.hashed_structs[self.__hashed_ident]:
 			self.data[name] = datautils.unpack(dtype, pbuff)
 		#Extension
-		if self.__ident in hashed_extensions:
+		if self.__hashed_ident in hashed_extensions:
 			hashed_extensions[self.__hashed_ident].decode_extra(self, pbuff)
 		return self
 	
@@ -46,7 +46,7 @@ class Packet(object):
 		for dtype, name in mcdata.hashed_structs[self.__hashed_ident]:
 			o += datautils.pack(dtype, self.data[name])
 		#Extension
-		if self.__ident in hashed_extensions:
+		if self.__hashed_ident in hashed_extensions:
 			o += hashed_extensions[self.__hashed_ident].encode_extra(self)
 		return datautils.pack('varint', len(o)) + o
 

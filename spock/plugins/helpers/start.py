@@ -24,14 +24,23 @@ class StartPlugin:
 		):
 			self.net.connect(host, port)
 			self.handshake()
+			self.login_start()
 			self.client.event_loop()
 		self.net.disconnect()
 
 	def handshake(self):
-		self.net.push(mcpacket.Packet(ident = 0x02, data = {
-			'protocol_version': mcdata.MC_PROTOCOL_VERSION,
-			'username': self.auth.username,
-			'host': self.net.host,
-			'port': self.net.port,
-			})
-		)
+		self.net.push(mcpacket.Packet(
+			ident = (mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00), 
+			data = {
+				'protocol_version': mcdata.MC_PROTOCOL_VERSION,
+				'host': self.net.host,
+				'port': self.net.port,
+				'next_state': mcdata.LOGIN_STATE
+			}
+		))
+
+	def login_start(self):
+		self.net.push(mcpacket.Packet(
+			ident = (mcdata.LOGIN_STATE, mcdata.CLIENT_TO_SERVER, 0x00),
+			data = {'name': self.auth.username},
+		))

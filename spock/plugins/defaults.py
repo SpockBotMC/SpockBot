@@ -4,10 +4,10 @@ from spock.plugins.helpers import clientinfo, events, move, start
 DefaultPlugins = [
 	net.NetPlugin,
 	auth.AuthPlugin,
-	world.WorldPlugin,
-	timers.TimerPlugin,
+	#world.WorldPlugin,
+	#timers.TimerPlugin,
 	keepalive.KeepalivePlugin,
-	clientinfo.ClientInfoPlugin,
+	#clientinfo.ClientInfoPlugin,
 	#events.EventPlugin,
 	#move.MovePlugin,
 	start.StartPlugin,
