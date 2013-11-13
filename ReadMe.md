@@ -1,4 +1,5 @@
 Inspired by remyroy's COPS, a Minecraft client in Python. Protocol implementation based on barneymc
+Currently Supports Minecraft 1.7.2
 
 spock
 =====
