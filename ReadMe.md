@@ -21,5 +21,5 @@ For now you can check out the plugins folder to get a vague idea of what plugins
 
 License is MIT and can be found in license.md
 
-The NBT parser, Minecraft.net login function, and most of the Protocol implementation come from other projects, 
+The NBT parser and the original protocol implementation came from other projects, 
 relevant legal information and attribution can be found in legal.md
