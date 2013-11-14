@@ -27,6 +27,7 @@ class Packet(object):
 		return self.__hashed_ident
 
 	def decode(self, bbuff):
+		self.data = {}
 		pbuff = utils.BoundBuffer(bbuff.recv(datautils.unpack('varint', bbuff)))
 		#Ident
 		self.__ident[2] = datautils.unpack('ubyte', pbuff)
