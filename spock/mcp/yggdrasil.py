@@ -13,7 +13,7 @@ class YggAuth:
 		self.password = password
 		self.client_token = client_token
 
-		self.access_token = None #validate needs access_token to exist
+		self.access_token = None #validate needs self.access_token to exist
 		self.access_token = (
 			None if self.validate(access_token) else access_token
 		)

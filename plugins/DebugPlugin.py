@@ -17,9 +17,9 @@ class TestRequire3:
 		print('dummytest3 loaded')
 
 class DebugPlugin:
-	def __init__(self, pl_loader, settings):
+	def __init__(self, ploader, settings):
 		for packet in mcdata.hashed_structs:
-			pl_loader.reg_event_handler(packet, self.debug)
+			ploader.reg_event_handler(packet, self.debug)
 
 	def debug(self, name, packet):
 		if packet.ident() != (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26):
