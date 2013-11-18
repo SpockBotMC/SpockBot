@@ -1,5 +1,8 @@
 Personal reminders of things that needs doing
 
+*settings dict provided to PluginLoader to provide as/to plugins
+*Rework mostly irrelevant client, move plugin loader and misc classes to single file
+
 * Remove decompression from mcmap, moved to mcpacket_extensions
 * If packet can't decode, throwaway.
 * Set max throwaways until shutdown

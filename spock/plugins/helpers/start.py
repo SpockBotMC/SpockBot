@@ -11,9 +11,10 @@ from spock.mcp import mcpacket, mcdata
 
 class StartPlugin:
 	def __init__(self, ploader, settings):
+		self.event = ploader.requires('Event')
+		self.client = ploader.requires('Client')
 		self.net = ploader.requires('Net')
 		self.auth = ploader.requires('Auth')
-		self.client = ploader.requires('Client')
 
 		setattr(self.client, 'start', self.start)
 
@@ -25,8 +26,7 @@ class StartPlugin:
 			self.net.connect(host, port)
 			self.handshake()
 			self.login_start()
-			self.client.event_loop()
-		self.net.disconnect()
+			self.event.event_loop()
 
 	def handshake(self):
 		self.net.push(mcpacket.Packet(

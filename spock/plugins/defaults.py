@@ -1,14 +1,14 @@
-from spock.plugins.core import net, auth, world, timers, keepalive
-from spock.plugins.helpers import clientinfo, events, move, start
+from spock.plugins.core import event, net, timers, auth
+from spock.plugins.helpers import start, keepalive, clientinfo, world, move
 
 DefaultPlugins = [
+	event.EventPlugin,
 	net.NetPlugin,
+	timers.TimerPlugin,
 	auth.AuthPlugin,
-	#world.WorldPlugin,
-	#timers.TimerPlugin,
-	keepalive.KeepalivePlugin,
-	#clientinfo.ClientInfoPlugin,
-	#events.EventPlugin,
-	#move.MovePlugin,
 	start.StartPlugin,
+	keepalive.KeepalivePlugin,
+	#world.WorldPlugin,
+	#clientinfo.ClientInfoPlugin,
+	#move.MovePlugin,
 ]

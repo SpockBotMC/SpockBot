@@ -1,4 +1,5 @@
 import time
+from spock.mcp import mcdata
 from spock.plugins.plutils import pl_announce
 
 class BaseTimer(object):
@@ -40,7 +41,7 @@ class EventTimer(BaseTimer):
 	def reset(self):
 		self.end_time = time.time() + self.wait_time
 
-#Tick based timer
+#World tick based timer
 class TickTimer(BaseTimer):
 	def __init__(self, world, wait_ticks, callback, runs = 1):
 		super().__init__(callback, runs)
@@ -58,10 +59,20 @@ class TickTimer(BaseTimer):
 	def reset(self):
 		self.end_tick = self.world.age + self.wait_ticks
 
-class TimerInterface:
-	def __init__(self, reg_timer, world):
-		self.reg_timer = reg_timer
-		self.world = world
+class TimerCore:
+	def __init__(self, world_tick):
+		self.timers = []
+		self.world_tick = world_tick
+
+	def reg_timer(self, timer):
+		self.timers.append(timer)
+
+	def get_timeout(self):
+		timeout = -1
+		for timer in self.timers:
+			if timeout > timer.countdown() or timeout == -1:
+					timeout = timer.countdown()
+		return timeout
 
 	def reg_event_timer(self, wait_time, callback, runs = 1):
 		self.reg_timer(EventTimer(wait_time, callback, runs))
@@ -69,20 +80,35 @@ class TimerInterface:
 	def reg_tick_timer(self, wait_ticks, callback, runs = 1):
 		self.reg_timer(TickTimer(self.world, wait_ticks, callback, runs))
 
+class WorldTick:
+	def __init__(self):
+		self.age = 0
+
 @pl_announce('Timers')
 class TimerPlugin:
 	def __init__(self, ploader, settings):
-		self.client = ploader.requires('Client')
-		ploader.provides('Timers', 
-			TimerInterface(
-				self.client.reg_timer,
-				ploader.requires('World')
+		self.world = ploader.requires('World')
+		if not self.world:
+			self.world = WorldTick()
+			ploader.reg_event_handler(
+				(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x03), 
+				self.handle03
 			)
-		)
-		ploader.reg_event_handler(
-			(0xFF, 'SOCKET_ERR', 'SOCKET_HUP'),
-			self.handle_disconnect
-		)
+		self.timer_core = TimerCore(self.world)
+		ploader.provides('Timers', self.timer_core)
+		ploader.reg_event_handler('tick', self.tick)
+		ploader.reg_event_handler('SOCKET_ERR', self.handle_disconnect)
+		ploader.reg_event_handler('SOCKET_HUP', self.handle_disconnect)
+
+	def tick(self, name, data):
+		for timer in self.timer_core.timers:
+			timer.update()
+			if not timer.get_runs():
+				self.timer_core.timers.remove(timer)
+
+	#Time Update - We grab world age if the world plugin isn't available
+	def handle03(self, name, packet):
+		self.world.age = packet.data['world_age']
 
 	def handle_disconnect(self, name, data):
-		self.client.timers = []
+		self.timer_core.timers = []

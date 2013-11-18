@@ -18,8 +18,9 @@ def JavaHexDigest(digest):
 		d = "%x" % d
 	return d
 
-class MCAuth:
-	def __init__(self, client):
+class AuthCore:
+	def __init__(self, client, event):
+		self.event = event
 		self.client = client
 		self.username = None
 		self.selected_profile = None
@@ -37,7 +38,7 @@ class MCAuth:
 				print(rep)
 			else:
 				print('Login Unsuccessful, Response:', rep)
-				self.client.auth_err = True
+				self.event.emit('AUTH_ERR')
 				if self.client.sess_quit:
 					print("Authentication error, stopping...")
 					self.client.kill = True
@@ -58,15 +59,25 @@ class MCAuth:
 @pl_announce('Auth')
 class AuthPlugin:
 	def __init__(self, ploader, settings):
+		self.event = ploader.requires('Event')
 		self.net = ploader.requires('Net')
 		self.client = ploader.requires('Client')
-		self.auth = MCAuth(self.client)
+		self.auth = AuthCore(self.client, self.event)
 		self.auth.gen_shared_secret()
+		ploader.reg_event_handler('AUTH_ERR', self.handleAUTHERR)
+		ploader.reg_event_handler('SESS_ERR', self.handleSESSERR)
 		ploader.reg_event_handler(
 			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x01), 
 			self.handle01
 		)
 		ploader.provides('Auth', self.auth)
+
+	def handleAUTHERR(self, name, data):
+		pass
+
+	def handleSESSERR(self, name, data):
+		if self.client.sess_quit:
+			self.event.kill()
 
 	#Encryption Key Request - Request for client to start encryption
 	def handle01(self, name, packet):
@@ -77,7 +88,7 @@ class AuthPlugin:
 				+ self.auth.shared_secret
 				+ pubkey
 			))
-			print('Attempting to authenticate session with serversession.mojang.com')
+			print('Attempting to authenticate session with sessionserver.mojang.com')
 			url = "https://sessionserver.mojang.com/session/minecraft/join"
 			data = json.dumps({
 				'accessToken': self.auth.ygg.access_token,
@@ -89,10 +100,10 @@ class AuthPlugin:
 			try:
 				rep = request.urlopen(req).read().decode('ascii')
 			except URLError:
-				rep = 'Couldn\'t connect to session.minecraft.net'
+				rep = 'Couldn\'t connect to sessionserver.mojang.com'
 			#if rep != 'OK':
 			#	print('Session Authentication Failed, Response:', rep)
-			#	self.client.auth_err = True
+			#	self.event.emit('SESS_ERR')
 			#	return
 			print(rep)
 

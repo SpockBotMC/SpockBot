@@ -1,4 +1,6 @@
+import sys
 import socket
+import select
 from spock import utils
 from spock.plugins.plutils import pl_announce
 from spock.mcp import mcpacket, mcdata
@@ -15,9 +17,79 @@ class AESCipher:
 	def decrypt(self, data):
 		return self.decipher.decrypt(data)
 
+class SelectSocket:
+	def __init__(self, timer):
+		self.sending = False
+		self.timer = timer
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.sock.setblocking(0)
+		self.recv = self.sock.recv
+		self.send = self.sock.send
+
+	def poll(self):
+		flags = []
+		if self.sending:
+			self.sending = False
+			slist = (self.sock,), (self.sock,), ()
+		else:
+			slist = (self.sock,), (), ()
+		timeout = self.timer.get_timeout()
+		if timeout>0: 
+			slist.append(timeout)
+		try:
+			rlist, wlist, xlist = select.select(*slist)
+		except select.error as e:
+			print(str(e))
+			rlist = []
+			wlist = []
+		if rlist:         flags.append('SOCKET_RECV')
+		if wlist:         flags.append('SOCKET_SEND')
+		return flags
+
+	def reset(self):
+		self.sock.close()
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.sock.setblocking(0)
+
+rmask = select.POLLIN|select.POLLERR|select.POLLHUP
+smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
+class PollSocket(SelectSocket):
+	def __init__(self, timer):
+		super().__init__(timer)
+		self.pollobj = select.poll()
+		self.pollobj.register(self.sock, smask)
+
+	def poll(self):
+		flags = []
+		if self.send:
+			self.pollobj.register(self.sock, smask)
+			self.sending = False
+		else:
+			self.pollobj.register(self.sock, rmask)
+		try:
+			poll = self.pollobj.poll(self.timer.get_timeout())
+		except select.error as e:
+			print(str(e))
+			poll = []
+		if poll:
+			poll = poll[0][1]
+			if poll&select.POLLERR: flags.append('SOCKET_ERR')
+			if poll&select.POLLHUP: flags.append('SOCKET_HUP')
+			if poll&select.POLLIN:  flags.append('SOCKET_RECV')
+			if poll&select.POLLOUT: flags.append('SOCKET_SEND')
+		return flags
+
+	def reset(self):
+		self.pollobj.unregister(self.sock)
+		self.sock.close()
+		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.sock.setblocking(0)
+		self.pollobj.register(self.sock)
+
 class NetCore:
-	def __init__(self, client):
-		self.client = client
+	def __init__(self, sock, event):
+		self.sock = sock
+		self.event = event
 		self.host = None
 		self.port = None
 		self.connected = False
@@ -31,7 +103,7 @@ class NetCore:
 		self.port = port
 		try:
 			print("Attempting to connect to host:", host, "port:", port)
-			self.client.sock.connect((self.host, self.port))
+			self.sock.sock.connect((self.host, self.port))
 			self.connected = True
 		except socket.error as error:
 			#print("Error on Connect (this is normal):", str(error))
@@ -43,8 +115,8 @@ class NetCore:
 	def push(self, packet):
 		data = packet.encode()
 		self.sbuff += (self.cipher.encrypt(data) if self.encrypted else data)
-		self.client.emit(packet.ident(), packet)
-		self.client.send = True
+		self.event.emit(packet.ident(), packet)
+		self.sock.sending = True
 
 	def read_packet(self, data = b''):
 		self.rbuff.append(self.cipher.decrypt(data) if self.encrypted else data)
@@ -55,7 +127,7 @@ class NetCore:
 					self.proto_state,
 					mcdata.SERVER_TO_CLIENT,
 				)).decode(self.rbuff)
-				self.client.emit(packet.ident(), packet)
+				self.event.emit(packet.ident(), packet)
 		except utils.BufferUnderflowException:
 			self.rbuff.revert()
 
@@ -67,22 +139,25 @@ class NetCore:
 		self.cipher = None
 		self.encrypted = False
 
-	def disconnect(self):
-		self.client.sock.close()
-		self.reset()
-
 	def reset(self):
-		self.client.net_reset()
-		self.__init__(self.client)
+		self.sock.reset()
+		self.__init__(self.sock, self.event)
 
-
+	disconnect = reset
 
 @pl_announce('Net')
 class NetPlugin:
 	def __init__(self, ploader, settings):
+		if sys.platform != 'win32':
+			self.sock = PollSocket(ploader.requires('Timers'))
+		else:
+			self.sock = SelectSocket(ploader.requires('Timers'))
 		self.client = ploader.requires('Client')
-		self.net = NetCore(self.client)
+		self.event = ploader.requires('Event')
+		self.net = NetCore(self.sock, self.event)
 		ploader.provides('Net', self.net)
+
+		ploader.reg_event_handler('tick', self.tick)
 		ploader.reg_event_handler('SOCKET_RECV', self.handleRECV)
 		ploader.reg_event_handler('SOCKET_SEND', self.handleSEND)
 		ploader.reg_event_handler('SOCKET_ERR', self.handleERR)
@@ -96,12 +171,16 @@ class NetPlugin:
 			self.handle02
 		)
 
+	def tick(self, name, data):
+		for flag in self.sock.poll():
+			self.event.emit(flag)
+
 	#SOCKET_RECV - Socket is ready to recieve data
 	def handleRECV(self, name, event):
 		try:
-			data = self.client.sock.recv(self.client.bufsize)
+			data = self.sock.recv(self.client.bufsize)
 			if not data: #Just because we have to support socket.select
-				self.client.emit('SOCKET_HUP')
+				self.event.emit('SOCKET_HUP')
 				return
 			self.net.read_packet(data)
 		except socket.error as error:
@@ -111,7 +190,7 @@ class NetPlugin:
 	#SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send
 	def handleSEND(self, name, event):
 		try:
-			sent = self.client.sock.send(self.net.sbuff)
+			sent = self.sock.send(self.net.sbuff)
 			self.net.sbuff = self.net.sbuff[sent:]
 		except socket.error as error:
 			#TODO: Do something here?
@@ -119,16 +198,16 @@ class NetPlugin:
 
 	#SOCKET_ERR - Socket Error has occured
 	def handleERR(self, name, event):
-		if self.client.sock_quit and not self.client.kill:
+		if self.client.sock_quit and not self.event.kill_event:
 			print("Socket Error has occured, stopping...")
-			self.client.kill = True
+			self.event.kill()
 		self.net.reset()
 
 	#SOCKET_HUP - Socket has hung up
 	def handleHUP(self, name, event):
-		if self.client.sock_quit and not self.client.kill:
+		if self.client.sock_quit and not self.event.kill_event:
 			print("Socket has hung up, stopping...")
-			self.client.kill = True
+			self.event.kill()
 		self.net.reset()
 
 	#Handshake - Change to whatever the next state is going to be
