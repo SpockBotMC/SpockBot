@@ -14,7 +14,7 @@ Client could loosely be called "event-driven", plugins register handler function
 In comparison to other popular MC bots like Mineflayer Spock is much more "bare-bones", in that Spock expects plugins to understand and send packets on their own. The default handlers only mirror Keep Alives and Position Updates from the server (without which the bot would get kicked and be unable to move, respectively). This means that writing Spock plugins require a fairly intricate understanding of the MC protocol.
 
 I'll write a real ReadMe and API docs when everything is done and stable-ish.
-For now you can check out the plugins folder to get a vague idea of what plugins should look like, find me on #mcdevs if you have questions
+For now you can check out the plugins folder to get a vague idea of what plugins should look like, find me on #mcdevs or email me at nickelpro@gmail.com if you have questions
 
 
 ###Legal
