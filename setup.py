@@ -6,9 +6,9 @@ setup (
     packages=[
     	'spock', 
     	'spock.mcp', 
-    	'spock.net',
-    	'spock.net.plugins',
-    	'spock.net.plugins.core',
-    	'spock.net.plugins.helpers',
+    	'spock.mcmap',
+    	'spock.plugins',
+    	'spock.plugins.core',
+    	'spock.plugins.helpers',
     ],
 )
