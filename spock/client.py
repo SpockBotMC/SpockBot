@@ -1,4 +1,4 @@
-from spock.plugins.defaults import DefaultPlugins
+from spock.plugins import DefaultPlugins
 
 class PluginLoader:
 	def __init__(self, client, settings):

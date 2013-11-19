@@ -2,7 +2,7 @@ import sys
 import socket
 import select
 from spock import utils
-from spock.plugins.plutils import pl_announce
+from spock.utils import pl_announce
 from spock.mcp import mcpacket, mcdata
 from Crypto.Cipher import AES
 

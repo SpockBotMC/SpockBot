@@ -1,4 +1,4 @@
-from spock.plugins.plutils import pl_announce
+from spock.utils import pl_announce
 
 class ClientInfo:
 	def __init__(self):

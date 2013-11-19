@@ -34,18 +34,11 @@ class BoundBuffer:
 	read = recv
 	write = append
 
+def pl_announce(*args):
+	def inner(cl):
+		cl.pl_announce = args
+		return cl
+	return inner
+
 def ByteToHex( byteStr ):
 	return ''.join( [ "%02X " % x for x in byteStr ] ).strip()
-
-#TODO: Support 1.6 Server List Ping
-def EncodeSLP(packet):
-	pass
-
-def DecodeSLP(packet):
-	rstring = packet.data['reason'][3:].split('\x00')
-	return {'protocol_version': int(rstring[0]),
-		'server_version': rstring[1],
-		'motd': rstring[2],
-		'players': int(rstring[3]),
-		'max_players': int(rstring[4]),
-	}

@@ -1,6 +1,6 @@
 import signal
 import copy
-from spock.plugins.plutils import pl_announce
+from spock.utils import pl_announce
 
 class EventCore:
 	def __init__(self):

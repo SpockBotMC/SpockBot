@@ -7,7 +7,7 @@ from Crypto.PublicKey import RSA
 from Crypto import Random
 from spock import utils
 from spock.mcp import mcdata, mcpacket, yggdrasil
-from spock.plugins.plutils import pl_announce
+from spock.utils import pl_announce
 
 # This function courtesy of barneygale
 def JavaHexDigest(digest):

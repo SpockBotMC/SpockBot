@@ -2,7 +2,7 @@
 import sys
 import time
 from spock.mcp import mcdata
-from spock.plugins.plutils import pl_announce
+from spock.utils import pl_announce
 
 @pl_announce('dummytest1')
 class TestRequire1:

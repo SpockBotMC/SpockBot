@@ -1,4 +1,4 @@
-from spock.plugins.plutils import pl_announce
+from spock.utils import pl_announce
 from spock.mcmap import smpmap
 
 #TODO: Track Entities, real world API
