@@ -12,6 +12,7 @@ from spock.mcp import mcpacket, mcdata
 class StartPlugin:
 	def __init__(self, ploader, settings):
 		self.event = ploader.requires('Event')
+		self.settings = ploader.requires('Settings')
 		self.client = ploader.requires('Client')
 		self.net = ploader.requires('Net')
 		self.auth = ploader.requires('Auth')
@@ -20,8 +21,8 @@ class StartPlugin:
 
 	def start(self, host = 'localhost', port = 25565):
 		if 'error' not in self.auth.start_session(
-			self.client.mc_username, 
-			self.client.mc_password
+			self.settings['mc_username'],
+			self.settings['mc_password']
 		):
 			self.net.connect(host, port)
 			self.handshake()

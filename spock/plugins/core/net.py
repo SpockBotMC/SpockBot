@@ -152,7 +152,9 @@ class NetPlugin:
 			self.sock = PollSocket(ploader.requires('Timers'))
 		else:
 			self.sock = SelectSocket(ploader.requires('Timers'))
-		self.client = ploader.requires('Client')
+		settings = ploader.requires('Settings')
+		self.bufsize = settings['bufsize']
+		self.sock_quit = settings['sock_quit']
 		self.event = ploader.requires('Event')
 		self.net = NetCore(self.sock, self.event)
 		ploader.provides('Net', self.net)
@@ -178,7 +180,7 @@ class NetPlugin:
 	#SOCKET_RECV - Socket is ready to recieve data
 	def handleRECV(self, name, event):
 		try:
-			data = self.sock.recv(self.client.bufsize)
+			data = self.sock.recv(self.bufsize)
 			if not data: #Just because we have to support socket.select
 				self.event.emit('SOCKET_HUP')
 				return
@@ -198,14 +200,14 @@ class NetPlugin:
 
 	#SOCKET_ERR - Socket Error has occured
 	def handleERR(self, name, event):
-		if self.client.sock_quit and not self.event.kill_event:
+		if self.sock_quit and not self.event.kill_event:
 			print("Socket Error has occured, stopping...")
 			self.event.kill()
 		self.net.reset()
 
 	#SOCKET_HUP - Socket has hung up
 	def handleHUP(self, name, event):
-		if self.client.sock_quit and not self.event.kill_event:
+		if self.sock_quit and not self.event.kill_event:
 			print("Socket has hung up, stopping...")
 			self.event.kill()
 		self.net.reset()

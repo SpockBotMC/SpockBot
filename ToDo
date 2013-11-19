@@ -1,18 +1,14 @@
 Personal reminders of things that needs doing
 
-*settings dict provided to PluginLoader to provide as/to plugins
-*Rework mostly irrelevant client, move plugin loader and misc classes to single file
-
 * Remove decompression from mcmap, moved to mcpacket_extensions
 * If packet can't decode, throwaway.
 * Set max throwaways until shutdown
 * World API -> Movement API
 * Figure out inventories
-* "Friendly" emit plugin
 * More specific platform support epoll/kqueue/libuv
 * BoundBuffer and pl_announce could use better homes
 * DOCUMENTATION: ~~At least make a docs folder~~ Docs folder made!
 * Make demo less shit
-* Spin mcp and mcmap out into their own packages/projects?
+* Spin mcp/mcmap/pluginloader out into their own packages/projects?
 * Arbitrary proto version support
 * Consider Python 2.7 support

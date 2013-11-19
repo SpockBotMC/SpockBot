@@ -32,7 +32,9 @@ class EventTimer(BaseTimer):
 		self.end_time = time.time() + self.wait_time
 
 	def countdown(self):
-		return self.end_time - time.time()
+		count = self.end_time - time.time()
+		return count if count > 0 else 0
+
 
 	def check(self):
 		if self.runs == 0: return False

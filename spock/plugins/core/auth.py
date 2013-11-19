@@ -19,16 +19,16 @@ def JavaHexDigest(digest):
 	return d
 
 class AuthCore:
-	def __init__(self, client, event):
+	def __init__(self, authenticated, event):
 		self.event = event
-		self.client = client
+		self.authenticated = authenticated
 		self.username = None
 		self.selected_profile = None
 		self.shared_secret = None
 		self.ygg = yggdrasil.YggAuth()
 
 	def start_session(self, username, password = ''):
-		if self.client.authenticated:
+		if self.authenticated:
 			print(
 				"Attempting login with username:", username, 
 				"and password:", password
@@ -39,16 +39,11 @@ class AuthCore:
 			else:
 				print('Login Unsuccessful, Response:', rep)
 				self.event.emit('AUTH_ERR')
-				if self.client.sess_quit:
-					print("Authentication error, stopping...")
-					self.client.kill = True
 				return rep
-
 			self.selected_profile = rep['selectedProfile']
 			self.username = rep['selectedProfile']['name']
 		else:
 			self.username = username
-
 		return rep
 
 	def gen_shared_secret(self):
@@ -61,8 +56,10 @@ class AuthPlugin:
 	def __init__(self, ploader, settings):
 		self.event = ploader.requires('Event')
 		self.net = ploader.requires('Net')
-		self.client = ploader.requires('Client')
-		self.auth = AuthCore(self.client, self.event)
+		settings = ploader.requires('Settings')
+		self.authenticated = settings['authenticated']
+		self.sess_quit = settings['sess_quit']
+		self.auth = AuthCore(self.authenticated, self.event)
 		self.auth.gen_shared_secret()
 		ploader.reg_event_handler('AUTH_ERR', self.handleAUTHERR)
 		ploader.reg_event_handler('SESS_ERR', self.handleSESSERR)
@@ -73,16 +70,16 @@ class AuthPlugin:
 		ploader.provides('Auth', self.auth)
 
 	def handleAUTHERR(self, name, data):
-		pass
+		self.event.kill()
 
 	def handleSESSERR(self, name, data):
-		if self.client.sess_quit:
+		if self.sess_quit:
 			self.event.kill()
 
 	#Encryption Key Request - Request for client to start encryption
 	def handle01(self, name, packet):
 		pubkey = packet.data['public_key']
-		if self.client.authenticated:
+		if self.authenticated:
 			serverid = JavaHexDigest(hashlib.sha1(
 				packet.data['server_id'].encode('ascii')
 				+ self.auth.shared_secret
