@@ -54,10 +54,6 @@ for index, setting in enumerate(default_settings):
 	if len(setting) == 2:
 		default_settings[index] = (setting[0], setting[0], setting[1])
 
-for index, setting in enumerate(default_settings):
-	if len(setting) == 2:
-		default_settings[index] = (setting[0], setting[0], setting[1])
-
 class Client(object):
 	def __init__(self, **kwargs):
 		#Grab some settings
