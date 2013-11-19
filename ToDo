@@ -6,7 +6,6 @@ Personal reminders of things that needs doing
 * World API -> Movement API
 * Figure out inventories
 * More specific platform support epoll/kqueue/libuv
-* BoundBuffer and pl_announce could use better homes
 * DOCUMENTATION: ~~At least make a docs folder~~ Docs folder made!
 * Make demo less shit
 * Spin mcp/mcmap/pluginloader out into their own packages/projects?
