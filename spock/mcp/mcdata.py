@@ -469,7 +469,7 @@ packet_structs = {
 				('ushort', 'primary_bitmap'),
 				('ushort', 'add_bitmap'),
 				#Extension
-					#byte string 'byte_array'
+					#byte string 'data'
 			),
 			#Multi Block Change
 			0x22: (

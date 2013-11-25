@@ -121,13 +121,13 @@ class ExtensionPSTC20:
 @extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x21))
 class ExtensionPSTC21:
 	def decode_extra(packet, bbuff):
-		packet.data['byte_array'] = zlib.decompress(
+		packet.data['data'] = zlib.decompress(
 			bbuff.recv(datautils.unpack('int', bbuff))
 		)
 		return packet
 
 	def encode_extra(packet):
-		data = zlib.compress(packet.data['byte_array'])
+		data = zlib.compress(packet.data['data'])
 		o = datautils.pack('int', len(data))
 		o += data
 		return o

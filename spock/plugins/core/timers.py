@@ -62,9 +62,9 @@ class TickTimer(BaseTimer):
 		self.end_tick = self.world.age + self.wait_ticks
 
 class TimerCore:
-	def __init__(self, world_tick):
+	def __init__(self, world):
 		self.timers = []
-		self.world_tick = world_tick
+		self.world = world
 
 	def reg_timer(self, timer):
 		self.timers.append(timer)
