@@ -8,14 +8,15 @@ from Crypto.Cipher import AES
 
 class AESCipher:
 	def __init__(self, SharedSecret):
-		self.encipher = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
-		self.decipher = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
+		#Name courtesy of dx
+		self.encryptifier = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
+		self.decryptifier = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
 
 	def encrypt(self, data):
-		return self.encipher.encrypt(data)
+		return self.encryptifier.encrypt(data)
 
 	def decrypt(self, data):
-		return self.decipher.decrypt(data)
+		return self.decryptifier.decrypt(data)
 
 class SelectSocket:
 	def __init__(self, timer):
