@@ -20,7 +20,12 @@ class WorldData:
 class WorldPlugin:
 	def __init__(self, ploader, settings):
 		self.world = WorldData()
+		self.bulk_keys = []
+		self.column_keys = []
+		self.event = ploader.requires('Event')
+		self.thread_pool = ploader.requires('ThreadPool')
 		ploader.provides('World', self.world)
+		ploader.reg_event_handler('tick', self.tick)
 		ploader.reg_event_handler(
 			(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x03),
 			self.handle03
@@ -42,6 +47,22 @@ class WorldPlugin:
 				i, self.handle_disconnect
 			)
 
+	def tick(self, name, data):
+		for keys in self.bulk_keys:
+			self.event.emit('map_chunk_bulk', keys)
+			self.bulk_keys.remove(keys)
+		for key in self.column_keys:
+			self.event.emit('map_chunk_column', key)
+			self.column_keys.remove(key)
+
+	def defered_column_loader(self, data):
+		key = self.world.map.unpack_column(data)
+		self.column_keys.append(key)
+
+	def defered_bulk_loader(self, data):
+		keys = self.world.map.unpack_bulk(data)
+		self.bulk_keys.append(keys)
+
 	#Time Update - Update World Time
 	def handle03(self, name, packet):
 		self.world.age = packet.data['world_age']
@@ -53,11 +74,11 @@ class WorldPlugin:
 
 	#Chunk Data - Update client World state
 	def handle21(self, name, packet):
-		self.world.map.unpack_column(packet.data)
+		self.thread_pool.submit(self.defered_column_loader, packet.data)
 
 	#Map Chunk Bulk - Update client World state
 	def handle26(self, name, packet):
-		self.world.map.unpack_bulk(packet.data)
+		self.thread_pool.submit(self.defered_bulk_loader, packet.data)
 
 	def handle_disconnect(self, name, data):
 		self.world.reset()

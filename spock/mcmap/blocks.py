@@ -17,6 +17,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	2: {
 		'display_name': 'Grass Block',
 		'name': 'grass',
@@ -128,6 +129,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (257, 278),
+	},
 	15: {
 		'display_name': 'Iron Ore',
 		'name': 'oreIron',
@@ -147,6 +149,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	17: {
 		'display_name': 'Wood',
 		'name': 'log',
@@ -190,6 +193,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (274, 257, 278),
+	},
 	22: {
 		'display_name': 'Lapis Lazuli Block',
 		'name': 'blockLapis',
@@ -209,6 +213,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	24: {
 		'display_name': 'Sandstone',
 		'name': 'sandStone',
@@ -218,6 +223,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	25: {
 		'display_name': 'Note Block',
 		'name': 'musicBlock',
@@ -398,6 +404,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	46: {
 		'display_name': 'TNT',
 		'name': 'tnt',
@@ -424,6 +431,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	49: {
 		'display_name': 'Obsidian',
 		'name': 'obsidian',
@@ -459,6 +467,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	53: {
 		'display_name': 'Wooden Stairs',
 		'name': 'stairsWood',
@@ -540,6 +549,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	62: {
 		'display_name': 'Burning Furnace',
 		'name': 'furnaceBurning',
@@ -549,6 +559,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	63: {
 		'display_name': 'Sign Post',
 		'name': 'signPost',
@@ -593,6 +604,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	68: {
 		'display_name': 'Wall Sign',
 		'name': 'signWall',
@@ -618,6 +630,7 @@ blocks = {
 		'bounding_box': 'empty',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	71: {
 		'display_name': 'Iron Door',
 		'name': 'doorIron',
@@ -627,6 +640,7 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
 	72: {
 		'display_name': 'Wooden Pressure Plate',
 		'name': 'woodPressurePlate',
@@ -770,6 +784,8 @@ blocks = {
 		'bounding_box': 'block',
 		'material': 'rock',
 		'harvest_tools': (270, 274, 257, 278, 285),
+	},
+
 	88: {
 		'display_name': 'Soul Sand',
 		'name': 'hellsand',
@@ -796,7 +812,7 @@ blocks = {
 		'bounding_box': 'empty'
 	},
 	91: {
-		'display_name': 'Jack 'o' Lantern',
+		'display_name': 'Jack \'o\' Lantern',
 		'name': 'litpumpkin',
 		'hardness': 1,
 		'stack_size': 64,

@@ -130,7 +130,7 @@ class NetCore:
 				)).decode(self.rbuff)
 			except utils.BufferUnderflowException:
 				self.rbuff.revert()
-				return
+				break
 			self.event.emit(packet.ident(), packet)
 
 	def enable_crypto(self, secret_key):

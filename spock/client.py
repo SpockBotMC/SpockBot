@@ -45,6 +45,7 @@ default_settings = [
 	('mc_username', 'username', 'Bot'),
 	('mc_password', 'password', ''),
 	('authenticated', True),
+	('thread_workers', 5),
 	('bufsize', 4096),
 	('sock_quit', True),
 	('sess_quit', True),

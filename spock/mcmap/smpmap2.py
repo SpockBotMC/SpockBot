@@ -3,9 +3,9 @@ from spock import utils
 
 class MapBlock:
 	def __init__(self, base_id = 0, add_id = 0):
-		self.id = 0
-		self.base_id = 0
-		self.add_id = 0
+		self.base_id = base_id
+		self.add_id = add_id
+		self.id = self.calc_id()
 		self.light = 0
 		self.sky_light = 0
 		self.block_light = 0
@@ -28,6 +28,7 @@ class Chunk:
 	def unpack_data(self, buff):
 		for idx, i in enumerate(buff.recv(self.length)):
 			self.blocks[idx].id = i
+			self.blocks[idx].base_id = i
 			self.blocks[idx].add_id = 0
 
 	def unpack_meta(self, buff):
@@ -135,16 +136,20 @@ class World:
 		self.columns[key].unpack(
 			data, primary_bitmap, add_bitmap, skylight, continuous
 		)
+		return key
 
 	def unpack_bulk(self, packet_data):
+		keys = []
 		data = utils.BoundBuffer(packet_data['data'])
 		skylight = packet_data['sky_light']
 		for metadata in packet_data['metadata']:
 			key = (metadata['chunk_x'], metadata['chunk_z'])
+			keys.append(key)
 			if key not in self.columns:
 				self.columns[key] = ChunkColumn()
 			self.columns[key].unpack(
 				data, metadata['primary_bitmap'], 
 				metadata['add_bitmap'], skylight, True
 			)
+		return keys
 

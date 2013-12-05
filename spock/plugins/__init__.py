@@ -1,4 +1,4 @@
-from spock.plugins.core import event, net, timers, auth
+from spock.plugins.core import event, net, timers, auth, threadpool
 from spock.plugins.helpers import start, keepalive, clientinfo, world, move
 
 DefaultPlugins = [
@@ -6,6 +6,7 @@ DefaultPlugins = [
 	net.NetPlugin,
 	timers.TimerPlugin,
 	auth.AuthPlugin,
+	threadpool.ThreadPoolPlugin,
 	start.StartPlugin,
 	keepalive.KeepalivePlugin,
 	world.WorldPlugin,
