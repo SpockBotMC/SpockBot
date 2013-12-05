@@ -1,7 +1,6 @@
 from spock.utils import pl_announce
 from spock.mcmap import smpmap2
 from spock.mcp import mcdata
-import time
 
 #TODO: Track Entities, real world API
 
