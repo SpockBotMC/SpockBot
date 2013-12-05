@@ -1,6 +1,4 @@
 import struct
-import array
-import time
 from spock import utils
 
 class MapBlock:
