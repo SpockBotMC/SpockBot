@@ -1,5 +1,7 @@
 import struct
 import array
+import time
+from spock import utils
 
 class MapBlock:
 	def __init__(self, base_id = 0, add_id = 0):
@@ -12,10 +14,11 @@ class MapBlock:
 		self.biome = 0
 
 	def calc_id(self):
-		self.id = (add_id<<8)+base_id
+		self.id = (self.add_id<<8)+self.base_id
 		return self.id
 
-	def calc_light(time):
+	#Needs to do proper light calc based on time_of_day
+	def calc_light(self, time):
 		self.light = max(self.block_light, self.sky_light)
 
 class Chunk:
@@ -24,42 +27,43 @@ class Chunk:
 		self.time = 0
 		self.blocks = [MapBlock() for i in range(self.length)]
 
-	def unpack(self, buff, section):
-		if section == 'block_data':
-			for i in range(self.length):
-				self.blocks[i].id = struct.unpack('B', buff.recv(1))
-				self.blocks[i].add_id = 0
-				self.blocks[i].calc_id()
-		else:
-			for i in range(self.length>>1):
-				data = struct.unpack('B', buff.recv(1))
-				high = data>>4
-				low = data&0x0F
-				if section == 'block_meta':
-					self.blocks[i*2].meta = high
-					self.blocks[i*2+1].meta = low
-				elif section == 'block_add':
-					self.blocks[i*2].add_id = high
-					self.blocks[i*2].calc_id()
-					self.blocks[i*2+1].add_id = low
-					self.blocks[i*2+1].calc_id()
-				elif section == 'block_light':
-					self.blocks[i*2].block_light = high
-					self.blocks[i*2+1].block_light = low
-				elif section == 'sky_light':
-					self.blocks[i*2].sky_light = high
-					self.blocks[i*2+1].sky_light = low
-		if section == 'block_light' or section == 'skylight':
-			self.update_light()
+	def unpack_data(self, buff):
+		for idx, i in enumerate(buff.recv(self.length)):
+			self.blocks[idx].id = i
+			self.blocks[idx].add_id = 0
+
+	def unpack_meta(self, buff):
+		for idx, i in enumerate(buff.recv(self.length>>1)):
+			self.blocks[idx*2].meta = i>>4
+			self.blocks[idx*2+1].meta = i&0x0F
+
+	def unpack_add(self, buff):
+		for idx, i in enumerate(buff.recv(self.length>>1)):
+			self.blocks[idx*2].add_id = i>>4
+			self.blocks[idx*2].calc_id()
+			self.blocks[idx*2+1].add_id = i&0x0F
+			self.blocks[idx*2+1].calc_id()
+
+	def unpack_blight(self, buff):
+		for idx, i in enumerate(buff.recv(self.length>>1)):
+			self.blocks[idx*2].block_light = i>>4
+			self.blocks[idx*2+1].block_light = i&0x0F
+		self.update_light()
+
+	def unpack_slight(self, buff):
+		for idx, i in enumerate(buff.recv(self.length>>1)):
+			self.blocks[idx*2].sky_light = i>>4
+			self.blocks[idx*2+1].sky_light = i&0x0F
+		self.update_light()
+
+	def unpack_biome(self, x, z, biome_id):
+		for y in range(16):
+			self.blocks[x+((y*16)+z)*16].biome = biome_id
 
 	def update_light(self, time = None):
 		if time: self.time = time
 		for block in self.blocks:
 			block.calc_light(self.time)
-
-	def unpack_biome(self, x, z, biome_id):
-		for y in range(16):
-			self.blocks[x+((y*16)+z)*16].biome = biome_id
 
 class ChunkColumn:
 	def __init__(self):
@@ -67,26 +71,38 @@ class ChunkColumn:
 		self.biome = [None]*256
 
 	def unpack(self, buff, primary_bitmap, add_bitmap, skylight, continuous):
-		self.unpack_section(buff, 'block_data', primary_bitmap)
-		self.unpack_section(buff, 'block_meta', primary_bitmap)
-		self.unpack_section(buff, 'block_light', primary_bitmap)
-		if skylight:
-			self.unpack_section(buff, 'sky_light', primary_bitmap)
-		self.unpack_section(buff, 'block_add', add_bitmap)
-		if continuous:
-			self.unpack_biome(buff)
-
-	def unpack_section(self, buff, section, mask):
+		primary_mask = []
+		add_mask = []
 		for i in range(16):
-			if mask&(1<<i):
+			if primary_bitmap&(1<<i):
 				if not self.chunks[i]:
 					self.chunks[i] = Chunk()
-				self.chunks[i].unpack(buff, section)
+				primary_mask.append(i)
+			if add_bitmap&(1<<i):
+				if not self.chunks[i]:
+					self.chunks[i] = Chunk()
+				add_mask.append(i)
+
+		for i in primary_mask: self.chunks[i].unpack_data(buff)
+		for i in primary_mask: self.chunks[i].unpack_meta(buff)
+		for i in primary_mask: self.chunks[i].unpack_blight(buff)
+		if skylight:
+			for i in primary_mask: self.chunks[i].unpack_slight(buff)
+		for i in add_mask: self.chunks[i].unpack_add(buff)
+		if continuous:
+			self.fill(primary_bitmap)
+			self.unpack_biome(buff)
+
+	#Adds air-only chunks to the list where no chunk has been provided
+	def fill(self, mask):
+		for i in range(16):
+			if not mask&(1<<i):
+				self.chunks[i] = Chunk()
 
 	def unpack_biome(self, buff):
-		for idx, biome_id in enumerate(self.biome):
-			biome_id = buff.recv(1)
-			for chunk in chunks:
+		for idx, biome_id in enumerate(buff.recv(256)):
+			self.biome[idx] = biome_id
+			for chunk in self.chunks:
 				chunk.unpack_biome(idx%16, idx//16, biome_id)
 
 class World:
@@ -126,11 +142,11 @@ class World:
 		data = utils.BoundBuffer(packet_data['data'])
 		skylight = packet_data['sky_light']
 		for metadata in packet_data['metadata']:
+			key = (metadata['chunk_x'], metadata['chunk_z'])
 			if key not in self.columns:
 				self.columns[key] = ChunkColumn()
 			self.columns[key].unpack(
 				data, metadata['primary_bitmap'], 
 				metadata['add_bitmap'], skylight, True
 			)
-
 

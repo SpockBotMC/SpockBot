@@ -20,7 +20,13 @@ class DebugPlugin:
 	def __init__(self, ploader, settings):
 		for packet in mcdata.hashed_structs:
 			ploader.reg_event_handler(packet, self.debug)
+		ploader.reg_event_handler('tick', self.tick)
 
 	def debug(self, name, packet):
-		if packet.ident() != (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26):
-			print(packet)
+		if packet.ident() == (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26):
+			packet.data['data'] = b''
+		print(packet)
+
+	def tick(self, name, data):
+		#print('tick!')
+		pass

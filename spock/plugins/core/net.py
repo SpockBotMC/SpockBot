@@ -62,7 +62,7 @@ class PollSocket(SelectSocket):
 
 	def poll(self):
 		flags = []
-		if self.send:
+		if self.sending:
 			self.pollobj.register(self.sock, smask)
 			self.sending = False
 		else:
@@ -182,6 +182,7 @@ class NetPlugin:
 	def handleRECV(self, name, event):
 		try:
 			data = self.sock.recv(self.bufsize)
+			#print('read:', len(data))
 			if not data: #Just because we have to support socket.select
 				self.event.emit('SOCKET_HUP')
 				return
@@ -194,6 +195,7 @@ class NetPlugin:
 	def handleSEND(self, name, event):
 		try:
 			sent = self.sock.send(self.net.sbuff)
+			#print('write:', sent)
 			self.net.sbuff = self.net.sbuff[sent:]
 		except socket.error as error:
 			#TODO: Do something here?

@@ -173,7 +173,7 @@ class ExtensionPSTC26:
 		packet.data['data'] = zlib.decompress(bbuff.recv(size))
 		packet.data['metadata'] = [{
 			'chunk_x': datautils.unpack('int', bbuff),
-			'chunk_y': datautils.unpack('int', bbuff),
+			'chunk_z': datautils.unpack('int', bbuff),
 			'primary_bitmap': datautils.unpack('ushort', bbuff),
 			'add_bitmap': datautils.unpack('ushort', bbuff),
 		} for i in range(count)]
@@ -186,7 +186,7 @@ class ExtensionPSTC26:
 		o += datautils.pack('bool', packet.data['sky_light'])
 		for metadata in packet.data['metadata']:
 			o += datautils.pack('int', metadata['chunk_x'])
-			o += datautils.pack('int', metadata['chunk_y'])
+			o += datautils.pack('int', metadata['chunk_z'])
 			o += datautils.pack('ushort', metadata['primary_bitmap'])
 			o += datautils.pack('ushort', metadata['add_bitmap'])
 		return o
