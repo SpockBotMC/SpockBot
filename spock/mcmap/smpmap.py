@@ -19,7 +19,6 @@ Chunk Coords * 16 + Block Coords gives you the actual position of the block in t
 
 import array
 import struct
-import zlib
 from spock import utils
 
 class BiomeData:
@@ -148,7 +147,7 @@ class World:
 		ground_up = True
 		
 		# Read compressed data
-		data = utils.BoundBuffer(zlib.decompress(data['data']))
+		data = utils.BoundBuffer(data['data'])
 		
 		for bitmap in data['bitmaps']:
 			# Read chunk metadata
@@ -171,7 +170,7 @@ class World:
 		ground_up = data['ground_up_continuous']
 		mask1 = data['primary_bitmap']
 		mask2 = data['secondary_bitmap']
-		data = BoundBuffer(zlib.decompress(data['data']))
+		data = BoundBuffer(data['data'])
 		skylight = True
 
 		key = (x_chunk, z_chunk)

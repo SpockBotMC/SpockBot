@@ -233,12 +233,12 @@ class ExtensionPSTC30:
 @extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x34))
 class ExtensionPSTC34:
 	def decode_extra(packet, bbuff):
-		packet.data['byte_array'] = bbuff.recv(datautils.unpack('short', bbuff))
+		packet.data['data'] = bbuff.recv(datautils.unpack('short', bbuff))
 		return packet
 
 	def encode_extra(packet):
-		o = datautils.pack(len('byte_array'))
-		o += packet.data['byte_array']
+		o = datautils.pack(len(packet.data['data']))
+		o += packet.data['data']
 		return o
 
 #Play  SERVER_TO_CLIENT 0x35 Update Block Entity

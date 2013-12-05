@@ -6,6 +6,7 @@ class MapBlock:
 		self.base_id = base_id
 		self.add_id = add_id
 		self.id = self.calc_id()
+		self.meta = 0
 		self.light = 0
 		self.sky_light = 0
 		self.block_light = 0

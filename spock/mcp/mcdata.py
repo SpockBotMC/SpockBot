@@ -624,7 +624,7 @@ packet_structs = {
 			0x34: (
 				('varint', 'item_damage'),
 				#Extension
-					#byte string 'byte_array'
+					#byte string 'data'
 			),
 			#Update Block Entity
 			0x35: (
