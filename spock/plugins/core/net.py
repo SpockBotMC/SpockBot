@@ -121,16 +121,17 @@ class NetCore:
 
 	def read_packet(self, data = b''):
 		self.rbuff.append(self.cipher.decrypt(data) if self.encrypted else data)
-		try:
-			while True:
-				self.rbuff.save()
+		while True:
+			self.rbuff.save()
+			try:
 				packet = mcpacket.Packet(ident = (
 					self.proto_state,
 					mcdata.SERVER_TO_CLIENT,
 				)).decode(self.rbuff)
-				self.event.emit(packet.ident(), packet)
-		except utils.BufferUnderflowException:
-			self.rbuff.revert()
+			except utils.BufferUnderflowException:
+				self.rbuff.revert()
+				return
+			self.event.emit(packet.ident(), packet)
 
 	def enable_crypto(self, secret_key):
 		self.cipher = AESCipher(secret_key)
