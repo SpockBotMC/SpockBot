@@ -143,7 +143,7 @@ class ExtensionPSTC22:
 			data = datautils.unpack('uint', bbuff)
 			packet.data['blocks'].append({
 				'metadata': (data	 )&0xF,
-				'type':	    (data>> 4)&0xFFF,
+				'block_id':	(data>> 4)&0xFFF,
 				'y':		(data>>16)&0xFF,
 				'z':		(data>>24)&0xF,
 				'x':		(data>>28)&0xF,

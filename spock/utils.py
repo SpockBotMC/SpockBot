@@ -40,5 +40,5 @@ def pl_announce(*args):
 		return cl
 	return inner
 
-def ByteToHex( byteStr ):
+def ByteToHex(byteStr):
 	return ''.join( [ "%02X " % x for x in byteStr ] ).strip()

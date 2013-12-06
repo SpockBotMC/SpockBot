@@ -26,6 +26,17 @@ class Chunk:
 		self.time = 0
 		self.blocks = [MapBlock() for i in range(self.length)]
 
+	def get(self, x, y, z):
+		return self.blocks[x+((y*16)+z)*16]
+
+	def put(self, x, y, z, data):
+		block = self.blocks[x+((y*16)+z)*16]
+		block.id = data['block_id']
+		block.base_id = data['block_id']&0xFF
+		block.add_id = data['block_id']>>8
+		block.meta = data['metadata']
+		return block
+
 	def unpack_data(self, buff):
 		for idx, i in enumerate(buff.recv(self.length)):
 			self.blocks[idx].id = i
@@ -109,6 +120,30 @@ class World:
 	def __init__(self):
 		self.columns = {}
 
+	def _get_chunk(self, x, y, z):
+		chunk_x, rx = divmod(x, 16)
+		chunk_y, ry = divmod(y, 16)
+		chunk_z, rz = divmod(z, 16)
+		key = (chunk_x, chunk_z)
+		if not key in self.columns:
+			return None
+		chunk = self.columns[key].chunks[chunk_y]
+		return (chunk, rx, ry, rz) if chunk else None
+
+	def get(self, x, y, z):
+		chunk_data = self._get_chunk(x, y, z)
+		if not chunk_data:
+			return None
+		chunk, rx, ry, rz = chunk_data
+		return chunk.get(rx, ry, rz)
+
+	def put(self, x, y, z, data):
+		chunk_data = self._get_chunk(x, y, z)
+		if not chunk_data:
+			return None
+		chunk, rx, ry, rz = chunk_data
+		return chunk.put(rx, ry, rz, data)
+
 	def unpack_column(self, packet_data):
 		data = utils.BoundBuffer(packet_data['data'])
 		primary_bitmap = packet_data['primary_bitmap']
@@ -153,4 +188,3 @@ class World:
 				metadata['add_bitmap'], skylight, True
 			)
 		return keys
-

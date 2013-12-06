@@ -1,5 +1,6 @@
 import signal
 import copy
+from spock.mcp import mcdata
 from spock.utils import pl_announce
 
 class EventCore:

@@ -483,8 +483,8 @@ packet_structs = {
 				('int'   , 'x'),
 				('ubyte' , 'y'),
 				('int'   , 'z'),
-				('varint', 'block_type'),
-				('ubyte' , 'data'),
+				('varint', 'block_id'),
+				('ubyte' , 'metadata'),
 			),
 			#Block Action
 			0x24: (
@@ -493,7 +493,7 @@ packet_structs = {
 				('int'   , 'z'),
 				('ubyte' , 'byte_1'),
 				('ubyte' , 'byte_2'),
-				('varint', 'block_type'),
+				('varint', 'block_id'),
 			),
 			#Block Break Animation
 			0x25: (
