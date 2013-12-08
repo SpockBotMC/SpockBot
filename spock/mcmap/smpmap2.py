@@ -121,6 +121,7 @@ class World:
 		self.columns = {}
 
 	def _get_chunk(self, x, y, z):
+		x, y, z = int(x), int(y), int(z)
 		chunk_x, rx = divmod(x, 16)
 		chunk_y, ry = divmod(y, 16)
 		chunk_z, rz = divmod(z, 16)

@@ -1,135 +1,115 @@
 #Shamelessly stolen/adapted from Mineflayer
 
 biomes = {
-  0: {
-    'display_name': 'Ocean',
-    'rainfall': 0.5,
-    'temperature': 0.5,
-  },
-  1: {
-    'display_name': 'Plains',
-    'rainfall': 0.4,
-    'temperature': 0.8,
-  },
-  2: {
-    'display_name': 'Desert',
-    'rainfall': 0,
-    'temperature': 2,
-  },
-  3: {
-    'display_name': 'Extreme Hills',
-    'rainfall': 0.3,
-    'temperature': 0.2,
-  },
-  4: {
-    'display_name': 'Forest',
-    'rainfall': 0.8,
-    'temperature': 0.7,
-  },
-  5: {
-    'display_name': 'Taiga',
-    'rainfall': 0.8,
-    'temperature': 0.05,
-  },
-  6: {
-    'display_name': 'Swampland',
-    'rainfall': 0.9,
-    'temperature': 0.8,
-  },
-  7: {
-    'rainfall': 0.5,
-    'temperature': 0.5,
-  },
-  8: {
-    'display_name': 'Hell',
-    'rainfall': 0,
-    'temperature': 2,
-  },
-  9: {
-    'display_name': 'Sky',
-    'rainfall': 0,
-    'temperature': 0.5,
-  },
-  10: {
+	0: {
+		'display_name': 'Ocean',
+				'temperature': 0.5,
+	},
+	1: {
+		'display_name': 'Plains',
+		'temperature': 0.8,
+	},
+	2: {
+		'display_name': 'Desert',
+		'temperature': 2,
+	},
+	3: {
+		'display_name': 'Extreme Hills',
+		'temperature': 0.2,
+	},
+	4: {
+		'display_name': 'Forest',
+		'temperature': 0.7,
+	},
+	5: {
+		'display_name': 'Taiga',
+		'temperature': 0.05,
+	},
+	6: {
+		'display_name': 'Swampland',
+		'temperature': 0.8,
+	},
+	7: {
+		'temperature': 0.5,
+	},
+	8: {
+		'display_name': 'Hell',
+		'temperature': 2,
+	},
+	9: {
+		'display_name': 'Sky',
+		'temperature': 0.5,
+	},
+	10: {
 
-    'display_name': 'Frozen Ocean',
-    'rainfall': 0.5,
-    'temperature': 0,
-  },
-  11: {
+		'display_name': 'Frozen Ocean',
+		'temperature': 0,
+	},
+	11: {
 
-    'display_name': 'Frozen River',
-    'rainfall': 0.5,
-    'temperature': 0,
-  },
-  12: {
+		'display_name': 'Frozen River',
+		'temperature': 0,
+	},
+	12: {
 
-    'display_name': 'Ice Plains',
-    'rainfall': 0.5,
-    'temperature': 0,
-  },
-  13: {
+		'display_name': 'Ice Plains',
+		'temperature': 0,
+	},
+	13: {
 
-    'display_name': 'Ice Mountains',
-    'rainfall': 0.5,
-    'temperature': 0,
-  },
-  14: {
+		'display_name': 'Ice Mountains',
+		'temperature': 0,
+	},
+	14: {
 
-    'display_name': 'Mushroom Island',
-    'rainfall': 1,
-    'temperature': 0.9,
-  },
-  15: {
+		'display_name': 'Mushroom Island',
+		'temperature': 0.9,
+	},
+	15: {
 
-    'display_name': 'Mushroom Island Shore',
-    'rainfall': 1,
-    'temperature': 0.9,
-  },
-  16: {
+		'display_name': 'Mushroom Island Shore',
+		'temperature': 0.9,
+	},
+	16: {
 
-    'display_name': 'Beach',
-    'rainfall': 0.4,
-    'temperature': 0.8,
-  },
-  17: {
+		'display_name': 'Beach',
+		'temperature': 0.8,
+	},
+	17: {
 
-    'display_name': 'Desert Hills',
-    'rainfall': 0,
-    'temperature': 2,
-  },
-  18: {
+		'display_name': 'Desert Hills',
+		'temperature': 2,
+	},
+	18: {
 
-    'display_name': 'Forest Hills',
-    'rainfall': 0.8,
-    'temperature': 0.7,
-  },
-  19: {
+		'display_name': 'Forest Hills',
+		'temperature': 0.7,
+	},
+	19: {
 
-    'display_name': 'Taiga Hills',
-    'rainfall': 0.8,
-    'temperature': 0.05,
-  },
-  20: {
+		'display_name': 'Taiga Hills',
+		'temperature': 0.05,
+	},
+	20: {
 
-    'display_name': 'Extreme Hills Edge',
-    'rainfall': 0.3,
-    'temperature': 0.2,
-  },
-  21: {
+		'display_name': 'Extreme Hills Edge',
+		'temperature': 0.2,
+	},
+	21: {
 
-    'display_name': 'Jungle',
-    'rainfall': 0.9,
-    'temperature': 1.2,
-  },
-  22: {
+		'display_name': 'Jungle',
+		'temperature': 1.2,
+	},
+	22: {
 
-    'display_name': 'Jungle Hills',
-    'rainfall': 0.9,
-    'temperature': 1.2,
-  },
+		'display_name': 'Jungle Hills',
+		'temperature': 1.2,
+	},
+	129: {
+		'display_name': 'Sunflower Plains',
+		'temperature': 0.8,
+	},
 }
-biomes = tuple(biomes[i] for i in range(len(biomes)))
 
 blocks = {
 	0: {
