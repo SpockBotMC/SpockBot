@@ -733,8 +733,8 @@ packet_structs = {
 			#Player Position
 			0x04: (
 				('double', 'x'),
-				('double', 'y'),
 				('double', 'stance'),
+				('double', 'y'),
 				('double', 'z'),
 				('bool'  , 'on_ground'),
 			),
@@ -747,8 +747,8 @@ packet_structs = {
 			#Player Position and Look
 			0x06: (
 				('double', 'x'),
-				('double', 'y'),
 				('double', 'stance'),
+				('double', 'y'),
 				('double', 'z'),
 				('float', 'yaw'),
 				('float', 'pitch'),
