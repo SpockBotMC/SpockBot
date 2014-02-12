@@ -9,7 +9,7 @@ DefaultPlugins = [
 	threadpool.ThreadPoolPlugin,
 	start.StartPlugin,
 	keepalive.KeepalivePlugin,
-	world.WorldPlugin,
+	#world.WorldPlugin,
 	#clientinfo.ClientInfoPlugin,
 	#move.MovePlugin,
 ]

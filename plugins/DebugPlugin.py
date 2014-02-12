@@ -11,7 +11,7 @@ class DebugPlugin:
 			ploader.reg_event_handler(packet, self.debug)
 		#ploader.reg_event_handler('tick', self.tick)
 		#ploader.reg_event_handler('w_map_chunk', self.map)
-		ploader.reg_event_handler('w_block_update', self.block_update)
+		#ploader.reg_event_handler('w_block_update', self.block_update)
 
 	def debug(self, name, packet):
 		if packet.ident() == (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26):

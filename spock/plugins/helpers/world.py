@@ -40,9 +40,7 @@ class WorldPlugin:
 				handlers[i]
 			)
 		for i in 'SOCKET_ERR', 'SOCKET_HUP':
-			ploader.reg_event_handler(
-				i, self.handle_disconnect
-			)
+			ploader.reg_event_handler(i, self.handle_disconnect)
 
 	def tick(self, name, data):
 		for key in self.new_keys:

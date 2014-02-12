@@ -3,6 +3,10 @@ from time import gmtime, strftime
 from spock import utils
 from spock.mcp import datautils, mcdata
 from spock.mcp.mcpacket_extensions import hashed_extensions
+from spock.mcp.mcdata import (
+	MC_BOOL, MC_UBYTE, MC_BYTE, MC_USHORT, MC_SHORT, MC_UINT, MC_INT,
+	MC_LONG, MC_FLOAT, MC_DOUBLE, MC_STRING, MC_VARINT, MC_SLOT, MC_META
+)
 
 #TODO: Wow this class ended up a bit of a mess, cleanup and refactor soon^TM
 class Packet(object):
@@ -28,9 +32,9 @@ class Packet(object):
 
 	def decode(self, bbuff):
 		self.data = {}
-		pbuff = utils.BoundBuffer(bbuff.recv(datautils.unpack('varint', bbuff)))
+		pbuff = utils.BoundBuffer(bbuff.recv(datautils.unpack(MC_VARINT, bbuff)))
 		#Ident
-		self.__ident[2] = datautils.unpack('ubyte', pbuff)
+		self.__ident[2] = datautils.unpack(MC_UBYTE, pbuff)
 		self.__hashed_ident = tuple(self.__ident)
 		#Payload
 		for dtype, name in mcdata.hashed_structs[self.__hashed_ident]:
@@ -42,14 +46,14 @@ class Packet(object):
 	
 	def encode(self):
 		#Ident
-		o = datautils.pack('ubyte', self.__ident[2])
+		o = datautils.pack(MC_UBYTE, self.__ident[2])
 		#Payload
 		for dtype, name in mcdata.hashed_structs[self.__hashed_ident]:
 			o += datautils.pack(dtype, self.data[name])
 		#Extension
 		if self.__hashed_ident in hashed_extensions:
 			o += hashed_extensions[self.__hashed_ident].encode_extra(self)
-		return datautils.pack('varint', len(o)) + o
+		return datautils.pack(MC_VARINT, len(o)) + o
 
 	def __repr__(self):
 		if self.__ident[1] == mcdata.CLIENT_TO_SERVER: s = ">>>"
