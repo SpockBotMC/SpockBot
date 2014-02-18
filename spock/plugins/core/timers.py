@@ -28,7 +28,7 @@ class BaseTimer(object):
 class EventTimer(BaseTimer):
 	def __init__(self, wait_time, callback, runs = 1):
 		super().__init__(callback, runs)
-		self.wait_time = wait_ticks
+		self.wait_time = wait_time
 		self.end_time = time.time() + self.wait_time
 
 	def countdown(self):
