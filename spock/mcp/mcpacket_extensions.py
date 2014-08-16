@@ -52,6 +52,43 @@ class ExtensionLCTS01:
 		o += packet.data['verify_token']
 		return o
 
+#Play  SERVER_TO_CLIENT 0x0C Spawn Player
+@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x0C))
+class ExtensionPSTC0C:
+	def decode_extra(packet, bbuff):
+		packet.data['Data'] = tuple(
+			tuple(
+				datautils.unpack(MC_STRING, bbuff), #Name
+				datautils.unpack(MC_STRING, bbuff), #Value
+				datautils.unpack(MC_STRING, bbuff), #Signature
+			) for i in datautils.unpack(MC_VARINT, bbuff)
+		)
+
+		packet.data['x'] = datautils.unpack(MC_INT, bbuff)
+		packet.data['y'] = datautils.unpack(MC_INT, bbuff)
+		packet.data['z'] = datautils.unpack(MC_INT, bbuff)
+		packet.data['yaw'] = datautils.unpack(MC_BYTE, bbuff)
+		packet.data['pitch'] = datautils.unpack(MC_BYTE, bbuff)
+		packet.data['current_item'] = datautils.unpack(MC_SHORT, bbuff)
+		packet.data['metadata'] = datautils.unpack(MC_META, bbuff)
+		return packet
+
+	def encode_extra(packet):
+		o = datautils.pack(MC_VARINT, len(packet.data['Data']))
+		for data in packet.data['Data']:
+			for string in data:
+				o += datautils.pack(MC_STRING, string)
+
+		o += datautils.pack(MC_INT, packet.data['x'])
+		o += datautils.pack(MC_INT, packet.data['y'])
+		o += datautils.pack(MC_INT, packet.data['y'])
+		o += datautils.pack(MC_BYTE, packet.data['yaw'])
+		o += datautils.pack(MC_BYTE, packet.data['pitch'])
+		o += datautils.pack(MC_SHORT, packet.data['current_item'])
+		o += datautils.pack(MC_META, packet.data['metadata'])
+		return o
+
+
 #Play  SERVER_TO_CLIENT 0x0E Spawn Object
 @extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x0E))
 class ExtensionPSTC0E:
@@ -216,6 +253,19 @@ class ExtensionPSTC27:
 		o += datautils.pack(MC_FLOAT, packet.data['player_y'])
 		o += datautils.pack(MC_FLOAT, packet.data['player_z'])
 		return o
+
+#Play  SERVER_TO_CLIENT 0x2D Open Window
+@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x2D))
+class ExtensionPSTC2D:
+	def decode_extra(packet, bbuff):
+		if packet.data['window_id'] == 11:
+			packet.data['eid'] = datautils.unpack(MC_INT, bbuff)
+		return packet
+
+	def encode_extra(packet):
+		if packet.data['window_id'] == 11:
+			return datautils.pack(MC_SHORT, packet.data['eid'])
+		
 
 #Play  SERVER_TO_CLIENT 0x30 Window Items
 @extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x30))

@@ -1,6 +1,6 @@
 #Most of the data formats, structures, and magic values
 
-MC_PROTOCOL_VERSION = 4
+MC_PROTOCOL_VERSION = 5
 
 SERVER_TO_CLIENT    = 0x00
 CLIENT_TO_SERVER    = 0x01
@@ -321,13 +321,15 @@ packet_structs = {
 				(MC_VARINT, 'eid'),
 				(MC_STRING, 'player_uuid'),
 				(MC_STRING, 'player_name'),
-				(MC_INT   , 'x'),
-				(MC_INT   , 'y'),
-				(MC_INT   , 'z'),
-				(MC_BYTE  , 'yaw'),
-				(MC_BYTE  , 'pitch'),
-				(MC_SHORT , 'current_item'),
-				(MC_META  , 'metadata'),
+				#Extension
+					#List of lists of string 'Data'
+					#int 'x'
+					#int 'y'
+					#int 'z'
+					#byte 'yaw'
+					#byte 'pitch'
+					#short 'current_item'
+					#metadata 'metadata'
 			),
 			#Collect Item
 			0x0D: (
@@ -377,7 +379,6 @@ packet_structs = {
 			#Spawn Experience Orb
 			0x11: (
 				(MC_VARINT, 'eid'),
-				(MC_UBYTE , 'type'),
 				(MC_INT   , 'x'),
 				(MC_INT   , 'y'),
 				(MC_INT   , 'z'),
@@ -521,9 +522,6 @@ packet_structs = {
 			),
 			#Map Chunk Bulk
 			0x26: (
-				# 'sky_light' is stuck in the middle of
-				# the packet, so it's easier to handle
-				# it in an extension
 				#Extension
 					#bool 'sky_light'
 					#byte string 'data'
@@ -537,8 +535,6 @@ packet_structs = {
 				(MC_FLOAT, 'y'),
 				(MC_FLOAT, 'z'),
 				(MC_FLOAT, 'radius'),
-				# 'player_%' fields at end of packet for
-				# some reason, easier to handle in extension
 				#Extension
 					#List of lists 'blocks'
 					#Each list is 3 ints x,y,z
@@ -597,6 +593,9 @@ packet_structs = {
 				(MC_UBYTE , 'slot_count'),
 				(MC_BOOL  , 'use_title'),
 				(MC_INT   , 'eid'),
+				#Extension
+					#Only present if 'window_id' == 11
+					#int 'eid'
 			),
 			#Close Window
 			0x2E: (
@@ -604,7 +603,7 @@ packet_structs = {
 			),
 			#Set Slot
 			0x2F: (
-				(MC_UBYTE, 'window_id'),
+				(MC_BYTE, 'window_id'),
 				(MC_SHORT, 'slot'),
 				(MC_SLOT , 'slot_data'),
 			),
