@@ -3,7 +3,7 @@
 biomes = {
 	0: {
 		'display_name': 'Ocean',
-				'temperature': 0.5,
+		'temperature': 0.5,
 	},
 	1: {
 		'display_name': 'Plains',
@@ -105,9 +105,194 @@ biomes = {
 		'display_name': 'Jungle Hills',
 		'temperature': 1.2,
 	},
+	23: {
+
+		'display_name': 'Jungle Edge',
+		'temperature': 0.95,
+	},
+	24: {
+
+		'display_name': 'Deep Ocean',
+		'temperature:': 0.5,
+        },
+	25: {
+
+		'display_name': 'Stone Beach',
+		'temperature:': 0.2,
+	},
+	26: {
+
+		'display_name': 'Cold Beach',
+		'temperature:': 0,
+	},
+	27: {
+
+		'display_name': 'Birch Forest',
+		'temperature:': 0.6,
+	},
+	28: {
+
+		'display_name': 'Birch Forest Hills',
+		'temperature:': 0.6,
+	},
+	29: {
+
+		'display_name': 'Roofed Forest',
+		'temperature:': 0.7,
+	},
+	30: {
+
+		'display_name': 'Cold Taiga',
+		'temperature:': 0,
+	},
+	31: {
+
+		'display_name': 'Cold Taiga Hills',
+		'temperature:': 0,
+	},
+	32: {
+
+		'display_name': 'Mega Taiga',
+		'temperature:': 0.3,
+	},
+	33: {
+
+		'display_name': 'Mega Taiga Hills',
+		'temperature:': 0.3,
+	},
+	34: {
+
+		'display_name': 'Extreme Hills+',
+		'temperature:': 0.2,
+	},
+	35: {
+
+		'display_name': 'Savanna',
+		'temperature:': 1.0,
+	},
+	36: {
+
+		'display_name': 'Savanna Plateau',
+		'temperature:': 1.0,
+	},
+	37: {
+
+		'display_name': 'Mesa',
+		'temperature:': 1.0,
+	},
+	38: {
+
+		'display_name': 'Mesa Plateau F',
+		'temperature:': 1.0,
+	},
+	39: {
+
+		'display_name': 'Mesa Plateau',
+		'temperature:': 1.0,
+	},
 	129: {
 		'display_name': 'Sunflower Plains',
 		'temperature': 0.8,
+	},
+	130: {
+
+		'display_name': 'Desert M',
+		'temperature:': 2,
+	},
+	131: {
+
+		'display_name': 'Extreme Hills M',
+		'temperature:': 0.2,
+	},
+	132: {
+
+		'display_name': 'Flower Forest',
+		'temperature:': 0.7,
+	},
+	133: {
+
+		'display_name': 'Taiga M',
+		'temperature:': 0.25,
+	},
+	134: {
+
+		'display_name': 'Swampland M',
+		'temperature:': 0.8,
+	},
+	140: {
+
+		'display_name': 'Ice Plains Spikes',
+		'temperature:': 0,
+	},
+	149: {
+
+		'display_name': 'Jungle M',
+		'temperature:': 0.95,
+	},
+	151: {
+
+		'display_name': 'Jungle Edge M',
+		'temperature:': 0.95,
+	},
+	155: {
+
+		'display_name': 'Birch Forest M',
+		'temperature:': 0.6,
+	},
+	156: {
+
+		'display_name': 'Birch Forest Hills M',
+		'temperature:': 0.6,
+	},
+	157: {
+
+		'display_name': 'Roofed Forest M',
+		'temperature:': 0.7,
+	},
+	158: {
+
+		'display_name': 'Cold Taiga M',
+		'temperature:': 0,
+	},
+	160: {
+
+		'display_name': 'Mega Spruce Taiga',
+		'temperature:': 0.25,
+	},
+	161: {
+
+		'display_name': 'Mega Spruce Taiga Hills',
+		'temperature:': 0.25,
+	},
+	162: {
+
+		'display_name': 'Extreme Hills+ M',
+		'temperature:': 0.2,
+	},
+	163: {
+
+		'display_name': 'Savanna M',
+		'temperature:': 1.0,
+	},
+	164: {
+
+		'display_name': 'Savanna Plateau M',
+		'temperature:': 1.0,
+	},
+	165: {
+
+		'display_name': 'Mesa (Bryce)',
+		'temperature:': 1.0,
+	},
+	166: {
+
+		'display_name': 'Mesa Plateau F M',
+		'temperature:': 1.0,
+	},
+	167: {
+
+		'display_name': 'Mesa Plateau M',
+		'temperature:': 1.0,
 	},
 }
 
