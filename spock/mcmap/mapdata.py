@@ -3,7 +3,7 @@
 biomes = {
 	0: {
 		'display_name': 'Ocean',
-				'temperature': 0.5,
+		'temperature': 0.5,
 	},
 	1: {
 		'display_name': 'Plains',
