@@ -787,7 +787,7 @@ packet_structs = {
 				#Extension
 					#action == 0
 						#MC_VARINT 'value'
-
+			),
 			#Display Scoreboard
 			0x3D: (
 				(MC_BYTE  , 'position'),

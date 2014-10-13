@@ -209,12 +209,12 @@ class ExtensionPSTC2A:
 	def decode_extra(packet, bbuff):
 		packet.data['data'] = [
 			datautils.unpack(MC_VARINT, bbuff)
-		for i in range(datautils.particles[packet.data['id']])]
+		for i in range(datautils.particles[packet.data['id']][1])]
 		return packet
 
 	def encode_extra(packet):
 		o = b''
-		for i in range(datautils.particles[packet.data['id']]):
+		for i in range(datautils.particles[packet.data['id']][1]):
 			o += datautils.pack(MC_VARINT, packet.data['data'][i])
 		return o
 
@@ -254,12 +254,12 @@ class ExtensionPSTC34:
 		packet.data['icons'] = []
 		for i in range(datautils.unpack(MC_VARINT, bbuff)):
 			byte = datautils.unpack(MC_UBYTE, bbuff)
-			packet.icons.append(
+			packet.icons.append({
 				'direction': byte>>8,
 				'type': byte&0x0F,
 				'x': datautils.unpack(MC_BYTE, bbuff),
 				'y': datautils.unpack(MC_BYTE, bbuff),
-			)
+			})
 		packet.data['columns'] = datautils.unpack(MC_BYTE, bbuff)
 		if packet.data['columns']:
 			packet.data['rows'] = datautils.unpack(MC_BYTE, bbuff)
