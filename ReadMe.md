@@ -1,6 +1,6 @@
 Inspired by remyroy's COPS, a Minecraft client in Python. Protocol implementation based on barneymc
 
-Currently Supports Minecraft 1.7.6 (maybe, I don't really test these things)
+Currently supports jack-diddly-squat because Minecraft 1.8 broke everything
 
 spock
 =====
@@ -18,7 +18,7 @@ Currently writing Spock plugins requires a fairly intricate understanding of the
 
 Speaking of compatibility, Spock runs on Python 3.x on *Nix operating systems, and requires PyCrypto. Theoretically it runs on Windows but no one has ever tested it and I'm fairly sure there are a couple (easy to fix) errors that will
  pop up. Python 2.x would be nice, but it becomes an ever more distant goal as Spock continues to grow dependencies on new Python features. Not impossible, just not a priority
- 
+
 I'll write a real ReadMe and API docs when everything is done and stable-ish.
 For now you can check out the plugins folder to get a vague idea of what plugins should look like, find me on #mcdevs or email me at nickelpro@gmail.com if you have questions
 
@@ -27,5 +27,5 @@ For now you can check out the plugins folder to get a vague idea of what plugins
 
 License is MIT and can be found in license.md
 
-The NBT parser and the original protocol implementation came from other projects, 
+The NBT parser and the original protocol implementation came from other projects,
 relevant legal information and attribution can be found in legal.md

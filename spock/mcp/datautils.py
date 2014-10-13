@@ -71,7 +71,7 @@ def pack_varlong(val):
 	return o
 
 # Three values packed into one 64-bit long
-# x: 26 MSBs, y: 12 bits, z: 24 LSBs
+# x: 26 MSBs, y: 12 bits, z: 26 LSBs
 def unpack_position(bbuff):
 	position = {}
 	val = unpack(MC_LONG, bbuff)
