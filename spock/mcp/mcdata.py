@@ -1,6 +1,9 @@
 #Most of the data formats, structures, and magic values
 
-MC_PROTOCOL_VERSION = 5
+MC_PROTOCOL_VERSION = 47
+
+PROTO_COMP_ON       = 0x00
+PROTO_COMP_OFF      = 0x01
 
 SERVER_TO_CLIENT    = 0x00
 CLIENT_TO_SERVER    = 0x01
@@ -10,6 +13,12 @@ STATUS_STATE        = 0x01
 LOGIN_STATE         = 0x02
 PLAY_STATE          = 0x03
 
+PL_ADD_PLAYER       = 0x00
+PL_UPDATE_GAMEMODE  = 0x01
+PL_UPDATE_LATENCY   = 0x02
+PL_UPDATE_DISPLAY   = 0x03
+PL_REMOVE_PLAYER    = 0x04
+
 MC_BOOL             = 0x00
 MC_UBYTE            = 0x01
 MC_BYTE             = 0x02
@@ -17,13 +26,18 @@ MC_USHORT           = 0x03
 MC_SHORT            = 0x04
 MC_UINT             = 0x05
 MC_INT              = 0x06
-MC_LONG             = 0x07
-MC_FLOAT            = 0x08
-MC_DOUBLE           = 0x09
-MC_VARINT           = 0x0A
-MC_STRING           = 0x0B
-MC_SLOT             = 0x0C
-MC_META             = 0x0D
+MC_ULONG            = 0x07
+MC_LONG             = 0x08
+MC_FLOAT            = 0x09
+MC_DOUBLE           = 0x0A
+MC_VARINT           = 0x0B
+MC_VARLONG          = 0x0C
+MC_UUID             = 0x0D
+MC_POSITION         = 0x0E
+MC_STRING           = 0x0F
+MC_CHAT             = 0x10
+MC_SLOT             = 0x11
+MC_META             = 0x12
 
 data_structs = (
 	#(struct_suffix, size), #type
@@ -34,9 +48,56 @@ data_structs = (
 	('h', 2), #short
 	('I', 4), #uint
 	('i', 4), #int
+	('Q', 8), #ulong
 	('q', 8), #long
 	('f', 4), #float
 	('d', 8), #double
+)
+
+particles = (
+	#(name, data_length)
+	('explosion_normal' , 0),
+	('explosion_large'  , 0),
+	('explosion_huge'   , 0),
+	('fireworks_spark'  , 0),
+	('water_bubble'     , 0),
+	('water_splash'     , 0),
+	('water_wake'       , 0),
+	('suspended'        , 0),
+	('suspended_depth'  , 0),
+	('crit'             , 0),
+	('crit_magic'       , 0),
+	('smoke_normal'     , 0),
+	('smoke_large'      , 0),
+	('spell'            , 0),
+	('spell_instant'    , 0),
+	('spell_mob'        , 0),
+	('spell_mob_ambient', 0),
+	('spell_witch'      , 0),
+	('drip_water'       , 0),
+	('drip_lava'        , 0),
+	('villager_angry'   , 0),
+	('villager_happy'   , 0),
+	('town_aura'        , 0),
+	('note'             , 0),
+	('portal'           , 0),
+	('enchantment_table', 0),
+	('flame'            , 0),
+	('lava'             , 0),
+	('footstep'         , 0),
+	('cloud'            , 0),
+	('redstone'         , 0),
+	('snowball'         , 0),
+	('snow_shovel'      , 0),
+	('slime'            , 0),
+	('heart'            , 0),
+	('barrier'          , 0),
+	('icon_crack'       , 2),
+	('block_crack'      , 1),
+	('block_dust'       , 1),
+	('water_drop'       , 0),
+	('item_take'        , 0),
+	('mob_appearance'   , 0),
 )
 
 #Structs formatted for readibility
@@ -65,6 +126,7 @@ packet_names = {
 			0x00: 'Disconnect',
 			0x01: 'Encryption Request',
 			0x02: 'Login Success',
+			0x03: 'Set Compression',
 		},
 		CLIENT_TO_SERVER: {
 			0x00: 'Login Start',
@@ -139,6 +201,15 @@ packet_names = {
 			0x3E: 'Teams',
 			0x3F: 'Plugin Message',
 			0x40: 'Disconnect',
+			0x41: 'Server Difficulty',
+			0x42: 'Combat Event',
+			0x43: 'Camera',
+			0x44: 'World Border',
+			0x45: 'Title',
+			0x46: 'Set Compression',
+			0x47: 'Player List Header/Footer',
+			0x48: 'Resource Pack Send',
+			0x49: 'Update Entity NBT',
 		},
 
 		CLIENT_TO_SERVER: {
@@ -166,6 +237,8 @@ packet_names = {
 			0x15: 'Client Settings',
 			0x16: 'Client Status',
 			0x17: 'Plugin Message',
+			0x18: 'Spectate',
+			0x19: 'Resource Pack Status',
 		},
 	},
 }
@@ -190,7 +263,7 @@ packet_structs = {
 		SERVER_TO_CLIENT: {
 			#Status Response
 			0x00: (
-				(MC_STRING, 'json_response'),
+				(MC_CHAT, 'response'),
 			),
 			#Status Ping
 			0x01: (
@@ -213,7 +286,7 @@ packet_structs = {
 		SERVER_TO_CLIENT: {
 			#Disconnect
 			0x00: (
-				(MC_STRING, 'json_data'),
+				(MC_CHAT, 'json_data'),
 			),
 			#Encryption Request
 			0x01: (
@@ -256,10 +329,12 @@ packet_structs = {
 				(MC_UBYTE , 'difficulty'),
 				(MC_UBYTE , 'max_players'),
 				(MC_STRING, 'level_type'),
+				(MC_BOOL  , 'reduce_debug'),
 			),
 			#Chat Message
 			0x02: (
-				(MC_STRING, 'json_data'),
+				(MC_CHAT, 'json_data'),
+				(MC_BYTE, 'position'),
 			),
 			#Time Update
 			0x03: (
@@ -274,15 +349,13 @@ packet_structs = {
 			),
 			#Spawn Position
 			0x05: (
-				(MC_INT, 'x'),
-				(MC_INT, 'y'),
-				(MC_INT, 'z'),
+				(MC_POSITION, 'location'),
 			),
 			#Update Health
 			0x06: (
-				(MC_FLOAT, 'health'),
-				(MC_SHORT, 'food'),
-				(MC_FLOAT, 'saturation'),
+				(MC_FLOAT , 'health'),
+				(MC_VARINT, 'food'),
+				(MC_FLOAT , 'saturation'),
 			),
 			#Respawn
 			0x07: (
@@ -298,7 +371,7 @@ packet_structs = {
 				(MC_DOUBLE, 'z'),
 				(MC_FLOAT , 'yaw'),
 				(MC_FLOAT , 'pitch'),
-				(MC_BOOL  , 'on_ground'),
+				(MC_BYTE  , 'flags'),
 			),
 			#Held Item Change
 			0x09: (
@@ -306,10 +379,8 @@ packet_structs = {
 			),
 			#Use Bed
 			0x0A: (
-				(MC_INT  , 'eid'),
-				(MC_INT  , 'x'),
-				(MC_UBYTE, 'y'),
-				(MC_INT  , 'z')
+				(MC_INT     , 'eid'),
+				(MC_POSITION, 'location'),
 			),
 			#Animation
 			0x0B: (
@@ -319,22 +390,19 @@ packet_structs = {
 			#Spawn Player
 			0x0C: (
 				(MC_VARINT, 'eid'),
-				(MC_STRING, 'player_uuid'),
-				(MC_STRING, 'player_name'),
-				#Extension
-					#List of lists of string 'Data'
-					#int 'x'
-					#int 'y'
-					#int 'z'
-					#byte 'yaw'
-					#byte 'pitch'
-					#short 'current_item'
-					#metadata 'metadata'
+				(MC_UUID  , 'player_uuid'),
+				(MC_INT   , 'x'),
+				(MC_INT   , 'y'),
+				(MC_INT   , 'z'),
+				(MC_BYTE  , 'yaw'),
+				(MC_BYTE  , 'pitch'),
+				(MC_SHORT , 'current_item'),
+				(MC_META  , 'metadata'),
 			),
 			#Collect Item
 			0x0D: (
-				(MC_INT, 'collected_eid'),
-				(MC_INT, 'collector_eid'),
+				(MC_VARINT, 'collected_eid'),
+				(MC_VARINT, 'collector_eid'),
 			),
 			#Spawn Object
 			0x0E: (
@@ -369,12 +437,10 @@ packet_structs = {
 			),
 			#Spawn Painting
 			0x10: (
-				(MC_VARINT, 'eid'),
-				(MC_STRING, 'title'),
-				(MC_INT   , 'x'),
-				(MC_INT   , 'y'),
-				(MC_INT   , 'z'),
-				(MC_INT   , 'direction'),
+				(MC_VARINT  , 'eid'),
+				(MC_STRING  , 'title'),
+				(MC_POSITION, 'location'),
+				(MC_INT     , 'direction'),
 			),
 			#Spawn Experience Orb
 			0x11: (
@@ -386,10 +452,10 @@ packet_structs = {
 			),
 			#Entity Velocity
 			0x12: (
-				(MC_INT  , 'eid'),
-				(MC_SHORT, 'velocity_x'),
-				(MC_SHORT, 'velocity_y'),
-				(MC_SHORT, 'velocity_z'),
+				(MC_VARINT, 'eid'),
+				(MC_SHORT , 'velocity_x'),
+				(MC_SHORT , 'velocity_y'),
+				(MC_SHORT , 'velocity_z'),
 			),
 			#Destroy Entities
 			0x13: (
@@ -398,43 +464,47 @@ packet_structs = {
 			),
 			#Entity
 			0x14: (
-				(MC_INT, 'eid'),
+				(MC_VARINT, 'eid'),
 			),
 			#Entity Relative Move
 			0x15: (
-				(MC_INT , 'eid'),
-				(MC_BYTE, 'dx'),
-				(MC_BYTE, 'dy'),
-				(MC_BYTE, 'dz'),
+				(MC_VARINT, 'eid'),
+				(MC_BYTE  , 'dx'),
+				(MC_BYTE  , 'dy'),
+				(MC_BYTE  , 'dz'),
+				(MC_BOOL  , 'on_ground'), #Boats move slower when true
 			),
 			#Entity Look
 			0x16: (
-				(MC_INT , 'eid'),
-				(MC_BYTE, 'yaw'),
-				(MC_BYTE, 'pitch'),
+				(MC_VARINT, 'eid'),
+				(MC_BYTE  , 'yaw'),
+				(MC_BYTE  , 'pitch'),
+				(MC_BOOL  , 'on_ground'),
 			),
 			#Entity Look and Relative Move
 			0x17: (
-				(MC_INT , 'eid'),
-				(MC_BYTE, 'dx'),
-				(MC_BYTE, 'dy'),
-				(MC_BYTE, 'dz'),
-				(MC_BYTE, 'yaw'),
-				(MC_BYTE, 'pitch'),
+				(MC_VARINT, 'eid'),
+				(MC_BYTE  , 'dx'),
+				(MC_BYTE  , 'dy'),
+				(MC_BYTE  , 'dz'),
+				(MC_BYTE  , 'yaw'),
+				(MC_BYTE  , 'pitch'),
+				(MC_BOOL  , 'on_ground'),
 			),
 			#Entity Teleport
 			0x18: (
-				(MC_INT , 'eid'),
-				(MC_INT , 'x'),
-				(MC_INT , 'y'),
-				(MC_INT , 'z'),
-				(MC_BYTE, 'yaw'),
-				(MC_BYTE, 'pitch'),
+				(MC_VARINT, 'eid'),
+				(MC_INT   , 'x'),
+				(MC_INT   , 'y'),
+				(MC_INT   , 'z'),
+				(MC_BYTE  , 'yaw'),
+				(MC_BYTE  , 'pitch'),
+				(MC_BOOL  , 'on_ground'),
 			),
 			#Entity Head Look
 			0x19: (
-				(MC_INT , 'eid'),
-				(MC_BYTE, 'head_yaw'),
+				(MC_VARINT, 'eid'),
+				(MC_BYTE  , 'head_yaw'),
 			),
 			#Entity Status
 			0x1A: (
@@ -449,30 +519,31 @@ packet_structs = {
 			),
 			#Entity Metadata
 			0x1C: (
-				(MC_INT, 'eid'),
-				(MC_META  , 'metadata')
+				(MC_VARINT, 'eid'),
+				(MC_META  , 'metadata'),
 			),
 			#Entity Effect
 			0x1D: (
-				(MC_INT  , 'eid'),
-				(MC_BYTE , 'effect'),
-				(MC_BYTE , 'amplifier'),
-				(MC_SHORT, 'duration'),
+				(MC_VARINT, 'eid'),
+				(MC_BYTE  , 'effect'),
+				(MC_BYTE  , 'amplifier'),
+				(MC_SHORT , 'duration'),
+				(MC_BOOL  , 'no_particles'),
 			),
 			#Remove Entity Effect
 			0x1E: (
-				(MC_INT , 'eid'),
-				(MC_BYTE, 'effect'),
+				(MC_VARINT, 'eid'),
+				(MC_BYTE  , 'effect'),
 			),
 			#Set Experience
 			0x1F: (
-				(MC_FLOAT, 'exp_bar'),
-				(MC_SHORT, 'level'),
-				(MC_SHORT, 'total_exp'),
+				(MC_FLOAT , 'exp_bar'),
+				(MC_VARINT, 'level'),
+				(MC_VARINT, 'total_exp'),
 			),
 			#Entity Properties
 			0x20: (
-				(MC_INT, 'eid'),
+				(MC_VARINT, 'eid'),
 				#Extension
 					#List of dicts 'properties'
 					#Entity properties are complex beasts
@@ -484,7 +555,6 @@ packet_structs = {
 				(MC_INT   , 'chunk_z'),
 				(MC_BOOL  , 'continuous'),
 				(MC_USHORT, 'primary_bitmap'),
-				(MC_USHORT, 'add_bitmap'),
 				#Extension
 					#byte string 'data'
 			),
@@ -497,35 +567,28 @@ packet_structs = {
 			),
 			#Block Change
 			0x23: (
-				(MC_INT   , 'x'),
-				(MC_UBYTE , 'y'),
-				(MC_INT   , 'z'),
-				(MC_VARINT, 'block_id'),
-				(MC_UBYTE , 'metadata'),
+				(MC_POSITION, 'location'),
+				(MC_VARINT  , 'block_id'),
 			),
 			#Block Action
 			0x24: (
-				(MC_INT   , 'x'),
-				(MC_SHORT , 'y'),
-				(MC_INT   , 'z'),
-				(MC_UBYTE , 'byte_1'),
-				(MC_UBYTE , 'byte_2'),
-				(MC_VARINT, 'block_id'),
+				(MC_POSITION, 'location'),
+				(MC_UBYTE   , 'byte_1'),
+				(MC_UBYTE   , 'byte_2'),
+				(MC_VARINT  , 'block_id'),
 			),
 			#Block Break Animation
 			0x25: (
-				(MC_VARINT, 'eid'),
-				(MC_INT   , 'x'),
-				(MC_INT   , 'y'),
-				(MC_INT   , 'z'),
-				(MC_BYTE  , 'stage'),
+				(MC_VARINT  , 'eid'),
+				(MC_POSITION, 'location'),
+				(MC_BYTE    , 'stage'),
 			),
 			#Map Chunk Bulk
 			0x26: (
 				#Extension
 					#bool 'sky_light'
-					#byte string 'data'
 					#List of dicts 'metadata'
+					#byte string 'data'
 					#Metadata is identical to 0x21
 					#But the 'continuous' bool is assumed True
 			),
@@ -544,12 +607,10 @@ packet_structs = {
 			),
 			#Effect
 			0x28: (
-				(MC_INT , 'effect'),
-				(MC_INT , 'x'),
-				(MC_BYTE, 'y'),
-				(MC_INT , 'z'),
-				(MC_INT , 'data'),
-				(MC_BOOL, 'no_rel_vol'),
+				(MC_INT     , 'effect'),
+				(MC_POSITION, 'location'),
+				(MC_INT     , 'data'),
+				(MC_BOOL    , 'no_rel_vol'),
 			),
 			#Sound Effect
 			0x29: (
@@ -562,7 +623,8 @@ packet_structs = {
 			),
 			#Particle
 			0x2A: (
-				(MC_STRING, 'name'),
+				(MC_INT   , 'id'),
+				(MC_BOOL  , 'long_dist'),
 				(MC_FLOAT , 'x'),
 				(MC_FLOAT , 'y'),
 				(MC_FLOAT , 'z'),
@@ -570,7 +632,11 @@ packet_structs = {
 				(MC_FLOAT , 'off_y'),
 				(MC_FLOAT , 'off_z'),
 				(MC_FLOAT , 'speed'),
-				(MC_FLOAT , 'num'),
+				(MC_INT   , 'num'),
+				#Extension
+					#List of ints 'data'
+					#Possibly zero length list of
+					#particle-dependent data
 			),
 			#Change Game State
 			0x2B: (
@@ -588,13 +654,12 @@ packet_structs = {
 			#Open Window
 			0x2D: (
 				(MC_UBYTE , 'window_id'),
-				(MC_UBYTE , 'inv_type'),
-				(MC_STRING, 'title'),
+				(MC_STRING, 'inv_type'),
+				(MC_CHAT  , 'title'),
 				(MC_UBYTE , 'slot_count'),
 				(MC_BOOL  , 'use_title'),
-				(MC_INT   , 'eid'),
 				#Extension
-					#Only present if 'window_id' == 11
+					#Only present if 'inv_type' == 'EntityHorse'
 					#int 'eid'
 			),
 			#Close Window
@@ -626,35 +691,36 @@ packet_structs = {
 				(MC_BOOL , 'accepted'),
 			),
 			#Update Sign
-			0x33: ( 
-				(MC_INT   , 'x'),
-				(MC_SHORT , 'y'),
-				(MC_INT   , 'z'),
-				(MC_STRING, 'line_1'),
-				(MC_STRING, 'line_2'),
-				(MC_STRING, 'line_3'),
-				(MC_STRING, 'line_4'),
+			0x33: (
+				(MC_POSITION, 'location'),
+				(MC_CHAT    , 'line_1'),
+				(MC_CHAT    , 'line_2'),
+				(MC_CHAT    , 'line_3'),
+				(MC_CHAT    , 'line_4'),
 			),
 			#Maps
 			0x34: (
 				(MC_VARINT, 'item_damage'),
+				(MC_BYTE  , 'scale'),
 				#Extension
-					#byte string 'data'
+					#List of tuples 'icons', (Direction, Type, X, Y)
+					#MC_BYTE 'columns'
+					#If Columns > 0
+						#MC_BYTE 'rows'
+						#MC_BYTE 'x'
+						#MC_BYTE 'y'
+						#byte string 'data'
 			),
 			#Update Block Entity
 			0x35: (
-				(MC_INT   , 'x'),
-				(MC_SHORT , 'y'),
-				(MC_INT   , 'z'),
-				(MC_UBYTE , 'action'),
+				(MC_POSITION, 'location'),
+				(MC_UBYTE   , 'action'),
 				#Extension
 					#NBT Data 'nbt'
 			),
 			#Sign Editor Open
 			0x36: (
-				(MC_INT   , 'x'),
-				(MC_INT   , 'y'),
-				(MC_INT   , 'z'),
+				(MC_POSITION, 'location'),
 			),
 			#Statistics
 			0x37: (
@@ -665,10 +731,33 @@ packet_structs = {
 			),
 			#Player List Item
 			0x38: (
-				(MC_STRING, 'player_name'),
-				(MC_BOOL  , 'online'),
-				(MC_SHORT , 'ping'),
-
+				(MC_VARINT, 'action'),
+				#Extension
+				#List of dicts 'player_list'
+					#MC_UUID 'uuid'
+					#action == 0, ADD_PLAYER
+						#MC_STRING 'name'
+						#List of dicts, 'properties'
+							#MC_STRING 'name'
+							#MC_STRING 'value'
+							#MC_BOOL   'signed'
+							#signed == True
+								#MC_STRING 'signature'
+						#MC_VARINT 'gamemode'
+						#MC_VARINT 'ping'
+						#MC_BOOL   'has_display'
+						#has_display == True
+							#MC_CHAT 'display_name'
+					#action == 1 UPDATE_GAMEMODE
+						#MC_VARINT 'gamemode'
+					#action == 2 UPDATE_LATENCY
+						#MC_VARINT 'ping'
+					#action == 3 UPDATE_DISPLAY
+						#MC_BOOL 'has_display'
+						#has_display == True
+							#MC_CHAT 'dsiplay_name'
+					#action == 4 REMOVE_PLAYER
+						#No extra fields
 			),
 			#Player Abilities
 			0x39: (
@@ -684,16 +773,21 @@ packet_structs = {
 			#Scoreboard Objective
 			0x3B: (
 				(MC_STRING, 'obj_name'),
-				(MC_STRING, 'obj_val'),
 				(MC_BYTE  , 'action'),
+				#Extension
+					#action == 0 or action == 2
+						#MC_STRING 'obj_val'
+						#MC_STRING 'type'
 			),
 			#Update Score
 			0x3C: (
 				(MC_STRING, 'item_name'),
 				(MC_BYTE  , 'action'),
 				(MC_STRING, 'score_name'),
-				(MC_INT   , 'value'),
-			),
+				#Extension
+					#action == 0
+						#MC_VARINT 'value'
+
 			#Display Scoreboard
 			0x3D: (
 				(MC_BYTE  , 'position'),
@@ -702,16 +796,17 @@ packet_structs = {
 			#Teams
 			0x3E: (
 				(MC_STRING, 'team_name'),
-				(MC_BYTE  , 'mode'),
+				(MC_BYTE  , 'action'),
 				#Extension
-					#Depends on mode
+					#Depends on action
 					#0 gets all fields
 					#1 gets no fields
 					#For 2:
-						#string 'display_name'
-						#string 'team_prefix'
-						#string 'team_suffix'
-						#byte 'friendly_fire'
+						#MC_STRING 'display_name'
+						#MC_STRING 'team_prefix'
+						#MC_STRING 'team_suffix'
+						#MC_BYTE 'friendly_fire'
+						#MC_STRING 'name_visibility'
 					#For 3 or 4:
 						# List of strings 'players'
 			),
@@ -884,14 +979,14 @@ packet_structs = {
 
 #Useful for some lookups
 hashed_names = {
-	(state, direction, packet_id): 
+	(state, direction, packet_id):
 	packet_names[state][direction][packet_id]
 	for state in packet_names
 	for direction in packet_names[state]
 	for packet_id in packet_names[state][direction]
 }
 hashed_structs = {
-	(state, direction, packet_id): 
+	(state, direction, packet_id):
 	packet_structs[state][direction][packet_id]
 	for state in packet_structs
 	for direction in packet_structs[state]

@@ -1,10 +1,12 @@
 import struct
 import zlib
+import json
 from spock import utils
 from spock.mcp import mcdata, nbt
 from spock.mcp.mcdata import (
 	MC_BOOL, MC_UBYTE, MC_BYTE, MC_USHORT, MC_SHORT, MC_UINT, MC_INT,
-	MC_LONG, MC_FLOAT, MC_DOUBLE, MC_STRING, MC_VARINT, MC_SLOT, MC_META
+	MC_LONG, MC_FLOAT, MC_DOUBLE, MC_VARINT, MC_VARLONG, MC_UUID, MC_POSITION,
+	MC_STRING, MC_CHAT, MC_SLOT, MC_META
 )
 
 #Unpack/Pack functions return None on error
@@ -39,9 +41,56 @@ def pack_varint(val):
 	o += struct.pack('B', bits)
 	return o
 
+#Like a varint, but a 64-bit signed value
+def unpack_varlong(bbuff):
+	total = 0
+	shift = 0
+	val = 0x80
+	while val&0x80:
+		val = struct.unpack('B', bbuff.read(1))[0]
+		total |= ((val&0x7F)<<shift)
+		shift += 7
+	if total >= (1<<64):
+		return None
+	if total&(1<<64):
+		total = total - (1<<64)
+	return total
+
+def pack_varlong(val):
+	if val >= (1<<63) or val < -(1<<63):
+		return None
+	o = b''
+	if val < 0:
+		val = (1<<64)+val
+	while val>=0x80:
+		bits = val&0x7F
+		val >>= 7
+		o += struct.pack('B', (0x80|bits))
+	bits = val&0x7F
+	o += struct.pack('B', bits)
+	return o
+
+# Three values packed into one 64-bit long
+# x: 26 MSBs, y: 12 bits, z: 24 LSBs
+def unpack_position(bbuff):
+	position = {}
+	val = unpack(MC_LONG, bbuff)
+	position['x'] = val>>38;
+	position['y'] = (val>>26)&0xFFF
+	position['z'] = val&0x3FFFFFF
+	return position
+
+def pack_position(position):
+	val  = (position['x']&0x3FFFFFF)<<38
+	val |= (position['y']&0xFFF)<<26
+	val |= (position['z']&0x3FFFFFF)
+	return val
+
 # Slots are dictionaries that hold info about
 # inventory items, they also have funky
 # enchantment data stored in gziped NBT structs
+
+#TODO: We don't use compression anymore and I'm pretty sure this is wrong anyway
 def unpack_slot(bbuff):
 	slot = {}
 	slot['id'] = unpack(MC_SHORT, bbuff)
@@ -91,16 +140,16 @@ def pack_slot(slot):
 			o += pack(MC_SHORT, -1)
 	return o
 
-# Metadata is a dictionary list thing that 
-# holds metadata about entities. Currently 
-# implemented as a list/tuple thing, might 
+# Metadata is a dictionary list thing that
+# holds metadata about entities. Currently
+# implemented as a list/tuple thing, might
 # switch to dicts
 metadata_lookup = MC_BYTE, MC_SHORT, MC_INT, MC_FLOAT, MC_STRING, MC_SLOT
 
 def unpack_metadata(bbuff):
 	metadata = []
 	head = unpack(MC_UBYTE, bbuff)
-	while head != 127:
+	while head != 0x7F:
 		key = head & 0x1F # Lower 5 bits
 		typ = head >> 5 # Upper 3 bits
 		if typ < len(metadata_lookup) and typ >= 0:
@@ -125,7 +174,7 @@ def pack_metadata(metadata):
 				o += pack(MC_INT, val[i])
 		else:
 			return None
-	o += pack(MC_BYTE, 127)
+	o += pack(MC_BYTE, 0x7F)
 	return o
 
 endian = '>'
@@ -136,8 +185,17 @@ def unpack(data_type, bbuff):
 		return struct.unpack(endian+format[0], bbuff.recv(format[1]))[0]
 	elif data_type == MC_VARINT:
 		return unpack_varint(bbuff)
+	elif data_type == MC_VARLONG:
+		return unpack_varlong(bbuff)
+	elif data_type == MC_UUID:
+		a, b = struct.unpack('>QQ', bbuff.recv(16))
+		return (a<<64)|b
+	elif data_type == MC_POSITION:
+		return unpack_position(bbuff)
 	elif data_type == MC_STRING:
 		return bbuff.recv(unpack(MC_VARINT, bbuff)).decode('utf-8')
+	elif data_type == MC_CHAT:
+		return json.loads(unpack(MC_STRING, bbuff))
 	elif data_type == MC_SLOT:
 		return unpack_slot(bbuff)
 	elif data_type == MC_META:
@@ -151,9 +209,17 @@ def pack(data_type, data):
 		return struct.pack(endian+format[0], data)
 	elif data_type == MC_VARINT:
 		return pack_varint(data)
+	elif data_type == MC_VARLONG:
+		return pack_varlong(data)
+	elif data_type == MC_UUID:
+		return struct.pack('>QQ', (data>>64)&((1<<64)-1), data&((1<<64)-1))
+	elif data_type == MC_POSITION:
+		return pack_position(data)
 	elif data_type == MC_STRING:
 		data = data.encode('utf-8')
 		return pack(MC_VARINT, len(data)) + data
+	elif data_type == MC_CHAT:
+		return pack(MC_STRING, json.dumps(data))
 	elif data_type == MC_SLOT:
 		return pack_slot(data)
 	elif data_type == MC_META:
