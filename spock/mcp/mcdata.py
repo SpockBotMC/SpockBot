@@ -19,6 +19,23 @@ PL_UPDATE_LATENCY   = 0x02
 PL_UPDATE_DISPLAY   = 0x03
 PL_REMOVE_PLAYER    = 0x04
 
+CE_ENTER_COMBAT     = 0x00
+CE_END_COMBAT       = 0x01
+CE_ENTITY_DEAD      = 0x02
+
+WB_SET_SIZE         = 0x00
+WB_LERP_SIZE        = 0x01
+WB_SET_CENTER       = 0x02
+WB_INITIALIZE       = 0x03
+WB_SET_WARN_TIME    = 0x04
+WB_SET_WARN_BLOCKS  = 0x05
+
+TL_TITLE            = 0x00
+TL_SUBTITLE         = 0x01
+TL_TIMES            = 0x02
+TL_CLEAR            = 0x03
+TL_RESET            = 0x04
+
 MC_BOOL             = 0x00
 MC_UBYTE            = 0x01
 MC_BYTE             = 0x02
@@ -805,7 +822,7 @@ packet_structs = {
 						#MC_STRING 'display_name'
 						#MC_STRING 'team_prefix'
 						#MC_STRING 'team_suffix'
-						#MC_BYTE 'friendly_fire'
+						#MC_BYTE   'friendly_fire'
 						#MC_STRING 'name_visibility'
 					#For 3 or 4:
 						# List of strings 'players'
@@ -820,6 +837,65 @@ packet_structs = {
 			0x40: (
 				(MC_STRING, 'reason'),
 			),
+			#Server Difficulty
+			0x41: (
+				(MC_UBYTE, 'difficulty'),
+			),
+			#Combat Event
+			0x42: (
+				(MC_VARINT, 'event'),
+				#Extension
+					#CE_END_COMBAT
+						#MC_VARINT 'duration'
+						#MC_INT    'eid'
+					#CE_ENTITY_DEAD
+						#MC_VARINT 'player_id'
+						#MC_INT    'eid'
+						#MC_STRING 'message'
+			),
+			#Camera
+			0x43: (
+				(MC_VARINT, 'camera_id'),
+			),
+			#World Border
+			0x44: (
+				(MC_VARINT, 'action'),
+				#Extension
+					#WB_SET_SIZE
+						#MC_DOUBLE  'radius'
+					#WB_LERP_SIZE
+						#MC_DOUBLE  'old_radius'
+						#MC_DOUBLE  'new_radius'
+						#MC_VARLONG 'speed'
+					#WB_SET_CENTER
+						#MC_DOUBLE  'x'
+						#MC_DOUBLE  'z'
+					#WB_INITIALIZE
+						#MC_DOUBLE  'x'
+						#MC_DOUBLE  'z'
+						#MC_DOUBLE  'old_radius'
+						#MC_DOUBLE  'new_radius'
+						#MC_VARLONG 'speed'
+						#MC_VARINT  'port_tele_bound' #Portal Teleport Boundary
+						#MC_VARINT  'warn_time'
+						#MC_VARINT  'warn_blocks'
+					#WB_SET_WARN_TIME
+						#MC_VARINT 'warn_time'
+					#WB_SET_WARN_BLOCKS
+						#MC_VARINT 'warn_blocks'
+			),
+			#Title
+			0x45: (
+				(MC_VARINT, 'action'),
+				#Extension
+					#TL_TITLE
+					#TL_SUBTITLE
+						#MC_CHAT 'text'
+					#TL_TIMES
+						#MC_INT  'fade_in'
+						#MC_INT  'stay'
+						#MC_INT  'fade_out'
+			)
 		},
 
 		CLIENT_TO_SERVER: {

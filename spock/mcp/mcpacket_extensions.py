@@ -452,6 +452,96 @@ class ExtensionPSTC3E:
 				o += datautils.pack(MC_STRING, player)
 		return o
 
+#Play  SERVER_TO_CLIENT 0x42 Combat Event
+@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x42))
+class ExtensionPSTC42:
+	def decode_extra(packet, bbuff):
+		if packet.data['event'] == mcdata.CE_END_COMBAT:
+			packet.data['duration'] = datautils.unpack(MC_VARINT, bbuff)
+			packet.data['eid'] = datautils.unpack(MC_INT, bbuff)
+		if packet.data['event'] == mcdata.CE_ENTITY_DEAD:
+			packet.data['player_id'] = datautils.unpack(MC_VARINT, bbuff)
+			packet.data['eid'] = datautils.unpack(MC_INT, bbuff)
+			packet.data['message'] = datautils.unpack(MC_STRING, bbuff)
+		return packet
+
+	def encode_extra(packet):
+		o = b''
+		if packet.data['event'] == mcdata.CE_END_COMBAT:
+			o += datautils.pack(MC_VARINT, packet.data['duration'])
+			o += datautils.pack(MC_INT, packet.data['eid'])
+		if packet.data['event'] == mcdata.CE_ENTITY_DEAD:
+			o += datautils.pack(MC_VARINT, packet.data['player_id'])
+			o += datautils.pack(MC_INT, packet.data['eid'])
+			o += datautils.pack(MC_STRING, packet.data['message'])
+		return o
+
+#Play  SERVER_TO_CLIENT 0x44 World Border
+@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x44))
+class ExtensionPSTC44:
+	def decode_extra(packet, bbuff):
+		action = packet.data['action']
+		if action == mcdata.WB_SET_SIZE:
+			packet.data['radius'] = datautils.unpack(MC_VARINT, bbuff)
+		if action == mcdata.WB_SET_CENTER or action == mcdata.WB_INITIALIZE:
+			packet.data['x'] = datautils.unpack(MC_DOUBLE, bbuff)
+			packet.data['z'] = datautils.unpack(MC_DOUBLE, bbuff)
+		if action == mcdata.WB_LERP_SIZE or action == mcdata.WB_INITIALIZE:
+			packet.data['old_radius'] = datautils.unpack(MC_DOUBLE, bbuff)
+			packet.data['new_radius'] = datautils.unpack(MC_DOUBLE, bbuff)
+			packet.data['speed'] = datautils.unpack(MC_VARLONG, bbuff)
+		if action == mcdata.WB_INITIALIZE:
+			packet.data['port_tele_bound'] = datautils.unpack(MC_VARINT, bbuff)
+		if action == mcdata.WB_SET_WARN_TIME or action == mcdata.WB_INITIALIZE:
+			packet.data['warn_time'] = datautils.unpack(MC_VARINT, bbuff)
+		if action == mcdata.WB_SET_WARN_BLOCKS or action == mcdata.WB_INITIALIZE:
+			packet.data['warn_blocks'] = datautils.unpack(MC_VARINT, bbuff)
+		return packet
+
+	def encode_extra(packet):
+		o = b''
+		action = packet.data['action']
+		if action == mcdata.WB_SET_SIZE:
+			o += datautils.pack(MC_DOUBLE, packet.data['radius'])
+		if action == mcdata.WB_SET_CENTER or action == mcdata.WB_INITIALIZE:
+			o += datautils.pack(MC_DOUBLE, packet.data['x'])
+			o += datautils.pack(MC_DOUBLE, packet.data['y'])
+		if action == mcdata.WB_LERP_SIZE or action == mcdata.WB_INITIALIZE:
+			o += datautils.pack(MC_DOUBLE, packet.data['old_radius'])
+			o += datautils.pack(MC_DOUBLE, packet.data['new_radius'])
+			o += datautils.pack(MC_VARLONG, packet.data['speed'])
+		if action == mcdata.WB_INITIALIZE:
+			o += datautils.pack(MC_VARINT, packet.data['port_tele_bound'])
+		if action == mcdata.WB_SET_WARN_TIME or action == mcdata.WB_INITIALIZE:
+			o += datautils.pack(MC_VARINT, packet.data['warn_time'])
+		if action == mcdata.WB_SET_WARN_BLOCKS or action == mcdata.WB_INITIALIZE:
+			o += datautils.pack(MC_VARINT, packet.data['warn_blocks'])
+		return o
+
+#Play  SERVER_TO_CLIENT 0x45 Title
+@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x45))
+class ExtensionPSTC45:
+	def decode_extra(packet, bbuff):
+		action = packet.data['action']
+		if action == mcdata.TL_TITLE or action == mcdata.TL_SUBTITLE:
+			packet.data['text'] = datautils.unpack(MC_CHAT, bbuff)
+		if action == mcdata.TL_TIMES:
+			packet.data['fade_in'] = datautils.unpack(MC_INT, bbuff)
+			packet.data['stay'] = datautils.unpack(MC_INT, bbuff)
+			packet.data['fade_out'] = datautils.unpack(MC_INT, bbuff)
+		return packet
+
+	def encode_extra(packet):
+		o = b''
+		action = packet.data['action']
+		if action == mcdata.TL_TITLE or action == mcdata.TL_SUBTITLE:
+			o += datautils.pack(MC_CHAT, packet.data['text'])
+		if action == mcdata.TL_TIMES:
+			o += datautils.pack(MC_INT, packet.data['fade_in'])
+			o += datautils.pack(MC_INT, packet.data['stay'])
+			o += datautils.pack(MC_INT, packet.data['fade_out'])
+		return o
+
 #Play  SERVER_TO_CLIENT 0x3F Plugin Message
 #Play  CLIENT_TO_SERVER 0x17 Plugin Message
 @extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3F))
