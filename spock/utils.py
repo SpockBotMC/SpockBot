@@ -5,11 +5,13 @@ class BufferUnderflowException(Exception):
 class BoundBuffer:
 	backup = b''
 	def __init__(self, *args):
+		self.count = 0
 		self.buff = (args[0] if args else b'')
 
 	def recv(self, bytes):
 		if len(self.buff) < bytes:
 			raise BufferUnderflowException()
+		self.count += bytes
 		o, self.buff = self.buff[:bytes], self.buff[bytes:]
 		return o
 
@@ -27,6 +29,9 @@ class BoundBuffer:
 
 	def revert(self):
 		self.buff = self.backup
+
+	def tell(self):
+		return self.count
 
 	def __len__(self):
 		return self.buff.__len__()
