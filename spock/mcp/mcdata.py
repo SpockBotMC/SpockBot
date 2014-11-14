@@ -2,11 +2,31 @@
 
 MC_PROTOCOL_VERSION = 47
 
+SERVER_TO_CLIENT    = 0x00
+CLIENT_TO_SERVER    = 0x01
+
 PROTO_COMP_ON       = 0x00
 PROTO_COMP_OFF      = 0x01
 
-SERVER_TO_CLIENT    = 0x00
-CLIENT_TO_SERVER    = 0x01
+MC_BOOL             = 0x00
+MC_UBYTE            = 0x01
+MC_BYTE             = 0x02
+MC_USHORT           = 0x03
+MC_SHORT            = 0x04
+MC_UINT             = 0x05
+MC_INT              = 0x06
+MC_ULONG            = 0x07
+MC_LONG             = 0x08
+MC_FLOAT            = 0x09
+MC_DOUBLE           = 0x0A
+MC_VARINT           = 0x0B
+MC_VARLONG          = 0x0C
+MC_UUID             = 0x0D
+MC_POSITION         = 0x0E
+MC_STRING           = 0x0F
+MC_CHAT             = 0x10
+MC_SLOT             = 0x11
+MC_META             = 0x12
 
 HANDSHAKE_STATE     = 0x00
 STATUS_STATE        = 0x01
@@ -36,25 +56,9 @@ TL_TIMES            = 0x02
 TL_CLEAR            = 0x03
 TL_RESET            = 0x04
 
-MC_BOOL             = 0x00
-MC_UBYTE            = 0x01
-MC_BYTE             = 0x02
-MC_USHORT           = 0x03
-MC_SHORT            = 0x04
-MC_UINT             = 0x05
-MC_INT              = 0x06
-MC_ULONG            = 0x07
-MC_LONG             = 0x08
-MC_FLOAT            = 0x09
-MC_DOUBLE           = 0x0A
-MC_VARINT           = 0x0B
-MC_VARLONG          = 0x0C
-MC_UUID             = 0x0D
-MC_POSITION         = 0x0E
-MC_STRING           = 0x0F
-MC_CHAT             = 0x10
-MC_SLOT             = 0x11
-MC_META             = 0x12
+UE_INTERACT         = 0x00
+UE_ATTACK           = 0x01
+UE_INTERACT_AT      = 0x02
 
 data_structs = (
 	#(struct_suffix, size), #type
@@ -685,7 +689,7 @@ packet_structs = {
 			),
 			#Set Slot
 			0x2F: (
-				(MC_BYTE, 'window_id'),
+				(MC_BYTE , 'window_id'),
 				(MC_SHORT, 'slot'),
 				(MC_SLOT , 'slot_data'),
 			),
@@ -778,7 +782,7 @@ packet_structs = {
 			),
 			#Player Abilities
 			0x39: (
-				(MC_BYTE, 'flags'),
+				(MC_BYTE , 'flags'),
 				(MC_FLOAT, 'flying_speed'),
 				(MC_FLOAT, 'walking_speed'),
 			),
@@ -895,13 +899,33 @@ packet_structs = {
 						#MC_INT  'fade_in'
 						#MC_INT  'stay'
 						#MC_INT  'fade_out'
-			)
+			),
+			#Set Compression
+			0x46: (
+				(MC_VARINT, 'threshold'),
+			),
+			#Play List Header/Footer
+			0x47: (
+				(MC_CHAT, 'header'),
+				(MC_CHAT, 'footer'),
+			),
+			#Resource Pack Send
+			0x48: (
+				(MC_STRING, 'url'),
+				(MC_STRING, 'hash'),
+			),
+			#Update Entity NBT
+			0x48: (
+				(MC_VARINT, 'eid'),
+				#Extension
+					#NBT Data 'nbt'
+			),
 		},
 
 		CLIENT_TO_SERVER: {
 			#Keep Alive
 			0x00: (
-				(MC_INT, 'keep_alive'),
+				(MC_VARINT, 'keep_alive'),
 			),
 			#Chat Message
 			0x01: (
@@ -909,8 +933,13 @@ packet_structs = {
 			),
 			#Use Entity
 			0x02: (
-				(MC_INT , 'target'),
-				(MC_BYTE, 'mouse'),
+				(MC_VARINT, 'target'),
+				(MC_VARINT, 'action'),
+				#Extension
+					#action == UE_INTERACT_AT
+						#MC_FLOAT 'target_x'
+						#MC_FLOAT 'target_y'
+						#MC_FLOAT 'target_z'
 			),
 			#Player
 			0x03: (
@@ -919,7 +948,6 @@ packet_structs = {
 			#Player Position
 			0x04: (
 				(MC_DOUBLE, 'x'),
-				(MC_DOUBLE, 'stance'),
 				(MC_DOUBLE, 'y'),
 				(MC_DOUBLE, 'z'),
 				(MC_BOOL  , 'on_ground'),
@@ -933,7 +961,6 @@ packet_structs = {
 			#Player Position and Look
 			0x06: (
 				(MC_DOUBLE, 'x'),
-				(MC_DOUBLE, 'stance'),
 				(MC_DOUBLE, 'y'),
 				(MC_DOUBLE, 'z'),
 				(MC_FLOAT, 'yaw'),
@@ -942,44 +969,40 @@ packet_structs = {
 			),
 			#Player Digging
 			0x07: (
-				(MC_BYTE , 'status'),
-				(MC_INT  , 'x'),
-				(MC_UBYTE, 'y'),
-				(MC_INT  , 'z'),
-				(MC_BYTE , 'face'),
+				(MC_BYTE    , 'status'),
+				(MC_POSITION, 'location'),
+				(MC_BYTE    , 'face'),
 			),
 			#Player Block Placement
 			0x08: (
-				(MC_INT  , 'x'),
-				(MC_UBYTE, 'y'),
-				(MC_INT  , 'z'),
-				(MC_BYTE , 'direction'),
-				(MC_SLOT , 'held_item'),
-				(MC_BYTE , 'cur_pos_x'),
-				(MC_BYTE , 'cur_pos_y'),
-				(MC_BYTE , 'cur_pos_z'),
+				(MC_POSITION, 'location'),
+				(MC_BYTE    , 'direction'),
+				(MC_SLOT    , 'held_item'),
+				(MC_BYTE    , 'cur_pos_x'),
+				(MC_BYTE    , 'cur_pos_y'),
+				(MC_BYTE    , 'cur_pos_z'),
 			),
 			#Held Item Change
 			0x09: (
 				(MC_SHORT, 'slot'),
 			),
 			#Animation
+			#Is This ever used? Is this supposed to be empty??
 			0x0A: (
-				(MC_INT, 'eid'),
-				(MC_BYTE, 'animation'),
+				(MC_VARINT, 'eid'),
+				(MC_BYTE  , 'animation'),
 			),
 			#Entity Action
 			0x0B: (
-				(MC_INT , 'eid'),
-				(MC_BYTE, 'action'),
-				(MC_INT , 'jump_boost'),
+				(MC_VARINT, 'eid'),
+				(MC_VARINT, 'action'),
+				(MC_VARINT, 'jump_boost'),
 			),
 			#Steer Vehicle
 			0x0C: (
 				(MC_FLOAT, 'sideways'),
 				(MC_FLOAT, 'forward'),
-				(MC_BOOL , 'jump'),
-				(MC_BOOL , 'unmount'),
+				(MC_UBYTE, 'flags'),
 			),
 			#Close Window
 			0x0D: (
@@ -1012,42 +1035,52 @@ packet_structs = {
 			),
 			#Update Sign
 			0x12: (
-				(MC_INT   , 'x'),
-				(MC_SHORT , 'y'),
-				(MC_INT   , 'z'),
-				(MC_STRING, 'line_1'),
-				(MC_STRING, 'line_2'),
-				(MC_STRING, 'line_3'),
-				(MC_STRING, 'line_4'),
+				(MC_POSITION, 'location'),
+				(MC_CHAT    , 'line_1'),
+				(MC_CHAT    , 'line_2'),
+				(MC_CHAT    , 'line_3'),
+				(MC_CHAT    , 'line_4'),
 			),
 			#Player Abilities
 			0x13: (
-				(MC_BYTE, 'flags'),
+				(MC_BYTE , 'flags'),
 				(MC_FLOAT, 'flying_speed'),
 				(MC_FLOAT, 'walking_speed'),
 			),
 			#Tab-Complete
 			0x14: (
 				(MC_STRING, 'text'),
+				(MC_BOOL  , 'has_position')
+				#Extension
+					#has_position == True
+						#MC_POSITION 'block_loc'
 			),
 			#Client Settings
 			0x15: (
 				(MC_STRING, 'locale'),
 				(MC_BYTE  , 'view_distance'),
 				(MC_BYTE  , 'chat_flags'),
-				(MC_BOOL  , 'unused'),
-				(MC_BYTE  , 'difficulty'),
-				(MC_BOOL  , 'show_cape'),
+				(MC_BOOL  , 'chat_colours'),
+				(MC_UBYTE , 'skin_flags'),
 			),
 			#Client Status
 			0x16: (
-				(MC_BYTE, 'action'),
+				(MC_VARINT, 'action'),
 			),
 			#Plugin Message
 			0x17: (
 				(MC_STRING, 'channel'),
 				#Extension
 					#byte string 'data'
+			),
+			#Spectate
+			0x18: (
+				(MC_UUID, 'target_player'),
+			),
+			#Resource Pack Status
+			0x19: (
+				(MC_STRING, 'hash'),
+				(MC_VARINT, 'result'),
 			),
 		},
 	},
@@ -1067,6 +1100,16 @@ hashed_structs = {
 	for state in packet_structs
 	for direction in packet_structs[state]
 	for packet_id in packet_structs[state][direction]
+}
+
+#Lookup packets by name
+packet_idents = {
+	state_name + ("<", ">")[direction] + packet_names[state][direction][pa_id]:
+	(state, direction, pa_id)
+	for state in packet_names
+	for direction in packet_names[state]
+	for pa_id in packet_names[state][direction]
+	for state_name in ("HANDSHAKE", "STATUS", "LOGIN", "PLAY")
 }
 
 #Pack the protocol more efficiently

@@ -285,8 +285,10 @@ class ExtensionPSTC34:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x35 Update Block Entity
+#Play  SERVER_TO_CLIENT 0x48 Update Entity NBT
 @extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x35))
-class ExtensionPSTC35:
+@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x48))
+class ExtensionUpdateNBT:
 	def decode_extra(packet, bbuff):
 		data = bbuff.flush()
 		assert(datautils.unpack(MC_BYTE, data) == nbt.TAG_COMPOUND)
@@ -452,6 +454,19 @@ class ExtensionPSTC3E:
 				o += datautils.pack(MC_STRING, player)
 		return o
 
+#Play  SERVER_TO_CLIENT 0x3F Plugin Message
+#Play  CLIENT_TO_SERVER 0x17 Plugin Message
+@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3F))
+@extension((mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x17))
+class ExtensionPluginMessage:
+	def decode_extra(packet, bbuff):
+		packet.data['data'] = bbuff.flush()
+		return packet
+
+	def encode_extra(packet):
+		o += packet.data['data']
+		return o
+
 #Play  SERVER_TO_CLIENT 0x42 Combat Event
 @extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x42))
 class ExtensionPSTC42:
@@ -542,15 +557,35 @@ class ExtensionPSTC45:
 			o += datautils.pack(MC_INT, packet.data['fade_out'])
 		return o
 
-#Play  SERVER_TO_CLIENT 0x3F Plugin Message
-#Play  CLIENT_TO_SERVER 0x17 Plugin Message
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3F))
-@extension((mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x17))
-class ExtensionPluginMessage:
+#Play  CLIENT_TO_SERVER 0x02 Use Entity
+@extension((mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x02))
+class ExtensionPCTS02:
 	def decode_extra(packet, bbuff):
-		packet.data['data'] = bbuff.flush()
+		if packet.data['action'] == mcdata.UE_INTERACT_AT:
+			packet.data['target_x'] = datautils.unpack(MC_FLOAT, bbuff)
+			packet.data['target_y'] = datautils.unpack(MC_FLOAT, bbuff)
+			packet.data['target_z'] = datautils.unpack(MC_FLOAT, bbuff)
 		return packet
 
 	def encode_extra(packet):
-		o += packet.data['data']
+		o = b''
+		if packet.data['action'] == mcdata.UE_INTERACT_AT:
+			o += datautils.pack(MC_FLOAT, packet.data['target_x'])
+			o += datautils.pack(MC_FLOAT, packet.data['target_y'])
+			o += datautils.pack(MC_FLOAT, packet.data['target_z'])
+		return o
+
+#ToDo: Set has_position True for encode based on prescence of 'block_loc'?
+#Play  CLIENT_TO_SERVER 0x14 Tab-Complete
+@extension((mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x02))
+class ExtensionPCTS02:
+	def decode_extra(packet, bbuff):
+		if packet.data['has_position'] == True:
+			packet.data['block_loc'] = datautils.unpack(MC_POSITION, bbuff)
+		return packet
+
+	def encode_extra(packet):
+		o = b''
+		if packet.data['has_position'] == True:
+			datautils.pack(MC_POSITION, packet.data['block_loc'])
 		return o
