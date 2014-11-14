@@ -30,7 +30,7 @@ class AuthCore:
 	def start_session(self, username, password = ''):
 		if self.authenticated:
 			print(
-				"Attempting login with username:", username, 
+				"Attempting login with username:", username,
 				"and password:", password
 			)
 			rep = self.ygg.authenticate(username, password)
@@ -64,7 +64,7 @@ class AuthPlugin:
 		ploader.reg_event_handler('AUTH_ERR', self.handleAUTHERR)
 		ploader.reg_event_handler('SESS_ERR', self.handleSESSERR)
 		ploader.reg_event_handler(
-			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x01), 
+			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x01),
 			self.handle01
 		)
 		ploader.provides('Auth', self.auth)
@@ -106,7 +106,7 @@ class AuthPlugin:
 
 		rsa_cipher = PKCS1_v1_5.new(RSA.importKey(pubkey))
 		self.net.push(mcpacket.Packet(
-			ident = (mcdata.LOGIN_STATE, mcdata.CLIENT_TO_SERVER, 0x01), 
+			ident = (mcdata.LOGIN_STATE, mcdata.CLIENT_TO_SERVER, 0x01),
 			data = {
 				'shared_secret': rsa_cipher.encrypt(self.auth.shared_secret),
 				'verify_token': rsa_cipher.encrypt(packet.data['verify_token']),

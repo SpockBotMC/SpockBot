@@ -23,16 +23,16 @@ def extension(ident):
 @extension((mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x01))
 class ExtensionLSTC01:
 	def decode_extra(packet, bbuff):
-		length = datautils.unpack(MC_SHORT, bbuff)
+		length = datautils.unpack(MC_VARINT, bbuff)
 		packet.data['public_key'] = bbuff.recv(length)
-		length = datautils.unpack(MC_SHORT, bbuff)
+		length = datautils.unpack(MC_VARINT, bbuff)
 		packet.data['verify_token'] = bbuff.recv(length)
 		return packet
 
 	def encode_extra(packet):
-		o  = datautils.pack(MC_SHORT, len(packet.data['public_key']))
+		o  = datautils.pack(MC_VARINT, len(packet.data['public_key']))
 		o += packet.data['public_key']
-		o += datautils.pack(MC_SHORT, len(packet.data['verify_token']))
+		o += datautils.pack(MC_VARINT, len(packet.data['verify_token']))
 		o += packet.data['verify_token']
 		return o
 
@@ -40,16 +40,16 @@ class ExtensionLSTC01:
 @extension((mcdata.LOGIN_STATE, mcdata.CLIENT_TO_SERVER, 0x01))
 class ExtensionLCTS01:
 	def decode_extra(packet, bbuff):
-		length = datautils.unpack(MC_SHORT, bbuff)
+		length = datautils.unpack(MC_VARINT, bbuff)
 		packet.data['shared_secret'] = bbuff.recv(length)
-		length = datautils.unpack(MC_SHORT, bbuff)
+		length = datautils.unpack(MC_VARINT, bbuff)
 		packet.data['verify_token'] = bbuff.recv(length)
 		return packet
 
 	def encode_extra(packet):
-		o  = datautils.pack(MC_SHORT, len(packet.data['shared_secret']))
+		o  = datautils.pack(MC_VARINT, len(packet.data['shared_secret']))
 		o += packet.data['shared_secret']
-		o += datautils.pack(MC_SHORT, len(packet.data['verify_token']))
+		o += datautils.pack(MC_VARINT, len(packet.data['verify_token']))
 		o += packet.data['verify_token']
 		return o
 

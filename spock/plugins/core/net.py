@@ -35,7 +35,7 @@ class SelectSocket:
 		else:
 			slist = (self.sock,), (), ()
 		timeout = self.timer.get_timeout()
-		if timeout>0: 
+		if timeout>0:
 			slist.append(timeout)
 		try:
 			rlist, wlist, xlist = select.select(*slist)
@@ -96,6 +96,8 @@ class NetCore:
 		self.connected = False
 		self.encrypted = False
 		self.proto_state = mcdata.HANDSHAKE_STATE
+		self.comp_state = mcdata.PROTO_COMP_OFF
+		self.comp_threshold = -1
 		self.sbuff = b''
 		self.rbuff = utils.BoundBuffer()
 
@@ -110,11 +112,16 @@ class NetCore:
 			#print("Error on Connect (this is normal):", str(error))
 			pass
 
-	def change_state(self, state):
+	def set_proto_state(self, state):
 		self.proto_state = state
 
+	def set_comp_state(self, threshold):
+		self.comp_threshold = threshold
+		if threshold >=0:
+			self.comp_state = mcdata.PROTO_COMP_ON
+
 	def push(self, packet):
-		data = packet.encode()
+		data = packet.encode(self.comp_state, self.comp_threshold)
 		self.sbuff += (self.cipher.encrypt(data) if self.encrypted else data)
 		self.event.emit(packet.ident(), packet)
 		self.sock.sending = True
@@ -127,7 +134,7 @@ class NetCore:
 				packet = mcpacket.Packet(ident = (
 					self.proto_state,
 					mcdata.SERVER_TO_CLIENT,
-				)).decode(self.rbuff)
+				)).decode(self.rbuff, self.comp_state)
 			except utils.BufferUnderflowException:
 				self.rbuff.revert()
 				break
@@ -174,6 +181,14 @@ class NetPlugin:
 			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x02),
 			self.handle02
 		)
+		ploader.reg_event_handler(
+			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x03),
+			self.handle_comp
+		)
+		ploader.reg_event_handler(
+			(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x46),
+			self.handle_comp
+		)
 
 	def tick(self, name, data):
 		for flag in self.sock.poll():
@@ -218,8 +233,12 @@ class NetPlugin:
 
 	#Handshake - Change to whatever the next state is going to be
 	def handle00(self, name, packet):
-		self.net.change_state(packet.data['next_state'])
+		self.net.set_proto_state(packet.data['next_state'])
 
 	#Login Success - Change to Play state
 	def handle02(self, name, packet):
-		self.net.change_state(mcdata.PLAY_STATE)
+		self.net.set_proto_state(mcdata.PLAY_STATE)
+
+	#Handle Set Compression packets
+	def handle_comp(self, name, packet):
+		self.net.set_comp_state(packet.data['threshold'])

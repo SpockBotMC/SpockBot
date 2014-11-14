@@ -31,7 +31,7 @@ class StartPlugin:
 
 	def handshake(self):
 		self.net.push(mcpacket.Packet(
-			ident = (mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00), 
+			ident = (mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00),
 			data = {
 				'protocol_version': mcdata.MC_PROTOCOL_VERSION,
 				'host': self.net.host,

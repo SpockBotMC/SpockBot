@@ -284,7 +284,7 @@ packet_structs = {
 		SERVER_TO_CLIENT: {
 			#Status Response
 			0x00: (
-				(MC_CHAT, 'response'),
+				(MC_STRING, 'response'),
 			),
 			#Status Ping
 			0x01: (
@@ -320,6 +320,10 @@ packet_structs = {
 			0x02: (
 				(MC_STRING, 'uuid'),
 				(MC_STRING, 'username'),
+			),
+			#Set Compression
+			0x03: (
+				(MC_VARINT, 'threshold'),
 			),
 		},
 		CLIENT_TO_SERVER: {

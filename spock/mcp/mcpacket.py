@@ -37,8 +37,10 @@ class Packet(object):
 			packet_length = datautils.unpack(MC_VARINT, bbuff)
 			data_length = datautils.unpack(MC_VARINT, bbuff)
 			packet_data = bbuff.recv(packet_length)
+			print('packet_length:', packet_length)
+			print('data_length:', data_length)
 			if data_length:
-				packet_data = zlib.decompress(data, zlib.MAX_WBITS)
+				packet_data = zlib.decompress(packet_data, zlib.MAX_WBITS)
 		elif proto_comp_state == mcdata.PROTO_COMP_OFF:
 			packet_data = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
 		else:

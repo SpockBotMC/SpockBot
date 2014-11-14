@@ -31,6 +31,9 @@ class BoundBuffer:
 	def __len__(self):
 		return self.buff.__len__()
 
+	def __repr__(self):
+		return 'BoundBuffer: ' + str(self.buff)
+
 	read = recv
 	write = append
 
