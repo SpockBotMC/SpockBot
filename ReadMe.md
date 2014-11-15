@@ -1,6 +1,6 @@
 Inspired by remyroy's COPS, a Minecraft client in Python. Protocol implementation based on barneymc
 
-mcp protocol implementation currently supports Minecraft 1.8, bot will support 1.8 soonish
+Spock currently supports Minecraft 1.8
 
 spock
 =====
