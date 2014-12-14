@@ -290,10 +290,9 @@ class ExtensionPSTC34:
 @extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x48))
 class ExtensionUpdateNBT:
 	def decode_extra(packet, bbuff):
-		data = bbuff.flush()
-		assert(datautils.unpack(MC_BYTE, data) == nbt.TAG_COMPOUND)
-		name = nbt.TAG_String(buffer = data)
-		nbt_data = nbt.TAG_Compound(buffer = data)
+		assert(datautils.unpack(MC_BYTE, bbuff) == nbt.TAG_COMPOUND)
+		name = nbt.TAG_String(buffer = bbuff)
+		nbt_data = nbt.TAG_Compound(buffer = bbuff)
 		nbt_data.name = name
 		packet.data['nbt'] = nbt_data
 		return packet
