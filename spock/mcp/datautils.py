@@ -88,56 +88,38 @@ def pack_position(position):
 
 # Slots are dictionaries that hold info about
 # inventory items, they also have funky
-# enchantment data stored in gziped NBT structs
+# enchantment data
 
-#TODO: We don't use compression anymore and I'm pretty sure this is wrong anyway
+#TODO: This is probably still wrong
 def unpack_slot(bbuff):
 	slot = {}
 	slot['id'] = unpack(MC_SHORT, bbuff)
 	if slot['id'] != -1:
 		slot['amount'] = unpack(MC_BYTE, bbuff)
 		slot['damage'] = unpack(MC_SHORT, bbuff)
-		length = unpack(MC_SHORT, bbuff)
-		if length > 0:
-			data = bbuff.recv(length)
-			try:
-				ench_bbuff = utils.BoundBuffer(
-					#Adding 16 to the window bits field tells zlib
-					#to take care of the gzip headers for us
-					zlib.decompress(data, 16+zlib.MAX_WBITS)
-				)
-				assert(unpack(MC_BYTE, ench_bbuff) == nbt.TAG_COMPOUND)
-				name = nbt.TAG_String(buffer = ench_bbuff)
-				ench = nbt.TAG_Compound(buffer = ench_bbuff)
-				ench.name = name
-				slot['enchants'] = ench
-			except:
-				slot['enchant_data'] = data
+		nbt_start = unpack(MC_BYTE, bbuff)
+		if nbt_start > 0:
+			assert(nbt_start == nbt.TAG_COMPOUND)
+			name = nbt.TAG_String(buffer = bbuff)
+			ench = nbt.TAG_Compound(buffer = bbuff)
+			ench.name = name
+			slot['enchants'] = ench
 	return slot
 
 def pack_slot(slot):
-	o = pack(MC_SHORT, data['id'])
-	if data['id'] != -1:
-		o += pack(MC_BYTE, data['amount'])
-		o += pack(MC_SHORT, data['damage'])
-		if 'enchantment_data' in data:
-			o += pack(MC_SHORT, len(data['enchant_data']))
-			o += data['enchant_data']
-		elif 'enchants' in data:
-			ench = data['enchants']
+	o = pack(MC_SHORT, slot['id'])
+	if slot['id'] != -1:
+		o += pack(MC_BYTE, slot['amount'])
+		o += pack(MC_SHORT, slot['damage'])
+		if 'enchants' in slot:
+			ench = slot['enchants']
 			bbuff = utils.BoundBuffer()
 			TAG_Byte(ench.id)._render_buffer(bbuff)
 			TAG_String(ench.name)._render_buffer(bbuff)
 			ench._render_buffer(bbuff)
-			#Python zlib.compress doesn't provide wbits for some reason
-			#So we'll use a compression object instead, no biggie
-			compress = zlib.compressobj(wbits = 16+zlib.MAX_WBITS)
-			ench = compress.compress(bbuff.flush())
-			ench += compress.flush()
-			o += pack(MC_SHORT, len(ench))
-			o += ench
+			o += bbuff.flush()
 		else:
-			o += pack(MC_SHORT, -1)
+			o += pack(MC_BYTE, 0)
 	return o
 
 # Metadata is a dictionary list thing that
