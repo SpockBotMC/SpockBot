@@ -211,8 +211,9 @@ class NetPlugin:
 	def handleSEND(self, name, event):
 		try:
 			sent = self.sock.send(self.net.sbuff)
-			#print('write:', sent)
 			self.net.sbuff = self.net.sbuff[sent:]
+			if self.net.sbuff:
+				self.sending = True
 		except socket.error as error:
 			#TODO: Do something here?
 			pass

@@ -685,7 +685,7 @@ packet_structs = {
 				(MC_BOOL  , 'use_title'),
 				#Extension
 					#Only present if 'inv_type' == 'EntityHorse'
-					#int 'eid'
+					#MC_INT 'eid'
 			),
 			#Close Window
 			0x2E: (
