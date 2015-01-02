@@ -209,12 +209,12 @@ class ExtensionPSTC2A:
 	def decode_extra(packet, bbuff):
 		packet.data['data'] = [
 			datautils.unpack(MC_VARINT, bbuff)
-		for i in range(datautils.particles[packet.data['id']][1])]
+		for i in range(mcdata.particles[packet.data['id']][1])]
 		return packet
 
 	def encode_extra(packet):
 		o = b''
-		for i in range(datautils.particles[packet.data['id']][1]):
+		for i in range(mcdata.particles[packet.data['id']][1]):
 			o += datautils.pack(MC_VARINT, packet.data['data'][i])
 		return o
 
