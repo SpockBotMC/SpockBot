@@ -5,7 +5,7 @@ DefaultPlugins = [
 	event.EventPlugin,
 	net.NetPlugin,
 	auth.AuthPlugin,
-	ticker.TickPlugin,
+	ticker.TickerPlugin,
 	timer.TimerPlugin,
 	start.StartPlugin,
 	keepalive.KeepalivePlugin,
