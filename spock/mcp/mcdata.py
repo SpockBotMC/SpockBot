@@ -344,7 +344,7 @@ packet_structs = {
 		SERVER_TO_CLIENT: {
 			#Keep Alive
 			0x00: (
-				(MC_INT, 'keep_alive'),
+				(MC_VARINT, 'keep_alive'),
 			),
 			#Join Game
 			0x01: (
