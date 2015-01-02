@@ -576,7 +576,7 @@ class ExtensionPCTS02:
 
 #ToDo: Set has_position True for encode based on prescence of 'block_loc'?
 #Play  CLIENT_TO_SERVER 0x14 Tab-Complete
-@extension((mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x02))
+@extension((mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x14))
 class ExtensionPCTS02:
 	def decode_extra(packet, bbuff):
 		if packet.data['has_position'] == True:
