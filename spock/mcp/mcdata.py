@@ -372,9 +372,9 @@ packet_structs = {
 			),
 			#Entity Equipment
 			0x04: (
-				(MC_INT  , 'eid'),
-				(MC_SHORT, 'slot'),
-				(MC_SLOT , 'item'),
+				(MC_VARINT, 'eid'),
+				(MC_SHORT , 'slot'),
+				(MC_SLOT  , 'item'),
 			),
 			#Spawn Position
 			0x05: (
