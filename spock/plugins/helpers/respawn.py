@@ -10,4 +10,12 @@ class RespawnPlugin:
 
 	#Update Health
 	def handle_update_health(self, name, packet):
-		print(packet)
+		#You be dead
+		print(packet.data['health'])
+		if packet.data['health'] <= 0.0:
+			self.net.push(mcpacket.Packet(
+				ident = (mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x16),
+				data = {
+					'action': mcdata.CL_STATUS_RESPAWN,
+				}
+			))
