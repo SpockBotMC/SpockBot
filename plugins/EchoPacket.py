@@ -7,5 +7,6 @@ class EchoPacketPlugin:
 			ploader.reg_event_handler(i, self.echopacket)
 
 	def echopacket(self, name, packet):
-		if packet.ident() != (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26):
+		#Dont print Chunk Data and Map Chunk Bulk
+		if packet.ident() != (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26) and packet.ident() != (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x21):
 			print(packet)
