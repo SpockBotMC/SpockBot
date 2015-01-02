@@ -19,8 +19,9 @@ class AESCipher:
 		return self.decryptifier.decrypt(data)
 
 class SelectSocket:
-	def __init__(self):
+	def __init__(self, timer):
 		self.sending = False
+		self.timer = timer
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(False)
 		self.recv = self.sock.recv
@@ -33,6 +34,9 @@ class SelectSocket:
 			slist = (self.sock,), (self.sock,), ()
 		else:
 			slist = (self.sock,), (), ()
+		timeout = self.timer.get_timeout()
+		if timeout>0:
+			slist.append(timeout)
 		try:
 			rlist, wlist, xlist = select.select(*slist)
 		except select.error as e:
@@ -51,8 +55,8 @@ class SelectSocket:
 rmask = select.POLLIN|select.POLLERR|select.POLLHUP
 smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
 class PollSocket(SelectSocket):
-	def __init__(self):
-		super().__init__()
+	def __init__(self, timer):
+		super().__init__(timer)
 		self.pollobj = select.poll()
 		self.pollobj.register(self.sock, smask)
 
@@ -64,7 +68,7 @@ class PollSocket(SelectSocket):
 		else:
 			self.pollobj.register(self.sock, rmask)
 		try:
-			poll = self.pollobj.poll()
+			poll = self.pollobj.poll(self.timer.get_timeout())
 		except select.error as e:
 			print(str(e))
 			poll = []
@@ -158,9 +162,9 @@ class NetCore:
 class NetPlugin:
 	def __init__(self, ploader, settings):
 		if sys.platform != 'win32':
-			self.sock = PollSocket()
+			self.sock = PollSocket(ploader.requires('Timers'))
 		else:
-			self.sock = SelectSocket()
+			self.sock = SelectSocket(ploader.requires('Timers'))
 		settings = ploader.requires('Settings')
 		self.bufsize = settings['bufsize']
 		self.sock_quit = settings['sock_quit']
