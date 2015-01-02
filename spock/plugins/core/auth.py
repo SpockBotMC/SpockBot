@@ -28,6 +28,7 @@ class AuthCore:
 		self.ygg = yggdrasil.YggAuth()
 
 	def start_session(self, username, password = ''):
+		rep = {}
 		if self.authenticated:
 			print(
 				"Attempting login with username:", username,
@@ -40,8 +41,11 @@ class AuthCore:
 				print('Login Unsuccessful, Response:', rep)
 				self.event.emit('AUTH_ERR')
 				return rep
-			self.selected_profile = rep['selectedProfile']
-			self.username = rep['selectedProfile']['name']
+			if 'selectedProfile' in rep:
+				self.selected_profile = rep['selectedProfile']
+				self.username = rep['selectedProfile']['name']
+			else:
+				self.username = username
 		else:
 			self.username = username
 		return rep
