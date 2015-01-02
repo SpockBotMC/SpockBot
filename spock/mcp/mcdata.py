@@ -60,6 +60,10 @@ UE_INTERACT         = 0x00
 UE_ATTACK           = 0x01
 UE_INTERACT_AT      = 0x02
 
+CL_STATUS_RESPAWN   = 0x00
+CL_STATUS_STATS     = 0x01
+CL_STATUS_INV       = 0x02
+
 data_structs = (
 	#(struct_suffix, size), #type
 	('?', 1), #bool
