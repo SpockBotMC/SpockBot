@@ -19,9 +19,8 @@ class AESCipher:
 		return self.decryptifier.decrypt(data)
 
 class SelectSocket:
-	def __init__(self, timer):
+	def __init__(self):
 		self.sending = False
-		self.timer = timer
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(False)
 		self.recv = self.sock.recv
@@ -34,9 +33,6 @@ class SelectSocket:
 			slist = (self.sock,), (self.sock,), ()
 		else:
 			slist = (self.sock,), (), ()
-		timeout = self.timer.get_timeout()
-		if timeout>0:
-			slist.append(timeout)
 		try:
 			rlist, wlist, xlist = select.select(*slist)
 		except select.error as e:
@@ -55,8 +51,8 @@ class SelectSocket:
 rmask = select.POLLIN|select.POLLERR|select.POLLHUP
 smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
 class PollSocket(SelectSocket):
-	def __init__(self, timer):
-		super().__init__(timer)
+	def __init__(self):
+		super().__init__()
 		self.pollobj = select.poll()
 		self.pollobj.register(self.sock, smask)
 
@@ -68,7 +64,7 @@ class PollSocket(SelectSocket):
 		else:
 			self.pollobj.register(self.sock, rmask)
 		try:
-			poll = self.pollobj.poll(self.timer.get_timeout())
+			poll = self.pollobj.poll()
 		except select.error as e:
 			print(str(e))
 			poll = []
@@ -106,7 +102,7 @@ class NetCore:
 		self.port = port
 		try:
 			print("Attempting to connect to host:", host, "port:", port)
-			#Set the connect to be a blocking operation 
+			#Set the connect to be a blocking operation
 			self.sock.sock.setblocking(True)
 			self.sock.sock.connect((self.host, self.port))
 			self.sock.sock.setblocking(False)
@@ -126,7 +122,7 @@ class NetCore:
 	def push(self, packet):
 		data = packet.encode(self.comp_state, self.comp_threshold)
 		self.sbuff += (self.cipher.encrypt(data) if self.encrypted else data)
-		self.event.emit(packet.ident(), packet)
+		self.event.emit(packet.ident, packet)
 		self.sock.sending = True
 
 	def read_packet(self, data = b''):
@@ -141,7 +137,7 @@ class NetCore:
 			except utils.BufferUnderflowException:
 				self.rbuff.revert()
 				break
-			self.event.emit(packet.ident(), packet)
+			self.event.emit(packet.ident, packet)
 
 	def enable_crypto(self, secret_key):
 		self.cipher = AESCipher(secret_key)
@@ -162,9 +158,9 @@ class NetCore:
 class NetPlugin:
 	def __init__(self, ploader, settings):
 		if sys.platform != 'win32':
-			self.sock = PollSocket(ploader.requires('Timers'))
+			self.sock = PollSocket()
 		else:
-			self.sock = SelectSocket(ploader.requires('Timers'))
+			self.sock = SelectSocket()
 		settings = ploader.requires('Settings')
 		self.bufsize = settings['bufsize']
 		self.sock_quit = settings['sock_quit']

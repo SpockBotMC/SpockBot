@@ -1106,15 +1106,16 @@ hashed_structs = {
 	for packet_id in packet_structs[state][direction]
 }
 
-#Lookup packets by name
-packet_idents = {
-	state_name + ("<", ">")[direction] + packet_names[state][direction][pa_id]:
-	(state, direction, pa_id)
-	for state in packet_names
-	for direction in packet_names[state]
-	for pa_id in packet_names[state][direction]
-	for state_name in ("HANDSHAKE", "STATUS", "LOGIN", "PLAY")
+state_lookup = "HANDSHAKE", "STATUS", "LOGIN", "PLAY"
+
+packet_ident2str = {
+	(state, direction, packet_id):
+	state_lookup[state] + ("<", ">")[direction] + packet_names[state][direction][packet_id]
+	for state in packet_structs
+	for direction in packet_structs[state]
+	for packet_id in packet_structs[state][direction]
 }
+packet_str2ident = {v: k for k, v in packet_ident2str.items()}
 
 #Pack the protocol more efficiently
 packet_names = tuple(tuple(packet_names[i][j] for j in (0,1)) for i in (0,1,2,3))

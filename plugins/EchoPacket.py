@@ -8,5 +8,5 @@ class EchoPacketPlugin:
 
 	def echopacket(self, name, packet):
 		#Dont print Chunk Data and Map Chunk Bulk
-		if packet.ident() != (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26) and packet.ident() != (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x21):
+		if packet.ident != (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26) and packet.ident != (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x21):
 			print(packet)

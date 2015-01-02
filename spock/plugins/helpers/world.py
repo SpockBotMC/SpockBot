@@ -1,20 +1,17 @@
 from spock.utils import pl_announce
-from spock.mcmap import smpmap2
+from spock.mcmap import smpmap
 from spock.mcp import mcdata
-
-#World loading relies pretty heavily on threading
-#Here be dragons, be careful playing with this one
 
 #TODO: Track Entities?
 
 class WorldData:
 	def __init__(self):
-		self.map = smpmap2.World()
+		self.map = smpmap.Dimension()
 		self.age = 0
 		self.time_of_day = 0
 
 	def unload(self):
-		self.map = smpmap2.World()
+		self.map = smpmap.Dimension()
 
 	def reset(self):
 		self.__init__()
@@ -23,11 +20,7 @@ class WorldData:
 class WorldPlugin:
 	def __init__(self, ploader, settings):
 		self.world = WorldData()
-		self.new_keys = []
-		self.available_keys = []
-		self.block_queue = []
 		self.event = ploader.requires('Event')
-		self.thread_pool = ploader.requires('ThreadPool')
 		ploader.provides('World', self.world)
 		ploader.reg_event_handler('tick', self.tick)
 		packets = (0x03, 0x07, 0x21, 0x22, 0x23, 0x26)
@@ -36,7 +29,7 @@ class WorldPlugin:
 		)
 		for i in range(len(packets)):
 			ploader.reg_event_handler(
-				(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, packets[i]), 
+				(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, packets[i]),
 				handlers[i]
 			)
 		for i in 'SOCKET_ERR', 'SOCKET_HUP':
@@ -53,18 +46,6 @@ class WorldPlugin:
 				)
 				self.block_queue.remove(block)
 				self.event.emit('w_block_update', o)
-
-	@staticmethod
-	def async_column_loader(world, new_keys, available_keys, data):
-		key = world.map.unpack_column(data)
-		new_keys.append(key)
-		available_keys.append(key)
-
-	@staticmethod
-	def async_bulk_loader(world, new_keys, available_keys, data):
-		keys = world.map.unpack_bulk(data)
-		new_keys.extend(keys)
-		available_keys.extend(keys)
 
 	#Time Update - Update World Time
 	def handle03(self, name, packet):
@@ -84,7 +65,7 @@ class WorldPlugin:
 	#Probably could be done synchronously, but no harm using async
 	def handle21(self, name, packet):
 		self.thread_pool.submit(
-			self.async_column_loader, self.world, 
+			self.async_column_loader, self.world,
 			self.new_keys, self.available_keys, packet.data
 		)
 
@@ -114,7 +95,7 @@ class WorldPlugin:
 	#Too slow to do synchronously
 	def handle26(self, name, packet):
 		self.thread_pool.submit(
-			self.async_bulk_loader, self.world, 
+			self.async_bulk_loader, self.world,
 			self.new_keys, self.available_keys, packet.data
 		)
 
