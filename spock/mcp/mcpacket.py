@@ -68,9 +68,9 @@ class Packet(object):
 			o += hashed_extensions[self.__hashed_ident].encode_extra(self)
 
 		if proto_comp_state == mcdata.PROTO_COMP_ON:
-			uncompressed_len = len(o) + 1
+			uncompressed_len = len(o)
 			if uncompressed_len < proto_comp_threshold:
-				header = datautils.pack(MC_VARINT, uncompressed_len)
+				header = datautils.pack(MC_VARINT, uncompressed_len + 1)
 				header += datautils.pack(MC_VARINT, 0)
 			elif uncompressed_len >= proto_comp_threshold:
 				o = zlib.compress(o, comp_level)
