@@ -23,7 +23,7 @@ class SelectSocket:
 		self.sending = False
 		self.timer = timer
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.sock.setblocking(0)
+		self.sock.setblocking(False)
 		self.recv = self.sock.recv
 		self.send = self.sock.send
 
@@ -50,7 +50,7 @@ class SelectSocket:
 	def reset(self):
 		self.sock.close()
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.sock.setblocking(0)
+		self.sock.setblocking(False)
 
 rmask = select.POLLIN|select.POLLERR|select.POLLHUP
 smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
@@ -84,7 +84,7 @@ class PollSocket(SelectSocket):
 		self.pollobj.unregister(self.sock)
 		self.sock.close()
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.sock.setblocking(0)
+		self.sock.setblocking(False)
 		self.pollobj.register(self.sock)
 
 class NetCore:
@@ -106,11 +106,14 @@ class NetCore:
 		self.port = port
 		try:
 			print("Attempting to connect to host:", host, "port:", port)
+			#Set the connect to be a blocking operation 
+			self.sock.sock.setblocking(True)
 			self.sock.sock.connect((self.host, self.port))
+			self.sock.sock.setblocking(False)
 			self.connected = True
+			print("Connected to host:", host, "port:", port)
 		except socket.error as error:
-			#print("Error on Connect (this is normal):", str(error))
-			pass
+			print("Error on Connect:", str(error))
 
 	def set_proto_state(self, state):
 		self.proto_state = state
@@ -149,6 +152,7 @@ class NetCore:
 		self.encrypted = False
 
 	def reset(self):
+		self.connected = False
 		self.sock.reset()
 		self.__init__(self.sock, self.event)
 
