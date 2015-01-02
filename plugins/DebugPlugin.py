@@ -12,9 +12,7 @@ class DebugPlugin:
 		#	ploader.reg_event_handler(packet, self.debug)
 		#ploader.reg_event_handler('tick', self.tick)
 		#ploader.reg_event_handler('w_map_chunk', self.map)
-		#ploader.reg_event_handler('w_block_update', self.block_update)
-		self.timers = ploader.requires("Timers")
-		self.timers.reg_event_timer(.05, self.timer_test, -1)
+		ploader.reg_event_handler('client_tick', self.timer_test)
 		self.old_time = 0
 
 	def debug(self, name, packet):
@@ -23,7 +21,7 @@ class DebugPlugin:
 			#print(packet)
 		#print(packet)
 
-	def timer_test(self):
+	def timer_test(self, _, __):
 		new_time = int(round(time.time() * 1000))
 		print(new_time - self.old_time)
 		self.old_time = new_time
