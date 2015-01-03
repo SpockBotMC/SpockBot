@@ -141,7 +141,8 @@ class NetCore:
 			except utils.BufferUnderflowException:
 				self.rbuff.revert()
 				break
-			self.event.emit(packet.ident, packet)
+			if packet:
+				self.event.emit(packet.ident, packet)
 
 	def enable_crypto(self, secret_key):
 		self.cipher = AESCipher(secret_key)

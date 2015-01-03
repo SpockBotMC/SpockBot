@@ -46,15 +46,21 @@ class Packet(object):
 			return None
 
 		pbuff = utils.BoundBuffer(packet_data)
-		#Ident
-		self.__ident[2] = datautils.unpack(MC_VARINT, pbuff)
-		self.ident = tuple(self.__ident)
-		#Payload
-		for dtype, name in mcdata.hashed_structs[self.ident]:
-			self.data[name] = datautils.unpack(dtype, pbuff)
-		#Extension
-		if self.ident in hashed_extensions:
-			hashed_extensions[self.ident].decode_extra(self, pbuff)
+		try:
+			#Ident
+			self.__ident[2] = datautils.unpack(MC_VARINT, pbuff)
+			self.ident = tuple(self.__ident)
+			self.str_ident = mcdata.packet_ident2str[self.ident]
+			#Payload
+			for dtype, name in mcdata.hashed_structs[self.ident]:
+				self.data[name] = datautils.unpack(dtype, pbuff)
+				#Extension
+			if self.ident in hashed_extensions:
+				hashed_extensions[self.ident].decode_extra(self, pbuff)
+		except utils.BufferUnderflowException:
+			print('Packet decode failed')
+			print('Failed packet ident is probably:', self.str_ident)
+			return None
 		return self
 
 	def encode(self, proto_comp_state, proto_comp_threshold, comp_level = 6):

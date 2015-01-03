@@ -442,7 +442,7 @@ packet_structs = {
 				(MC_INT   , 'z'),
 				(MC_BYTE  , 'pitch'),
 				(MC_BYTE  , 'yaw'),
-				(MC_INT   , 'obj_data')
+				(MC_INT   , 'obj_data'),
 				#Extension
 					#If obj_data != 0
 					#short 'speed_x'
