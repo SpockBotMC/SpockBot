@@ -33,6 +33,10 @@ STATUS_STATE        = 0x01
 LOGIN_STATE         = 0x02
 PLAY_STATE          = 0x03
 
+SMP_NETHER          =-0x01
+SMP_OVERWORLD       = 0x00
+SMP_END             = 0x01
+
 PL_ADD_PLAYER       = 0x00
 PL_UPDATE_GAMEMODE  = 0x01
 PL_UPDATE_LATENCY   = 0x02
@@ -597,7 +601,7 @@ packet_structs = {
 			#Block Change
 			0x23: (
 				(MC_POSITION, 'location'),
-				(MC_VARINT  , 'block_id'),
+				(MC_VARINT  , 'block_data'),
 			),
 			#Block Action
 			0x24: (

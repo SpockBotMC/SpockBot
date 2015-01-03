@@ -4,17 +4,21 @@ from spock.mcp import mcdata
 
 #TODO: Track Entities?
 
-class WorldData:
-	def __init__(self):
-		self.map = smpmap.Dimension()
+class WorldData(smpmap.Dimension):
+	def __init__(self, dimension = mcdata.SMP_OVERWORLD):
+		super().__init__(dimension)
 		self.age = 0
 		self.time_of_day = 0
 
-	def unload(self):
-		self.map = smpmap.Dimension()
+	def update_time(self, data):
+		self.age = data['world_age']
+		self.time_of_day = data['time_of_day']
+
+	def new_dimension(self, dimension):
+		super().__init__(dimension)
 
 	def reset(self):
-		self.__init__()
+		self.__init__(self.dimension)
 
 @pl_announce('World')
 class WorldPlugin:
@@ -22,10 +26,11 @@ class WorldPlugin:
 		self.world = WorldData()
 		self.event = ploader.requires('Event')
 		ploader.provides('World', self.world)
-		ploader.reg_event_handler('tick', self.tick)
-		packets = (0x03, 0x07, 0x21, 0x22, 0x23, 0x26)
-		handlers = (self.handle03, self.handle07, self.handle21,
-			self.handle22, self.handle23, self.handle26
+		packets = (0x01, 0x07, 0x03, 0x21, 0x22, 0x23, 0x26)
+		handlers = (
+			self.handle_new_dimension, self.handle_new_dimension,
+			self.handle03, self.handle21, self.handle22, self.handle23,
+			self.handle26
 		)
 		for i in range(len(packets)):
 			ploader.reg_event_handler(
@@ -35,73 +40,49 @@ class WorldPlugin:
 		for i in 'SOCKET_ERR', 'SOCKET_HUP':
 			ploader.reg_event_handler(i, self.handle_disconnect)
 
-	def tick(self, name, data):
-		for key in self.new_keys:
-			self.event.emit('w_map_chunk', key)
-			self.new_keys.remove(key)
-		for block in self.block_queue:
-			if (block['x']//16, block['z']//16) in self.available_keys:
-				o = self.world.map.put(
-					block['x'], block['y'], block['z'], block
-				)
-				self.block_queue.remove(block)
-				self.event.emit('w_block_update', o)
-
 	#Time Update - Update World Time
 	def handle03(self, name, packet):
-		self.world.age = packet.data['world_age']
-		self.world.time_of_day = packet.data['time_of_day']
-		self.event.emit('w_time_update')
+		self.world.update_time(packet.data)
+		self.event.emit('w_time_update', packet.data)
 
-	#Respawn - Unload the World
-	def handle07(self, name, packet):
-		self.world.unload()
-		self.new_keys = []
-		self.available_keys = []
-		self.block_queue = []
-		self.event.emit('w_map_unload')
+	#Join Game/Respawn - New Dimension
+	def handle_new_dimension(self, name, packet):
+		self.world.new_dimension(packet.data['dimension'])
+		self.event.emit('w_new_dimension', packet.data['dimension'])
 
 	#Chunk Data - Update World state
-	#Probably could be done synchronously, but no harm using async
 	def handle21(self, name, packet):
-		self.thread_pool.submit(
-			self.async_column_loader, self.world,
-			self.new_keys, self.available_keys, packet.data
-		)
+		self.world.unpack_column(packet.data)
 
 	#Multi Block Change - Update multiple blocks
 	def handle22(self, name, packet):
+		chunk_x = packet.data['chunk_x']
+		chunk_z = packet.data['chunk_z']
 		for block in packet.data['blocks']:
-			if (block['x']//16, block['z']//16) in self.available_keys:
-				o = self.world.map.put(
-					block['x'], block['y'], block['z'], block
-				)
-				self.event.emit('w_block_update', o)
-			else:
-				self.block_queue.append(block)
+			x = block['x'] + chunk_x
+			z = block['z'] + chunk_z
+			y = block['y']
+			self.world.set_block(x, y, z, data = block['block_data'])
+			self.event.emit('w_block_update', {
+				'location': {
+					'x': x,
+					'y': y,
+					'z': z,
+				},
+				'block_data': block['block_data'],
+			})
 
 	#Block Change - Update a single block
 	def handle23(self, name, packet):
-		block = packet.data
-		if (block['x']//16, block['z']//16) in self.available_keys:
-			o = self.world.map.put(
-				block['x'], block['y'], block['z'], block
-			)
-			self.event.emit('w_block_update', o)
-		else:
-			self.block_queue.append(block)
+		p = packet.data['location']
+		block_data = packet.data['block_data']
+		self.world.set_block(p['x'], p['y'], p['z'], data = block_data)
+		self.event.emit('w_block_update', packet.data)
 
 	#Map Chunk Bulk - Update World state
-	#Too slow to do synchronously
 	def handle26(self, name, packet):
-		self.thread_pool.submit(
-			self.async_bulk_loader, self.world,
-			self.new_keys, self.available_keys, packet.data
-		)
+		self.world.unpack_bulk(packet.data)
 
 	def handle_disconnect(self, name, data):
 		self.world.reset()
-		self.new_keys = []
-		self.available_keys = []
-		self.block_queue = []
 		self.event.emit('w_world_reset')

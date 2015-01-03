@@ -19,29 +19,9 @@ and so on
 
 """
 
-def calc_skylight(data, mask, continuous):
-	# Calculate the size of the packet without skylight
-	# If calculated size is less than actual size, skylight was sent
-	# Important because Nether does not send skylight data
-	primary_count = 0
-	for i in range(16):
-		if primary_bitmap&(1<<i):
-			primary_count += 1
-
-	#block_data is 2 bytes of 16*16*16, block_light is 1 byte of 16*16*8
-	size_calc = primary_count*((16*16*16)*2+(16*16*8))
-
-	#Add biome data if continuous is true
-	if continuous:
-		size_calc += 16*16
-
-	skylight = False if size_calc == len(data) else True
-
-	if skylight:
-		size_calc += primary_count*(16*16*8)
-	assert(size_calc == len(data))
-	return skylight
-
+DIMENSION_NETHER   = -0x01
+DIMENSION_OVERWOLD =  0x00
+DIMENSION_END      =  0x01
 
 class ChunkData:
 	length = 16*16*16
@@ -50,10 +30,10 @@ class ChunkData:
 
 	def fill(self):
 		if not self.data:
-			self.data = array.array(ty, [0]*self.length)
+			self.data = array.array(self.ty, [0]*self.length)
 
 	def unpack(self, buff):
-		self.data = array.array(ty, buff.read(self.length))
+		self.data = array.array(self.ty, buff.read(self.length))
 
 	def pack(self):
 		self.fill()
@@ -82,6 +62,7 @@ class BiomeData(ChunkData):
 
 class ChunkDataShort(ChunkData):
 	""" A 16x16x16 array for storing block IDs/Metadata. """
+	length = 16*16*16*2
 	ty = 'H'
 
 class ChunkDataNibble(ChunkData):
@@ -132,40 +113,38 @@ class ChunkColumn:
 	def unpack_block_data(self, buff, mask):
 		for i in range(16):
 			if mask&(1<<i):
-				if self.chunk[i] == None:
+				if self.chunks[i] == None:
 					self.chunks[i] = Chunk()
 				self.chunks[i].block_data.unpack(buff)
 
 	def unpack_light_block(self, buff, mask):
 		for i in range(16):
 			if mask&(1<<i):
-				if self.chunk[i] == None:
+				if self.chunks[i] == None:
 					self.chunks[i] = Chunk()
 				self.chunks[i].light_block.unpack(buff)
 
 	def unpack_light_sky(self, buff, mask):
 		for i in range(16):
 			if mask&(1<<i):
-				if self.chunk[i] == None:
+				if self.chunks[i] == None:
 					self.chunks[i] = Chunk()
 				self.chunks[i].light_sky.unpack(buff)
 
 class Dimension:
 	""" A bunch of ChunkColumns. """
 
-	def __init__(self):
+	def __init__(self, dimension):
+		self.dimension = dimension
 		self.columns = {} #chunk columns are address by a tuple (x, z)
 
-	def unpack_bulk(self, data, continuous):
+	def unpack_bulk(self, data):
 		skylight = data['sky_light']
-
-		# Read compressed data
-		data = utils.BoundBuffer(data['data'])
-
+		bbuff = utils.BoundBuffer(data['data'])
 		for meta in data['metadata']:
 			# Read chunk metadata
-			x_chunk = meta['x']
-			z_chunk = meta['z']
+			x_chunk = meta['chunk_x']
+			z_chunk = meta['chunk_z']
 			mask = meta['primary_bitmap']
 
 			# Grab the relevant column
@@ -174,22 +153,24 @@ class Dimension:
 				self.columns[key] = ChunkColumn()
 
 			# Unpack the chunk column data
-			self.columns[key].unpack(data, mask, skylight)
+			self.columns[key].unpack(bbuff, mask, skylight)
 
-	def unpack_column(self, data, skylight = None):
-		x_chunk = data['x_chunk']
-		z_chunk = data['z_chunk']
+	def unpack_column(self, data):
+		x_chunk = data['chunk_x']
+		z_chunk = data['chunk_z']
 		mask = data['primary_bitmap']
 		continuous = data['continuous']
-		data = BoundBuffer(data['data'])
-		if skylight == None:
-			skylight = calc_skylight(data, mask, continuous)
+		bbuff = utils.BoundBuffer(data['data'])
+		if self.dimension == DIMENSION_OVERWOLD:
+			skylight = True
+		else:
+			skylight = False
 
 		key = (x_chunk, z_chunk)
 		if key not in self.columns:
 			self.columns[key] = ChunkColumn()
 
-		self.columns[key].unpack(data, mask, skylight, continuous)
+		self.columns[key].unpack(bbuff, mask, skylight, continuous)
 
 	def get_block(self, x, y, z, block_id):
 		x, rx = divmod(x, 16)
@@ -206,7 +187,7 @@ class Dimension:
 		data = chunk.block_data.get(rx,ry,rz)
 		return data>>8, data&0xFF
 
-	def set_block(self, x, y, z, block_id, meta = 0, data = None):
+	def set_block(self, x, y, z, block_id = None, meta = None, data = None):
 		x, rx = divmod(x, 16)
 		y, ry = divmod(y, 16)
 		z, rz = divmod(z, 16)

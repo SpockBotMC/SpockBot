@@ -141,7 +141,7 @@ class ExtensionPSTC22:
 				'y': data&0xFF,
 				'z': (data>>8)&0xF,
 				'x': (data>>12)&0xF,
-				'block_id': datautils.unpack(MC_VARINT, bbuff),
+				'block_data': datautils.unpack(MC_VARINT, bbuff),
 			})
 		return packet
 
@@ -153,7 +153,7 @@ class ExtensionPSTC22:
 				((block['z']&0xF)<<8) +
 				((block['x']&0xF)<<12)
 			)
-			o += datautils.pack(MC_VARINT, block['block_id'])
+			o += datautils.pack(MC_VARINT, block['block_data'])
 		return o
 
 #Play  SERVER_TO_CLIENT 0x26 Map Chunk Bulk

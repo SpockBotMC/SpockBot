@@ -11,8 +11,8 @@ class DebugPlugin:
 		#for packet in mcdata.hashed_structs:
 		#	ploader.reg_event_handler(packet, self.debug)
 		#ploader.reg_event_handler('tick', self.tick)
-		#ploader.reg_event_handler('w_map_chunk', self.map)
-		ploader.reg_event_handler('client_tick', self.timer_test)
+		ploader.reg_event_handler('w_block_update', self.block_test)
+		#ploader.reg_event_handler('client_tick', self.timer_test)
 		self.old_time = 0
 
 	def debug(self, name, packet):
@@ -20,6 +20,10 @@ class DebugPlugin:
 			packet.data['data'] = b''
 			#print(packet)
 		#print(packet)
+
+	def block_test(self, event, block):
+		print('Block update at:', block['location'])
+		print('New block data:', block['block_data'])
 
 	def timer_test(self, _, __):
 		new_time = int(round(time.time() * 1000))
