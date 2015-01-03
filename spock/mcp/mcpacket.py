@@ -57,6 +57,9 @@ class Packet(object):
 				#Extension
 			if self.ident in hashed_extensions:
 				hashed_extensions[self.ident].decode_extra(self, pbuff)
+			#Not technically an underflow, but we want to do the same thing
+			if pbuff.flush():
+				raise utils.BufferUnderflowException
 		except utils.BufferUnderflowException:
 			print('Packet decode failed')
 			print('Failed packet ident is probably:', self.str_ident)
