@@ -117,6 +117,7 @@ class NetCore:
 
 	def set_proto_state(self, state):
 		self.proto_state = state
+		self.event.emit(mcdata.state_lookup[state] + '_STATE')
 
 	def set_comp_state(self, threshold):
 		self.comp_threshold = threshold

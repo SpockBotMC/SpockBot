@@ -3,8 +3,11 @@ PHYSICS_TICK_RATE = 0.02
 
 class TickerPlugin:
 	def __init__(self, ploader, settings):
-		self.event = ploader.requires("Event")
-		self.timers = ploader.requires("Timers")
+		self.event = ploader.requires('Event')
+		self.timers = ploader.requires('Timers')
+		ploader.reg_event_handler('PLAY_STATE', self.start_tickers)
+
+	def start_tickers(self, _, __):
 		self.timers.reg_event_timer(CLIENT_TICK_RATE, self.client_tick, -1)
 		self.timers.reg_event_timer(PHYSICS_TICK_RATE, self.physics_tick, -1)
 
