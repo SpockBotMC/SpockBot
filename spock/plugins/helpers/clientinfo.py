@@ -60,9 +60,7 @@ class ClientInfoPlugin:
 		ploader.reg_event_handler(
 			'PLAY<Player Position and Look', self.handle_update_position
 		)
-		for event in 'PLAY<Disconnect', 'SOCKET_HUP', 'SOCKET_ERR':
-			ploader.reg_event_handler(
-				event, self.handle_disconnect
+		ploader.reg_event_handler('disconnect', self.handle_disconnect
 		)
 
 		self.client_info = ClientInfo()

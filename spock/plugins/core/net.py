@@ -150,13 +150,14 @@ class NetPlugin:
 		ploader.reg_event_handler('SOCKET_SEND', self.handleSEND)
 		ploader.reg_event_handler('SOCKET_ERR', self.handleERR)
 		ploader.reg_event_handler('SOCKET_HUP', self.handleHUP)
+		ploader.reg_event_handler('PLAY<Disconnect', self.handle_disconnect)
 		ploader.reg_event_handler(
 			(mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00),
-			self.handle00
+			self.handle_handshake
 		)
 		ploader.reg_event_handler(
 			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x02),
-			self.handle02
+			self.handle_login_success
 		)
 		ploader.reg_event_handler(
 			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x03),
@@ -199,7 +200,7 @@ class NetPlugin:
 	def handleERR(self, name, data):
 		if self.sock_quit and not self.event.kill_event:
 			print("Socket Error:", data)
-			self.event.emit("disconnect", "SOCKET_ERR")
+			self.event.emit('disconnect', data)
 			self.event.kill()
 		self.net.reset()
 
@@ -207,18 +208,21 @@ class NetPlugin:
 	def handleHUP(self, name, data):
 		if self.sock_quit and not self.event.kill_event:
 			print("Socket has hung up, stopping...")
-			self.event.emit("disconnect", "SOCKET_HUP")
+			self.event.emit('disconnect', "Socket Hung Up")
 			self.event.kill()
 		self.net.reset()
 
 	#Handshake - Change to whatever the next state is going to be
-	def handle00(self, name, packet):
+	def handle_handshake(self, name, packet):
 		self.net.set_proto_state(packet.data['next_state'])
 
 	#Login Success - Change to Play state
-	def handle02(self, name, packet):
+	def handle_login_success(self, name, packet):
 		self.net.set_proto_state(mcdata.PLAY_STATE)
 
 	#Handle Set Compression packets
 	def handle_comp(self, name, packet):
 		self.net.set_comp_state(packet.data['threshold'])
+
+	def handle_disconnect(self, name, packet):
+		self.event.emit('disconnect', packet.data['reason'])
