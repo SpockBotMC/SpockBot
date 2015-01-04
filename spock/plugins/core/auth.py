@@ -9,6 +9,10 @@ from spock import utils
 from spock.mcp import mcdata, mcpacket, yggdrasil
 from spock.utils import pl_announce
 
+"""
+Provides authorization functions for Mojang's login and session servers
+"""
+
 # This function courtesy of barneygale
 def JavaHexDigest(digest):
 	d = int(digest.hexdigest(), 16)

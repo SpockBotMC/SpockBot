@@ -1,6 +1,11 @@
 CLIENT_TICK_RATE = 0.05
 PHYSICS_TICK_RATE = 0.02
 
+"""
+Registers timers to provide the necessary tick rates expected by MC servers
+"""
+
+
 class TickerPlugin:
 	def __init__(self, ploader, settings):
 		self.event = ploader.requires('Event')

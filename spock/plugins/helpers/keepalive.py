@@ -1,5 +1,10 @@
 from spock.mcp import mcdata, mcpacket
 
+"""
+KeepalivePlugin is a pretty cool guy. Eh reflects keep alive packets and doesnt
+afraid of anything.
+"""
+
 class KeepalivePlugin:
 	def __init__(self, ploader, settings):
 		self.net = ploader.requires('Net')

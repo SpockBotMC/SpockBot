@@ -3,6 +3,11 @@ import copy
 from spock.mcp import mcdata
 from spock.utils import pl_announce
 
+"""
+Provides the core event loop
+"""
+
+
 class EventCore:
 	def __init__(self):
 		self.kill_event = False

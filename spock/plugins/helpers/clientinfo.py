@@ -1,3 +1,11 @@
+"""
+ClientInfo is a central plugin for recording data about the client
+ex. Health, position, and some auxillary information like the player list
+Plugins subscribing to ClientInfo and its events don't have to independently
+track this information on their own.
+"""
+
+
 from spock.utils import pl_announce
 
 class ClientInfo:
@@ -37,13 +45,13 @@ class ClientInfo:
 
 @pl_announce('ClientInfo')
 class ClientInfoPlugin:
-	def __init__(self, ploader, settings):	
+	def __init__(self, ploader, settings):
 		self.emit = ploader.requires('Client').emit
 		ploader.reg_event_handler(0x01, self.handle01)
 		ploader.reg_event_handler(0x06, self.handle06)
 		ploader.reg_event_handler(0x08, self.handle08)
 		ploader.reg_event_handler(
-			(0x0A, 0x0B, 0x0C, 0x0D), 
+			(0x0A, 0x0B, 0x0C, 0x0D),
 			self.handle_position_update
 		)
 		ploader.reg_event_handler(0xC9, self.handleC9)
@@ -90,7 +98,7 @@ class ClientInfoPlugin:
 				del self.client_info.player_list[name]
 			except KeyError:
 				print(
-					'Tried to remove', name, 
+					'Tried to remove', name,
 					'from playerlist, but player did not exist'
 				)
 		self.emit('cl_plist_update', self.client_info.player_list)

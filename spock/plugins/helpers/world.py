@@ -4,6 +4,14 @@ from spock.mcp import mcdata
 
 #TODO: Track Entities?
 
+"""
+Provides a very raw (but very fast) world map for use by plugins.
+Plugins interested in a more comprehensive world map view will eventually be
+able to use smpmap2 to interpret data from the world plugin and its events.
+Planned to provide light level interpretation based on sky light and time of day
+"""
+
+
 class WorldData(smpmap.Dimension):
 	def __init__(self, dimension = mcdata.SMP_OVERWORLD):
 		super().__init__(dimension)

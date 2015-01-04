@@ -1,14 +1,22 @@
 from spock.mcp import mcdata, mcpacket
 
+"""
+MovementPlugin provides a centralized plugin for controlling all outgoing
+position packets so the client doesn't try to pull itself in a dozen directions.
+It is planned to provide basic pathfinding and coordinate with the physics
+plugin to implement SMP-compliant movement
+"""
+
+
 class MovementPlugin:
 	def __init__(self, ploader, settings):
 		self.net = ploader.requires('Net')
 		ploader.reg_event_handler(
-			(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x08), 
+			(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x08),
 			self.handle_position_look
 		)
 		ploader.reg_event_handler(
-			(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x07), 
+			(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x07),
 			self.handle_respawn
 		)
 		ploader.reg_event_handler('client_tick', self.client_tick)
@@ -67,6 +75,3 @@ class MovementPlugin:
 				'on_ground': False
 			}
 		))
-
-		
-		
