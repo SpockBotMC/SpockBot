@@ -104,8 +104,7 @@ class TimerPlugin:
 		self.timer_core = TimerCore(self.world)
 		ploader.provides('Timers', self.timer_core)
 		ploader.reg_event_handler('tick', self.tick)
-		ploader.reg_event_handler('SOCKET_ERR', self.handle_disconnect)
-		ploader.reg_event_handler('SOCKET_HUP', self.handle_disconnect)
+		ploader.reg_event_handler('disconnect', self.handle_disconnect)
 
 	def tick(self, name, data):
 		for timer in self.timer_core.timers:

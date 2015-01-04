@@ -37,8 +37,7 @@ class WorldPlugin:
 				(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, packets[i]),
 				handlers[i]
 			)
-		for i in 'SOCKET_ERR', 'SOCKET_HUP':
-			ploader.reg_event_handler(i, self.handle_disconnect)
+		ploader.reg_event_handler('disconnect', self.handle_disconnect)
 
 	#Time Update - Update World Time
 	def handle03(self, name, packet):

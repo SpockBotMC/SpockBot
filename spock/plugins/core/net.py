@@ -228,6 +228,7 @@ class NetPlugin:
 	def handleERR(self, name, event):
 		if self.sock_quit and not self.event.kill_event:
 			print("Socket Error has occured, stopping...")
+			self.event.emit("disconnect", "SOCKET_ERR")
 			self.event.kill()
 		self.net.reset()
 
@@ -235,6 +236,7 @@ class NetPlugin:
 	def handleHUP(self, name, event):
 		if self.sock_quit and not self.event.kill_event:
 			print("Socket has hung up, stopping...")
+			self.event.emit("disconnect", "SOCKET_HUP")
 			self.event.kill()
 		self.net.reset()
 
