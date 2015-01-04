@@ -174,7 +174,7 @@ class NetPlugin:
 		self.net = NetCore(self.sock, self.event)
 		ploader.provides('Net', self.net)
 
-		ploader.reg_event_handler('tick', self.tick)
+		ploader.reg_event_handler('event_tick', self.tick)
 		ploader.reg_event_handler('SOCKET_RECV', self.handleRECV)
 		ploader.reg_event_handler('SOCKET_SEND', self.handleSEND)
 		ploader.reg_event_handler('SOCKET_ERR', self.handleERR)
