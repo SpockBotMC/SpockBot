@@ -396,7 +396,7 @@ class ExtensionPSTC3A:
 class ExtensionPSTC3B:
 	def decode_extra(packet, bbuff):
 		action = packet.data['action']
-		if action == mcdata.SO_CREATE_BOARD or action = mcdata.SO_UPDATE_BOARD:
+		if action == mcdata.SO_CREATE_BOARD or action == mcdata.SO_UPDATE_BOARD:
 			packet.data['obj_val'] = datautils.unpack(MC_STRING, bbuff)
 			packet.data['type'] = datautils.unpack(MC_STRING, bbuff)
 		return packet

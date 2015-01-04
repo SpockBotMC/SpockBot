@@ -43,6 +43,7 @@ class SelectSocket:
 			print(str(e))
 			rlist = []
 			wlist = []
+			xlist = []
 		if rlist:         flags.append('SOCKET_RECV')
 		if wlist:         flags.append('SOCKET_SEND')
 		if xlist:         flags.append('SOCKET_ERR')
