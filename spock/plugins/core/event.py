@@ -1,12 +1,11 @@
-import signal
-import copy
-from spock.mcp import mcdata
-from spock.utils import pl_announce
-
 """
 Provides the core event loop
 """
 
+import signal
+import copy
+from spock.mcp import mcdata
+from spock.utils import pl_announce
 
 class EventCore:
 	def __init__(self):

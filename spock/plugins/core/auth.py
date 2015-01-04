@@ -1,3 +1,7 @@
+"""
+Provides authorization functions for Mojang's login and session servers
+"""
+
 import hashlib
 import urllib.request as request
 import json
@@ -8,10 +12,6 @@ from Crypto import Random
 from spock import utils
 from spock.mcp import mcdata, mcpacket, yggdrasil
 from spock.utils import pl_announce
-
-"""
-Provides authorization functions for Mojang's login and session servers
-"""
 
 # This function courtesy of barneygale
 def JavaHexDigest(digest):

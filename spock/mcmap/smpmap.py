@@ -1,8 +1,5 @@
-import array
-import struct
-from spock import utils
-
 """
+Used for storing map data
 
 Chunks are packed in X, Z, Y order
 The array walks down X, every 16 elements you enter a new Z-level
@@ -18,6 +15,10 @@ ex.
 and so on
 
 """
+
+import array
+import struct
+from spock import utils
 
 DIMENSION_NETHER   = -0x01
 DIMENSION_OVERWOLD =  0x00

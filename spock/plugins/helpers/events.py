@@ -3,7 +3,6 @@ Collection of high-level events that will hopefully one day be implemented by
 various plugins. Based on Mineflayer.
 """
 
-
 cevents = [
 	'start',
 	'chat',

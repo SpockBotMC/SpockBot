@@ -1,5 +1,3 @@
-from spock.mcp import mcdata, mcpacket
-
 """
 MovementPlugin provides a centralized plugin for controlling all outgoing
 position packets so the client doesn't try to pull itself in a dozen directions.
@@ -7,6 +5,7 @@ It is planned to provide basic pathfinding and coordinate with the physics
 plugin to implement SMP-compliant movement
 """
 
+from spock.mcp import mcdata, mcpacket
 
 class MovementPlugin:
 	def __init__(self, ploader, settings):

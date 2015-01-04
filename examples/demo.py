@@ -1,3 +1,7 @@
+"""
+Basic demo example
+"""
+
 from spock.client import Client
 from spock.plugins import DefaultPlugins
 from demoplugin import DemoPlugin

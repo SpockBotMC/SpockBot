@@ -1,9 +1,8 @@
-from spock.mcp import mcdata, mcpacket
-
 """
 RespawnPlugin's scope is huge, only KeepAlivePlugin does more
 """
 
+from spock.mcp import mcdata, mcpacket
 
 class RespawnPlugin:
 	def __init__(self, ploader, settings):

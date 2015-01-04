@@ -5,7 +5,6 @@ Plugins subscribing to ClientInfo and its events don't have to independently
 track this information on their own.
 """
 
-
 from spock.utils import pl_announce
 
 class ClientInfo:

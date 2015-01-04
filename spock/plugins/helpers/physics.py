@@ -6,7 +6,6 @@ also eventually provide functions to track other entities affected by SMP
 physics
 """
 
-
 class PhysicsPlugin:
 	def __init__(self):
 		self.world = ploader.requires('World')

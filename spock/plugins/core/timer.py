@@ -1,13 +1,12 @@
-import time
-from spock.mcp import mcdata
-from spock.utils import pl_announce
-
 """
 Provides clock-time and **SERVER** tick-timers and a convenient API for
 registering them. Clock-time timers are as precise as the underlying OS
 makes them, server tick-timers are based on time updates from the server
 """
 
+import time
+from spock.mcp import mcdata
+from spock.utils import pl_announce
 
 class BaseTimer(object):
 	def __init__(self, callback, runs = -1):
