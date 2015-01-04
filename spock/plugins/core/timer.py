@@ -10,7 +10,7 @@ makes them, server tick-timers are based on time updates from the server
 
 
 class BaseTimer(object):
-	def __init__(self, callback, runs = 1):
+	def __init__(self, callback, runs = -1):
 		self.callback = callback
 		self.runs = runs
 
@@ -88,10 +88,10 @@ class TimerCore:
 					timeout = timer.countdown()
 		return timeout
 
-	def reg_event_timer(self, wait_time, callback, runs = 1):
+	def reg_event_timer(self, wait_time, callback, runs = -1):
 		self.reg_timer(EventTimer(wait_time, callback, runs))
 
-	def reg_tick_timer(self, wait_ticks, callback, runs = 1):
+	def reg_tick_timer(self, wait_ticks, callback, runs = -1):
 		self.reg_timer(TickTimer(self.world, wait_ticks, callback, runs))
 
 class WorldTick:

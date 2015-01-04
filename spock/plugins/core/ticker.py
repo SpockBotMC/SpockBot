@@ -13,8 +13,8 @@ class TickerPlugin:
 		ploader.reg_event_handler('PLAY_STATE', self.start_tickers)
 
 	def start_tickers(self, _, __):
-		self.timers.reg_event_timer(CLIENT_TICK_RATE, self.client_tick, -1)
-		self.timers.reg_event_timer(PHYSICS_TICK_RATE, self.physics_tick, -1)
+		self.timers.reg_event_timer(CLIENT_TICK_RATE, self.client_tick)
+		self.timers.reg_event_timer(PHYSICS_TICK_RATE, self.physics_tick)
 
 	def client_tick(self):
 		self.event.emit('client_tick')

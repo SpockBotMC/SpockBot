@@ -42,7 +42,7 @@ class SelectSocket:
 		else:
 			slist = [(self.sock,), (), (self.sock,)]
 		timeout = self.timer.get_timeout()
-		if timeout>0:
+		if timeout>=0:
 			slist.append(timeout)
 		try:
 			rlist, wlist, xlist = select.select(*slist)
