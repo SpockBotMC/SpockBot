@@ -31,9 +31,9 @@ class SelectSocket:
 		flags = []
 		if self.sending:
 			self.sending = False
-			slist = (self.sock,), (self.sock,), ()
+			slist = [(self.sock,), (self.sock,), ()]
 		else:
-			slist = (self.sock,), (), ()
+			slist = [(self.sock,), (), ()]
 		timeout = self.timer.get_timeout()
 		if timeout>0:
 			slist.append(timeout)
@@ -51,41 +51,6 @@ class SelectSocket:
 		self.sock.close()
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(False)
-
-rmask = select.POLLIN|select.POLLERR|select.POLLHUP
-smask = select.POLLOUT|select.POLLIN|select.POLLERR|select.POLLHUP
-class PollSocket(SelectSocket):
-	def __init__(self, timer):
-		super().__init__(timer)
-		self.pollobj = select.poll()
-		self.pollobj.register(self.sock, smask)
-
-	def poll(self):
-		flags = []
-		if self.sending:
-			self.pollobj.register(self.sock, smask)
-			self.sending = False
-		else:
-			self.pollobj.register(self.sock, rmask)
-		try:
-			poll = self.pollobj.poll(self.timer.get_timeout())
-		except select.error as e:
-			print(str(e))
-			poll = []
-		if poll:
-			poll = poll[0][1]
-			if poll&select.POLLERR: flags.append('SOCKET_ERR')
-			if poll&select.POLLHUP: flags.append('SOCKET_HUP')
-			if poll&select.POLLIN:  flags.append('SOCKET_RECV')
-			if poll&select.POLLOUT: flags.append('SOCKET_SEND')
-		return flags
-
-	def reset(self):
-		self.pollobj.unregister(self.sock)
-		self.sock.close()
-		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.sock.setblocking(False)
-		self.pollobj.register(self.sock)
 
 class NetCore:
 	def __init__(self, sock, event):
@@ -163,14 +128,11 @@ class NetCore:
 @pl_announce('Net')
 class NetPlugin:
 	def __init__(self, ploader, settings):
-		if sys.platform != 'win32':
-			self.sock = PollSocket(ploader.requires('Timers'))
-		else:
-			self.sock = SelectSocket(ploader.requires('Timers'))
 		settings = ploader.requires('Settings')
 		self.bufsize = settings['bufsize']
 		self.sock_quit = settings['sock_quit']
 		self.event = ploader.requires('Event')
+		self.sock = SelectSocket(ploader.requires('Timers'))
 		self.net = NetCore(self.sock, self.event)
 		ploader.provides('Net', self.net)
 
@@ -201,7 +163,7 @@ class NetPlugin:
 			self.event.emit(flag)
 
 	#SOCKET_RECV - Socket is ready to recieve data
-	def handleRECV(self, name, event):
+	def handleRECV(self, name, data):
 		try:
 			data = self.sock.recv(self.bufsize)
 			#print('read:', len(data))
@@ -210,30 +172,30 @@ class NetPlugin:
 				return
 			self.net.read_packet(data)
 		except socket.error as error:
-			#TODO: Do something here?
-			pass
+			self.event.emit('SOCKET_ERR', error)
+
 
 	#SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send
-	def handleSEND(self, name, event):
+	def handleSEND(self, name, data):
 		try:
 			sent = self.sock.send(self.net.sbuff)
 			self.net.sbuff = self.net.sbuff[sent:]
 			if self.net.sbuff:
 				self.sending = True
 		except socket.error as error:
-			#TODO: Do something here?
-			pass
+			print(error)
+			self.event.emit('SOCKET_ERR', error)
 
 	#SOCKET_ERR - Socket Error has occured
-	def handleERR(self, name, event):
+	def handleERR(self, name, data):
 		if self.sock_quit and not self.event.kill_event:
-			print("Socket Error has occured, stopping...")
+			print("Socket Error:", data)
 			self.event.emit("disconnect", "SOCKET_ERR")
 			self.event.kill()
 		self.net.reset()
 
 	#SOCKET_HUP - Socket has hung up
-	def handleHUP(self, name, event):
+	def handleHUP(self, name, data):
 		if self.sock_quit and not self.event.kill_event:
 			print("Socket has hung up, stopping...")
 			self.event.emit("disconnect", "SOCKET_HUP")
