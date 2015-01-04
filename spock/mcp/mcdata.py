@@ -37,6 +37,12 @@ SMP_NETHER          =-0x01
 SMP_OVERWORLD       = 0x00
 SMP_END             = 0x01
 
+FLG_XPOS_REL        = 0x01
+FLG_YPOS_REL        = 0x02
+FLG_ZPOS_REL        = 0x04
+FLG_YROT_REL        = 0x08
+FLG_XROT_REL        = 0x10
+
 PL_ADD_PLAYER       = 0x00
 PL_UPDATE_GAMEMODE  = 0x01
 PL_UPDATE_LATENCY   = 0x02
@@ -53,6 +59,10 @@ WB_SET_CENTER       = 0x02
 WB_INITIALIZE       = 0x03
 WB_SET_WARN_TIME    = 0x04
 WB_SET_WARN_BLOCKS  = 0x05
+
+SO_CREATE_BOARD     = 0x00
+SO_REMOVE_BOARD     = 0x01
+SO_UPDATE_BOARD     = 0x02
 
 TL_TITLE            = 0x00
 TL_SUBTITLE         = 0x01
