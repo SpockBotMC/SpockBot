@@ -6,14 +6,16 @@ track this information on their own.
 """
 
 from spock.utils import pl_announce
+from spock.mcp.mcdata import (
+	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL
+)
 
 class ClientInfo:
 	def __init__(self):
 		self.eid = 0
 		self.game_info = {
 			'level_type': 0,
-			'game_mode': None,
-			'dimension': 0,
+			'gamemode': None,
 			'difficulty': 0,
 			'max_players': 0,
 		}
@@ -45,62 +47,55 @@ class ClientInfo:
 @pl_announce('ClientInfo')
 class ClientInfoPlugin:
 	def __init__(self, ploader, settings):
-		self.emit = ploader.requires('Client').emit
-		ploader.reg_event_handler(0x01, self.handle01)
-		ploader.reg_event_handler(0x06, self.handle06)
-		ploader.reg_event_handler(0x08, self.handle08)
+		self.event = ploader.requires('Event')
 		ploader.reg_event_handler(
-			(0x0A, 0x0B, 0x0C, 0x0D),
-			self.handle_position_update
+			'PLAY<Join Game', self.handle_join_game
 		)
-		ploader.reg_event_handler(0xC9, self.handleC9)
 		ploader.reg_event_handler(
-			(0xFF, 'SOCKET_ERR', 'SOCKET_HUP'),
-			self.handle_disconnect
+			'PLAY<Spawn Position', self.handle_spawn_position
+		)
+		ploader.reg_event_handler(
+			'PLAY<Update Health', self.handle_update_health
+		)
+		ploader.reg_event_handler(
+			'PLAY<Player Position and Look', self.handle_update_position
+		)
+		for event in 'PLAY<Disconnect', 'SOCKET_HUP', 'SOCKET_ERR':
+			ploader.reg_event_handler(
+				event, self.handle_disconnect
 		)
 
 		self.client_info = ClientInfo()
 		ploader.provides('ClientInfo', self.client_info)
 
 	#Login Request - Update client state info
-	def handle01(self, name, packet):
-		self.client_info.eid = packet.data['entity_id']
-		del packet.data['not_used']
-		del packet.data['entity_id']
-		self.client_info.game_info = packet.data
-		self.emit('cl_login', packet.data)
+	def handle_join_game(self, event, packet):
+		self.client_info.eid = packet.data['eid']
+		for key in self.client_info.game_info.keys():
+			self.client_info.game_info[key] = packet.data[key]
+		self.event.emit('cl_join_game', packet.data)
 
 	#Spawn Position - Update client Spawn Position state
-	def handle06(self, name, packet):
-		self.client_info.spawn_position = packet.data
-		self.emit('cl_spawn_update', packet.data)
-
+	def handle_spawn_position(self, event, packet):
+		self.client_info.spawn_position = packet.data['location']
+		self.event.emit('cl_spawn_update', packet.data['location'])
 
 	#Update Health - Update client Health state
-	def handle08(self, name, packet):
+	def handle_update_health(self, name, packet):
 		self.client_info.health = packet.data
-		self.emit('cl_health_update', packet.data)
+		self.event.emit('cl_health_update', packet.data)
 
-	#Position Update Packets - Update client Position state
-	def handle_position_update(self, name, packet):
-		for key, value in packet.data.items():
-			self.client_info.position[key] = value
-		self.emit('cl_position_update', self.client_info.position)
-
-	#Player List Item - Update PlayerList (not actually a list...)
-	def handleC9(self, name, packet):
-		name = packet.data['player_name']
-		if packet.data['online']:
-			self.client_info.player_list[name] = packet.data['ping']
-		else:
-			try:
-				del self.client_info.player_list[name]
-			except KeyError:
-				print(
-					'Tried to remove', name,
-					'from playerlist, but player did not exist'
-				)
-		self.emit('cl_plist_update', self.client_info.player_list)
+	#Player Position and Look - Update client Position state
+	def handle_update_position(self, name, packet):
+		f = packet.data['flags']
+		p = self.client_info.position
+		d = packet.data
+		p['x'] = p['x'] + d['x'] if f&FLG_XPOS_REL else d['x']
+		p['y'] = p['y'] + d['y'] if f&FLG_YPOS_REL else d['y']
+		p['z'] = p['z'] + d['z'] if f&FLG_YPOS_REL else d['z']
+		p['yaw'] = p['yaw'] + d['yaw'] if f&FLG_YROT_REL else d['yaw']
+		p['pitch'] = p['pitch'] + d['pitch'] if f&FLG_XROT_REL else d['pitch']
+		self.event.emit('cl_position_update', self.client_info.position)
 
 	def handle_disconnect(self, name, packet):
 		self.client_info.reset()

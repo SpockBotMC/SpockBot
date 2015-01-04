@@ -12,5 +12,5 @@ DefaultPlugins = [
 	respawn.RespawnPlugin,
 	move.MovementPlugin,
 	world.WorldPlugin,
-	#clientinfo.ClientInfoPlugin,
+	clientinfo.ClientInfoPlugin,
 ]

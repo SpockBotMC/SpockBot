@@ -117,6 +117,7 @@ class NetCore:
 				break
 			if packet:
 				self.event.emit(packet.ident, packet)
+				self.event.emit(packet.str_ident, packet)
 
 	def enable_crypto(self, secret_key):
 		self.cipher = AESCipher(secret_key)

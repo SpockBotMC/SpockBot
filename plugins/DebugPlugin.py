@@ -10,9 +10,9 @@ class DebugPlugin:
 	def __init__(self, ploader, settings):
 		#for packet in mcdata.hashed_structs:
 		#	ploader.reg_event_handler(packet, self.debug)
-		#ploader.reg_event_handler('tick', self.tick)
-		ploader.reg_event_handler('w_block_update', self.block_test)
+		#ploader.reg_event_handler('w_block_update', self.block_test)
 		#ploader.reg_event_handler('client_tick', self.timer_test)
+		ploader.reg_event_handler('cl_health_update', self.clinfo_test)
 		self.old_time = 0
 
 	def debug(self, name, packet):
@@ -20,6 +20,9 @@ class DebugPlugin:
 			packet.data['data'] = b''
 			#print(packet)
 		#print(packet)
+
+	def clinfo_test(self, event, data):
+		print('Health Update', data)
 
 	def block_test(self, event, block):
 		print('Block update at:', block['location'])
