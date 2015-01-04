@@ -31,9 +31,9 @@ class SelectSocket:
 		flags = []
 		if self.sending:
 			self.sending = False
-			slist = [(self.sock,), (self.sock,), ()]
+			slist = [(self.sock,), (self.sock,), (self.sock,)]
 		else:
-			slist = [(self.sock,), (), ()]
+			slist = [(self.sock,), (), (self.sock,)]
 		timeout = self.timer.get_timeout()
 		if timeout>0:
 			slist.append(timeout)
@@ -45,6 +45,7 @@ class SelectSocket:
 			wlist = []
 		if rlist:         flags.append('SOCKET_RECV')
 		if wlist:         flags.append('SOCKET_SEND')
+		if xlist:         flags.append('SOCKET_ERR')
 		return flags
 
 	def reset(self):
