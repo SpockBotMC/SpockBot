@@ -12,7 +12,7 @@ class EventCore:
 		signal.signal(signal.SIGINT, self.kill)
 		signal.signal(signal.SIGTERM, self.kill)
 		while not self.kill_event:
-			self.emit('tick')
+			self.emit('event_tick')
 		self.emit('kill')
 
 	def reg_event_handler(self, event, handler):
@@ -24,7 +24,7 @@ class EventCore:
 		if event not in self.event_handlers:
 			self.event_handlers[event] = []
 		for handler in self.event_handlers[event]:
-			handler(event, (data.clone() if hasattr(data, 'clone') 
+			handler(event, (data.clone() if hasattr(data, 'clone')
 				else copy.deepcopy(data)
 			))
 
