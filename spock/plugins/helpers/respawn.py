@@ -9,12 +9,12 @@ class RespawnPlugin:
 		self.net = ploader.requires('Net')
 		if not ploader.requires('ClientInfo'):
 			print("RespawnPlugin requires ClientInfo, bailing out")
-	ploader.reg_event_handler(
-		'death', self.handle_death
-	)
+		ploader.reg_event_handler(
+			'death', self.handle_death
+		)
 
 	#You be dead
-	def handle_death_event(self, name, data):
+	def handle_death(self, name, data):
 		self.net.push_packet(
 			'PLAY>Client Status', {'action': mcdata.CL_STATUS_RESPAWN}
 		)
