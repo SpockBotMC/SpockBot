@@ -33,16 +33,27 @@ class ClientInfo:
 			'x': 0,
 			'y': 0,
 			'z': 0,
-			'stance': 0,
 			'yaw': 0,
 			'pitch': 0,
 			'on_ground': False,
 		}
 		self.player_list = {}
 
+	def update_position(
+		self, x = None, y = None, z = None, yaw = None, pitch = None
+	):
+		if x: self.position['x'] = x
+		if y: self.position['y'] = y
+		if z: self.position['z'] = z
+		if yaw: self.position['yaw'] = yaw
+		if pitch: self.position['pitch'] = pitch
+
+	def update_position_dict(self, data):
+		for key in data.keys():
+			self.position[key] = data[key]
+
 	def reset(self):
 		self.__init__()
-
 
 @pl_announce('ClientInfo')
 class ClientInfoPlugin:
@@ -58,9 +69,10 @@ class ClientInfoPlugin:
 			'PLAY<Update Health', self.handle_update_health
 		)
 		ploader.reg_event_handler(
-			'PLAY<Player Position and Look', self.handle_update_position
+			'PLAY<Player Position and Look', self.handle_position_update
 		)
-		ploader.reg_event_handler('disconnect', self.handle_disconnect
+		ploader.reg_event_handler(
+			'disconnect', self.handle_disconnect
 		)
 
 		self.client_info = ClientInfo()
@@ -82,9 +94,11 @@ class ClientInfoPlugin:
 	def handle_update_health(self, name, packet):
 		self.client_info.health = packet.data
 		self.event.emit('cl_health_update', packet.data)
+		if packet.data['health'] <= 0.0:
+			self.event.emit('death', packet.data)
 
 	#Player Position and Look - Update client Position state
-	def handle_update_position(self, name, packet):
+	def handle_position_update(self, name, packet):
 		f = packet.data['flags']
 		p = self.client_info.position
 		d = packet.data

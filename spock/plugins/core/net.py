@@ -103,6 +103,9 @@ class NetCore:
 		self.event.emit(packet.ident, packet)
 		self.sock.sending = True
 
+	def push_packet(self, ident, data):
+		self.push(mcpacket.Packet(ident, data))
+
 	def read_packet(self, data = b''):
 		self.rbuff.append(self.cipher.decrypt(data) if self.encrypted else data)
 		while True:

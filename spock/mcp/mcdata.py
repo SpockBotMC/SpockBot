@@ -1124,11 +1124,11 @@ hashed_structs = {
 	for packet_id in packet_structs[state][direction]
 }
 
-state_lookup = "HANDSHAKE", "STATUS", "LOGIN", "PLAY"
+state_lookup = 'HANDSHAKE', 'STATUS', 'LOGIN', 'PLAY'
 
 packet_ident2str = {
 	(state, direction, packet_id):
-	state_lookup[state] + ("<", ">")[direction] + packet_names[state][direction][packet_id]
+	state_lookup[state] + ('<', '>')[direction] + packet_names[state][direction][packet_id]
 	for state in packet_structs
 	for direction in packet_structs[state]
 	for packet_id in packet_structs[state][direction]
