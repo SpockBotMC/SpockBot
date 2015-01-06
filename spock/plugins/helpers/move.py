@@ -23,8 +23,10 @@ class MovementPlugin:
 		)
 
 	def client_tick(self, name, data):
+		clpos = self.clinfo.position
+		pos = {'x': clpos['x'], 'y': clpos['y'], 'z': clpos['z'], 'on_ground': clpos['on_ground']}
 		self.net.push_packet(
-			'PLAY>Player Position and Look', self.clinfo.position
+			'PLAY>Player Position', pos
 		)
 
 	def handle_position_update(self, name, data):
