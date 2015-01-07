@@ -8,6 +8,7 @@ Planned to provide light level interpretation based on sky light and time of day
 from spock.utils import pl_announce
 from spock.mcmap import smpmap
 from spock.mcp import mcdata
+import math
 
 #TODO: Track Entities?
 
@@ -20,6 +21,17 @@ class WorldData(smpmap.Dimension):
 	def update_time(self, data):
 		self.age = data['world_age']
 		self.time_of_day = data['time_of_day']
+
+	def get_floor(self, x, y, z):
+		x, y, z = math.floor(x), math.floor(y), math.floor(z)
+		backup_y = y
+		block_id, _ = self.get_block(x, y, z)
+		while(block_id == 0 and y > 0):
+			y -= 1
+			block_id, _ = self.get_block(x, y, z)
+		if y < 0:
+			return backup_y
+		return y + 1
 
 	def new_dimension(self, dimension):
 		super().__init__(dimension)

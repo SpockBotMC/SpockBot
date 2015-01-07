@@ -173,11 +173,13 @@ class Dimension:
 
 		self.columns[key].unpack(bbuff, mask, skylight, continuous)
 
-	def get_block(self, x, y, z, block_id):
+	def get_block(self, x, y, z):
 		x, rx = divmod(x, 16)
 		y, ry = divmod(y, 16)
 		z, rz = divmod(z, 16)
 
+		if y > 0x0F:
+			return 0, 0
 		if not (x,z) in self.columns:
 			return 0, 0
 		column = self.columns[(x,z)]
@@ -186,7 +188,7 @@ class Dimension:
 			return 0, 0
 
 		data = chunk.block_data.get(rx,ry,rz)
-		return data>>8, data&0xFF
+		return data>>4, data&0x0F
 
 	def set_block(self, x, y, z, block_id = None, meta = None, data = None):
 		x, rx = divmod(x, 16)
@@ -204,7 +206,7 @@ class Dimension:
 			column.chunks[y] = chunk
 
 		if data == None:
-			data = (block_id<<8)|(meta&0xFF)
+			data = (block_id<<4)|(meta&0x0F)
 		chunk.block_data.set(rx, ry, rz, data)
 
 	def get_light(self, x, y, z):

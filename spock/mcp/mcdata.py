@@ -570,7 +570,7 @@ packet_structs = {
 				(MC_VARINT, 'eid'),
 				(MC_BYTE  , 'effect'),
 				(MC_BYTE  , 'amplifier'),
-				(MC_SHORT , 'duration'),
+				(MC_VARINT, 'duration'),
 				(MC_BOOL  , 'no_particles'),
 			),
 			#Remove Entity Effect
