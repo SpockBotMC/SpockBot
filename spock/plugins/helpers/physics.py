@@ -19,7 +19,7 @@ RIDING_ENTITY_GAV = 0.04
 BLOCK_ENTITY_GAV  = 0.04
 ARROW_ENTITY_GAV  = 0.05
 
-#Drag constants defined in 1/tick for same physics and client tick
+#Air drag constants defined in 1/tick
 PLAYER_ENTITY_DRG = 0.02
 THROWN_ENTITY_DRG = 0.01
 RIDING_ENTITY_DRG = 0.05
@@ -33,6 +33,11 @@ ARROW_ENTITY_DRG  = 0.01
 PLAYER_WLK_ACC    = 0.15
 PLAYER_SPR_ACC    = 0.20
 PLAYER_GND_DRG    = 0.41
+
+#Seems about right, not based on anything
+PLAYER_JMP_ACC    = 0.45
+
+from spock.utils import pl_announce
 
 class Vec3:
 	def __init__(self, x, y, z):
@@ -50,6 +55,16 @@ class Vec3:
 			if y: self.y += y
 			if z: self.z += z
 
+class PhysicsCore:
+	def __init__(self, vec, pos):
+		self.vec = vec
+		self.pos = pos
+
+	def jump(self):
+		if self.pos['on_ground']:
+			self.vec.add_vector(y = PLAYER_JMP_ACC)
+
+@pl_announce('Physics')
 class PhysicsPlugin:
 	def __init__(self, ploader, settings):
 		self.vec = Vec3(0, 0, 0)
@@ -57,25 +72,35 @@ class PhysicsPlugin:
 		clinfo = ploader.requires('ClientInfo')
 		self.pos = clinfo.position
 		ploader.reg_event_handler('physics_tick', self.tick)
+		ploader.provides('Physics', PhysicsCore(self.vec, self.pos))
 
 	def tick(self, _, __):
+		self.apply_gravity()
+		self.apply_horizontal_drag()
+		self.apply_vector()
+
+	def apply_gravity(self):
 		p = self.pos
 		floor = self.world.get_floor(p['x'], p['y'], p['z'])
 		if p['y'] != floor:
 			p['on_ground'] = False
 			self.vec.add_vector(y = -PLAYER_ENTITY_GAV)
-			self.apply_drag()
+			self.apply_vertical_drag()
 			if p['y'] + self.vec.y <= floor:
 				p['on_ground'] = True
 				self.vec.y = 0
 				p['y'] = floor
-		self.apply_vector()
 
-	#TODO: Apply drag to actual velocity not just vertical velocity
-	#TODO: Apply drag to ground movement
-	def apply_drag(self):
-		p = self.pos
+	def apply_vertical_drag(self):
 		self.vec.y = self.vec.y - self.vec.y*PLAYER_ENTITY_DRG
+
+	def apply_horizontal_drag(self):
+		if self.pos['on_ground']:
+			self.vec.x = self.vec.x - self.vec.x*PLAYER_GND_DRG
+			self.vec.z = self.vec.z - self.vec.z*PLAYER_GND_DRG
+		else:
+			self.vec.x = self.vec.x - self.vec.x*PLAYER_ENTITY_DRG
+			self.vec.z = self.vec.z - self.vec.z*PLAYER_ENTITY_DRG
 
 	def apply_vector(self):
 		p = self.pos

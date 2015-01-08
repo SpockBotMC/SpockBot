@@ -22,6 +22,7 @@ class WorldData(smpmap.Dimension):
 		self.age = data['world_age']
 		self.time_of_day = data['time_of_day']
 
+	#TODO: Check if block is solid, not just check for air
 	def get_floor(self, x, y, z):
 		x, y, z = math.floor(x), math.floor(y), math.floor(z)
 		backup_y = y
