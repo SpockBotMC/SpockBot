@@ -14,5 +14,6 @@ class TickerPlugin:
 		self.timers.reg_event_timer(CLIENT_TICK_RATE, self.client_tick)
 
 	def client_tick(self):
+		self.event.emit('action_tick')
 		self.event.emit('physics_tick')
 		self.event.emit('client_tick')

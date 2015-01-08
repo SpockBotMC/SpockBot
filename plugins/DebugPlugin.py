@@ -13,6 +13,10 @@ class DebugPlugin:
 		#ploader.reg_event_handler('w_block_update', self.block_test)
 		#ploader.reg_event_handler('client_tick', self.timer_test)
 		ploader.reg_event_handler('cl_health_update', self.clinfo_test)
+		self.physics = ploader.requires('Physics')
+		self.timers = ploader.requires('Timers')
+		self.timers.reg_event_timer(2, self.jump_test)
+
 		self.old_time = 0
 
 	def debug(self, name, packet):
@@ -20,6 +24,9 @@ class DebugPlugin:
 			packet.data['data'] = b''
 			#print(packet)
 		#print(packet)
+
+	def jump_test(self):
+		self.physics.jump()
 
 	def clinfo_test(self, event, data):
 		print('Health Update', data)
