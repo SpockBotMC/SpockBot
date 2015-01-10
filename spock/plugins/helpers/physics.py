@@ -37,6 +37,7 @@ PLAYER_GND_DRG    = 0.41
 #Seems about right, not based on anything
 PLAYER_JMP_ACC    = 0.45
 
+import math
 from spock.utils import pl_announce
 
 class Vec3:
@@ -55,6 +56,13 @@ class Vec3:
 			if y: self.y += y
 			if z: self.z += z
 
+"""
+Facing 0 add to Z
+Facing 90 sub from X
+Facing 180 sub from Z
+Facing -90 add to X
+"""
+
 class PhysicsCore:
 	def __init__(self, vec, pos):
 		self.vec = vec
@@ -63,6 +71,24 @@ class PhysicsCore:
 	def jump(self):
 		if self.pos['on_ground']:
 			self.vec.add_vector(y = PLAYER_JMP_ACC)
+
+	def walk(self, angle, radians = False):
+		if self.pos['on_ground']:
+			if not radians:
+				angle = math.radians(angle)
+			z = math.cos(angle)*PLAYER_WLK_ACC
+			x = math.sin(angle)*PLAYER_WLK_ACC
+			print('walking, x:', x, 'z:', z)
+			self.vec.add_vector(x = x, z = z)
+
+	def sprint(self, angle, radians = False):
+		if self.pos['on_ground']:
+			if not radians:
+				angle = math.radians(angle)
+			z = math.cos(angle)*PLAYER_SPR_ACC
+			x = math.sin(angle)*PLAYER_SPR_ACC
+			self.vec.add_vector(x = x, z = z)
+
 
 @pl_announce('Physics')
 class PhysicsPlugin:

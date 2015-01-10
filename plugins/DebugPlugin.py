@@ -10,12 +10,13 @@ class DebugPlugin:
 	def __init__(self, ploader, settings):
 		#for packet in mcdata.hashed_structs:
 		#	ploader.reg_event_handler(packet, self.debug)
+		self.physics = ploader.requires('Physics')
+		self.timers = ploader.requires('Timers')
 		#ploader.reg_event_handler('w_block_update', self.block_test)
 		#ploader.reg_event_handler('client_tick', self.timer_test)
 		ploader.reg_event_handler('cl_health_update', self.clinfo_test)
-		self.physics = ploader.requires('Physics')
-		self.timers = ploader.requires('Timers')
-		self.timers.reg_event_timer(2, self.jump_test)
+		ploader.reg_event_handler('action_tick', self.walk_test)
+		#self.timers.reg_event_timer(2, self.jump_test)
 
 		self.old_time = 0
 
@@ -24,6 +25,9 @@ class DebugPlugin:
 			packet.data['data'] = b''
 			#print(packet)
 		#print(packet)
+
+	def walk_test(self, _, __):
+		self.physics.walk(0)
 
 	def jump_test(self):
 		self.physics.jump()
