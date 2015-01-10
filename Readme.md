@@ -1,4 +1,5 @@
-Inspired by remyroy's COPS, a Minecraft client in Python. Protocol implementation based on barneymc
+Inspired by [remyroy's COPS](http://www.reddit.com/r/Civcraft/comments/13kwjm/introducing_the_cops_civcraft_online_player_status/),
+a Minecraft client in Python. Protocol implementation based on barneymc
 
 Spock currently supports Minecraft 1.8.1
 
@@ -36,7 +37,9 @@ For now you can check out the plugins folder to get a vague idea of what plugins
 should look like, find me on #mcdevs or email me at nickelpro@gmail.com if you
 have questions
 
-
+#####P.S.
+A lot of people ask what COPS was. It was a service that tracked players on a
+minecraft server called Civcraft. It looked like [this](http://www.nickg.org/dl/cops.jpg)
 ###Legal
 
 License is MIT and can be found in license.md
