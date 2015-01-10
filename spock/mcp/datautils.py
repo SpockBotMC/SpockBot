@@ -77,9 +77,13 @@ def unpack_position(bbuff):
 	val = unpack(MC_LONG, bbuff)
 	position['x'] = val>>38;
 	position['y'] = (val>>26)&0xFFF
-	position['z'] = val&0x3FFFFFF
+	z = val&0x3FFFFFF
+	if z&(1<<25):
+		z -= (1<<26)
+	position['z'] = z
 	return position
 
+#TODO: This is wrong. Doesn't return bytes, doesn't check signedness
 def pack_position(position):
 	val  = (position['x']&0x3FFFFFF)<<38
 	val |= (position['y']&0xFFF)<<26
