@@ -2,18 +2,16 @@ Personal reminders of things that needs doing
 
 ToDo
 
-* Complete Biome enum, Mineflayer is incomplete
-* Find a home for entity tracking
-* Expand/Document World API
-* Movement API
+* Pathfinding API
+* Expand World API/smpmap2
+* Make physics more correct/fix liquid physics/more correct gravity/implement creative mode flight/many other things (knockback lol)
+* "Getting Started" Guide for devs
 * Figure out inventories
-* DOCUMENTATION: ~~At least make a docs folder~~ Docs folder made!
+* Find a home for entity tracking
 * Make demo less shit
 
 Ideas
 
-* If packet can't decode, throwaway
-* Set max throwaways until shutdown
 * Spin mcp/mcmap/pluginloader out into their own packages/projects?
 * Arbitrary proto version support
 * Consider Python 2.7 support
