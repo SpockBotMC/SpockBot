@@ -71,7 +71,7 @@ class PhysicsCore:
 			if not radians:
 				angle = math.radians(angle)
 			z = math.cos(angle)*PLAYER_WLK_ACC
-			x = math.sin(angle)*PLAYER_WLK_ACCeu
+			x = math.sin(angle)*PLAYER_WLK_ACC
 			self.vec.add_vector(x = x, z = z)
 
 	def sprint(self, angle, radians = False):
