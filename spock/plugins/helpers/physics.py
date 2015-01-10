@@ -56,13 +56,6 @@ class Vec3:
 			if y: self.y += y
 			if z: self.z += z
 
-"""
-Facing 0 add to Z
-Facing 90 sub from X
-Facing 180 sub from Z
-Facing -90 add to X
-"""
-
 class PhysicsCore:
 	def __init__(self, vec, pos):
 		self.vec = vec
@@ -78,7 +71,6 @@ class PhysicsCore:
 				angle = math.radians(angle)
 			z = math.cos(angle)*PLAYER_WLK_ACC
 			x = math.sin(angle)*PLAYER_WLK_ACC
-			print('walking, x:', x, 'z:', z)
 			self.vec.add_vector(x = x, z = z)
 
 	def sprint(self, angle, radians = False):
