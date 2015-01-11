@@ -75,11 +75,11 @@ class WorldPlugin:
 
 	#Multi Block Change - Update multiple blocks
 	def handle22(self, name, packet):
-		chunk_x = packet.data['chunk_x']
-		chunk_z = packet.data['chunk_z']
+		chunk_x = packet.data['chunk_x']*16
+		chunk_z = packet.data['chunk_z']*16
 		for block in packet.data['blocks']:
-			x = block['x'] + chunk_x*16
-			z = block['z'] + chunk_z*16
+			x = block['x'] + chunk_x
+			z = block['z'] + chunk_z
 			y = block['y']
 			self.world.set_block(x, y, z, data = block['block_data'])
 			self.event.emit('w_block_update', {
