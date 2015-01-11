@@ -12,7 +12,7 @@ class DebugPlugin:
 		#	ploader.reg_event_handler(packet, self.debug)
 		self.physics = ploader.requires('Physics')
 		self.timers = ploader.requires('Timers')
-		#ploader.reg_event_handler('w_block_update', self.block_test)
+		ploader.reg_event_handler('w_block_update', self.block_test)
 		#ploader.reg_event_handler('client_tick', self.timer_test)
 		ploader.reg_event_handler('cl_health_update', self.clinfo_test)
 		ploader.reg_event_handler('action_tick', self.walk_test)
@@ -37,7 +37,7 @@ class DebugPlugin:
 
 	def block_test(self, event, block):
 		print('Block update at:', block['location'])
-		print('New block data:', block['block_data'])
+		print('New block data, id:', block['block_data']>>4, 'meta:',  block['block_data']&0x0F)
 
 	def timer_test(self, _, __):
 		new_time = int(round(time.time() * 1000))

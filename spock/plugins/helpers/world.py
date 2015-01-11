@@ -78,8 +78,8 @@ class WorldPlugin:
 		chunk_x = packet.data['chunk_x']
 		chunk_z = packet.data['chunk_z']
 		for block in packet.data['blocks']:
-			x = block['x'] + chunk_x
-			z = block['z'] + chunk_z
+			x = block['x'] + chunk_x*16
+			z = block['z'] + chunk_z*16
 			y = block['y']
 			self.world.set_block(x, y, z, data = block['block_data'])
 			self.event.emit('w_block_update', {
