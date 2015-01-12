@@ -12,6 +12,7 @@ class ChatCommandPlugin:
 	def handle_chat_message(self, name, packet):
 		chat_data = packet.data['json_data']
 		message = self.parse_chat(chat_data)
+		print('Chat:', message)
 		try:
 			command = message[message.index('!'):]
 			args = []
@@ -26,6 +27,8 @@ class ChatCommandPlugin:
 			pass
 
 	def command_handle(self, command, args):
+		if command == '':
+			return
 		print("Command:", command)
 		if command == 'jump' or command == 'j':
 			self.physics.jump()

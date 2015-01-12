@@ -21,7 +21,7 @@ class DebugPlugin:
 		self.old_time = 0
 
 	def debug(self, name, packet):
-		if packet.ident() == (mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26):
+		if packet.str_ident == 'PLAY<Map Chunk Bulk':
 			packet.data['data'] = b''
 			#print(packet)
 		#print(packet)
