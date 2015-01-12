@@ -29,6 +29,8 @@ class Packet(object):
 		return Packet(self.ident, copy.deepcopy(self.data))
 
 	def new_ident(self, ident):
+		if type(ident) is str:
+			ident = mcdata.packet_str2ident[ident]
 		self.__init__(ident, self.data)
 
 	def decode(self, bbuff, proto_comp_state):

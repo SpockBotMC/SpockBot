@@ -101,6 +101,7 @@ class NetCore:
 		data = packet.encode(self.comp_state, self.comp_threshold)
 		self.sbuff += (self.cipher.encrypt(data) if self.encrypted else data)
 		self.event.emit(packet.ident, packet)
+		self.event.emit(packet.str_ident, packet)
 		self.sock.sending = True
 
 	def push_packet(self, ident, data):
@@ -154,22 +155,10 @@ class NetPlugin:
 		ploader.reg_event_handler('SOCKET_ERR', self.handleERR)
 		ploader.reg_event_handler('SOCKET_HUP', self.handleHUP)
 		ploader.reg_event_handler('PLAY<Disconnect', self.handle_disconnect)
-		ploader.reg_event_handler(
-			(mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00),
-			self.handle_handshake
-		)
-		ploader.reg_event_handler(
-			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x02),
-			self.handle_login_success
-		)
-		ploader.reg_event_handler(
-			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x03),
-			self.handle_comp
-		)
-		ploader.reg_event_handler(
-			(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x46),
-			self.handle_comp
-		)
+		ploader.reg_event_handler('HANDSHAKE>Handshake', self.handle_handshake)
+		ploader.reg_event_handler('LOGIN<Login Success', self.handle_login_success)
+		ploader.reg_event_handler('LOGIN<Set Compression', self.handle_comp)
+		ploader.reg_event_handler('PLAY<Set Compression', self.handle_comp)
 
 	def tick(self, name, data):
 		for flag in self.sock.poll():
@@ -228,4 +217,5 @@ class NetPlugin:
 		self.net.set_comp_state(packet.data['threshold'])
 
 	def handle_disconnect(self, name, packet):
+		print("Disconnected:", packet.data['reason'])
 		self.event.emit('disconnect', packet.data['reason'])
