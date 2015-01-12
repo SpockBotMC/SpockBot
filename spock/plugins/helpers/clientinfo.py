@@ -30,11 +30,11 @@ class ClientInfo:
 			'food_saturation': 5,
 		}
 		self.position = {
-			'x': 0,
-			'y': 0,
-			'z': 0,
-			'yaw': 0,
-			'pitch': 0,
+			'x': 0.0,
+			'y': 0.0,
+			'z': 0.0,
+			'yaw': 0.0,
+			'pitch': 0.0,
 			'on_ground': False,
 		}
 		self.player_list = {}
