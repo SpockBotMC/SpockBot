@@ -160,7 +160,7 @@ def pack_metadata(metadata):
 		elif typ == 6:
 			for i in range(3):
 				o += pack(MC_INT, val[i])
-		elif typ == y:
+		elif typ == 7:
 			for i in range(3):
 				o += pack(MC_FLOAT, val[i])
 		else:
