@@ -254,7 +254,7 @@ class ExtensionPSTC34:
 		packet.data['icons'] = []
 		for i in range(datautils.unpack(MC_VARINT, bbuff)):
 			byte = datautils.unpack(MC_UBYTE, bbuff)
-			packet.icons.append({
+			packet.data['icons'].append({
 				'direction': byte>>8,
 				'type': byte&0x0F,
 				'x': datautils.unpack(MC_BYTE, bbuff),
