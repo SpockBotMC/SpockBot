@@ -483,7 +483,7 @@ packet_structs = {
 				(MC_VARINT  , 'eid'),
 				(MC_STRING  , 'title'),
 				(MC_POSITION, 'location'),
-				(MC_INT     , 'direction'),
+				(MC_UBYTE   , 'direction'),
 			),
 			#Spawn Experience Orb
 			0x11: (
