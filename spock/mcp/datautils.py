@@ -142,6 +142,8 @@ def unpack_metadata(bbuff):
 			val = unpack(metadata_lookup[typ], bbuff)
 		elif typ == 6:
 			val = [unpack(MC_INT, bbuff) for i in range(3)]
+		elif typ == 7:
+			val = [unpack(MC_FLOAT, bbuff) for i in range(3)]
 		else:
 			return None
 		metadata.append((key, (typ, val)))
@@ -158,6 +160,9 @@ def pack_metadata(metadata):
 		elif typ == 6:
 			for i in range(3):
 				o += pack(MC_INT, val[i])
+		elif typ == y:
+			for i in range(3):
+				o += pack(MC_FLOAT, val[i])
 		else:
 			return None
 	o += pack(MC_BYTE, 0x7F)
