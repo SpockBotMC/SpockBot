@@ -54,7 +54,7 @@ class YggAuth:
 		payload['password'] = self.password
 		payload['clientToken'] = client_token if client_token else self.client_token
 		rep = self._ygg_req(endpoint, payload)
-		if 'error' not in rep:
+		if rep != None and 'error' not in rep:
 			self.access_token = rep['accessToken']
 			self.client_token = rep['clientToken']
 		return rep

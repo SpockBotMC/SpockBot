@@ -39,7 +39,7 @@ class AuthCore:
 				"and password:", password
 			)
 			rep = self.ygg.authenticate(username, password)
-			if 'error' not in rep:
+			if rep != None and 'error' not in rep:
 				print(rep)
 			else:
 				print('Login Unsuccessful, Response:', rep)
