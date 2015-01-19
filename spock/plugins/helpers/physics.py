@@ -12,6 +12,9 @@ Entities and Transportation. Ideally someone will decompile the client with MCP
 and document the totally correct values and behaviors.
 """
 
+#for now hardcoded, later make use of mcmap.mapdata?
+NON_COLLISION_BLOCKS = [0,6,8,9,10,11,27,30,31,32,37,38,39,40,50,55,59,63,66,68,69,70,72,75,76,77,78,83,90,104,106,115,119,132,141,143,147,148,157]
+
 #Gravitational constants defined in blocks/(client tick)^2
 PLAYER_ENTITY_GAV = 0.08
 THROWN_ENTITY_GAV = 0.03
@@ -56,6 +59,18 @@ class Vec3:
 			if y: self.y += y
 			if z: self.z += z
 
+	def __repr__(self):
+		return "({:.2f}, {:.2f}, {:.2f})".format(self.x, self.y, self.z)
+
+class BoundingBox:
+	def __init__(self, w, h, d=None):
+		self.w = w #x
+		self.h = h #y
+		if d:
+			self.d = d #z
+		else:
+			self.d = w
+
 class PhysicsCore:
 	def __init__(self, vec, pos):
 		self.vec = vec
@@ -86,7 +101,8 @@ class PhysicsCore:
 @pl_announce('Physics')
 class PhysicsPlugin:
 	def __init__(self, ploader, settings):
-		self.vec = Vec3(0, 0, 0)
+		self.vec = Vec3(0.0, 0.0, 0.0)
+		self.playerbb = BoundingBox(0.8, 1.8) #wiki says 0.6 but I made it 0.8 to give a little wiggle room
 		self.world = ploader.requires('World')
 		clinfo = ploader.requires('ClientInfo')
 		self.pos = clinfo.position
@@ -94,9 +110,44 @@ class PhysicsPlugin:
 		ploader.provides('Physics', PhysicsCore(self.vec, self.pos))
 
 	def tick(self, _, __):
+		self.check_collision()
 		self.apply_gravity()
 		self.apply_horizontal_drag()
 		self.apply_vector()
+
+	def check_collision(self):
+		cb = Vec3(math.floor(self.pos['x']), math.floor(self.pos['y']), math.floor(self.pos['z']))
+		#feet or head collide with x
+		if self.block_collision(cb, x=1) or self.block_collision(cb, x=-1) or self.block_collision(cb, y=1, x=1) or self.block_collision(cb, y=1, x=-1):
+			self.vec.x = 0
+		#feet or head collide with z
+		if self.block_collision(cb, z=1) or self.block_collision(cb, z=-1) or self.block_collision(cb, y=1, z=1) or self.block_collision(cb, y=1, z=-1):
+			self.vec.z = 0
+		#neg y is handled by apply_gravity
+		if self.block_collision(cb, y=2): #we check +2 because above my head
+			self.vec.y = 0
+
+	def block_collision(self, cb, x = 0, y = 0, z = 0):
+		block_id, _ = self.world.get_block(cb.x+x, cb.y+y, cb.z+z)
+		#possibly we want to use the centers of blocks as the starting points for bounding boxes instead of 0,0,0
+		#this might make thinks easier when we get to more complex shapes that are in the center of a block aka fences but more complicated for the player
+		#uncenter the player position
+		pos1 = Vec3(self.pos['x']-self.playerbb.w/2, self.pos['y'], self.pos['z']-self.playerbb.d/2)
+		bb1 = self.playerbb
+		pos2 = Vec3(cb.x+x, cb.y+y, cb.z+z)
+		bb2 = self.get_bounding_box(block_id)
+		if bb2 != None:
+			if ((pos1.x + bb1.w) >= (pos2.x) and (pos1.x) <= (pos2.x + bb2.w)) and \
+				((pos1.y + bb1.h) >= (pos2.y) and (pos1.y) <= (pos2.y + bb2.h)) and \
+				((pos1.z + bb1.d) >= (pos2.z) and (pos1.z) <= (pos2.z + bb2.d)):
+				return True
+		return False
+
+	def get_bounding_box(self, blockid):
+		if blockid in NON_COLLISION_BLOCKS:
+			return None
+		else:
+			return BoundingBox(1,1)
 
 	def apply_gravity(self):
 		p = self.pos
