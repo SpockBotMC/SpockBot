@@ -33,7 +33,8 @@ class ChatCommandPlugin:
 		if command == 'jump' or command == 'j':
 			self.physics.jump()
 		elif command == 'say':
-			self.net.push_packet('PLAY>Chat Message', {'message': ' '.join(args)})
+			#self.net.push_packet('PLAY>Chat Message', {'message': ' '.join(args)})
+			pass
 		elif command == 'cmd':
 			self.net.push_packet('PLAY>Chat Message', {'message': '/' + ' '.join(args)})
 		elif command == 'slot':
