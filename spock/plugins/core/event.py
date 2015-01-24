@@ -11,10 +11,10 @@ class EventCore:
 	def __init__(self):
 		self.kill_event = False
 		self.event_handlers = {}
-
-	def event_loop(self):
 		signal.signal(signal.SIGINT, self.kill)
 		signal.signal(signal.SIGTERM, self.kill)
+
+	def event_loop(self):
 		while not self.kill_event:
 			self.emit('event_tick')
 		self.emit('kill')

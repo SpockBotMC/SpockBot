@@ -1,46 +1,42 @@
 """
-Hilariously out of date, I'll update this when it's not 3:30 in the morning
-In the meantime, go look at plugins in spock.net.plugins for more up-to-date plugin examples
+On a disconnect event, reconnects to the last connected server
 """
+from spock.mcp import mcpacket, mcdata
 
-from spock.mcp.mcpacket import Packet
-from spock.net.cflags import cflags
-from spock.net.timer import EventTimer
-
-#Will relentlessly try to reconnect to a server
 class ReConnectPlugin:
-	def __init__(self, client, settings):
-		self.client = client
-		self.lock = False
-		self.kill = False
-		self.delay = 0
+	def __init__(self, ploader, settings):
+		self.reconnecting = False
+		self.host = None
+		self.port = None
+		ploader.reg_event_handler('connect', self.connect)
+		ploader.reg_event_handler('disconnect', self.reconnect_event)
+		self.net = ploader.requires('Net')
+		self.timers = ploader.requires('Timers')
+		self.auth = ploader.requires('Auth')
+	
+	def connect(self, event, data):
+		self.host = data[0]
+		self.port = data[1]
 
-		client.register_handler(self.start_timer, cflags['SOCKET_ERR'], cflags['SOCKET_HUP'])
-		client.register_handler(self.stop, cflags['KILL_EVENT'])
-		client.register_dispatch(self.start_timer, 0xFF)
-		client.register_dispatch(self.grab_host, 0x02)
-		client.register_dispatch(self.reset_reconnect_time, 0x01)
+	def reconnect_event(self, event, data):
+		print("DISCONNECT EVENT")
+		if not self.reconnecting:
+			self.timers.reg_event_timer(1, self.reconnect, 1, True)
 
-	def start_timer(self, *args):
-		if not self.lock:
-			self.client.register_timer(EventTimer(self.delay, self.reconnect))
-			self.lock = True
+	def reconnect(self):
+		print("RECONNECT FUNC")
+		self.net.connect(self.host, self.port)
+		self.net.push(mcpacket.Packet(
+			ident = (mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00),
+			data = {
+				'protocol_version': mcdata.MC_PROTOCOL_VERSION,
+				'host': self.net.host,
+				'port': self.net.port,
+				'next_state': mcdata.LOGIN_STATE
+			}
+		))
 
-	def stop(self, *args):
-		self.kill = True
-
-	def reconnect(self, *args):
-		if not self.kill:
-			if self.delay < 300:
-				self.delay += 30
-			self.client.start_session(self.client.mc_username, self.client.mc_password)
-			self.client.login(self.host, self.port)
-			self.lock = False
-
-	def reset_reconnect_time(self, *args):
-		self.delay = 0
-
-	#Grabs host and port on handshake
-	def grab_host(self, packet):
-		self.host = packet.data['host']
-		self.port = packet.data['port']
+		self.net.push(mcpacket.Packet(
+			ident = (mcdata.LOGIN_STATE, mcdata.CLIENT_TO_SERVER, 0x00),
+			data = {'name': self.auth.username},
+		))

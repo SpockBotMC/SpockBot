@@ -19,7 +19,7 @@ class ChatCommandPlugin:
 			spacepos = command.find(' ')
 			if spacepos == -1: #no arguments
 				command = command[1:]
-			else: #have arguments, for now just ignore them
+			else: #have arguments
 				args = command[spacepos+1:].split(' ')
 				command = command[1:spacepos]
 			self.command_handle(command.strip(), args)

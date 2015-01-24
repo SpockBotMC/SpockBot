@@ -75,23 +75,27 @@ class TickTimer(BaseTimer):
 class TimerCore:
 	def __init__(self, world):
 		self.timers = []
+		self.persist_timers = []
 		self.world = world
 
-	def reg_timer(self, timer):
-		self.timers.append(timer)
+	def reg_timer(self, timer, persist = False):
+		if not persist:
+			self.timers.append(timer)
+		else:
+			self.persist_timers.append(timer)
 
 	def get_timeout(self):
 		timeout = -1
-		for timer in self.timers:
+		for timer in self.timers + self.persist_timers:
 			if timeout > timer.countdown() or timeout == -1:
 					timeout = timer.countdown()
 		return timeout
 
-	def reg_event_timer(self, wait_time, callback, runs = -1):
-		self.reg_timer(EventTimer(wait_time, callback, runs))
+	def reg_event_timer(self, wait_time, callback, runs = -1, persist = False):
+		self.reg_timer(EventTimer(wait_time, callback, runs), persist)
 
-	def reg_tick_timer(self, wait_ticks, callback, runs = -1):
-		self.reg_timer(TickTimer(self.world, wait_ticks, callback, runs))
+	def reg_tick_timer(self, wait_ticks, callback, runs = -1, persist = False):
+		self.reg_timer(TickTimer(self.world, wait_ticks, callback, runs), persist)
 
 class WorldTick:
 	def __init__(self):
@@ -117,6 +121,10 @@ class TimerPlugin:
 			timer.update()
 			if not timer.get_runs():
 				self.timer_core.timers.remove(timer)
+		for timer in self.timer_core.persist_timers:
+			timer.update()
+			if not timer.get_runs():
+				self.timer_core.persist_timers.remove(timer)
 
 	#Time Update - We grab world age if the world plugin isn't available
 	def handle03(self, name, packet):
