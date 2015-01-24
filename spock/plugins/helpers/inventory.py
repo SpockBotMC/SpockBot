@@ -9,30 +9,34 @@ class InventoryCore:
 	def __init__(self, clinfo, net):
 		self.clinfo = clinfo
 		self.net = net
+		self.action = 0
 	
 	def test_inventory(self):
-		data = {
-			'window_id': 0,
-			'slot': 36,
-			'button': 0,
-			'mode': 0,
-			'action': 1,
-			'clicked_item': self.clinfo.inventory.slots[36], 
-		}
-		self.net.push_packet(
-			'PLAY>Click Window', data
-		)
-		data = {
-			'window_id': 0,
-			'slot': 37,
-			'button': 0,
-			'mode': 0,
-			'action': 1,
-			'clicked_item': self.clinfo.inventory.slots[37], 
-		}
-		self.net.push_packet(
-			'PLAY>Click Window', data
-		)
+		for i in range(9,43):
+			self.action += 1
+			data = {
+				'window_id': 0,
+				'slot': i,
+				'button': 0,
+				'mode': 0,
+				'action': self.action,
+				'clicked_item': self.clinfo.inventory.slots[i], 
+			}
+			self.net.push_packet(
+				'PLAY>Click Window', data
+			)
+			self.action += 1
+			data = {
+				'window_id': 0,
+				'slot': i+1,
+				'button': 0,
+				'mode': 0,
+				'action': self.action,
+				'clicked_item': self.clinfo.inventory.slots[i+1], 
+			}
+			self.net.push_packet(
+				'PLAY>Click Window', data
+			)
 
 @pl_announce('Inventory')
 class InventoryPlugin:
