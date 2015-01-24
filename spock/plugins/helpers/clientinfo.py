@@ -16,7 +16,6 @@ class Info:
 	def __str__(self):
 		return str(self.__dict__)
 
-
 class Position(Info):
 	def __init__(self):
 		self.x = 0.0
@@ -26,6 +25,7 @@ class Position(Info):
 class GameInfo(Info):
 	def __init__(self):
 		self.level_type = 0
+		self.dimension = 0
 		self.gamemode = None
 		self.difficulty = 0
 		self.max_players = 0
@@ -91,7 +91,7 @@ class ClientInfoPlugin:
 	def handle_join_game(self, event, packet):
 		self.client_info.eid = packet.data['eid']
 		self.client_info.update_data(self.client_info.game_info, packet.data)
-		self.event.emit('cl_join_game', packet.data)
+		self.event.emit('cl_join_game', self.client_info.game_info)
 
 	#Spawn Position - Update client Spawn Position state
 	def handle_spawn_position(self, event, packet):
