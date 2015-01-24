@@ -11,9 +11,7 @@ handful of people (Thank you 0pteron!) to the Minecraft wiki talk page on
 Entities and Transportation. Ideally someone will decompile the client with MCP
 and document the totally correct values and behaviors.
 """
-
-#for now hardcoded, later make use of mcmap.mapdata?
-NON_COLLISION_BLOCKS = [0,6,8,9,10,11,27,30,31,32,37,38,39,40,50,55,59,63,66,68,69,70,72,75,76,77,78,83,90,104,106,115,119,132,141,143,147,148,157]
+from spock.mcmap import mapdata
 
 #Gravitational constants defined in blocks/(client tick)^2
 PLAYER_ENTITY_GAV = 0.08
@@ -144,7 +142,7 @@ class PhysicsPlugin:
 		return False
 
 	def get_bounding_box(self, blockid):
-		if blockid in NON_COLLISION_BLOCKS:
+		if blockid in mapdata.NON_COLLISION_BLOCKS:
 			return None
 		else:
 			return BoundingBox(1,1)

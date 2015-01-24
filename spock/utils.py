@@ -48,5 +48,8 @@ def pl_announce(*args):
 		return cl
 	return inner
 
+def mapshort2id(data):
+	return data>>4, data&0x0F
+
 def ByteToHex(byteStr):
 	return ''.join( [ "%02X " % x for x in byteStr ] ).strip()

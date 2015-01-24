@@ -1,1722 +1,1942 @@
 #Shamelessly stolen/adapted from Mineflayer
 
-biomes = {
-	0: {
-		'display_name': 'Ocean',
-		'temperature': 0.5,
-	},
-	1: {
-		'display_name': 'Plains',
-		'temperature': 0.8,
-	},
-	2: {
-		'display_name': 'Desert',
-		'temperature': 2,
-	},
-	3: {
-		'display_name': 'Extreme Hills',
-		'temperature': 0.2,
-	},
-	4: {
-		'display_name': 'Forest',
-		'temperature': 0.7,
-	},
-	5: {
-		'display_name': 'Taiga',
-		'temperature': 0.05,
-	},
-	6: {
-		'display_name': 'Swampland',
-		'temperature': 0.8,
-	},
-	7: {
-		'temperature': 0.5,
-	},
-	8: {
-		'display_name': 'Hell',
-		'temperature': 2,
-	},
-	9: {
-		'display_name': 'Sky',
-		'temperature': 0.5,
-	},
-	10: {
+MCM_BBOX_EMPTY  = 0x00
+MCM_BBOX_BLOCK  = 0x01
+MCM_BBOX_CUSTOM = 0x02
 
-		'display_name': 'Frozen Ocean',
-		'temperature': 0,
-	},
-	11: {
+MCM_MAT_ROCK    = 0x00
+MCM_MAT_DIRT    = 0x01
+MCM_MAT_WOOD    = 0x02
+MCM_MAT_WEB     = 0x03
+MCM_MAT_WOOL    = 0x04
+MCM_MAT_VINE    = 0x05
 
-		'display_name': 'Frozen River',
-		'temperature': 0,
-	},
-	12: {
+blocks = {}
+def map_block(block_id):
+	def inner(cl):
+		blocks[block_id] = cl
+		cl.block_id = block_id
+		return cl
+	return inner
 
-		'display_name': 'Ice Plains',
-		'temperature': 0,
-	},
-	13: {
+def get_block(block_id, meta = 0):
+	return blocks[block_id](meta) if block_id < len(blocks) else None
 
-		'display_name': 'Ice Mountains',
-		'temperature': 0,
-	},
-	14: {
+class MapBlock:
+	display_name = 'Map Block'
+	name = 'map_block'
+	hardness = 0
+	stack_size = None
+	diggable = False
+	bounding_box = MCM_BBOX_EMPTY
+	material = None
+	harvest_tools = None
 
-		'display_name': 'Mushroom Island',
-		'temperature': 0.9,
-	},
-	15: {
+	def __init__(self, meta):
+		pass
 
-		'display_name': 'Mushroom Island Shore',
-		'temperature': 0.9,
-	},
-	16: {
+	def change_meta(self, meta):
+		pass
 
-		'display_name': 'Beach',
-		'temperature': 0.8,
-	},
-	17: {
+@map_block(0)
+class AirBlock(MapBlock):
+	display_name = 'Air'
+	name = 'air'
 
-		'display_name': 'Desert Hills',
-		'temperature': 2,
-	},
-	18: {
+@map_block(1)
+class StoneBlock(MapBlock):
+	display_name = 'Stone'
+	name = 'stone'
+	hardness = 1.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
 
-		'display_name': 'Forest Hills',
-		'temperature': 0.7,
-	},
-	19: {
+@map_block(2)
+class GrassBlock(MapBlock):
+	display_name = 'Grass Block'
+	name = 'grass'
+	hardness = 0.6
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_DIRT
 
-		'display_name': 'Taiga Hills',
-		'temperature': 0.05,
-	},
-	20: {
+@map_block(3)
+class DirtBlock(MapBlock):
+	display_name = 'Dirt'
+	name = 'dirt'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_DIRT
 
-		'display_name': 'Extreme Hills Edge',
-		'temperature': 0.2,
-	},
-	21: {
+@map_block(4)
+class CobbleBlock(MapBlock):
+	display_name = 'Cobblestone'
+	name = 'stonebrick'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
 
-		'display_name': 'Jungle',
-		'temperature': 1.2,
-	},
-	22: {
+@map_block(5)
+class WoodplankBlock(MapBlock):
+	display_name = 'Wooden Planks'
+	name = 'wood'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
 
-		'display_name': 'Jungle Hills',
-		'temperature': 1.2,
-	},
-	23: {
+@map_block(6)
+class SaplingBlock(MapBlock):
+	display_name = 'Sapling'
+	name = 'sapling'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
 
-		'display_name': 'Jungle Edge',
-		'temperature': 0.95,
-	},
-	24: {
+@map_block(7)
+class BedrockBlock(MapBlock):
+	display_name = 'Bedrock'
+	name = 'bedrock'
+	hardness = None
+	stack_size = 64
+	diggable = False
+	bounding_box = MCM_BBOX_BLOCK
 
-		'display_name': 'Deep Ocean',
-		'temperature:': 0.5,
-        },
-	25: {
+@map_block(8)
+class WaterBlock(MapBlock):
+	display_name = 'Water'
+	name = 'water'
+	hardness = 100
+	stack_size = 64
+	diggable = False
+	bounding_box = MCM_BBOX_EMPTY
 
-		'display_name': 'Stone Beach',
-		'temperature:': 0.2,
-	},
-	26: {
+@map_block(9)
+class StationarywaterBlock(MapBlock):
+	display_name = 'Stationary Water'
+	name = 'waterStationary'
+	hardness = 100
+	stack_size = 64
+	diggable = False
+	bounding_box = MCM_BBOX_EMPTY
 
-		'display_name': 'Cold Beach',
-		'temperature:': 0,
-	},
-	27: {
+@map_block(10)
+class LavaBlock(MapBlock):
+	display_name = 'Lava'
+	name = 'lava'
+	hardness = 0
+	stack_size = 64
+	diggable = False
+	bounding_box = MCM_BBOX_EMPTY
 
-		'display_name': 'Birch Forest',
-		'temperature:': 0.6,
-	},
-	28: {
+@map_block(11)
+class StationarylavaBlock(MapBlock):
+	display_name = 'Stationary Lava'
+	name = 'lavaStationary'
+	hardness = 100
+	stack_size = 64
+	diggable = False
+	bounding_box = MCM_BBOX_EMPTY
 
-		'display_name': 'Birch Forest Hills',
-		'temperature:': 0.6,
-	},
-	29: {
+@map_block(12)
+class SandBlock(MapBlock):
+	display_name = 'Sand'
+	name = 'sand'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_DIRT
 
-		'display_name': 'Roofed Forest',
-		'temperature:': 0.7,
-	},
-	30: {
+@map_block(13)
+class GravelBlock(MapBlock):
+	display_name = 'Gravel'
+	name = 'gravel'
+	hardness = 0.6
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_DIRT
 
-		'display_name': 'Cold Taiga',
-		'temperature:': 0,
-	},
-	31: {
+@map_block(14)
+class GoldoreBlock(MapBlock):
+	display_name = 'Gold Ore'
+	name = 'oreGold'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (257, 278)
 
-		'display_name': 'Cold Taiga Hills',
-		'temperature:': 0,
-	},
-	32: {
+@map_block(15)
+class IronoreBlock(MapBlock):
+	display_name = 'Iron Ore'
+	name = 'oreIron'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (274, 257, 278)
 
-		'display_name': 'Mega Taiga',
-		'temperature:': 0.3,
-	},
-	33: {
+@map_block(16)
+class CoaloreBlock(MapBlock):
+	display_name = 'Coal Ore'
+	name = 'oreCoal'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
 
-		'display_name': 'Mega Taiga Hills',
-		'temperature:': 0.3,
-	},
-	34: {
+@map_block(17)
+class Woodblock(MapBlock):
+	display_name = 'Wood'
+	name = 'log'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
 
-		'display_name': 'Extreme Hills+',
-		'temperature:': 0.2,
-	},
-	35: {
+@map_block(18)
+class LeavesBlock(MapBlock):
+	display_name = 'Leaves'
+	name = 'leaves'
+	hardness = 0.2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = 'leaves'
 
-		'display_name': 'Savanna',
-		'temperature:': 1.0,
-	},
-	36: {
+@map_block(19)
+class SpongeBlock(MapBlock):
+	display_name = 'Sponge'
+	name = 'sponge'
+	hardness = 0.6
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
 
-		'display_name': 'Savanna Plateau',
-		'temperature:': 1.0,
-	},
-	37: {
+@map_block(20)
+class GlassBlock(MapBlock):
+	display_name = 'Glass'
+	name = 'glass'
+	hardness = 0.3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
 
-		'display_name': 'Mesa',
-		'temperature:': 1.0,
-	},
-	38: {
+@map_block(21)
+class LapisoreBlock(MapBlock):
+	display_name = 'Lapis Lazuli Ore'
+	name = 'oreLapis'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (274, 257, 278)
 
-		'display_name': 'Mesa Plateau F',
-		'temperature:': 1.0,
-	},
-	39: {
+@map_block(22)
+class LapisBlock(MapBlock):
+	display_name = 'Lapis Lazuli Block'
+	name = 'blockLapis'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (274, 257, 278)
 
-		'display_name': 'Mesa Plateau',
-		'temperature:': 1.0,
-	},
-	129: {
-		'display_name': 'Sunflower Plains',
-		'temperature': 0.8,
-	},
-	130: {
+@map_block(23)
+class DispenserBlock(MapBlock):
+	display_name = 'Dispenser'
+	name = 'dispenser'
+	hardness = 3.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
 
-		'display_name': 'Desert M',
-		'temperature:': 2,
-	},
-	131: {
+@map_block(24)
+class SandstoneBlock(MapBlock):
+	display_name = 'Sandstone'
+	name = 'sandStone'
+	hardness = 0.8
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
 
-		'display_name': 'Extreme Hills M',
-		'temperature:': 0.2,
-	},
-	132: {
+@map_block(25)
+class NoteBlock(MapBlock):
+	display_name = 'Note Block'
+	name = 'musicBlock'
+	hardness = 0.8
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
 
-		'display_name': 'Flower Forest',
-		'temperature:': 0.7,
-	},
-	133: {
+@map_block(26)
+class BedBlock(MapBlock):
+	display_name = 'Bed'
+	name = 'bed'
+	hardness = 0.2
+	stack_size = 1
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
 
-		'display_name': 'Taiga M',
-		'temperature:': 0.25,
-	},
-	134: {
+@map_block(27)
+class PoweredrailBlock(MapBlock):
+	display_name = 'Powered Rail'
+	name = 'goldenRail'
+	hardness = 0.7
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_ROCK
 
-		'display_name': 'Swampland M',
-		'temperature:': 0.8,
-	},
-	140: {
+@map_block(28)
+class DetectorrailBlock(MapBlock):
+	display_name = 'Detector Rail'
+	name = 'detectorRail'
+	hardness = 0.7
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_ROCK
 
-		'display_name': 'Ice Plains Spikes',
-		'temperature:': 0,
-	},
-	149: {
+@map_block(29)
+class StickypistonBlock(MapBlock):
+	display_name = 'Sticky Piston'
+	name = 'pistonStickyBase'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
 
-		'display_name': 'Jungle M',
-		'temperature:': 0.95,
-	},
-	151: {
+@map_block(30)
+class CobwebBlock(MapBlock):
+	display_name = 'Cobweb'
+	name = 'web'
+	hardness = 4
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_WEB
+	harvest_tools = (359, 267, 268, 272, 276, 283)
 
-		'display_name': 'Jungle Edge M',
-		'temperature:': 0.95,
-	},
-	155: {
+@map_block(31)
+class TallgrassBlock(MapBlock):
+	display_name = 'Grass'
+	name = 'tallgrass'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
 
-		'display_name': 'Birch Forest M',
-		'temperature:': 0.6,
-	},
-	156: {
+@map_block(32)
+class DeadbushBlock(MapBlock):
+	display_name = 'Dead Bush'
+	name = 'deadbush'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
 
-		'display_name': 'Birch Forest Hills M',
-		'temperature:': 0.6,
-	},
-	157: {
+@map_block(33)
+class PistonBlock(MapBlock):
+	display_name = 'Piston'
+	name = 'pistonBase'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
 
-		'display_name': 'Roofed Forest M',
-		'temperature:': 0.7,
-	},
-	158: {
+@map_block(34)
+class PistonextensionBlock(MapBlock):
+	display_name = 'Piston Extension'
+	name = 'pistonExtension'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
 
-		'display_name': 'Cold Taiga M',
-		'temperature:': 0,
-	},
-	160: {
+@map_block(35)
+class WoolBlock(MapBlock):
+	display_name = 'Wool'
+	name = 'cloth'
+	hardness = 0.8
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOL
 
-		'display_name': 'Mega Spruce Taiga',
-		'temperature:': 0.25,
-	},
-	161: {
+@map_block(36)
+class PistonmovedBlock(MapBlock):
+	display_name = 'Block Moved by Piston'
+	name = 'blockMovedByPiston'
+	hardness = 0
+	stack_size = 64
+	diggable = False
+	bounding_box = MCM_BBOX_BLOCK
 
-		'display_name': 'Mega Spruce Taiga Hills',
-		'temperature:': 0.25,
-	},
-	162: {
+@map_block(37)
+class FlowerBlock(MapBlock):
+	display_name = 'Flower'
+	name = 'flower'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
 
-		'display_name': 'Extreme Hills+ M',
-		'temperature:': 0.2,
-	},
-	163: {
+@map_block(38)
+class RoseBlock(MapBlock):
+	display_name = 'Rose'
+	name = 'rose'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
 
-		'display_name': 'Savanna M',
-		'temperature:': 1.0,
-	},
-	164: {
+@map_block(39)
+class BrownshroomBlock(MapBlock):
+	display_name = 'Brown Mushroom'
+	name = 'mushroomBrown'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
 
-		'display_name': 'Savanna Plateau M',
-		'temperature:': 1.0,
-	},
-	165: {
+@map_block(40)
+class RedshroomBlock(MapBlock):
+	display_name = 'Red Mushroom'
+	name = 'mushroomRed'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
 
-		'display_name': 'Mesa (Bryce)',
-		'temperature:': 1.0,
-	},
-	166: {
+@map_block(41)
+class GoldBlock(MapBlock):
+	display_name = 'Block of Gold'
+	name = 'blockGold'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (257, 278)
 
-		'display_name': 'Mesa Plateau F M',
-		'temperature:': 1.0,
-	},
-	167: {
+@map_block(42)
+class IronBlock(MapBlock):
+	display_name = 'Block of Iron'
+	name = 'blockIron'
+	hardness = 5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (274, 257, 278)
 
-		'display_name': 'Mesa Plateau M',
-		'temperature:': 1.0,
-	},
-}
+@map_block(43)
+class DoublestoneslabBlock(MapBlock):
+	display_name = 'Double Stone Slab'
+	name = 'stoneSlabDouble'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
 
-blocks = {
-	0: {
-		'display_name': 'Air',
-		'name': 'air',
-		'hardness': 0,
-		'stack_size': None,
-		'diggable': False,
-		'bounding_box': 'empty'
-	},
-	1: {
-		'display_name': 'Stone',
-		'name': 'stone',
-		'hardness': 1.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	2: {
-		'display_name': 'Grass Block',
-		'name': 'grass',
-		'hardness': 0.6,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'dirt'
-	},
-	3: {
-		'display_name': 'Dirt',
-		'name': 'dirt',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'dirt'
-	},
-	4: {
-		'display_name': 'Cobblestone',
-		'name': 'stonebrick',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	5: {
-		'display_name': 'Wooden Planks',
-		'name': 'wood',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	6: {
-		'display_name': 'Sapling',
-		'name': 'sapling',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	7: {
-		'display_name': 'Bedrock',
-		'name': 'bedrock',
-		'hardness': None,
-		'stack_size': 64,
-		'diggable': False,
-		'bounding_box': 'block'
-	},
-	8: {
-		'display_name': 'Water',
-		'name': 'water',
-		'hardness': 100,
-		'stack_size': 64,
-		'diggable': False,
-		'bounding_box': 'empty'
-	},
-	9: {
-		'display_name': 'Stationary Water',
-		'name': 'waterStationary',
-		'hardness': 100,
-		'stack_size': 64,
-		'diggable': False,
-		'bounding_box': 'empty'
-	},
-	10: {
-		'display_name': 'Lava',
-		'name': 'lava',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': False,
-		'bounding_box': 'empty'
-	},
-	11: {
-		'display_name': 'Stationary Lava',
-		'name': 'lavaStationary',
-		'hardness': 100,
-		'stack_size': 64,
-		'diggable': False,
-		'bounding_box': 'empty'
-	},
-	12: {
-		'display_name': 'Sand',
-		'name': 'sand',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'dirt'
-	},
-	13: {
-		'display_name': 'Gravel',
-		'name': 'gravel',
-		'hardness': 0.6,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'dirt'
-	},
-	14: {
-		'display_name': 'Gold Ore',
-		'name': 'oreGold',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (257, 278),
-	},
-	15: {
-		'display_name': 'Iron Ore',
-		'name': 'oreIron',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (274, 257, 278),
-	},
-	16: {
-		'display_name': 'Coal Ore',
-		'name': 'oreCoal',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	17: {
-		'display_name': 'Wood',
-		'name': 'log',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	18: {
-		'display_name': 'Leaves',
-		'name': 'leaves',
-		'hardness': 0.2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'leaves'
-	},
-	19: {
-		'display_name': 'Sponge',
-		'name': 'sponge',
-		'hardness': 0.6,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	20: {
-		'display_name': 'Glass',
-		'name': 'glass',
-		'hardness': 0.3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	21: {
-		'display_name': 'Lapis Lazuli Ore',
-		'name': 'oreLapis',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (274, 257, 278),
-	},
-	22: {
-		'display_name': 'Lapis Lazuli Block',
-		'name': 'blockLapis',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (274, 257, 278),
-	},
-	23: {
-		'display_name': 'Dispenser',
-		'name': 'dispenser',
-		'hardness': 3.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	24: {
-		'display_name': 'Sandstone',
-		'name': 'sandStone',
-		'hardness': 0.8,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	25: {
-		'display_name': 'Note Block',
-		'name': 'musicBlock',
-		'hardness': 0.8,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	26: {
-		'display_name': 'Bed',
-		'name': 'bed',
-		'hardness': 0.2,
-		'stack_size': 1,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	27: {
-		'display_name': 'Powered Rail',
-		'name': 'goldenRail',
-		'hardness': 0.7,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'rock'
-	},
-	28: {
-		'display_name': 'Detector Rail',
-		'name': 'detectorRail',
-		'hardness': 0.7,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'rock'
-	},
-	29: {
-		'display_name': 'Sticky Piston',
-		'name': 'pistonStickyBase',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	30: {
-		'display_name': 'Cobweb',
-		'name': 'web',
-		'hardness': 4,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'web',
-		'harvest_tools': (359, 267, 268, 272, 276, 283),
-	},
-	31: {
-		'display_name': 'Grass',
-		'name': 'tallgrass',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	32: {
-		'display_name': 'Dead Bush',
-		'name': 'deadbush',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	33: {
-		'display_name': 'Piston',
-		'name': 'pistonBase',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	34: {
-		'name': 'pistonExtension',
-		'display_name': 'Piston Extension',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	35: {
-		'display_name': 'Wool',
-		'name': 'cloth',
-		'hardness': 0.8,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wool'
-	},
-	36: {
-		'name': 'blockMovedByPiston',
-		'display_name': 'Block Moved by Piston',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': False,
-		'bounding_box': 'block'
-	},
-	37: {
-		'display_name': 'Flower',
-		'name': 'flower',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	38: {
-		'display_name': 'Rose',
-		'name': 'rose',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	39: {
-		'display_name': 'Brown Mushroom',
-		'name': 'mushroomBrown',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	40: {
-		'display_name': 'Red Mushroom',
-		'name': 'mushroomRed',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	41: {
-		'display_name': 'Block of Gold',
-		'name': 'blockGold',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (257, 278),
-	},
-	42: {
-		'display_name': 'Block of Iron',
-		'name': 'blockIron',
-		'hardness': 5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (274, 257, 278),
-	},
-	43: {
-		'display_name': 'Double Stone Slab',
-		'name': 'stoneSlabDouble',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	44: {
-		'display_name': 'Stone Slab',
-		'name': 'stoneSlab',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	45: {
-		'display_name': 'Bricks',
-		'name': 'brick',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	46: {
-		'display_name': 'TNT',
-		'name': 'tnt',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	47: {
-		'display_name': 'Bookshelf',
-		'name': 'bookshelf',
-		'hardness': 1.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	48: {
-		'display_name': 'Moss Stone',
-		'name': 'stoneMoss',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	49: {
-		'display_name': 'Obsidian',
-		'name': 'obsidian',
-		'hardness': 50,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (278,),
-	},
-	50: {
-		'display_name': 'Torch',
-		'name': 'torch',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	51: {
-		'display_name': 'Fire',
-		'name': 'fire',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	52: {
-		'display_name': 'Monster Spawner',
-		'name': 'mobSpawner',
-		'hardness': 5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	53: {
-		'display_name': 'Wooden Stairs',
-		'name': 'stairsWood',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	54: {
-		'display_name': 'Chest',
-		'name': 'chest',
-		'hardness': 2.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	55: {
-		'display_name': 'Redstone Dust',
-		'name': 'redstoneDust',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	56: {
-		'display_name': 'Diamond Ore',
-		'name': 'oreDiamond',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (257, 278),
-	},
-	57: {
-		'display_name': 'Block of Diamond',
-		'name': 'blockDiamond',
-		'hardness': 5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (257, 278),
-	},
-	58: {
-		'display_name': 'Crafting Table',
-		'name': 'workbench',
-		'hardness': 2.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	59: {
-		'display_name': 'Crops',
-		'name': 'crops',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	60: {
-		'display_name': 'Farmland',
-		'name': 'farmland',
-		'hardness': 0.6,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'dirt'
-	},
-	61: {
-		'display_name': 'Furnace',
-		'name': 'furnace',
-		'hardness': 3.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	62: {
-		'display_name': 'Burning Furnace',
-		'name': 'furnaceBurning',
-		'hardness': 3.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	63: {
-		'display_name': 'Sign Post',
-		'name': 'signPost',
-		'hardness': 1,
-		'stack_size': 1,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'wood'
-	},
-	64: {
-		'display_name': 'Wooden Door',
-		'name': 'doorWood',
-		'hardness': 3,
-		'stack_size': 1,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	65: {
-		'display_name': 'Ladder',
-		'name': 'ladder',
-		'hardness': 0.4,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	66: {
-		'display_name': 'Rail',
-		'name': 'rail',
-		'hardness': 0.7,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'rock'
-	},
-	67: {
-		'display_name': 'Cobblestone Stairs',
-		'name': 'stairsStone',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	68: {
-		'display_name': 'Wall Sign',
-		'name': 'signWall',
-		'hardness': 1,
-		'stack_size': 1,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	69: {
-		'display_name': 'Lever',
-		'name': 'lever',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	70: {
-		'display_name': 'Stone Pressure Plate',
-		'name': 'stonePressurePlate',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	71: {
-		'display_name': 'Iron Door',
-		'name': 'doorIron',
-		'hardness': 5,
-		'stack_size': 1,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	72: {
-		'display_name': 'Wooden Pressure Plate',
-		'name': 'woodPressurePlate',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'wood'
-	},
-	73: {
-		'display_name': 'Redstone Ore',
-		'name': 'oreRedstone',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (257, 278),
-	},
-	74: {
-		'display_name': 'Glowing Redstone Ore',
-		'name': 'oreRedstoneGlowing',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (257, 278),
-	},
-	75: {
-		'display_name': 'Redstone Torch (Inactive)',
-		'name': 'notGateInactive',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	76: {
-		'display_name': 'Redstone Torch (Active)',
-		'name': 'notGateActive',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	77: {
-		'display_name': 'Stone Button',
-		'name': 'buttonStone',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	78: {
-		'display_name': 'Snow',
-		'name': 'snow',
-		'hardness': 0.1,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'dirt',
-		'harvest_tools': (269, 273, 256, 277, 284),
-	},
-	79: {
-		'display_name': 'Ice',
-		'name': 'ice',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock'
-	},
-	80: {
-		'display_name': 'Snow Block',
-		'name': 'snowBlock',
-		'hardness': 0.2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'dirt',
-		'harvest_tools': (269, 273, 256, 277, 284),
-	},
-	81: {
-		'display_name': 'Cactus',
-		'name': 'cactus',
-		'hardness': 0.4,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	82: {
-		'display_name': 'Clay',
-		'name': 'clay',
-		'hardness': 0.6,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'dirt'
-	},
-	83: {
-		'display_name': 'Sugar cane',
-		'name': 'reeds',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	84: {
-		'display_name': 'Jukebox',
-		'name': 'jukebox',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	85: {
-		'display_name': 'Fence',
-		'name': 'fence',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	86: {
-		'display_name': 'Pumpkin',
-		'name': 'pumpkin',
-		'hardness': 1,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'plant'
-	},
-	87: {
-		'display_name': 'Netherrack',
-		'name': 'hellrock',
-		'hardness': 0.4,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	88: {
-		'display_name': 'Soul Sand',
-		'name': 'hellsand',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'dirt'
-	},
-	89: {
-		'display_name': 'Glowstone',
-		'name': 'lightgem',
-		'hardness': 0.3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	90: {
-		'display_name': 'Portal',
-		'name': 'portal',
-		'hardness': None,
-		'stack_size': 64,
-		'diggable': False,
-		'bounding_box': 'empty'
-	},
-	91: {
-		'display_name': 'Jack \'o\' Lantern',
-		'name': 'litpumpkin',
-		'hardness': 1,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'plant'
-	},
-	92: {
-		'display_name': 'Cake',
-		'name': 'cake',
-		'hardness': 0.5,
-		'stack_size': 1,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	93: {
-		'display_name': 'Redstone Repeater (Inactive)',
-		'name': 'redstoneRepeaterInactive',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	94: {
-		'display_name': 'Redstone Repeater (Active)',
-		'name': 'redstoneRepeaterActive',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	95: {
-		'display_name': 'Locked chest',
-		'name': 'lockedchest',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	96: {
-		'display_name': 'Trapdoor',
-		'name': 'trapdoor',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	97: {
-		'display_name': 'Monster Egg',
-		'name': 'monsterStoneEgg',
-		'hardness': 0.75,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	98: {
-		'display_name': 'Stone Brick',
-		'name': 'stonebricksmooth',
-		'hardness': 1.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	99: {
-		'display_name': 'Huge Brown Mushroom',
-		'name': 'mushroomHugeBrown',
-		'hardness': 0.2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	100: {
-		'display_name': 'Huge Red Mushroom',
-		'name': 'mushroomHugeRed',
-		'hardness': 0.2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	101: {
-		'display_name': 'Iron Bars',
-		'name': 'fenceIron',
-		'hardness': 5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	102: {
-		'display_name': 'Glass Pane',
-		'name': 'thinGlass',
-		'hardness': 0.3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	103: {
-		'display_name': 'Melon',
-		'name': 'melon',
-		'hardness': 1,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'melon'
-	},
-	104: {
-		'display_name': 'Pumpkin Stem',
-		'name': 'pumpkinStem',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	105: {
-		'display_name': 'Melon Stem',
-		'name': 'melonStem',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	106: {
-		'display_name': 'Vines',
-		'name': 'vine',
-		'hardness': 0.2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'plant'
-	},
-	107: {
-		'display_name': 'Fence Gate',
-		'name': 'fenceGate',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	108: {
-		'display_name': 'Brick Stairs',
-		'name': 'stairsBrick',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	109: {
-		'display_name': 'Stone Brick Stairs',
-		'name': 'stairsStoneBrickSmooth',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	110: {
-		'display_name': 'Mycelium',
-		'name': 'mycel',
-		'hardness': 0.6,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'dirt'
-	},
-	111: {
-		'display_name': 'Lily Pad',
-		'name': 'waterlily',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	112: {
-		'display_name': 'Nether Brick',
-		'name': 'netherBrick',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	113: {
-		'display_name': 'Nether Brick Fence',
-		'name': 'netherFence',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	114: {
-		'display_name': 'Nether Brick Stairs',
-		'name': 'stairsNetherBrick',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	115: {
-		'display_name': 'Nether Wart',
-		'name': 'netherStalk',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	116: {
-		'display_name': 'Enchantment Table',
-		'name': 'enchantmentTable',
-		'hardness': 5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	117: {
-		'display_name': 'Brewing Stand',
-		'name': 'brewingStand',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	118: {
-		'display_name': 'Cauldron',
-		'name': 'cauldron',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	119: {
-		'name': 'endPortal',
-		'display_name': 'End Portal',
-		'hardness': None,
-		'stack_size': 64,
-		'diggable': False,
-		'bounding_box': 'empty'
-	},
-	120: {
-		'display_name': 'End Portal Frame',
-		'name': 'endPortalFrame',
-		'hardness': None,
-		'stack_size': 64,
-		'diggable': False,
-		'bounding_box': 'block'
-	},
-	121: {
-		'display_name': 'End Stone',
-		'name': 'whiteStone',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	122: {
-		'display_name': 'Dragon Egg',
-		'name': 'dragonEgg',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	123: {
-		'display_name': 'Redstone Lamp (Inactive)',
-		'name': 'redstoneLightInactive',
-		'hardness': 0.3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	124: {
-		'display_name': 'Redstone Lamp (Active)',
-		'name': 'redstoneLightActive',
-		'hardness': 0.3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	125: {
-		'display_name': 'Wooden Double Slab',
-		'name': 'woodSlabDouble',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	126: {
-		'display_name': 'Wooden Slab',
-		'name': 'woodSlab',
-		'hardness': 2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	127: {
-		'display_name': 'Cocoa Pod',
-		'name': 'cocoa',
-		'hardness': 0.2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'plant'
-	},
-	128: {
-		'display_name': 'Sandstone Stairs',
-		'name': 'stairsSandStone',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	129: {
-		'display_name': 'Emerald Ore',
-		'name': 'oreEmerald',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (257, 278),
-	},
-	130: {
-		'display_name': 'Ender Chest',
-		'name': 'enderChest',
-		'hardness': 22.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	131: {
-		'display_name': 'Tripwire Hook',
-		'name': 'tripWireSource',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	132: {
-		'display_name': 'Tripwire',
-		'name': 'tripWire',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	133: {
-		'display_name': 'Block of Emerald',
-		'name': 'blockEmerald',
-		'hardness': 5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (257, 278),
-	},
-	134: {
-		'display_name': 'Spruce Wood Stairs',
-		'name': 'stairsWoodSpruce',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	135: {
-		'display_name': 'Birch Wood Stairs',
-		'name': 'stairsWoodBirch',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	136: {
-		'display_name': 'Jungle Wood Stairs',
-		'name': 'stairsWoodJungle',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	137: {
-		'display_name': 'Command Block',
-		'name': 'commandBlock',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	138: {
-		'display_name': 'Beacon',
-		'name': 'beacon',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	139: {
-		'display_name': 'Cobblestone Wall',
-		'name': 'cobbleWall',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	140: {
-		'display_name': 'Flower Pot',
-		'name': 'flowerPot',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	141: {
-		'display_name': 'Carrots',
-		'name': 'carrots',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	142: {
-		'display_name': 'Potatoes',
-		'name': 'potatoes',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	143: {
-		'display_name': 'Wooden Button',
-		'name': 'buttonWood',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty'
-	},
-	144: {
-		'display_name': 'Mob Head',
-		'name': 'skull',
-		'hardness': 1,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	145: {
-		'display_name': 'Anvil',
-		'name': 'anvil',
-		'hardness': 5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	146: {
-		'display_name': 'Trapped Chest',
-		'name': 'trappedChest',
-		'hardness': 2.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	147: {
-		'display_name': 'Weighted Pressure plate (Light)',
-		'name': 'pressurePlateWeightedLight',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	148: {
-		'display_name': 'Weighted Pressure plate (Heavy)',
-		'name': 'pressurePlateWeightedHeavy',
-		'hardness': 0.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	149: {
-		'display_name': 'Redstone Comparator (Inactive)',
-		'name': 'redstoneComparatorInactive',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	150: {
-		'display_name': 'Redstone Comparator (Active)',
-		'name': 'redstoneComparatorActive',
-		'hardness': 0,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block'
-	},
-	151: {
-		'display_name': 'Daylight Sensor',
-		'name': 'daylightSensor',
-		'hardness': 0.2,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'wood'
-	},
-	152: {
-		'display_name': 'Block of Redstone',
-		'name': 'redstoneBlock',
-		'hardness': 5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	153: {
-		'display_name': 'Nether Quartz Ore',
-		'name': 'netherQuartzOre',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	154: {
-		'display_name': 'Hopper',
-		'name': 'hopper',
-		'hardness': 3,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	155: {
-		'display_name': 'Block of Quartz',
-		'name': 'quartzBlock',
-		'hardness': 0.8,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	156: {
-		'display_name': 'Quartz Stairs',
-		'name': 'quartzStairs',
-		'hardness': 0.8,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-	157: {
-		'display_name': 'Activator Rail',
-		'name': 'activatorRail',
-		'hardness': 0.7,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'empty',
-		'material': 'rock'
-	},
-	158: {
-		'display_name': 'Dropper',
-		'name': 'dropper',
-		'hardness': 3.5,
-		'stack_size': 64,
-		'diggable': True,
-		'bounding_box': 'block',
-		'material': 'rock',
-		'harvest_tools': (270, 274, 257, 278, 285),
-	},
-}
+@map_block(44)
+class StoneslabBlock(MapBlock):
+	display_name = 'Stone Slab'
+	name = 'stoneSlab'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(45)
+class BricksBlock(MapBlock):
+	display_name = 'Bricks'
+	name = 'brick'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(46)
+class TntBlock(MapBlock):
+	display_name = 'TNT'
+	name = 'tnt'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(47)
+class BookshelfBlock(MapBlock):
+	display_name = 'Bookshelf'
+	name = 'bookshelf'
+	hardness = 1.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(48)
+class MossstoneBlock(MapBlock):
+	display_name = 'Moss Stone'
+	name = 'stoneMoss'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(49)
+class ObsidianBlock(MapBlock):
+	display_name = 'Obsidian'
+	name = 'obsidian'
+	hardness = 50
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (278,)
+
+@map_block(50)
+class TorchBlock(MapBlock):
+	display_name = 'Torch'
+	name = 'torch'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(51)
+class FireBlock(MapBlock):
+	display_name = 'Fire'
+	name = 'fire'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(52)
+class MobspawnerBlock(MapBlock):
+	display_name = 'Monster Spawner'
+	name = 'mobSpawner'
+	hardness = 5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(53)
+class WoodstairBlock(MapBlock):
+	display_name = 'Wooden Stairs'
+	name = 'stairsWood'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(54)
+class ChestBlock(MapBlock):
+	display_name = 'Chest'
+	name = 'chest'
+	hardness = 2.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(55)
+class RedstonedustBlock(MapBlock):
+	display_name = 'Redstone Dust'
+	name = 'redstoneDust'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(56)
+class DiamondoreBlock(MapBlock):
+	display_name = 'Diamond Ore'
+	name = 'oreDiamond'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (257, 278)
+
+@map_block(57)
+class DiamondBlock(MapBlock):
+	display_name = 'Block of Diamond'
+	name = 'blockDiamond'
+	hardness = 5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (257, 278)
+
+@map_block(58)
+class CraftingBlock(MapBlock):
+	display_name = 'Crafting Table'
+	name = 'workbench'
+	hardness = 2.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(59)
+class CropsBlock(MapBlock):
+	display_name = 'Wheat Crops'
+	name = 'wheat'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(60)
+class FarmBlock(MapBlock):
+	display_name = 'Farmland'
+	name = 'farmland'
+	hardness = 0.6
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_DIRT
+
+@map_block(61)
+class FurnaceBlock(MapBlock):
+	display_name = 'Furnace'
+	name = 'furnace'
+	hardness = 3.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(62)
+class BurningfurnaceBlock(MapBlock):
+	display_name = 'Burning Furnace'
+	name = 'furnaceBurning'
+	hardness = 3.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(63)
+class StandingsignBlock(MapBlock):
+	display_name = 'Sign Post'
+	name = 'signPost'
+	hardness = 1
+	stack_size = 1
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_WOOD
+
+@map_block(64)
+class WooddoorBlock(MapBlock):
+	display_name = 'Wooden Door'
+	name = 'doorWood'
+	hardness = 3
+	stack_size = 1
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(65)
+class LadderBlock(MapBlock):
+	display_name = 'Ladder'
+	name = 'ladder'
+	hardness = 0.4
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(66)
+class RailBlock(MapBlock):
+	display_name = 'Rail'
+	name = 'rail'
+	hardness = 0.7
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_ROCK
+
+@map_block(67)
+class CobblestairBlock(MapBlock):
+	display_name = 'Cobblestone Stairs'
+	name = 'stairsStone'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(68)
+class WallsignBlock(MapBlock):
+	display_name = 'Wall Sign'
+	name = 'signWall'
+	hardness = 1
+	stack_size = 1
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(69)
+class LeverBlock(MapBlock):
+	display_name = 'Lever'
+	name = 'lever'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(70)
+class StoneplateBlock(MapBlock):
+	display_name = 'Stone Pressure Plate'
+	name = 'stonePressurePlate'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(71)
+class IrondoorBlock(MapBlock):
+	display_name = 'Iron Door'
+	name = 'doorIron'
+	hardness = 5
+	stack_size = 1
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(72)
+class WoodplateBlock(MapBlock):
+	display_name = 'Wooden Pressure Plate'
+	name = 'woodPressurePlate'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_WOOD
+
+@map_block(73)
+class RedstoneoreBlock(MapBlock):
+	display_name = 'Redstone Ore'
+	name = 'oreRedstone'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (257, 278)
+
+@map_block(74)
+class GlowingredstoneoreBlock(MapBlock):
+	display_name = 'Glowing Redstone Ore'
+	name = 'oreRedstoneGlowing'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (257, 278)
+
+@map_block(75)
+class RedstonetorchoffBlock(MapBlock):
+	display_name = 'Redstone Torch (Inactive)'
+	name = 'notGateInactive'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(76)
+class RedstonetorchonBlock(MapBlock):
+	display_name = 'Redstone Torch (Active)'
+	name = 'notGateActive'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(77)
+class StonebuttonBlock(MapBlock):
+	display_name = 'Stone Button'
+	name = 'buttonStone'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(78)
+class GroundsnowBlock(MapBlock):
+	display_name = 'Snow'
+	name = 'snow'
+	hardness = 0.1
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_DIRT
+	harvest_tools = (269, 273, 256, 277, 284)
+
+@map_block(79)
+class IceBlock(MapBlock):
+	display_name = 'Ice'
+	name = 'ice'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+
+@map_block(80)
+class SnowBlock(MapBlock):
+	display_name = 'Snow Block'
+	name = 'snowBlock'
+	hardness = 0.2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_DIRT
+	harvest_tools = (269, 273, 256, 277, 284)
+
+@map_block(81)
+class CactusBlock(MapBlock):
+	display_name = 'Cactus'
+	name = 'cactus'
+	hardness = 0.4
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(82)
+class ClayBlock(MapBlock):
+	display_name = 'Clay'
+	name = 'clay'
+	hardness = 0.6
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_DIRT
+
+@map_block(83)
+class ReedsBlock(MapBlock):
+	display_name = 'Sugar cane'
+	name = 'reeds'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(84)
+class JukeboxBlock(MapBlock):
+	display_name = 'Jukebox'
+	name = 'jukebox'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(85)
+class FenceBlock(MapBlock):
+	display_name = 'Fence'
+	name = 'fence'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(86)
+class PumpkinBlock(MapBlock):
+	display_name = 'Pumpkin'
+	name = 'pumpkin'
+	hardness = 1
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = 'plant'
+
+@map_block(87)
+class NetherrackBlock(MapBlock):
+	display_name = 'Netherrack'
+	name = 'hellrock'
+	hardness = 0.4
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(88)
+class SoulsandBlock(MapBlock):
+	display_name = 'Soul Sand'
+	name = 'hellsand'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_DIRT
+
+@map_block(89)
+class GlowstoneBlock(MapBlock):
+	display_name = 'Glowstone'
+	name = 'lightgem'
+	hardness = 0.3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(90)
+class PortalBlock(MapBlock):
+	display_name = 'Portal'
+	name = 'portal'
+	hardness = None
+	stack_size = 64
+	diggable = False
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(91)
+class JackBlock(MapBlock):
+	display_name = 'Jack \'o\' Lantern'
+	name = 'litpumpkin'
+	hardness = 1
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = 'plant'
+
+@map_block(92)
+class CakeBlock(MapBlock):
+	display_name = 'Cake'
+	name = 'cake'
+	hardness = 0.5
+	stack_size = 1
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(93)
+class RedstonerepoffBlock(MapBlock):
+	display_name = 'Redstone Repeater (Inactive)'
+	name = 'redstoneRepeaterInactive'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(94)
+class RedstonereponBlock(MapBlock):
+	display_name = 'Redstone Repeater (Active)'
+	name = 'redstoneRepeaterActive'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(95)
+class LockedchestBlock(MapBlock):
+	display_name = 'Locked chest'
+	name = 'lockedchest'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(96)
+class TrapdoorBlock(MapBlock):
+	display_name = 'Trapdoor'
+	name = 'trapdoor'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(97)
+class MonstereggBlock(MapBlock):
+	display_name = 'Monster Egg'
+	name = 'monsterStoneEgg'
+	hardness = 0.75
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(98)
+class StonebrickBlock(MapBlock):
+	display_name = 'Stone Brick'
+	name = 'stonebricksmooth'
+	hardness = 1.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(99)
+class HugebrownshroomBlock(MapBlock):
+	display_name = 'Huge Brown Mushroom'
+	name = 'mushroomHugeBrown'
+	hardness = 0.2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(100)
+class HugeredshroomBlock(MapBlock):
+	display_name = 'Huge Red Mushroom'
+	name = 'mushroomHugeRed'
+	hardness = 0.2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(101)
+class IronfenceBlock(MapBlock):
+	display_name = 'Iron Bars'
+	name = 'fenceIron'
+	hardness = 5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(102)
+class GlasspaneBlock(MapBlock):
+	display_name = 'Glass Pane'
+	name = 'thinGlass'
+	hardness = 0.3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(103)
+class MelonBlock(MapBlock):
+	display_name = 'Melon'
+	name = 'melon'
+	hardness = 1
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = 'melon'
+
+@map_block(104)
+class PumpkinstemBlock(MapBlock):
+	display_name = 'Pumpkin Stem'
+	name = 'pumpkinStem'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(105)
+class MelonstemBlock(MapBlock):
+	display_name = 'Melon Stem'
+	name = 'melonStem'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(106)
+class VinesBlock(MapBlock):
+	display_name = 'Vines'
+	name = 'vine'
+	hardness = 0.2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_VINE
+
+@map_block(107)
+class FencegateBlock(MapBlock):
+	display_name = 'Fence Gate'
+	name = 'fenceGate'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(108)
+class BrickstairBlock(MapBlock):
+	display_name = 'Brick Stairs'
+	name = 'stairsBrick'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(109)
+class StonebrickstairBlock(MapBlock):
+	display_name = 'Stone Brick Stairs'
+	name = 'stairsStoneBrickSmooth'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(110)
+class MyceliumBlock(MapBlock):
+	display_name = 'Mycelium'
+	name = 'mycel'
+	hardness = 0.6
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_DIRT
+
+@map_block(111)
+class LilypadBlock(MapBlock):
+	display_name = 'Lily Pad'
+	name = 'waterlily'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(112)
+class NetherbrickBlock(MapBlock):
+	display_name = 'Nether Brick'
+	name = 'netherBrick'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(113)
+class NetherbrickfenceBlock(MapBlock):
+	display_name = 'Nether Brick Fence'
+	name = 'netherFence'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(114)
+class NetherbrickstairBlock(MapBlock):
+	display_name = 'Nether Brick Stairs'
+	name = 'stairsNetherBrick'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(115)
+class NetherwartBlock(MapBlock):
+	display_name = 'Nether Wart'
+	name = 'netherStalk'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(116)
+class EnchantmentBlock(MapBlock):
+	display_name = 'Enchantment Table'
+	name = 'enchantmentTable'
+	hardness = 5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(117)
+class BrewingBlock(MapBlock):
+	display_name = 'Brewing Stand'
+	name = 'brewingStand'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(118)
+class CauldronBlock(MapBlock):
+	display_name = 'Cauldron'
+	name = 'cauldron'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(119)
+class EndportalBlock(MapBlock):
+	display_name = 'End Portal'
+	name = 'endPortal'
+	hardness = None
+	stack_size = 64
+	diggable = False
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(120)
+class EndportalframeBlock(MapBlock):
+	display_name = 'End Portal Frame'
+	name = 'endPortalFrame'
+	hardness = None
+	stack_size = 64
+	diggable = False
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(121)
+class EndstoneBlock(MapBlock):
+	display_name = 'End Stone'
+	name = 'whiteStone'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(122)
+class DragoneggBlock(MapBlock):
+	display_name = 'Dragon Egg'
+	name = 'dragonEgg'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(123)
+class RedstonelampoffBlock(MapBlock):
+	display_name = 'Redstone Lamp (Inactive)'
+	name = 'redstoneLightInactive'
+	hardness = 0.3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(124)
+class RedstonelamponBlock(MapBlock):
+	display_name = 'Redstone Lamp (Active)'
+	name = 'redstoneLightActive'
+	hardness = 0.3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(125)
+class WooddoubleslabBlock(MapBlock):
+	display_name = 'Wooden Double Slab'
+	name = 'woodSlabDouble'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(126)
+class WoodslabBlock(MapBlock):
+	display_name = 'Wooden Slab'
+	name = 'woodSlab'
+	hardness = 2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(127)
+class CocoapodBlock(MapBlock):
+	display_name = 'Cocoa Pod'
+	name = 'cocoa'
+	hardness = 0.2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = 'plant'
+
+@map_block(128)
+class SandstonestairBlock(MapBlock):
+	display_name = 'Sandstone Stairs'
+	name = 'stairsSandStone'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(129)
+class EmeraldoreBlock(MapBlock):
+	display_name = 'Emerald Ore'
+	name = 'oreEmerald'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (257, 278)
+
+@map_block(130)
+class EnderchestBlock(MapBlock):
+	display_name = 'Ender Chest'
+	name = 'enderChest'
+	hardness = 22.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(131)
+class TripwirehookBlock(MapBlock):
+	display_name = 'Tripwire Hook'
+	name = 'tripWireSource'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(132)
+class TripwireBlock(MapBlock):
+	display_name = 'Tripwire'
+	name = 'tripWire'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(133)
+class EmeraldBlock(MapBlock):
+	display_name = 'Block of Emerald'
+	name = 'blockEmerald'
+	hardness = 5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (257, 278)
+
+@map_block(134)
+class SprucestairBlock(MapBlock):
+	display_name = 'Spruce Wood Stairs'
+	name = 'stairsWoodSpruce'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(135)
+class BirchstairBlock(MapBlock):
+	display_name = 'Birch Wood Stairs'
+	name = 'stairsWoodBirch'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(136)
+class JunglestairBlock(MapBlock):
+	display_name = 'Jungle Wood Stairs'
+	name = 'stairsWoodJungle'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(137)
+class CommandBlock(MapBlock):
+	display_name = 'Command Block'
+	name = 'commandBlock'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(138)
+class BeaconBlock(MapBlock):
+	display_name = 'Beacon'
+	name = 'beacon'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(139)
+class CobblewallBlock(MapBlock):
+	display_name = 'Cobblestone Wall'
+	name = 'cobbleWall'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(140)
+class FlowerpotBlock(MapBlock):
+	display_name = 'Flower Pot'
+	name = 'flowerPot'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(141)
+class CarrotBlock(MapBlock):
+	display_name = 'Carrots'
+	name = 'carrots'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(142)
+class PotatoBlock(MapBlock):
+	display_name = 'Potatoes'
+	name = 'potatoes'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(143)
+class WoodbuttonBlock(MapBlock):
+	display_name = 'Wooden Button'
+	name = 'buttonWood'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+
+@map_block(144)
+class MobheadBlock(MapBlock):
+	display_name = 'Mob Head'
+	name = 'skull'
+	hardness = 1
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(145)
+class AnvilBlock(MapBlock):
+	display_name = 'Anvil'
+	name = 'anvil'
+	hardness = 5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(146)
+class TrappedchestBlock(MapBlock):
+	display_name = 'Trapped Chest'
+	name = 'trappedChest'
+	hardness = 2.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(147)
+class WeightedplatelightBlock(MapBlock):
+	display_name = 'Weighted Pressure plate (Light)'
+	name = 'pressurePlateWeightedLight'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(148)
+class WeightedplateheavyBlock(MapBlock):
+	display_name = 'Weighted Pressure plate (Heavy)'
+	name = 'pressurePlateWeightedHeavy'
+	hardness = 0.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(149)
+class ComparatoroffBlock(MapBlock):
+	display_name = 'Redstone Comparator (Inactive)'
+	name = 'redstoneComparatorInactive'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(150)
+class ComparatoronBlock(MapBlock):
+	display_name = 'Redstone Comparator (Active)'
+	name = 'redstoneComparatorActive'
+	hardness = 0
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+
+@map_block(151)
+class LightsensorBlock(MapBlock):
+	display_name = 'Daylight Sensor'
+	name = 'daylightSensor'
+	hardness = 0.2
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_WOOD
+
+@map_block(152)
+class RedstoneBlock(MapBlock):
+	display_name = 'Block of Redstone'
+	name = 'redstoneBlock'
+	hardness = 5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(153)
+class NetherquartzoreBlock(MapBlock):
+	display_name = 'Nether Quartz Ore'
+	name = 'netherQuartzOre'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(154)
+class HopperBlock(MapBlock):
+	display_name = 'Hopper'
+	name = 'hopper'
+	hardness = 3
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(155)
+class QuartzBlock(MapBlock):
+	display_name = 'Block of Quartz'
+	name = 'quartzBlock'
+	hardness = 0.8
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(156)
+class QuartzstairBlock(MapBlock):
+	display_name = 'Quartz Stairs'
+	name = 'quartzStairs'
+	hardness = 0.8
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(157)
+class ActivatorrailBlock(MapBlock):
+	display_name = 'Activator Rail'
+	name = 'activatorRail'
+	hardness = 0.7
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_ROCK
+
+@map_block(158)
+class DropperBlock(MapBlock):
+	display_name = 'Dropper'
+	name = 'dropper'
+	hardness = 3.5
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
 blocks = tuple(blocks[i] for i in range(len(blocks)))
+
+NON_COLLISION_BLOCKS = []
+for block in blocks:
+	if block.bounding_box == MCM_BBOX_EMPTY:
+		NON_COLLISION_BLOCKS.append(block.block_id)
+
+biomes = {}
+def map_biome(biome_id):
+	def inner(cl):
+		biomes[biome_id] = cl
+		cl.biome_id = biome_id
+		return cl
+	return inner
+
+def get_biome(biome_id):
+	return biomes[biome_id]() if biome_id in biomes else None
+
+class MapBiome:
+name = 'Map Biome'
+temperature = 0.0
+
+@map_biome(0)
+class OceanBiome(MapBiome):
+	name = 'Ocean'
+	temperature = 0.5
+
+@map_biome(1)
+class PlainsBiome(MapBiome):
+	name = 'Plains'
+	temperature = 0.8
+
+@map_biome(2)
+class DesertBiome(MapBiome):
+	name = 'Desert'
+	temperature = 2
+
+@map_biome(3)
+class ExtremeHillsBiome(MapBiome):
+	name = 'Extreme Hills'
+	temperature = 0.2
+
+@map_biome(4)
+class ForestBiome(MapBiome):
+	name = 'Forest'
+	temperature = 0.7
+
+@map_biome(5)
+class TaigaBiome(MapBiome):
+	name = 'Taiga'
+	temperature = 0.05
+
+@map_biome(6)
+class SwamplandBiome(MapBiome):
+	name = 'Swampland'
+	temperature = 0.8
+
+@map_biome(7)
+class RiverBiome(MapBiome):
+	name = 'River'
+	temperature = 0.5
+
+@map_biome(8)
+class HellBiome(MapBiome):
+	name = 'Hell'
+	temperature = 2
+
+@map_biome(9)
+class SkyBiome(MapBiome):
+	name = 'Sky'
+	temperature = 0.5
+
+@map_biome(10)
+class FrozenOceanBiome(MapBiome):
+	name = 'Frozen Ocean'
+	temperature = 0
+
+@map_biome(11)
+class FrozenRiverBiome(MapBiome):
+	name = 'Frozen River'
+	temperature = 0
+
+@map_biome(12)
+class IcePlainsBiome(MapBiome):
+	name = 'Ice Plains'
+	temperature = 0
+
+@map_biome(13)
+class IceMountainsBiome(MapBiome):
+	name = 'Ice Mountains'
+	temperature = 0
+
+@map_biome(14)
+class MushroomIslandBiome(MapBiome):
+	name = 'Mushroom Island'
+	temperature = 0.9
+
+@map_biome(15)
+class MushroomIslandShoreBiome(MapBiome):
+	name = 'Mushroom Island Shore'
+	temperature = 0.9
+
+@map_biome(16)
+class BeachBiome(MapBiome):
+	name = 'Beach'
+	temperature = 0.8
+
+@map_biome(17)
+class DesertHillsBiome(MapBiome):
+	name = 'Desert Hills'
+	temperature = 2
+
+@map_biome(18)
+class ForestHillsBiome(MapBiome):
+	name = 'Forest Hills'
+	temperature = 0.7
+
+@map_biome(19)
+class TaigaHillsBiome(MapBiome):
+	name = 'Taiga Hills'
+	temperature = 0.05
+
+@map_biome(20)
+class ExtremeTaigaHillsEdgeBiome(MapBiome):
+	name = 'Extreme Hills Edge'
+	temperature = 0.2
+
+@map_biome(21)
+class JungleBiome(MapBiome):
+	name = 'Jungle'
+	temperature = 1.2
+
+@map_biome(22)
+class JungleHillsBiome(MapBiome):
+	name = 'Jungle Hills'
+	temperature = 1.2
+
+@map_biome(23)
+class JungleEdgeBiome(MapBiome):
+	name = 'Jungle Edge'
+	temperature = 0.95
+
+@map_biome(24)
+class DeepOceanBiome(MapBiome):
+	name = 'Deep Ocean'
+	temperature = 0.5
+
+@map_biome(25)
+class StoneBeachBiome(MapBiome):
+	name = 'Stone Beach'
+	temperature = 0.2
+
+@map_biome(26)
+class ColdBeachBiome(MapBiome):
+	name = 'Cold Beach'
+	temperature = 0
+
+@map_biome(27)
+class BirchForestBiome(MapBiome):
+	name = 'Birch Forest'
+	temperature = 0.6
+
+@map_biome(28)
+class BirchForestHillsBiome(MapBiome):
+	name = 'Birch Forest Hills'
+	temperature = 0.6
+
+@map_biome(29)
+class RoofedForestBiome(MapBiome):
+	name = 'Roofed Forest'
+	temperature = 0.7
+
+@map_biome(30)
+class ColdTaigaBiome(MapBiome):
+	name = 'Cold Taiga'
+	temperature = 0
+
+@map_biome(31)
+class ColdTaigaHillsBiome(MapBiome):
+	name = 'Cold Taiga Hills'
+	temperature = 0
+
+@map_biome(32)
+class MegaTaigaBiome(MapBiome):
+	name = 'Mega Taiga'
+	temperature = 0.3
+
+@map_biome(33)
+class MegaTaigaHillsBiome(MapBiome):
+	name = 'Mega Taiga Hills'
+	temperature = 0.3
+
+@map_biome(34)
+class ExtremeHillsPlusBiome(MapBiome):
+	name = 'Extreme Hills+'
+	temperature = 0.2
+
+@map_biome(35)
+class SavannaBiome(MapBiome):
+	name = 'Savanna'
+	temperature = 1.0
+
+@map_biome(36)
+class SavannaPlateauBiome(MapBiome):
+	name = 'Savanna Plateau'
+	temperature = 1.0
+
+@map_biome(37)
+class MesaBiome(MapBiome):
+	name = 'Mesa'
+	temperature = 1.0
+
+@map_biome(38)
+class MesaPlateauFBiome(MapBiome):
+	name = 'Mesa Plateau F'
+	temperature = 1.0
+
+@map_biome(39)
+class MesaPlateauBiome(MapBiome):
+	name = 'Mesa Plateau'
+	temperature = 1.0
+
+@map_biome(129)
+class SunflowerPlainsBiome(MapBiome):
+	name = 'Sunflower Plains'
+	temperature = 0.8
+
+@map_biome(130)
+class DesertMBiome(MapBiome):
+	name = 'Desert M'
+	temperature = 2
+
+@map_biome(131)
+class ExtremeHillsMBiome(MapBiome):
+	name = 'Extreme Hills M'
+	temperature = 0.2
+
+@map_biome(132)
+class FlowerForestBiome(MapBiome):
+	name = 'Flower Forest'
+	temperature = 0.7
+
+@map_biome(133)
+class TaigaMBiome(MapBiome):
+	name = 'Taiga M'
+	temperature = 0.25
+
+@map_biome(134)
+class SwamplandMBiome(MapBiome):
+	name = 'Swampland M'
+	temperature = 0.8
+
+@map_biome(140)
+class IcePlainsSpikesBiome(MapBiome):
+	name = 'Ice Plains Spikes'
+	temperature = 0
+
+@map_biome(149)
+class JungleMBiome(MapBiome):
+	name = 'Jungle M'
+	temperature = 0.95
+
+@map_biome(151)
+class JungleEdgeMBiome(MapBiome):
+	name = 'Jungle Edge M'
+	temperature = 0.95
+
+@map_biome(155)
+class BirchForestMBiome(MapBiome):
+	name = 'Birch Forest M'
+	temperature = 0.6
+
+@map_biome(156)
+class BirchForestHillsMBiome(MapBiome):
+	name = 'Birch Forest Hills M'
+	temperature = 0.6
+
+@map_biome(157)
+class RoofedForestMBiome(MapBiome):
+	name = 'Roofed Forest M'
+	temperature = 0.7
+
+@map_biome(158)
+class ColdTaigaMBiome(MapBiome):
+	name = 'Cold Taiga M'
+	temperature = 0
+
+@map_biome(160)
+class MegaSpruceTaigaBiome(MapBiome):
+	name = 'Mega Spruce Taiga'
+	temperature = 0.25
+
+@map_biome(161)
+class MegaSpruceTaigaHillsBiome(MapBiome):
+	name = 'Mega Spruce Taiga Hills'
+	temperature = 0.25
+
+@map_biome(162)
+class ExtremeHillsPlusMBiome(MapBiome):
+	name = 'Extreme Hills+ M'
+	temperature = 0.2
+
+@map_biome(163)
+class SavannaMBiome(MapBiome):
+	name = 'Savanna M'
+	temperature = 1.0
+
+@map_biome(164)
+class SavannaPlateauMBiome(MapBiome):
+	name = 'Savanna Plateau M'
+	temperature = 1.0
+
+@map_biome(165)
+class MesaBRyceBiome(MapBiome):
+	name = 'Mesa (Bryce)'
+	temperature = 1.0
+
+@map_biome(166)
+class MesaPlateauFMBiome(MapBiome):
+	name = 'Mesa Plateau F M'
+	temperature = 1.0
+
+@map_biome(167)
+class MesaPlateauMBiome(MapBiome):
+	name = 'Mesa Plateau M'
+	temperature = 1.0

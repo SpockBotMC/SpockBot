@@ -5,11 +5,8 @@ able to use smpmap2 to interpret data from the world plugin and its events.
 Planned to provide light level interpretation based on sky light and time of day
 """
 
-#for now hardcoded, later make use of mcmap.mapdata?
-NON_COLLISION_BLOCKS = [0,6,8,9,10,11,27,30,31,32,37,38,39,40,50,55,59,63,66,68,69,70,72,75,76,77,78,83,90,104,106,115,119,132,141,143,147,148,157]
-
 from spock.utils import pl_announce
-from spock.mcmap import smpmap
+from spock.mcmap import smpmap, mapdata
 from spock.mcp import mcdata
 import math
 
@@ -30,7 +27,7 @@ class WorldData(smpmap.Dimension):
 		x, y, z = math.floor(x), math.floor(y), math.floor(z)
 		backup_y = y
 		block_id, _ = self.get_block(x, y, z)
-		while(block_id in NON_COLLISION_BLOCKS and y > 0):
+		while(block_id in mapdata.NON_COLLISION_BLOCKS and y > 0):
 			y -= 1
 			block_id, _ = self.get_block(x, y, z)
 		if y < 0:

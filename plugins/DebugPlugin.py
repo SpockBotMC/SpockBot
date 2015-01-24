@@ -3,7 +3,7 @@ import sys
 import threading
 from spock.mcmap import mapdata
 from spock.mcp import mcdata
-from spock.utils import pl_announce
+from spock.utils import pl_announce, mapshort2id
 import time
 
 class DebugPlugin:
@@ -12,10 +12,10 @@ class DebugPlugin:
 		#	ploader.reg_event_handler(packet, self.debug)
 		self.physics = ploader.requires('Physics')
 		self.timers = ploader.requires('Timers')
-		#ploader.reg_event_handler('w_block_update', self.block_test)
+		ploader.reg_event_handler('w_block_update', self.block_test)
 		#ploader.reg_event_handler('client_tick', self.timer_test)
 		ploader.reg_event_handler('cl_health_update', self.clinfo_test)
-		ploader.reg_event_handler('action_tick', self.walk_test)
+		#ploader.reg_event_handler('action_tick', self.walk_test)
 		#self.timers.reg_event_timer(2, self.jump_test)
 
 		self.old_time = 0
@@ -35,9 +35,11 @@ class DebugPlugin:
 	def clinfo_test(self, event, data):
 		print('Health Update', data)
 
-	def block_test(self, event, block):
-		print('Block update at:', block['location'])
-		print('New block data, id:', block['block_data']>>4, 'meta:',  block['block_data']&0x0F)
+	def block_test(self, event, blockdata):
+		block_id, meta = mapshort2id(blockdata['block_data'])
+		block = mapdata.get_block(block_id, meta)
+		print('Block update at:', blockdata['location'])
+		print('New block data:', block.display_name)
 
 	def timer_test(self, _, __):
 		new_time = int(round(time.time() * 1000))
