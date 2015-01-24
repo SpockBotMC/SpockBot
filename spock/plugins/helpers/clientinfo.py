@@ -42,13 +42,14 @@ class PlayerHealth(Info):
 
 class PlayerPosition(Position):
 	def __init__(self):
+		super(self.__class__, self).__init__()
 		self.yaw = 0.0
 		self.pitch = 0.0
 		self.on_ground = False
 
 class Inventory(Info):
 	def __init__(self):
-		self.slots = []
+		self.slots = [{'id':-1} for i in range(45)]
 
 class ClientInfo:
 	def __init__(self):
@@ -57,6 +58,7 @@ class ClientInfo:
 		self.spawn_position = Position()
 		self.health = PlayerHealth()
 		self.position = PlayerPosition() 
+		self.inventory = Inventory()
 		self.player_list = {}
 	
 	def reset(self):
@@ -78,6 +80,20 @@ class ClientInfoPlugin:
 		ploader.reg_event_handler(
 			'PLAY<Player Position and Look', self.handle_position_update
 		)
+		#Inventory Events
+		ploader.reg_event_handler(
+			'PLAY<Set Slot', self.handle_set_slot
+		)
+		ploader.reg_event_handler(
+			'PLAY<Window Items', self.handle_window_items
+		)
+		ploader.reg_event_handler(
+			'PLAY<Window Property', self.handle_window_prop
+		)
+		ploader.reg_event_handler(
+			'PLAY<Confirm Transaction', self.handle_confirm_transact
+		)
+
 		ploader.reg_event_handler(
 			'disconnect', self.handle_disconnect
 		)
@@ -97,14 +113,14 @@ class ClientInfoPlugin:
 		self.event.emit('cl_spawn_update', self.client_info.spawn_position)
 
 	#Update Health - Update client Health state
-	def handle_update_health(self, name, packet):
+	def handle_update_health(self, event, packet):
 		self.client_info.health.set_dict(packet.data)
 		self.event.emit('cl_health_update', self.client_info.health)
 		if packet.data['health'] <= 0.0:
 			self.event.emit('death', self.client_info.health)
 
 	#Player Position and Look - Update client Position state
-	def handle_position_update(self, name, packet):
+	def handle_position_update(self, event, packet):
 		f = packet.data['flags']
 		p = self.client_info.position
 		d = packet.data
@@ -114,6 +130,25 @@ class ClientInfoPlugin:
 		p.yaw = p.yaw + d['yaw'] if f&FLG_YROT_REL else d['yaw']
 		p.pitch = p.pitch + d['pitch'] if f&FLG_XROT_REL else d['pitch']
 		self.event.emit('cl_position_update', self.client_info.position)
+
+	def handle_set_slot(self, event, packet):
+		print(event, packet.data)
+		#inventory
+		if packet.data['window_id'] == 0:
+			self.client_info.inventory.slots[packet.data['slot']] = packet.data['slot_data']
+
+	def handle_window_items(self, event, packet):
+		print(event, packet.data)
+		#inventory
+		if packet.data['window_id'] == 0:
+			for idx, slot in enumerate(packet.data['slots']):
+				self.client_info.inventory.slots[idx] = slot
+
+	def handle_window_prop(self, event, packet):
+		print(event, packet.data)
+
+	def handle_confirm_transact(self, event, packet):
+		print(event, packet.data)
 
 	def handle_disconnect(self, name, packet):
 		self.client_info.reset()

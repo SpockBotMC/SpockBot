@@ -4,6 +4,7 @@ class ChatCommandPlugin:
 	def __init__(self, ploader, settings):
 		self.physics = ploader.requires('Physics')
 		self.net = ploader.requires('Net')
+		self.inventory = ploader.requires('Inventory')
 		ploader.reg_event_handler(
 			'PLAY<Chat Message', self.handle_chat_message
 		)
@@ -39,6 +40,8 @@ class ChatCommandPlugin:
 		elif command == 'slot':
 			if len(args) == 1 and (int(args[0]) >= 0 and int(args[0]) <= 8):
 				self.net.push_packet('PLAY>Held Item Change', {'slot': int(args[0])})
+		elif command == 'inv':
+			self.inventory.test_inventory()
 
 	def parse_chat(self, chat_data):
 		message = ''
