@@ -10,8 +10,12 @@ from spock.mcp.mcdata import (
 	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL
 )
 
-class Info:
-	def getDict(self):
+class Info:	
+	def set_dict(self, data):
+		for key in data:
+			if hasattr(self, key):
+				setattr(self, key, data[key])
+	def get_dict(self):
 		return self.__dict__
 	def __str__(self):
 		return str(self.__dict__)
@@ -55,12 +59,6 @@ class ClientInfo:
 		self.position = PlayerPosition() 
 		self.player_list = {}
 	
-	def update_data(self, obj, data):
-		for key in data:
-			if hasattr(obj, key):
-				setattr(obj, key, data[key])
-
-
 	def reset(self):
 		self.__init__()
 
@@ -90,17 +88,17 @@ class ClientInfoPlugin:
 	#Login Request - Update client state info
 	def handle_join_game(self, event, packet):
 		self.client_info.eid = packet.data['eid']
-		self.client_info.update_data(self.client_info.game_info, packet.data)
+		self.client_info.game_info.set_dict(packet.data)
 		self.event.emit('cl_join_game', self.client_info.game_info)
 
 	#Spawn Position - Update client Spawn Position state
 	def handle_spawn_position(self, event, packet):
-		self.client_info.update_data(self.client_info.spawn_position, packet.data['location'])
+		self.client_info.spawn_position.set_dict(packet.data['location'])
 		self.event.emit('cl_spawn_update', self.client_info.spawn_position)
 
 	#Update Health - Update client Health state
 	def handle_update_health(self, name, packet):
-		self.client_info.update_data(self.client_info.health, packet.data)
+		self.client_info.health.set_dict(packet.data)
 		self.event.emit('cl_health_update', self.client_info.health)
 		if packet.data['health'] <= 0.0:
 			self.event.emit('death', self.client_info.health)

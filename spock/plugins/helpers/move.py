@@ -24,10 +24,10 @@ class MovementPlugin:
 
 	def client_tick(self, name, data):
 		self.net.push_packet(
-			'PLAY>Player Position', self.clinfo.position.getDict()
+			'PLAY>Player Position', self.clinfo.position.get_dict()
 		)
 
 	def handle_position_update(self, name, data):
 		self.net.push_packet(
-			'PLAY>Player Position and Look', data.getDict()
+			'PLAY>Player Position and Look', data.get_dict()
 		)
