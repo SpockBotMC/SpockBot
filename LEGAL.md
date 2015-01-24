@@ -1,4 +1,4 @@
-I don't believe in duplicating effort, here are the projects I'm stealing from
+See LICENSE for spock's license
 
 NBT
 ===

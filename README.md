@@ -37,12 +37,15 @@ For now you can check out the plugins folder to get a vague idea of what plugins
 should look like, find me on #mcdevs or email me at nickelpro@gmail.com if you
 have questions
 
+###API Docs
+Current API docs live here https://nickelpro.github.io/spock/docs/spock/
+
 #####P.S.
 A lot of people ask what COPS was. It was a service that tracked players on a
 minecraft server called Civcraft. It looked like [this](http://www.nickg.org/dl/cops.jpg)
 ###Legal
 
-License is MIT and can be found in license.md
+License is MIT and can be found in LICENSE
 
 The NBT parser and the original protocol implementation came from other projects,
-relevant legal information and attribution can be found in legal.md
+relevant legal information and attribution can be found in LEGAL.md
