@@ -1633,8 +1633,8 @@ def get_biome(biome_id):
 	return biomes[biome_id]() if biome_id in biomes else None
 
 class MapBiome:
-name = 'Map Biome'
-temperature = 0.0
+	name = 'Map Biome'
+	temperature = 0.0
 
 @map_biome(0)
 class OceanBiome(MapBiome):
