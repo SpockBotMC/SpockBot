@@ -57,7 +57,7 @@ class Vec3:
 			if y: self.y += y
 			if z: self.z += z
 
-	def __repr__(self):
+	def __str__(self):
 		return "({:.2f}, {:.2f}, {:.2f})".format(self.x, self.y, self.z)
 
 class BoundingBox:
@@ -75,12 +75,12 @@ class PhysicsCore:
 		self.pos = pos
 
 	def jump(self):
-		if self.pos['on_ground']:
-			self.pos['on_ground'] = False
+		if self.pos.on_ground:
+			self.pos.on_ground = False
 			self.vec.add_vector(y = PLAYER_JMP_ACC)
 
 	def walk(self, angle, radians = False):
-		if self.pos['on_ground']:
+		if self.pos.on_ground:
 			if not radians:
 				angle = math.radians(angle)
 			z = math.cos(angle)*PLAYER_WLK_ACC
@@ -88,7 +88,7 @@ class PhysicsCore:
 			self.vec.add_vector(x = x, z = z)
 
 	def sprint(self, angle, radians = False):
-		if self.pos['on_ground']:
+		if self.pos.on_ground:
 			if not radians:
 				angle = math.radians(angle)
 			z = math.cos(angle)*PLAYER_SPR_ACC
@@ -114,7 +114,7 @@ class PhysicsPlugin:
 		self.apply_vector()
 
 	def check_collision(self):
-		cb = Vec3(math.floor(self.pos['x']), math.floor(self.pos['y']), math.floor(self.pos['z']))
+		cb = Vec3(math.floor(self.pos.x), math.floor(self.pos.y), math.floor(self.pos.z))
 		#feet or head collide with x
 		if self.block_collision(cb, x=1) or self.block_collision(cb, x=-1) or self.block_collision(cb, y=1, x=1) or self.block_collision(cb, y=1, x=-1):
 			self.vec.x = 0
@@ -130,7 +130,7 @@ class PhysicsPlugin:
 		#possibly we want to use the centers of blocks as the starting points for bounding boxes instead of 0,0,0
 		#this might make thinks easier when we get to more complex shapes that are in the center of a block aka fences but more complicated for the player
 		#uncenter the player position
-		pos1 = Vec3(self.pos['x']-self.playerbb.w/2, self.pos['y'], self.pos['z']-self.playerbb.d/2)
+		pos1 = Vec3(self.pos.x-self.playerbb.w/2, self.pos.y, self.pos.z-self.playerbb.d/2)
 		bb1 = self.playerbb
 		pos2 = Vec3(cb.x+x, cb.y+y, cb.z+z)
 		bb2 = self.get_bounding_box(block_id)
@@ -149,21 +149,21 @@ class PhysicsPlugin:
 
 	def apply_gravity(self):
 		p = self.pos
-		floor = self.world.get_floor(p['x'], p['y'], p['z'])
-		if p['y'] != floor:
-			p['on_ground'] = False
+		floor = self.world.get_floor(p.x, p.y, p.z)
+		if p.y != floor:
+			p.on_ground = False
 			self.vec.add_vector(y = -PLAYER_ENTITY_GAV)
 			self.apply_vertical_drag()
-			if p['y'] + self.vec.y <= floor:
-				p['on_ground'] = True
+			if p.y + self.vec.y <= floor:
+				p.on_ground = True
 				self.vec.y = 0
-				p['y'] = floor
+				p.y = floor
 
 	def apply_vertical_drag(self):
 		self.vec.y = self.vec.y - self.vec.y*PLAYER_ENTITY_DRG
 
 	def apply_horizontal_drag(self):
-		if self.pos['on_ground']:
+		if self.pos.on_ground:
 			self.vec.x = self.vec.x - self.vec.x*PLAYER_GND_DRG
 			self.vec.z = self.vec.z - self.vec.z*PLAYER_GND_DRG
 		else:
@@ -172,6 +172,6 @@ class PhysicsPlugin:
 
 	def apply_vector(self):
 		p = self.pos
-		p['x'] = p['x'] + self.vec.x
-		p['y'] = p['y'] + self.vec.y
-		p['z'] = p['z'] + self.vec.z
+		p.x = p.x + self.vec.x
+		p.y = p.y + self.vec.y
+		p.z = p.z + self.vec.z
