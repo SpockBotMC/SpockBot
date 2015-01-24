@@ -1,5 +1,6 @@
 *.pyc
 *.log
+*.swp
 login.py
 run.py
 /build

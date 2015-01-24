@@ -168,7 +168,11 @@ class NetPlugin:
 			for flag in self.sock.poll():
 				self.event.emit(flag)
 		else:
-			time.sleep(self.timer.get_timeout())
+			timeout = self.timer.get_timeout()
+			if timeout == -1:
+				time.sleep(1)
+			else:
+				time.sleep(timeout)
 			
 
 	#SOCKET_RECV - Socket is ready to recieve data
@@ -200,18 +204,18 @@ class NetPlugin:
 	#SOCKET_ERR - Socket Error has occured
 	def handleERR(self, name, data):
 		self.net.reset()
+		print("Socket Error:", data)
+		self.event.emit('disconnect', data)
 		if self.sock_quit and not self.event.kill_event:
-			print("Socket Error:", data)
-			self.event.emit('disconnect', data)
-			#self.event.kill()
+			self.event.kill()
 
 	#SOCKET_HUP - Socket has hung up
 	def handleHUP(self, name, data):
 		self.net.reset()
+		print("Socket has hung up")
+		self.event.emit('disconnect', "Socket Hung Up")
 		if self.sock_quit and not self.event.kill_event:
-			print("Socket has hung up")
-			self.event.emit('disconnect', "Socket Hung Up")
-			#self.event.kill()
+			self.event.kill()
 
 	#Handshake - Change to whatever the next state is going to be
 	def handle_handshake(self, name, packet):

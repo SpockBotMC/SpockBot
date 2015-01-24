@@ -19,12 +19,10 @@ class ReConnectPlugin:
 		self.port = data[1]
 
 	def reconnect_event(self, event, data):
-		print("DISCONNECT EVENT")
 		if not self.reconnecting:
 			self.timers.reg_event_timer(1, self.reconnect, 1, True)
 
 	def reconnect(self):
-		print("RECONNECT FUNC")
 		self.net.connect(self.host, self.port)
 		self.net.push(mcpacket.Packet(
 			ident = (mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00),
