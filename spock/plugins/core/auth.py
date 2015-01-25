@@ -3,9 +3,14 @@ Provides authorization functions for Mojang's login and session servers
 """
 
 import hashlib
-import urllib.request as request
 import json
-from urllib.error import URLError
+#This is for python2 compatibility 
+try:
+	import urllib.request as request
+	from urllib.error import URLError
+except ImportError:
+	import urllib2 as request
+	from urllib2 import URLError
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
 from Crypto import Random

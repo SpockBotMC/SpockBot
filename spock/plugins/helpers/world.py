@@ -14,7 +14,7 @@ import math
 
 class WorldData(smpmap.Dimension):
 	def __init__(self, dimension = mcdata.SMP_OVERWORLD):
-		super().__init__(dimension)
+		super(self.__class__, self).__init__(dimension)
 		self.age = 0
 		self.time_of_day = 0
 
@@ -35,7 +35,7 @@ class WorldData(smpmap.Dimension):
 		return y + 1
 
 	def new_dimension(self, dimension):
-		super().__init__(dimension)
+		super(self.__class__, self).__init__(dimension)
 
 	def reset(self):
 		self.__init__(self.dimension)

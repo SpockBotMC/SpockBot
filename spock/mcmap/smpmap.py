@@ -132,7 +132,7 @@ class ChunkColumn:
 					self.chunks[i] = Chunk()
 				self.chunks[i].light_sky.unpack(buff)
 
-class Dimension:
+class Dimension(object):
 	""" A bunch of ChunkColumns. """
 
 	def __init__(self, dimension):

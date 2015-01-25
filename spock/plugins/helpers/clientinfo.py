@@ -10,7 +10,7 @@ from spock.mcp.mcdata import (
 	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL
 )
 
-class Info:	
+class Info(object):	
 	def set_dict(self, data):
 		for key in data:
 			if hasattr(self, key):

@@ -1,6 +1,11 @@
-import urllib.request as request
-from urllib.error import HTTPError
 import json
+#This is for python2 compatibility 
+try:
+	import urllib.request as request
+	from urllib.error import HTTPError
+except ImportError:
+	import urllib2 as request
+	from urllib2 import HTTPError
 
 class YggAuth:
 	def __init__(self, 
@@ -22,7 +27,7 @@ class YggAuth:
 		url = 'https://authserver.mojang.com' + endpoint
 		data = json.dumps(payload).encode('utf-8')
 		headers = {'Content-Type': 'application/json'}
-		return request.Request(url, data, headers, method='POST')
+		return request.Request(url, data, headers)
 
 	def _gen_rep(self, req):
 		try:
