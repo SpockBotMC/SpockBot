@@ -126,14 +126,17 @@ class PhysicsPlugin:
 			self.vec.y = 0
 
 	def block_collision(self, cb, x = 0, y = 0, z = 0):
-		block_id, _ = self.world.get_block(cb.x+x, cb.y+y, cb.z+z)
+		block_id, meta = self.world.get_block(cb.x+x, cb.y+y, cb.z+z)
+		block = mapdata.get_block(block_id, meta)
+		if block == None:
+			return False
 		#possibly we want to use the centers of blocks as the starting points for bounding boxes instead of 0,0,0
 		#this might make thinks easier when we get to more complex shapes that are in the center of a block aka fences but more complicated for the player
 		#uncenter the player position
 		pos1 = Vec3(self.pos.x-self.playerbb.w/2, self.pos.y, self.pos.z-self.playerbb.d/2)
 		bb1 = self.playerbb
 		pos2 = Vec3(cb.x+x, cb.y+y, cb.z+z)
-		bb2 = self.get_bounding_box(block_id)
+		bb2 = self.get_bounding_box(block)
 		if bb2 != None:
 			if ((pos1.x + bb1.w) >= (pos2.x) and (pos1.x) <= (pos2.x + bb2.w)) and \
 				((pos1.y + bb1.h) >= (pos2.y) and (pos1.y) <= (pos2.y + bb2.h)) and \
@@ -141,10 +144,23 @@ class PhysicsPlugin:
 				return True
 		return False
 
-	def get_bounding_box(self, blockid):
-		if blockid in mapdata.NON_COLLISION_BLOCKS:
+	def get_bounding_box(self, block):
+		if block.bounding_box == mapdata.MCM_BBOX_EMPTY:
 			return None
-		else:
+		elif block.bounding_box == mapdata.MCM_BBOX_BLOCK:
+			return BoundingBox(1,1)
+		elif block.bounding_box == mapdata.MCM_BBOX_CUSTOM:
+			return None
+		elif block.bounding_box == mapdata.MCM_BBOX_FENCE:
+			return BoundingBox(1,1.5)
+		elif block.bounding_box == mapdata.MCM_BBOX_GATE:
+			print(block.meta, block.open, block.direction)
+			return BoundingBox(1,1)
+		elif block.bounding_box == mapdata.MCM_BBOX_DOOR:
+			return BoundingBox(1,1)
+		elif block.bounding_box == mapdata.MCM_BBOX_SLAB:
+			return BoundingBox(1,1)
+		elif block.bounding_box == mapdata.MCM_BBOX_STAIR:
 			return BoundingBox(1,1)
 
 	def apply_gravity(self):

@@ -1,5 +1,5 @@
-#Shamelessly stolen/adapted from Mineflayer
 
+#Bounding Boxes
 MCM_BBOX_EMPTY  = 0x00
 MCM_BBOX_BLOCK  = 0x01
 MCM_BBOX_CUSTOM = 0x02
@@ -9,7 +9,7 @@ MCM_BBOX_DOOR 	= 0x05
 MCM_BBOX_SLAB 	= 0x06
 MCM_BBOX_STAIR 	= 0x07
 
-
+#Materials
 MCM_MAT_ROCK    = 0x00
 MCM_MAT_DIRT    = 0x01
 MCM_MAT_WOOD    = 0x02
@@ -17,6 +17,31 @@ MCM_MAT_WEB     = 0x03
 MCM_MAT_WOOL    = 0x04
 MCM_MAT_VINE    = 0x05
 MCM_MAT_LEAVES  = 0x06
+
+#Gate
+MCM_GATE_SOUTH 	= 0x0
+MCM_GATE_WEST 	= 0x1
+MCM_GATE_NORTH 	= 0x2
+MCM_GATE_EAST 	= 0x3
+
+MCM_GATE_CLOSE 	= 0x0
+MCM_GATE_OPEN 	= 0x1
+
+#Door
+MCM_DOOR_SOUTH 	= 0x3
+MCM_DOOR_WEST 	= 0x0
+MCM_DOOR_NORTH 	= 0x1
+MCM_DOOR_EAST 	= 0x2
+
+MCM_DOOR_CLOSE 	= 0x0
+MCM_DOOR_OPEN 	= 0x1
+
+MCM_DOOR_LOWER 	= 0x0
+MCM_DOOR_UPPER 	= 0x1
+
+MCM_DOOR_HINGE_LEFT  = 0x0
+MCM_DOOR_HINGE_RIGHT = 0x1
+
 
 blocks = {}
 def map_block(block_id):
@@ -44,6 +69,21 @@ class MapBlock:
 
 	def change_meta(self, meta):
 		pass
+
+class FenceBlock(MapBlock):
+	def __init__(self, meta):
+		pass
+
+class GateBlock(MapBlock):
+	def __init__(self, meta):
+		self.direction = (meta>>1)&0x03
+		self.open = (meta>>3 == MCM_GATE_OPEN)
+		self.meta = meta
+
+
+class DoorBlock(MapBlock):
+	def __init__(self, meta):
+		self.meta = meta
 
 @map_block(0)
 class AirBlock(MapBlock):
@@ -501,7 +541,7 @@ class StandingsignBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(64)
-class WooddoorBlock(MapBlock):
+class WooddoorBlock(DoorBlock):
 	display_name = 'Wooden Door'
 	name = 'doorWood'
 	hardness = 3
@@ -557,7 +597,7 @@ class StoneplateBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(71)
-class IrondoorBlock(MapBlock):
+class IrondoorBlock(DoorBlock):
 	display_name = 'Iron Door'
 	name = 'doorIron'
 	hardness = 5
@@ -660,7 +700,7 @@ class JukeboxBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(85)
-class FenceBlock(MapBlock):
+class WoodfenceBlock(FenceBlock):
 	display_name = 'Fence'
 	name = 'fence'
 	hardness = 2
@@ -770,7 +810,7 @@ class HugeredshroomBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(101)
-class IronfenceBlock(MapBlock):
+class IronfenceBlock(FenceBlock):
 	display_name = 'Iron Bars'
 	name = 'fenceIron'
 	hardness = 5
@@ -812,7 +852,7 @@ class VinesBlock(MapBlock):
 	material = MCM_MAT_VINE
 
 @map_block(107)
-class FencegateBlock(MapBlock):
+class WoodfencegateBlock(GateBlock):
 	display_name = 'Fence Gate'
 	name = 'fenceGate'
 	hardness = 2
@@ -856,7 +896,7 @@ class NetherbrickBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(113)
-class NetherbrickfenceBlock(MapBlock):
+class NetherbrickfenceBlock(FenceBlock):
 	display_name = 'Nether Brick Fence'
 	name = 'netherFence'
 	hardness = 2
@@ -1379,7 +1419,7 @@ class RedsandstoneslabBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(183)
-class FencegatespruceBlock(MapBlock):
+class FencegatespruceBlock(GateBlock):
 	display_name = 'Spruce Fence Gate'
 	name = 'fenceGateSpruce'
 	hardness = 2
@@ -1387,7 +1427,7 @@ class FencegatespruceBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(184)
-class FencegatebirchBlock(MapBlock):
+class FencegatebirchBlock(GateBlock):
 	display_name = 'Birch Fence Gate'
 	name = 'fenceGateBirch'
 	hardness = 2
@@ -1395,7 +1435,7 @@ class FencegatebirchBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(185)
-class FencegatejungleBlock(MapBlock):
+class FencegatejungleBlock(GateBlock):
 	display_name = 'Jungle Fence Gate'
 	name = 'fenceGateJungle'
 	hardness = 2
@@ -1403,7 +1443,7 @@ class FencegatejungleBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(186)
-class FencegatedarkoakBlock(MapBlock):
+class FencegatedarkoakBlock(GateBlock):
 	display_name = 'Dark Oak Fence Gate'
 	name = 'fenceGateDarkOak'
 	hardness = 2
@@ -1411,7 +1451,7 @@ class FencegatedarkoakBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(187)
-class FencegateacaciaBlock(MapBlock):
+class FencegateacaciaBlock(GateBlock):
 	display_name = 'Acacia Fence Gate'
 	name = 'fenceGateAcacia'
 	hardness = 2
@@ -1419,7 +1459,7 @@ class FencegateacaciaBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(188)
-class FencespruceBlock(MapBlock):
+class FencespruceBlock(FenceBlock):
 	display_name = 'Spruce Fence'
 	name = 'fenceSpruce'
 	hardness = 2
@@ -1427,7 +1467,7 @@ class FencespruceBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(189)
-class FencebirchBlock(MapBlock):
+class FencebirchBlock(FenceBlock):
 	display_name = 'Birch Fence'
 	name = 'fenceBirch'
 	hardness = 2
@@ -1435,7 +1475,7 @@ class FencebirchBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(190)
-class FencejungleBlock(MapBlock):
+class FencejungleBlock(FenceBlock):
 	display_name = 'Jungle Fence'
 	name = 'fenceJungle'
 	hardness = 2
@@ -1443,7 +1483,7 @@ class FencejungleBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(191)
-class FencedarkoakBlock(MapBlock):
+class FencedarkoakBlock(FenceBlock):
 	display_name = 'Dark Oak Fence'
 	name = 'fenceDarkOak'
 	hardness = 2
@@ -1451,7 +1491,7 @@ class FencedarkoakBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(192)
-class FenceacaciaBlock(MapBlock):
+class FenceacaciaBlock(FenceBlock):
 	display_name = 'Acacia Fence'
 	name = 'fenceAcacia'
 	hardness = 2
@@ -1459,7 +1499,7 @@ class FenceacaciaBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(193)
-class DoorspruceBlock(MapBlock):
+class DoorspruceBlock(DoorBlock):
 	display_name = 'Spruce Door'
 	name = 'doorSpruce'
 	hardness = 3
@@ -1468,7 +1508,7 @@ class DoorspruceBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(194)
-class DoorbirchBlock(MapBlock):
+class DoorbirchBlock(DoorBlock):
 	display_name = 'Birch Door'
 	name = 'doorBirch'
 	hardness = 3
@@ -1477,7 +1517,7 @@ class DoorbirchBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(195)
-class DoorjungleBlock(MapBlock):
+class DoorjungleBlock(DoorBlock):
 	display_name = 'Jungle Door'
 	name = 'DoorJungle'
 	hardness = 3
@@ -1486,7 +1526,7 @@ class DoorjungleBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(196)
-class DooracaciaBlock(MapBlock):
+class DooracaciaBlock(DoorBlock):
 	display_name = 'Acacia Door'
 	name = 'doorAcacia'
 	hardness = 3
@@ -1495,7 +1535,7 @@ class DooracaciaBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(197)
-class DoordarkoakBlock(MapBlock):
+class DoordarkoakBlock(DoorBlock):
 	display_name = 'Dark Oak Door'
 	name = 'doorDarkOak'
 	hardness = 3
