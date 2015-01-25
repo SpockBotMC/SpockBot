@@ -33,13 +33,13 @@ class DebugPlugin:
 		self.physics.jump()
 
 	def clinfo_test(self, event, data):
-		print('Health Update', data)
+		print('Health Update:', data)
 
 	def block_test(self, event, blockdata):
 		block_id, meta = mapshort2id(blockdata['block_data'])
 		block = mapdata.get_block(block_id, meta)
 		print('Block update at:', blockdata['location'])
-		print('New block data:', block.display_name)
+		print('New block data:', block.display_name if block else None)
 
 	def timer_test(self, _, __):
 		new_time = int(round(time.time() * 1000))
