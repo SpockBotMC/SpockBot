@@ -4,7 +4,7 @@ import json
 from spock import utils
 from spock.mcp import mcdata, nbt
 from spock.mcp.mcdata import (
-	MC_BOOL, MC_UBYTE, MC_BYTE, MC_USHORT, MC_SHORT, MC_UINT, MC_INT,
+	MC_BOOL, MC_UBYTE, MC_BYTE, MC_USHORT, MC_SHORT, MC_UINT, MC_INT, MC_ULONG,
 	MC_LONG, MC_FLOAT, MC_DOUBLE, MC_VARINT, MC_VARLONG, MC_UUID, MC_POSITION,
 	MC_STRING, MC_CHAT, MC_SLOT, MC_META
 )
