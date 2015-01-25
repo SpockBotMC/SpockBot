@@ -23,29 +23,29 @@ APIs, other plugins won't know the difference.
 Currently writing Spock plugins requires a fairly intricate understanding of the
 MC protocol, since there aren't many plugins that provide higher abstractions
 than MC packets. That said the API is starting to shape up quite nicely, we've
-got timers and the start of a World API.
+got timers, basic physics, and the beginnings of a World API.
 
-Speaking of compatibility, Spock runs on Python 3.x on *Nix operating systems,
-and requires PyCrypto. Theoretically it runs on Windows but no one has ever
-tested it and I'm fairly sure there are a couple (easy to fix) errors that will
-pop up. Python 2.x would be nice, but it becomes an ever more distant goal as
-Spock continues to grow dependencies on new Python features. Not impossible,
-just not a priority
+Spock officially supports Python 3.x on \*Nix operating systems and requires
+PyCrypto. It also runs on Windows and under Python 2.7+ but that's not regularly
+tested and might break at any given moment. If you support one of those use
+cases and Spock breaks for you, submit an issue with a stack trace and we'll try
+to fix it.
 
 I'll write a real ReadMe and API docs when everything is done and stable-ish.
-For now you can check out the plugins folder to get a vague idea of what plugins
-should look like, find me on #mcdevs or email me at nickelpro@gmail.com if you
-have questions
+For now you can check out the contrib/plugins folder to get a vague idea of what
+plugins should look like, find me on #mcdevs or email me at nickelpro@gmail.com
+if you have questions
 
-###API Docs
+##API Docs
 Current API docs live here https://nickelpro.github.io/spock/docs/spock/
 
-#####P.S.
-A lot of people ask what COPS was. It was a service that tracked players on a
-minecraft server called Civcraft. It looked like [this](http://www.nickg.org/dl/cops.jpg)
-###Legal
+##Legal
 
 License is MIT and can be found in LICENSE
 
 The NBT parser and the original protocol implementation came from other projects,
 relevant legal information and attribution can be found in LEGAL.md
+
+#####P.S.
+A lot of people ask what COPS was. It was a service that tracked players on a
+minecraft server called Civcraft. It looked like [this](http://www.nickg.org/dl/cops.jpg)
