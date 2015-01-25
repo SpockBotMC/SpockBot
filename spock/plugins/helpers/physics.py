@@ -121,15 +121,16 @@ class PhysicsPlugin:
 		#feet or head collide with z
 		if self.block_collision(cb, z=1) or self.block_collision(cb, z=-1) or self.block_collision(cb, y=1, z=1) or self.block_collision(cb, y=1, z=-1):
 			self.vec.z = 0
+		if self.block_collision(cb, y=2): #we check +2 because above my head
+			self.vec.y = 0
 		if self.block_collision(cb, y=-1): #we check below feet
 			self.pos.on_ground = True
 			self.vec.y = 0
 			self.pos.y = cb.y
 		else:
+			self.pos.on_ground = False
 			self.vec.add_vector(y = -PLAYER_ENTITY_GAV)
 			self.apply_vertical_drag()
-		if self.block_collision(cb, y=2): #we check +2 because above my head
-			self.vec.y = 0
 
 	def block_collision(self, cb, x = 0, y = 0, z = 0):
 		block_id, meta = self.world.get_block(cb.x+x, cb.y+y, cb.z+z)
