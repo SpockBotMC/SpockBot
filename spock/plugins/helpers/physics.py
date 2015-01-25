@@ -154,7 +154,6 @@ class PhysicsPlugin:
 		elif block.bounding_box == mapdata.MCM_BBOX_FENCE:
 			return BoundingBox(1,1.5)
 		elif block.bounding_box == mapdata.MCM_BBOX_GATE:
-			print(block.meta, block.open, block.direction)
 			return BoundingBox(1,1)
 		elif block.bounding_box == mapdata.MCM_BBOX_DOOR:
 			return BoundingBox(1,1)

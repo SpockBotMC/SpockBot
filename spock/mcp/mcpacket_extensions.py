@@ -30,7 +30,6 @@ class ExtensionLSTC01:
 		packet.data['verify_token'] = bbuff.recv(length)
 		return packet
 
-
 	@staticmethod
 	def encode_extra(packet):
 		o  = datautils.pack(MC_VARINT, len(packet.data['public_key']))

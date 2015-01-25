@@ -1,43 +1,46 @@
 
 #Bounding Boxes
-MCM_BBOX_EMPTY  = 0x00
-MCM_BBOX_BLOCK  = 0x01
-MCM_BBOX_CUSTOM = 0x02
-MCM_BBOX_FENCE 	= 0x03
-MCM_BBOX_GATE 	= 0x04
-MCM_BBOX_DOOR 	= 0x05
-MCM_BBOX_SLAB 	= 0x06
-MCM_BBOX_STAIR 	= 0x07
+MCM_BBOX_EMPTY       = 0x00
+MCM_BBOX_BLOCK       = 0x01
+MCM_BBOX_CUSTOM      = 0x02
+MCM_BBOX_FENCE 	     = 0x03
+MCM_BBOX_GATE 	     = 0x04
+MCM_BBOX_DOOR 	     = 0x05
+MCM_BBOX_SLAB 	     = 0x06
+MCM_BBOX_STAIR 	     = 0x07
 
 #Materials
-MCM_MAT_ROCK    = 0x00
-MCM_MAT_DIRT    = 0x01
-MCM_MAT_WOOD    = 0x02
-MCM_MAT_WEB     = 0x03
-MCM_MAT_WOOL    = 0x04
-MCM_MAT_VINE    = 0x05
-MCM_MAT_LEAVES  = 0x06
+MCM_MAT_ROCK         = 0x00
+MCM_MAT_DIRT         = 0x01
+MCM_MAT_WOOD         = 0x02
+MCM_MAT_WEB          = 0x03
+MCM_MAT_WOOL         = 0x04
+MCM_MAT_VINE         = 0x05
+MCM_MAT_LEAVES       = 0x06
 
 #Gate
-MCM_GATE_SOUTH 	= 0x0
-MCM_GATE_WEST 	= 0x1
-MCM_GATE_NORTH 	= 0x2
-MCM_GATE_EAST 	= 0x3
+MCM_GATE_SOUTH 	     = 0x0
+MCM_GATE_WEST 	     = 0x1
+MCM_GATE_NORTH 	     = 0x2
+MCM_GATE_EAST 	     = 0x3
 
-MCM_GATE_CLOSE 	= 0x0
-MCM_GATE_OPEN 	= 0x1
+MCM_GATE_CLOSE 	     = 0x0
+MCM_GATE_OPEN 	     = 0x1
+
+MCM_GATE_UNPOWERED   = 0x00
+MCM_GATE_POWERED     = 0x01
 
 #Door
-MCM_DOOR_SOUTH 	= 0x3
-MCM_DOOR_WEST 	= 0x0
-MCM_DOOR_NORTH 	= 0x1
-MCM_DOOR_EAST 	= 0x2
+MCM_DOOR_SOUTH 	     = 0x3
+MCM_DOOR_WEST 	     = 0x0
+MCM_DOOR_NORTH 	     = 0x1
+MCM_DOOR_EAST 	     = 0x2
 
-MCM_DOOR_CLOSE 	= 0x0
-MCM_DOOR_OPEN 	= 0x1
+MCM_DOOR_CLOSE 	     = 0x0
+MCM_DOOR_OPEN 	     = 0x1
 
-MCM_DOOR_LOWER 	= 0x0
-MCM_DOOR_UPPER 	= 0x1
+MCM_DOOR_LOWER 	     = 0x0
+MCM_DOOR_UPPER 	     = 0x1
 
 MCM_DOOR_HINGE_LEFT  = 0x0
 MCM_DOOR_HINGE_RIGHT = 0x1
@@ -76,8 +79,9 @@ class FenceBlock(MapBlock):
 
 class GateBlock(MapBlock):
 	def __init__(self, meta):
-		self.direction = (meta>>1)&0x03
-		self.open = (meta>>3 == MCM_GATE_OPEN)
+		self.direction = meta&0x03
+		self.open = (meta>>2)&0x01 == MCM_GATE_OPEN
+		self.powered = meta>>3 == MCM_GATE_POWERED
 		self.meta = meta
 
 
