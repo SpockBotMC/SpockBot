@@ -1,15 +1,5 @@
 from spock.utils import BoundingBox
 
-#Bounding Boxes
-MCM_BBOX_EMPTY       = 0x00
-MCM_BBOX_BLOCK       = 0x01
-MCM_BBOX_CUSTOM      = 0x02
-MCM_BBOX_FENCE       = 0x03
-MCM_BBOX_GATE        = 0x04
-MCM_BBOX_DOOR        = 0x05
-MCM_BBOX_SLAB        = 0x06
-MCM_BBOX_STAIR       = 0x07
-
 #Materials
 MCM_MAT_ROCK         = 0x00
 MCM_MAT_DIRT         = 0x01
