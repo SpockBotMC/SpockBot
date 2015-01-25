@@ -12,15 +12,15 @@ from spock.mcp.mcdata import (
 
 hashed_extensions = {}
 extensions = tuple(tuple({} for i in j) for j in mcdata.packet_structs)
-def extension(ident):
+def extension(state, direction, packet_id):
 	def inner(cl):
-		hashed_extensions[ident] = cl
-		extensions[ident[0]][ident[1]][ident[2]] = cl
+		hashed_extensions[(state, direction, packet_id)] = cl
+		extensions[state][direction][packet_id] = cl
 		return cl
 	return inner
 
 #Login SERVER_TO_CLIENT 0x01 Encryption Request
-@extension((mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x01))
+@extension(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x01)
 class ExtensionLSTC01:
 	def decode_extra(packet, bbuff):
 		length = datautils.unpack(MC_VARINT, bbuff)
@@ -37,7 +37,7 @@ class ExtensionLSTC01:
 		return o
 
 #Login CLIENT_TO_SERVER 0x01 Encryption Response
-@extension((mcdata.LOGIN_STATE, mcdata.CLIENT_TO_SERVER, 0x01))
+@extension(mcdata.LOGIN_STATE, mcdata.CLIENT_TO_SERVER, 0x01)
 class ExtensionLCTS01:
 	def decode_extra(packet, bbuff):
 		length = datautils.unpack(MC_VARINT, bbuff)
@@ -54,7 +54,7 @@ class ExtensionLCTS01:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x0E Spawn Object
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x0E))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x0E)
 class ExtensionPSTC0E:
 	def decode_extra(packet, bbuff):
 		if packet.data['obj_data']:
@@ -71,7 +71,7 @@ class ExtensionPSTC0E:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x13 Destroy Entities
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x13))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x13)
 class ExtensionPSTC13:
 	def decode_extra(packet, bbuff):
 		count = datautils.unpack(MC_VARINT, bbuff)
@@ -87,7 +87,7 @@ class ExtensionPSTC13:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x20 Entity Properties
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x20))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x20)
 class ExtensionPSTC20:
 	def decode_extra(packet, bbuff):
 		packet.data['properties'] = []
@@ -119,7 +119,7 @@ class ExtensionPSTC20:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x21 Chunk Data
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x21))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x21)
 class ExtensionPSTC21:
 	def decode_extra(packet, bbuff):
 		packet.data['data'] = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
@@ -131,7 +131,7 @@ class ExtensionPSTC21:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x22 Multi Block Change
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x22))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x22)
 class ExtensionPSTC22:
 	def decode_extra(packet, bbuff):
 		packet.data['blocks'] = []
@@ -157,7 +157,7 @@ class ExtensionPSTC22:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x26 Map Chunk Bulk
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26)
 class ExtensionPSTC26:
 	def decode_extra(packet, bbuff):
 		sky_light = datautils.unpack(MC_BOOL, bbuff)
@@ -182,7 +182,7 @@ class ExtensionPSTC26:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x27 Explosion
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x27))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x27)
 class ExtensionPSTC27:
 	def decode_extra(packet, bbuff):
 		packet.data['blocks'] = [
@@ -204,7 +204,7 @@ class ExtensionPSTC27:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x2A Particle
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x2A))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x2A)
 class ExtensionPSTC2A:
 	def decode_extra(packet, bbuff):
 		packet.data['data'] = [
@@ -219,7 +219,7 @@ class ExtensionPSTC2A:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x2D Open Window
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x2D))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x2D)
 class ExtensionPSTC2D:
 	def decode_extra(packet, bbuff):
 		if packet.data['inv_type'] == 'EntityHorse':
@@ -232,7 +232,7 @@ class ExtensionPSTC2D:
 
 
 #Play  SERVER_TO_CLIENT 0x30 Window Items
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x30))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x30)
 class ExtensionPSTC30:
 	def decode_extra(packet, bbuff):
 		packet.data['slots'] = [
@@ -248,7 +248,7 @@ class ExtensionPSTC30:
 
 #TODO: Actually decode the map data into a useful format
 #Play  SERVER_TO_CLIENT 0x34 Maps
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x34))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x34)
 class ExtensionPSTC34:
 	def decode_extra(packet, bbuff):
 		packet.data['icons'] = []
@@ -286,8 +286,8 @@ class ExtensionPSTC34:
 
 #Play  SERVER_TO_CLIENT 0x35 Update Block Entity
 #Play  SERVER_TO_CLIENT 0x48 Update Entity NBT
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x35))
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x48))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x35)
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x48)
 class ExtensionUpdateNBT:
 	def decode_extra(packet, bbuff):
 		assert(datautils.unpack(MC_BYTE, bbuff) == nbt.TAG_COMPOUND)
@@ -305,7 +305,7 @@ class ExtensionUpdateNBT:
 		return bbuff.flush()
 
 #Play  SERVER_TO_CLIENT 0x37 Statistics
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x37))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x37)
 class ExtensionPSTC37:
 	def decode_extra(packet, bbuff):
 		packet.data['entries'] = [[
@@ -322,14 +322,14 @@ class ExtensionPSTC37:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x38 Player List Item
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x38))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x38)
 class ExtensionPSTC38:
 	def decode_extra(packet, bbuff):
-		action = packet.data['action']
+		act = packet.data['action']
 		packet.data['player_list'] = []
 		for i in range(datautils.unpack(MC_VARINT, bbuff)):
 			item = {'uuid': datautils.unpack(MC_UUID, bbuff)}
-			if action == mcdata.PL_ADD_PLAYER:
+			if act == mcdata.PL_ADD_PLAYER:
 				item['name'] = datautils.unpack(MC_STRING, bbuff)
 				item['properties'] = []
 				for i in range(datautils.unpack(MC_VARINT, bbuff)):
@@ -341,11 +341,11 @@ class ExtensionPSTC38:
 					if prop['signed']:
 						prop['signature'] = datautils.unpack(MC_STRING, bbuff)
 					item['properties'].append(prop)
-			if action == mcdata.PL_ADD_PLAYER or action == mcdata.PL_UPDATE_GAMEMODE:
+			if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_GAMEMODE:
 				item['gamemode'] = datautils.unpack(MC_VARINT, bbuff)
-			if action == mcdata.PL_ADD_PLAYER or action == mcdata.PL_UPDATE_LATENCY:
+			if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_LATENCY:
 				item['ping'] = datautils.unpack(MC_VARINT, bbuff)
-			if action == mcdata.PL_ADD_PLAYER or action == mcdata.PL_UPDATE_DISPLAY:
+			if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_DISPLAY:
 				item['has_display'] = datautils.unpack(MC_BOOL, bbuff)
 				if item['has_display']:
 					item['display_name'] = datautils.unpack(MC_CHAT, bbuff)
@@ -353,11 +353,11 @@ class ExtensionPSTC38:
 
 
 	def encode_extra(packet):
-		action = packet.data['action']
+		act = packet.data['action']
 		o = datautils.pack(MC_VARINT, len(packet.data['player_list']))
 		for item in packet.data['player_list']:
 			o += datautils.pack(MC_UUID, item['uuid'])
-			if action == mcdata.PL_ADD_PLAYER:
+			if act == mcdata.PL_ADD_PLAYER:
 				o += datautils.pack(MC_STRING, item['name'])
 				o += datautils.pack(MC_VARINT, len(item['properties']))
 				for prop in item['properties']:
@@ -366,18 +366,18 @@ class ExtensionPSTC38:
 					o += datautils.pack(MC_BOOL, prop['signed'])
 					if prop['signed']:
 						o += datautils.pack(MC_STRING, prop['signature'])
-			if action == mcdata.PL_ADD_PLAYER or action == mcdata.PL_UPDATE_GAMEMODE:
+			if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_GAMEMODE:
 				o += datautils.pack(MC_VARINT, item['gamemode'])
-			if action == mcdata.PL_ADD_PLAYER or action == mcdata.PL_UPDATE_LATENCY:
+			if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_LATENCY:
 				o += datautils.pack(MC_VARINT, item['ping'])
-			if action == mcdata.PL_ADD_PLAYER or action == mcdata.PL_UPDATE_DISPLAY:
+			if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_DISPLAY:
 				o += datautils.pack(MC_BOOL, item['has_display'])
 				if item['has_display']:
 					o += datautils.pack(MC_CHAT, item['display_name'])
 		return o
 
 #Play  SERVER_TO_CLIENT 0x3A Tab-Complete
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3A))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3A)
 class ExtensionPSTC3A:
 	def decode_extra(packet, bbuff):
 		packet.data['matches'] = [
@@ -392,63 +392,72 @@ class ExtensionPSTC3A:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x3B Scoreboard Objective
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3B))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3B)
 class ExtensionPSTC3B:
 	def decode_extra(packet, bbuff):
-		action = packet.data['action']
-		if action == mcdata.SO_CREATE_BOARD or action == mcdata.SO_UPDATE_BOARD:
+		act = packet.data['action']
+		if act == mcdata.SO_CREATE_BOARD or act == mcdata.SO_UPDATE_BOARD:
 			packet.data['obj_val'] = datautils.unpack(MC_STRING, bbuff)
 			packet.data['type'] = datautils.unpack(MC_STRING, bbuff)
 		return packet
 
 	def encode_extra(packet):
 		o = b''
-		if packet.data['action'] == 0 or packet.data['action'] == 2:
+		act = packet.data['action']
+		if act == mcdata.SO_CREATE_BOARD or act == mcdata.SO_UPDATE_BOARD:
 			o += datautils.pack(MC_STRING, packet.data['obj_val'])
 			o += datautils.pack(MC_STRING, packet.data['type'])
 		return o
 
 #Play  SERVER_TO_CLIENT 0x3C Update Score
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3C))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3C)
 class ExtensionPSTC3C:
 	def decode_extra(packet, bbuff):
-		if packet.data['action'] == 0:
+		if packet.data['action'] == mcdata.US_UPDATE_SCORE:
 			packet.data['value'] = datautils.unpack(MC_VARINT, bbuff)
 		return packet
 
 	def encode_extra(packet):
 		o = b''
-		if packet.data['action'] == 0:
+		if packet.data['action'] == mcdata.US_UPDATE_SCORE:
 			o += datautils.pack(MC_VARINT, packet.data['value'])
 		return o
 
 #Play  SERVER_TO_CLIENT 0x3E Teams
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3E))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3E)
 class ExtensionPSTC3E:
 	def decode_extra(packet, bbuff):
-		action = packet.data['action']
-		if action == 0 or action == 2:
+		act = packet.data['action']
+		if act == mcdata.TE_CREATE_TEAM or act == TE_UPDATE_TEAM:
 			packet.data['display_name'] = datautils.unpack(MC_STRING, bbuff)
 			packet.data['team_prefix'] = datautils.unpack(MC_STRING, bbuff)
 			packet.data['team_suffix'] = datautils.unpack(MC_STRING, bbuff)
 			packet.data['friendly_fire'] = datautils.unpack(MC_BYTE, bbuff)
 			packet.data['name_visibility'] = datautils.unpack(MC_STRING, bbuff)
-		if action == 0 or action == 3 or action == 4:
+		if (
+			act == mcdata.TE_CREATE_TEAM or
+			act == mcdata.TE_ADDPLY_TEAM or
+			act == mcdata.TE_REMPLY_TEAM
+		):
 			packet.data['players'] = [
 				datautils.unpack(MC_STRING, bbuff)
 			for i in range(datautils.unpack(MC_VARINT, bbuff))]
 		return packet
 
 	def encode_extra(packet):
-		action = packet.data['action']
+		act = packet.data['action']
 		o = b''
-		if action == 0 or action == 2:
+		if act == mcdata.TE_CREATE_TEAM or act == TE_UPDATE_TEAM:
 			o += datautils.pack(MC_STRING, packet.data['display_name'])
 			o += datautils.pack(MC_STRING, packet.data['team_prefix'])
 			o += datautils.pack(MC_STRING, packet.data['team_suffix'])
 			o += datautils.pack(MC_BYTE, packet.data['friendly_fire'])
 			o += datautils.pack(MC_STRING, packet.data['name_visibility'])
-		if action == 0 or action == 3 or action == 4:
+		if (
+			act == mcdata.TE_CREATE_TEAM or
+			act == mcdata.TE_ADDPLY_TEAM or
+			act == mcdata.TE_REMPLY_TEAM
+		):
 			o += datautils.pack(MC_VARINT, len(packet.data['players']))
 			for player in packet.data['players']:
 				o += datautils.pack(MC_STRING, player)
@@ -456,8 +465,8 @@ class ExtensionPSTC3E:
 
 #Play  SERVER_TO_CLIENT 0x3F Plugin Message
 #Play  CLIENT_TO_SERVER 0x17 Plugin Message
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3F))
-@extension((mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x17))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3F)
+@extension(mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x17)
 class ExtensionPluginMessage:
 	def decode_extra(packet, bbuff):
 		packet.data['data'] = bbuff.flush()
@@ -468,7 +477,7 @@ class ExtensionPluginMessage:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x42 Combat Event
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x42))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x42)
 class ExtensionPSTC42:
 	def decode_extra(packet, bbuff):
 		if packet.data['event'] == mcdata.CE_END_COMBAT:
@@ -492,55 +501,55 @@ class ExtensionPSTC42:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x44 World Border
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x44))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x44)
 class ExtensionPSTC44:
 	def decode_extra(packet, bbuff):
-		action = packet.data['action']
-		if action == mcdata.WB_SET_SIZE:
+		act = packet.data['action']
+		if act == mcdata.WB_SET_SIZE:
 			packet.data['radius'] = datautils.unpack(MC_VARINT, bbuff)
-		if action == mcdata.WB_SET_CENTER or action == mcdata.WB_INITIALIZE:
+		if act == mcdata.WB_SET_CENTER or act == mcdata.WB_INITIALIZE:
 			packet.data['x'] = datautils.unpack(MC_DOUBLE, bbuff)
 			packet.data['z'] = datautils.unpack(MC_DOUBLE, bbuff)
-		if action == mcdata.WB_LERP_SIZE or action == mcdata.WB_INITIALIZE:
+		if act == mcdata.WB_LERP_SIZE or act == mcdata.WB_INITIALIZE:
 			packet.data['old_radius'] = datautils.unpack(MC_DOUBLE, bbuff)
 			packet.data['new_radius'] = datautils.unpack(MC_DOUBLE, bbuff)
 			packet.data['speed'] = datautils.unpack(MC_VARLONG, bbuff)
-		if action == mcdata.WB_INITIALIZE:
+		if act == mcdata.WB_INITIALIZE:
 			packet.data['port_tele_bound'] = datautils.unpack(MC_VARINT, bbuff)
-		if action == mcdata.WB_SET_WARN_TIME or action == mcdata.WB_INITIALIZE:
+		if act == mcdata.WB_SET_WARN_TIME or act == mcdata.WB_INITIALIZE:
 			packet.data['warn_time'] = datautils.unpack(MC_VARINT, bbuff)
-		if action == mcdata.WB_SET_WARN_BLOCKS or action == mcdata.WB_INITIALIZE:
+		if act == mcdata.WB_SET_WARN_BLOCKS or act == mcdata.WB_INITIALIZE:
 			packet.data['warn_blocks'] = datautils.unpack(MC_VARINT, bbuff)
 		return packet
 
 	def encode_extra(packet):
 		o = b''
-		action = packet.data['action']
-		if action == mcdata.WB_SET_SIZE:
+		act = packet.data['action']
+		if act == mcdata.WB_SET_SIZE:
 			o += datautils.pack(MC_DOUBLE, packet.data['radius'])
-		if action == mcdata.WB_SET_CENTER or action == mcdata.WB_INITIALIZE:
+		if act == mcdata.WB_SET_CENTER or act == mcdata.WB_INITIALIZE:
 			o += datautils.pack(MC_DOUBLE, packet.data['x'])
 			o += datautils.pack(MC_DOUBLE, packet.data['y'])
-		if action == mcdata.WB_LERP_SIZE or action == mcdata.WB_INITIALIZE:
+		if act == mcdata.WB_LERP_SIZE or act == mcdata.WB_INITIALIZE:
 			o += datautils.pack(MC_DOUBLE, packet.data['old_radius'])
 			o += datautils.pack(MC_DOUBLE, packet.data['new_radius'])
 			o += datautils.pack(MC_VARLONG, packet.data['speed'])
-		if action == mcdata.WB_INITIALIZE:
+		if act == mcdata.WB_INITIALIZE:
 			o += datautils.pack(MC_VARINT, packet.data['port_tele_bound'])
-		if action == mcdata.WB_SET_WARN_TIME or action == mcdata.WB_INITIALIZE:
+		if act == mcdata.WB_SET_WARN_TIME or act == mcdata.WB_INITIALIZE:
 			o += datautils.pack(MC_VARINT, packet.data['warn_time'])
-		if action == mcdata.WB_SET_WARN_BLOCKS or action == mcdata.WB_INITIALIZE:
+		if act == mcdata.WB_SET_WARN_BLOCKS or act == mcdata.WB_INITIALIZE:
 			o += datautils.pack(MC_VARINT, packet.data['warn_blocks'])
 		return o
 
 #Play  SERVER_TO_CLIENT 0x45 Title
-@extension((mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x45))
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x45)
 class ExtensionPSTC45:
 	def decode_extra(packet, bbuff):
-		action = packet.data['action']
-		if action == mcdata.TL_TITLE or action == mcdata.TL_SUBTITLE:
+		act = packet.data['action']
+		if act == mcdata.TL_TITLE or act == mcdata.TL_SUBTITLE:
 			packet.data['text'] = datautils.unpack(MC_CHAT, bbuff)
-		if action == mcdata.TL_TIMES:
+		if act == mcdata.TL_TIMES:
 			packet.data['fade_in'] = datautils.unpack(MC_INT, bbuff)
 			packet.data['stay'] = datautils.unpack(MC_INT, bbuff)
 			packet.data['fade_out'] = datautils.unpack(MC_INT, bbuff)
@@ -548,17 +557,17 @@ class ExtensionPSTC45:
 
 	def encode_extra(packet):
 		o = b''
-		action = packet.data['action']
-		if action == mcdata.TL_TITLE or action == mcdata.TL_SUBTITLE:
+		act = packet.data['action']
+		if act == mcdata.TL_TITLE or act == mcdata.TL_SUBTITLE:
 			o += datautils.pack(MC_CHAT, packet.data['text'])
-		if action == mcdata.TL_TIMES:
+		if act == mcdata.TL_TIMES:
 			o += datautils.pack(MC_INT, packet.data['fade_in'])
 			o += datautils.pack(MC_INT, packet.data['stay'])
 			o += datautils.pack(MC_INT, packet.data['fade_out'])
 		return o
 
 #Play  CLIENT_TO_SERVER 0x02 Use Entity
-@extension((mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x02))
+@extension(mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x02)
 class ExtensionPCTS02:
 	def decode_extra(packet, bbuff):
 		if packet.data['action'] == mcdata.UE_INTERACT_AT:
@@ -577,7 +586,7 @@ class ExtensionPCTS02:
 
 #ToDo: Set has_position True for encode based on prescence of 'block_loc'?
 #Play  CLIENT_TO_SERVER 0x14 Tab-Complete
-@extension((mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x14))
+@extension(mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x14)
 class ExtensionPCTS14:
 	def decode_extra(packet, bbuff):
 		if packet.data['has_position'] == True:

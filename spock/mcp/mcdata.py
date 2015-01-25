@@ -43,16 +43,36 @@ FLG_ZPOS_REL        = 0x04
 FLG_YROT_REL        = 0x08
 FLG_XROT_REL        = 0x10
 
+#Actions
+#Clientbound 0x38 Player List Item
 PL_ADD_PLAYER       = 0x00
 PL_UPDATE_GAMEMODE  = 0x01
 PL_UPDATE_LATENCY   = 0x02
 PL_UPDATE_DISPLAY   = 0x03
 PL_REMOVE_PLAYER    = 0x04
 
+#Clientbound 0x3B Scoreboard Objective
+SO_CREATE_BOARD     = 0x00
+SO_REMOVE_BOARD     = 0x01
+SO_UPDATE_BOARD     = 0x02
+
+#Clientbound 0x3C Update Score
+US_UPDATE_SCORE     = 0x00
+US_REMOVE_SCORE     = 0x01
+
+#Clientbound 0x3E Teams
+TE_CREATE_TEAM      = 0x00
+TE_REMOVE_TEAM      = 0x01
+TE_UPDATE_TEAM      = 0x02
+TE_ADDPLY_TEAM      = 0x03
+TE_REMPLY_TEAM      = 0x04
+
+#Clientbound 0x42 Combat Event
 CE_ENTER_COMBAT     = 0x00
 CE_END_COMBAT       = 0x01
 CE_ENTITY_DEAD      = 0x02
 
+#Clientbound 0x44 World Border
 WB_SET_SIZE         = 0x00
 WB_LERP_SIZE        = 0x01
 WB_SET_CENTER       = 0x02
@@ -60,20 +80,19 @@ WB_INITIALIZE       = 0x03
 WB_SET_WARN_TIME    = 0x04
 WB_SET_WARN_BLOCKS  = 0x05
 
-SO_CREATE_BOARD     = 0x00
-SO_REMOVE_BOARD     = 0x01
-SO_UPDATE_BOARD     = 0x02
-
+#Clientbound 0x45 Title
 TL_TITLE            = 0x00
 TL_SUBTITLE         = 0x01
 TL_TIMES            = 0x02
 TL_CLEAR            = 0x03
 TL_RESET            = 0x04
 
+#Serverbound 0x02 Use Entity
 UE_INTERACT         = 0x00
 UE_ATTACK           = 0x01
 UE_INTERACT_AT      = 0x02
 
+#Serverbound 0x16 Client Status
 CL_STATUS_RESPAWN   = 0x00
 CL_STATUS_STATS     = 0x01
 CL_STATUS_INV       = 0x02
@@ -778,7 +797,7 @@ packet_structs = {
 				#Extension
 				#List of dicts 'player_list'
 					#MC_UUID 'uuid'
-					#action == 0, ADD_PLAYER
+					#PL_ADD_PLAYER
 						#MC_STRING 'name'
 						#List of dicts, 'properties'
 							#MC_STRING 'name'
@@ -791,15 +810,15 @@ packet_structs = {
 						#MC_BOOL   'has_display'
 						#has_display == True
 							#MC_CHAT 'display_name'
-					#action == 1 UPDATE_GAMEMODE
+					#PL_UPDATE_GAMEMODE
 						#MC_VARINT 'gamemode'
-					#action == 2 UPDATE_LATENCY
+					#PL_UPDATE_LATENCY
 						#MC_VARINT 'ping'
-					#action == 3 UPDATE_DISPLAY
+					#PL_UPDATE_DISPLAY
 						#MC_BOOL 'has_display'
 						#has_display == True
 							#MC_CHAT 'dsiplay_name'
-					#action == 4 REMOVE_PLAYER
+					#PL_REMOVE_PLAYER
 						#No extra fields
 			),
 			#Player Abilities
@@ -818,7 +837,8 @@ packet_structs = {
 				(MC_STRING, 'obj_name'),
 				(MC_BYTE  , 'action'),
 				#Extension
-					#action == 0 or action == 2
+					#SO_CREATE_BOARD
+					#SO_UPDATE_BOARD
 						#MC_STRING 'obj_val'
 						#MC_STRING 'type'
 			),
@@ -828,7 +848,7 @@ packet_structs = {
 				(MC_BYTE  , 'action'),
 				(MC_STRING, 'score_name'),
 				#Extension
-					#action == 0
+					#US_UPDATE_SCORE
 						#MC_VARINT 'value'
 			),
 			#Display Scoreboard
@@ -842,15 +862,15 @@ packet_structs = {
 				(MC_BYTE  , 'action'),
 				#Extension
 					#Depends on action
-					#0 gets all fields
-					#1 gets no fields
-					#For 2:
+					#TE_CREATE_TEAM gets all fields
+					#TE_UPDATE_TEAM
 						#MC_STRING 'display_name'
 						#MC_STRING 'team_prefix'
 						#MC_STRING 'team_suffix'
 						#MC_BYTE   'friendly_fire'
 						#MC_STRING 'name_visibility'
-					#For 3 or 4:
+					#TE_ADDPLY_TEAM
+					#TE_REMPLY_TEAM
 						# List of strings 'players'
 			),
 			#Plugin Message
@@ -958,7 +978,7 @@ packet_structs = {
 				(MC_VARINT, 'target'),
 				(MC_VARINT, 'action'),
 				#Extension
-					#action == UE_INTERACT_AT
+					#UE_INTERACT_AT
 						#MC_FLOAT 'target_x'
 						#MC_FLOAT 'target_y'
 						#MC_FLOAT 'target_z'
