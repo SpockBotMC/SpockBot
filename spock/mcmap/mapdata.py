@@ -4,9 +4,10 @@ MCM_BBOX_EMPTY  = 0x00
 MCM_BBOX_BLOCK  = 0x01
 MCM_BBOX_CUSTOM = 0x02
 MCM_BBOX_FENCE 	= 0x03
-MCM_BBOX_DOOR 	= 0x04
-MCM_BBOX_SLAB 	= 0x05
-MCM_BBOX_STAIR 	= 0x06
+MCM_BBOX_GATE 	= 0x04
+MCM_BBOX_DOOR 	= 0x05
+MCM_BBOX_SLAB 	= 0x06
+MCM_BBOX_STAIR 	= 0x07
 
 
 MCM_MAT_ROCK    = 0x00
@@ -15,7 +16,7 @@ MCM_MAT_WOOD    = 0x02
 MCM_MAT_WEB     = 0x03
 MCM_MAT_WOOL    = 0x04
 MCM_MAT_VINE    = 0x05
-MCM_MAT_LEAVES    = 0x06
+MCM_MAT_LEAVES  = 0x06
 
 blocks = {}
 def map_block(block_id):
@@ -360,6 +361,7 @@ class StoneslabBlock(MapBlock):
 	display_name = 'Stone Slab'
 	name = 'stoneSlab'
 	hardness = 2
+	bounding_box = MCM_BBOX_SLAB
 
 @map_block(45)
 class BricksBlock(MapBlock):
@@ -421,7 +423,8 @@ class MobspawnerBlock(MapBlock):
 class WoodstairBlock(MapBlock):
 	display_name = 'Wooden Stairs'
 	name = 'stairsWood'
-material = MCM_MAT_WOOD
+	bounding_box = MCM_BBOX_STAIR
+	material = MCM_MAT_WOOD
 
 @map_block(54)
 class ChestBlock(MapBlock):
@@ -525,6 +528,7 @@ class RailBlock(MapBlock):
 class CobblestairBlock(MapBlock):
 	display_name = 'Cobblestone Stairs'
 	name = 'stairsStone'
+	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -812,12 +816,14 @@ class FencegateBlock(MapBlock):
 	display_name = 'Fence Gate'
 	name = 'fenceGate'
 	hardness = 2
+	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(108)
 class BrickstairBlock(MapBlock):
 	display_name = 'Brick Stairs'
 	name = 'stairsBrick'
+	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -825,6 +831,7 @@ class BrickstairBlock(MapBlock):
 class StonebrickstairBlock(MapBlock):
 	display_name = 'Stone Brick Stairs'
 	name = 'stairsStoneBrickSmooth'
+	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -861,6 +868,7 @@ class NetherbrickfenceBlock(MapBlock):
 class NetherbrickstairBlock(MapBlock):
 	display_name = 'Nether Brick Stairs'
 	name = 'stairsNetherBrick'
+	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -947,6 +955,7 @@ class WoodslabBlock(MapBlock):
 	display_name = 'Wooden Slab'
 	name = 'woodSlab'
 	hardness = 2
+	bounding_box = MCM_BBOX_SLAB
 
 @map_block(127)
 class CocoapodBlock(MapBlock):
@@ -960,6 +969,7 @@ class SandstonestairBlock(MapBlock):
 	display_name = 'Sandstone Stairs'
 	name = 'stairsSandStone'
 	hardness = 0.8
+	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1158,6 +1168,7 @@ class QuartzstairBlock(MapBlock):
 	display_name = 'Quartz Stairs'
 	name = 'quartzStairs'
 	hardness = 0.8
+	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1198,8 +1209,7 @@ class AcacialeavesBlock(MapBlock):
 	display_name = 'Acacia Leaves'
 	name = 'acaciaLeaves'
 	hardness = 0.2
-	material = MCM_MAT_ROCK
-	harvest_tools = (270, 274, 257, 278, 285)
+	material = MCM_MAT_LEAVES
 
 @map_block(162)
 class AcaciawoodBlock(MapBlock):
@@ -1214,6 +1224,7 @@ class AcaciastairsBlock(MapBlock):
 	display_name = 'Acacia Stairs'
 	name = 'acaciaStairs'
 	hardness = 2
+	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1222,6 +1233,7 @@ class DarkoakstairsBlock(MapBlock):
 	display_name = 'Dark Oak Stairs'
 	name = 'darkoakStairs'
 	hardness = 2
+	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1345,6 +1357,7 @@ class RedsandstonestairsBlock(MapBlock):
 	display_name = 'Red Sandstone Stairs'
 	name = 'redSandstoneStairs'
 	hardness = 0.8
+	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1361,6 +1374,7 @@ class RedsandstoneslabBlock(MapBlock):
 	display_name = 'Red Sandstone Slab'
 	name = 'redSandstoneSlab'
 	hardness = 0.8
+	bounding_box = MCM_BBOX_SLAB
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1369,6 +1383,7 @@ class FencegatespruceBlock(MapBlock):
 	display_name = 'Spruce Fence Gate'
 	name = 'fenceGateSpruce'
 	hardness = 2
+	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(184)
@@ -1376,6 +1391,7 @@ class FencegatebirchBlock(MapBlock):
 	display_name = 'Birch Fence Gate'
 	name = 'fenceGateBirch'
 	hardness = 2
+	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(185)
@@ -1383,6 +1399,7 @@ class FencegatejungleBlock(MapBlock):
 	display_name = 'Jungle Fence Gate'
 	name = 'fenceGateJungle'
 	hardness = 2
+	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(186)
@@ -1390,6 +1407,7 @@ class FencegatedarkoakBlock(MapBlock):
 	display_name = 'Dark Oak Fence Gate'
 	name = 'fenceGateDarkOak'
 	hardness = 2
+	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(187)
@@ -1397,6 +1415,7 @@ class FencegateacaciaBlock(MapBlock):
 	display_name = 'Acacia Fence Gate'
 	name = 'fenceGateAcacia'
 	hardness = 2
+	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(188)
