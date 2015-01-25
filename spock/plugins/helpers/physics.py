@@ -11,8 +11,6 @@ handful of people (Thank you 0pteron!) to the Minecraft wiki talk page on
 Entities and Transportation. Ideally someone will decompile the client with MCP
 and document the totally correct values and behaviors.
 """
-from spock.mcmap import mapdata
-
 #Gravitational constants defined in blocks/(client tick)^2
 PLAYER_ENTITY_GAV = 0.08
 THROWN_ENTITY_GAV = 0.03
@@ -40,34 +38,8 @@ PLAYER_JMP_ACC    = 0.45
 
 import math
 from spock.utils import pl_announce
-
-class Vec3:
-	def __init__(self, x, y, z):
-		self.x = x
-		self.y = y
-		self.z = z
-
-	def add_vector(self, x = None, y = None, z = None, vec = None):
-		if vec:
-			self.x += vec.x
-			self.y += vec.y
-			self.z += vec.z
-		else:
-			if x: self.x += x
-			if y: self.y += y
-			if z: self.z += z
-
-	def __str__(self):
-		return "({:.2f}, {:.2f}, {:.2f})".format(self.x, self.y, self.z)
-
-class BoundingBox:
-	def __init__(self, w, h, d=None):
-		self.w = w #x
-		self.h = h #y
-		if d:
-			self.d = d #z
-		else:
-			self.d = w
+from spock.mcmap import mapdata
+from spock.utils import BoundingBox, Vec3
 
 class PhysicsCore:
 	def __init__(self, vec, pos):
@@ -109,7 +81,6 @@ class PhysicsPlugin:
 
 	def tick(self, _, __):
 		self.check_collision()
-		#self.apply_gravity()
 		self.apply_horizontal_drag()
 		self.apply_vector()
 
@@ -139,38 +110,17 @@ class PhysicsPlugin:
 			return False
 		#possibly we want to use the centers of blocks as the starting points for bounding boxes instead of 0,0,0
 		#this might make thinks easier when we get to more complex shapes that are in the center of a block aka fences but more complicated for the player
-		#uncenter the player position
+		#uncenter the player position and bump it up a little down to prevent colliding in the floor
 		pos1 = Vec3(self.pos.x-self.playerbb.w/2, self.pos.y-0.2, self.pos.z-self.playerbb.d/2)
 		bb1 = self.playerbb
-		pos2 = Vec3(cb.x+x, cb.y+y, cb.z+z)
-		bb2 = self.get_bounding_box(block)
+		bb2 = block.bounding_box
 		if bb2 != None:
+			pos2 = Vec3(cb.x+x+bb2.x, cb.y+y+bb2.y, cb.z+z+bb2.z)
 			if ((pos1.x + bb1.w) >= (pos2.x) and (pos1.x) <= (pos2.x + bb2.w)) and \
 				((pos1.y + bb1.h) >= (pos2.y) and (pos1.y) <= (pos2.y + bb2.h)) and \
 				((pos1.z + bb1.d) >= (pos2.z) and (pos1.z) <= (pos2.z + bb2.d)):
 				return True
 		return False
-
-	def get_bounding_box(self, block):
-		if block.bounding_box == mapdata.MCM_BBOX_EMPTY:
-			return None
-		elif block.bounding_box == mapdata.MCM_BBOX_BLOCK:
-			return BoundingBox(1,1)
-		elif block.bounding_box == mapdata.MCM_BBOX_CUSTOM:
-			return None
-		elif block.bounding_box == mapdata.MCM_BBOX_FENCE:
-			return BoundingBox(1,1.5)
-		elif block.bounding_box == mapdata.MCM_BBOX_GATE:
-			if block.open:
-				return None
-			else:
-				return BoundingBox(1,1)
-		elif block.bounding_box == mapdata.MCM_BBOX_DOOR:
-			return BoundingBox(1,1)
-		elif block.bounding_box == mapdata.MCM_BBOX_SLAB:
-			return BoundingBox(1,1)
-		elif block.bounding_box == mapdata.MCM_BBOX_STAIR:
-			return BoundingBox(1,1)
 
 	def apply_vertical_drag(self):
 		self.vec.y = self.vec.y - self.vec.y*PLAYER_ENTITY_DRG

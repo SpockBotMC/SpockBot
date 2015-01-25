@@ -1,4 +1,37 @@
-#Lacking a better place to put this, bbuff can live here for now
+"""
+ALL THE UTILS!
+"""
+class Vec3:
+	def __init__(self, x, y, z):
+		self.x = x
+		self.y = y
+		self.z = z
+
+	def add_vector(self, x = None, y = None, z = None, vec = None):
+		if vec:
+			self.x += vec.x
+			self.y += vec.y
+			self.z += vec.z
+		else:
+			if x: self.x += x
+			if y: self.y += y
+			if z: self.z += z
+
+	def __str__(self):
+		return "({:.2f}, {:.2f}, {:.2f})".format(self.x, self.y, self.z)
+
+class BoundingBox:
+	def __init__(self, w, h, d=None, offset=(0,0,0)):
+		self.x = offset[0]
+		self.y = offset[1]
+		self.z = offset[2]
+		self.w = w #x
+		self.h = h #y
+		if d:
+			self.d = d #z
+		else:
+			self.d = w
+
 class BufferUnderflowException(Exception):
 	pass
 

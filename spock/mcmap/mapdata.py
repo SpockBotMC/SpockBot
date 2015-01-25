@@ -1,3 +1,4 @@
+from spock.utils import BoundingBox
 
 #Bounding Boxes
 MCM_BBOX_EMPTY       = 0x00
@@ -31,10 +32,10 @@ MCM_GATE_UNPOWERED   = 0x00
 MCM_GATE_POWERED     = 0x01
 
 #Door
-MCM_DOOR_SOUTH       = 0x03
 MCM_DOOR_WEST        = 0x00
 MCM_DOOR_NORTH       = 0x01
 MCM_DOOR_EAST        = 0x02
+MCM_DOOR_SOUTH       = 0x03
 
 MCM_DOOR_CLOSE       = 0x00
 MCM_DOOR_OPEN        = 0x01
@@ -46,6 +47,23 @@ MCM_DOOR_HINGE_LEFT  = 0x00
 MCM_DOOR_HINGE_RIGHT = 0x01
 
 
+#Trapdoor
+MCM_TRAPDOOR_WEST        = 0x00
+MCM_TRAPDOOR_NORTH       = 0x01
+MCM_TRAPDOOR_EAST        = 0x02
+MCM_TRAPDOOR_SOUTH       = 0x03
+
+MCM_TRAPDOOR_CLOSE       = 0x00
+MCM_TRAPDOOR_OPEN        = 0x01
+
+MCM_TRAPDOOR_LOWER       = 0x00
+MCM_TRAPDOOR_UPPER       = 0x01
+
+#Slab
+MCM_SLAB_LOWER       = 0x00
+MCM_SLAB_UPPER       = 0x01
+
+
 blocks = {}
 def map_block(block_id):
 	def inner(cl):
@@ -54,8 +72,12 @@ def map_block(block_id):
 		return cl
 	return inner
 
-def get_block(block_id, meta = 0):
-	return blocks[block_id](meta) if block_id < len(blocks) else None
+def get_block(block_id, meta = 0, init=True):
+	if init:
+		return blocks[block_id](meta) if block_id < len(blocks) else None
+	else:
+		return blocks[block_id] if block_id < len(blocks) else None
+
 
 class MapBlock:
 	display_name = 'Map Block'
@@ -63,36 +85,73 @@ class MapBlock:
 	hardness = 0
 	stack_size = 64
 	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = None
 	harvest_tools = None
 
 	def __init__(self, meta):
-		pass
+		self.bounding_box = BoundingBox(1,1)
 
 	def change_meta(self, meta):
 		pass
 
 class FenceBlock(MapBlock):
 	def __init__(self, meta):
-		pass
+		self.bounding_box = BoundingBox(1,1.5)
 
 class GateBlock(MapBlock):
 	def __init__(self, meta):
 		self.direction = meta&0x03
 		self.open = (meta>>2)&0x01 == MCM_GATE_OPEN
 		self.powered = meta>>3 == MCM_GATE_POWERED
+		if self.open:
+			self.bounding_box = None
+		else:
+			self.bounding_box = BoundingBox(1,1.5)
 
 class DoorBlock(MapBlock):
 	def __init__(self, meta):
-		self.meta = meta
+		self.section = (meta>>3)&0x1
+		if self.section == MCM_DOOR_LOWER:
+			self.open = (meta>>2)&0x01 == MCM_DOOR_OPEN
+			self.direction = meta&0x03
+			if not self.open:
+				self.bounding_box = BoundingBox(1,2)
+			else:
+				self.bounding_box = None
+		elif self.section == MCM_DOOR_UPPER:
+			self.hinge = meta&0x01
+			self.bounding_box = None
+
+class SlabBlock(MapBlock):
+	def __init__(self, meta):
+		self.orientation = (meta>>3)&0x1
+		self.bounding_box = BoundingBox(1,1)
+
+class StairBlock(MapBlock):
+	def __init__(self, meta):
+		self.bounding_box = BoundingBox(1,1)
+
+class TrapdoorBlock(MapBlock):
+	def __init__(self, meta):
+		self.direction = meta&0x03
+		self.open = (meta>>2)&0x01 == MCM_TRAPDOOR_OPEN
+		self.orientation = (meta>>3)&0x1
+		if self.open == MCM_TRAPDOOR_OPEN:
+			self.bounding_box = None
+		elif self.orientation == MCM_TRAPDOOR_UPPER:
+			self.bounding_box = BoundingBox(1,1)
+		elif self.orientation == MCM_TRAPDOOR_LOWER:
+			self.bounding_box = BoundingBox(1,0.4)
+
+class NoCollisionBlock(MapBlock):
+	def __init__(self, meta):
+		self.bounding_box = None
 
 @map_block(0)
-class AirBlock(MapBlock):
+class AirBlock(NoCollisionBlock):
 	display_name = 'Air'
 	name = 'air'
 	diggable = False
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(1)
 class StoneBlock(MapBlock):
@@ -132,10 +191,9 @@ class WoodplankBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(6)
-class SaplingBlock(MapBlock):
+class SaplingBlock(NoCollisionBlock):
 	display_name = 'Sapling'
 	name = 'sapling'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(7)
 class BedrockBlock(MapBlock):
@@ -145,36 +203,32 @@ class BedrockBlock(MapBlock):
 	diggable = False
 
 @map_block(8)
-class WaterBlock(MapBlock):
+class WaterBlock(NoCollisionBlock):
 	display_name = 'Water'
 	name = 'water'
 	hardness = 100
 	diggable = False
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(9)
-class StationarywaterBlock(MapBlock):
+class StationarywaterBlock(NoCollisionBlock):
 	display_name = 'Stationary Water'
 	name = 'waterStationary'
 	hardness = 100
 	diggable = False
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(10)
-class LavaBlock(MapBlock):
+class LavaBlock(NoCollisionBlock):
 	display_name = 'Lava'
 	name = 'lava'
 	hardness = 100
 	diggable = False
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(11)
-class StationarylavaBlock(MapBlock):
+class StationarylavaBlock(NoCollisionBlock):
 	display_name = 'Stationary Lava'
 	name = 'lavaStationary'
 	hardness = 100
 	diggable = False
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(12)
 class SandBlock(MapBlock):
@@ -287,19 +341,17 @@ class BedBlock(MapBlock):
 	stack_size = 1
 
 @map_block(27)
-class PoweredrailBlock(MapBlock):
+class PoweredrailBlock(NoCollisionBlock):
 	display_name = 'Powered Rail'
 	name = 'goldenRail'
 	hardness = 0.7
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 
 @map_block(28)
-class DetectorrailBlock(MapBlock):
+class DetectorrailBlock(NoCollisionBlock):
 	display_name = 'Detector Rail'
 	name = 'detectorRail'
 	hardness = 0.7
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 
 @map_block(29)
@@ -308,25 +360,22 @@ class StickypistonBlock(MapBlock):
 	name = 'pistonStickyBase'
 
 @map_block(30)
-class CobwebBlock(MapBlock):
+class CobwebBlock(NoCollisionBlock):
 	display_name = 'Cobweb'
 	name = 'web'
 	hardness = 4
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_WEB
 	harvest_tools = (359, 267, 268, 272, 276, 283)
 
 @map_block(31)
-class TallgrassBlock(MapBlock):
+class TallgrassBlock(NoCollisionBlock):
 	display_name = 'Grass'
 	name = 'tallgrass'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(32)
-class DeadbushBlock(MapBlock):
+class DeadbushBlock(NoCollisionBlock):
 	display_name = 'Dead Bush'
 	name = 'deadbush'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(33)
 class PistonBlock(MapBlock):
@@ -351,28 +400,24 @@ class PistonmovedBlock(MapBlock):
 	name = 'blockMovedByPiston'
 
 @map_block(37)
-class FlowerBlock(MapBlock):
+class FlowerBlock(NoCollisionBlock):
 	display_name = 'Flower'
 	name = 'flower'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(38)
-class RoseBlock(MapBlock):
+class RoseBlock(NoCollisionBlock):
 	display_name = 'Rose'
 	name = 'rose'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(39)
-class BrownshroomBlock(MapBlock):
+class BrownshroomBlock(NoCollisionBlock):
 	display_name = 'Brown Mushroom'
 	name = 'mushroomBrown'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(40)
-class RedshroomBlock(MapBlock):
+class RedshroomBlock(NoCollisionBlock):
 	display_name = 'Red Mushroom'
 	name = 'mushroomRed'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(41)
 class GoldBlock(MapBlock):
@@ -399,11 +444,10 @@ class DoublestoneslabBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(44)
-class StoneslabBlock(MapBlock):
+class StoneslabBlock(SlabBlock):
 	display_name = 'Stone Slab'
 	name = 'stoneSlab'
 	hardness = 2
-	bounding_box = MCM_BBOX_SLAB
 
 @map_block(45)
 class BricksBlock(MapBlock):
@@ -442,16 +486,14 @@ class ObsidianBlock(MapBlock):
 	harvest_tools = (278,)
 
 @map_block(50)
-class TorchBlock(MapBlock):
+class TorchBlock(NoCollisionBlock):
 	display_name = 'Torch'
 	name = 'torch'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(51)
-class FireBlock(MapBlock):
+class FireBlock(NoCollisionBlock):
 	display_name = 'Fire'
 	name = 'fire'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(52)
 class MobspawnerBlock(MapBlock):
@@ -462,10 +504,9 @@ class MobspawnerBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(53)
-class WoodstairBlock(MapBlock):
+class WoodstairBlock(StairBlock):
 	display_name = 'Wooden Stairs'
 	name = 'stairsWood'
-	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_WOOD
 
 @map_block(54)
@@ -476,10 +517,9 @@ class ChestBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(55)
-class RedstonedustBlock(MapBlock):
+class RedstonedustBlock(NoCollisionBlock):
 	display_name = 'Redstone Dust'
 	name = 'redstoneDust'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(56)
 class DiamondoreBlock(MapBlock):
@@ -505,10 +545,9 @@ class CraftingBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(59)
-class CropsBlock(MapBlock):
+class CropsBlock(NoCollisionBlock):
 	display_name = 'Wheat Crops'
 	name = 'wheat'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(60)
 class FarmBlock(MapBlock):
@@ -534,12 +573,11 @@ class BurningfurnaceBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(63)
-class StandingsignBlock(MapBlock):
+class StandingsignBlock(NoCollisionBlock):
 	display_name = 'Sign Post'
 	name = 'signPost'
 	hardness = 1
 	stack_size = 1
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_WOOD
 
 @map_block(64)
@@ -548,53 +586,46 @@ class WooddoorBlock(DoorBlock):
 	name = 'doorWood'
 	hardness = 3
 	stack_size = 1
-	bounding_box = MCM_BBOX_DOOR
 	material = MCM_MAT_WOOD
 
 @map_block(65)
-class LadderBlock(MapBlock):
+class LadderBlock(NoCollisionBlock):
 	display_name = 'Ladder'
 	name = 'ladder'
 	hardness = 0.4
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(66)
-class RailBlock(MapBlock):
+class RailBlock(NoCollisionBlock):
 	display_name = 'Rail'
 	name = 'rail'
 	hardness = 0.7
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 
 @map_block(67)
-class CobblestairBlock(MapBlock):
+class CobblestairBlock(StairBlock):
 	display_name = 'Cobblestone Stairs'
 	name = 'stairsStone'
-	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(68)
-class WallsignBlock(MapBlock):
+class WallsignBlock(NoCollisionBlock):
 	display_name = 'Wall Sign'
 	name = 'signWall'
 	hardness = 1
 	stack_size = 1
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(69)
-class LeverBlock(MapBlock):
+class LeverBlock(NoCollisionBlock):
 	display_name = 'Lever'
 	name = 'lever'
 	hardness = 0.5
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(70)
-class StoneplateBlock(MapBlock):
+class StoneplateBlock(NoCollisionBlock):
 	display_name = 'Stone Pressure Plate'
 	name = 'stonePressurePlate'
 	hardness = 0.5
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -604,16 +635,14 @@ class IrondoorBlock(DoorBlock):
 	name = 'doorIron'
 	hardness = 5
 	stack_size = 1
-	bounding_box = MCM_BBOX_DOOR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(72)
-class WoodplateBlock(MapBlock):
+class WoodplateBlock(NoCollisionBlock):
 	display_name = 'Wooden Pressure Plate'
 	name = 'woodPressurePlate'
 	hardness = 0.5
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_WOOD
 
 @map_block(73)
@@ -633,30 +662,26 @@ class GlowingredstoneoreBlock(MapBlock):
 	harvest_tools = (257, 278)
 
 @map_block(75)
-class RedstonetorchoffBlock(MapBlock):
+class RedstonetorchoffBlock(NoCollisionBlock):
 	display_name = 'Redstone Torch (Inactive)'
 	name = 'notGateInactive'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(76)
-class RedstonetorchonBlock(MapBlock):
+class RedstonetorchonBlock(NoCollisionBlock):
 	display_name = 'Redstone Torch (Active)'
 	name = 'notGateActive'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(77)
-class StonebuttonBlock(MapBlock):
+class StonebuttonBlock(NoCollisionBlock):
 	display_name = 'Stone Button'
 	name = 'buttonStone'
 	hardness = 0.5
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(78)
-class GroundsnowBlock(MapBlock):
+class GroundsnowBlock(NoCollisionBlock):
 	display_name = 'Snow'
 	name = 'snow'
 	hardness = 0.1
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_DIRT
 	harvest_tools = (269, 273, 256, 277, 284)
 
@@ -689,10 +714,9 @@ class ClayBlock(MapBlock):
 	material = MCM_MAT_DIRT
 
 @map_block(83)
-class ReedsBlock(MapBlock):
+class ReedsBlock(NoCollisionBlock):
 	display_name = 'Sugar cane'
 	name = 'reeds'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(84)
 class JukeboxBlock(MapBlock):
@@ -706,7 +730,6 @@ class WoodfenceBlock(FenceBlock):
 	display_name = 'Fence'
 	name = 'fence'
 	hardness = 2
-	bounding_box = MCM_BBOX_FENCE
 	material = MCM_MAT_WOOD
 
 @map_block(86)
@@ -738,12 +761,11 @@ class GlowstoneBlock(MapBlock):
 	hardness = 0.3
 
 @map_block(90)
-class PortalBlock(MapBlock):
+class PortalBlock(NoCollisionBlock):
 	display_name = 'Portal'
 	name = 'portal'
 	hardness = None
 	diggable = False
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(91)
 class JackBlock(MapBlock):
@@ -760,16 +782,14 @@ class CakeBlock(MapBlock):
 	stack_size = 1
 
 @map_block(93)
-class RedstonerepoffBlock(MapBlock):
+class RedstonerepoffBlock(NoCollisionBlock):
 	display_name = 'Redstone Repeater (Inactive)'
 	name = 'redstoneRepeaterInactive'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(94)
-class RedstonereponBlock(MapBlock):
+class RedstonereponBlock(NoCollisionBlock):
 	display_name = 'Redstone Repeater (Active)'
 	name = 'redstoneRepeaterActive'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(95)
 class LockedchestBlock(MapBlock):
@@ -777,7 +797,7 @@ class LockedchestBlock(MapBlock):
 	name = 'lockedchest'
 
 @map_block(96)
-class TrapdoorBlock(MapBlock):
+class OaktrapdoorBlock(TrapdoorBlock):
 	display_name = 'Trapdoor'
 	name = 'trapdoor'
 	hardness = 3
@@ -816,7 +836,6 @@ class IronfenceBlock(FenceBlock):
 	display_name = 'Iron Bars'
 	name = 'fenceIron'
 	hardness = 5
-	bounding_box = MCM_BBOX_FENCE
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -834,23 +853,20 @@ class MelonBlock(MapBlock):
 	material = 'melon'
 
 @map_block(104)
-class PumpkinstemBlock(MapBlock):
+class PumpkinstemBlock(NoCollisionBlock):
 	display_name = 'Pumpkin Stem'
 	name = 'pumpkinStem'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(105)
-class MelonstemBlock(MapBlock):
+class MelonstemBlock(NoCollisionBlock):
 	display_name = 'Melon Stem'
 	name = 'melonStem'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(106)
-class VinesBlock(MapBlock):
+class VinesBlock(NoCollisionBlock):
 	display_name = 'Vines'
 	name = 'vine'
 	hardness = 0.2
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_VINE
 
 @map_block(107)
@@ -858,22 +874,19 @@ class WoodfencegateBlock(GateBlock):
 	display_name = 'Fence Gate'
 	name = 'fenceGate'
 	hardness = 2
-	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(108)
-class BrickstairBlock(MapBlock):
+class BrickstairBlock(StairBlock):
 	display_name = 'Brick Stairs'
 	name = 'stairsBrick'
-	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(109)
-class StonebrickstairBlock(MapBlock):
+class StonebrickstairBlock(StairBlock):
 	display_name = 'Stone Brick Stairs'
 	name = 'stairsStoneBrickSmooth'
-	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -888,6 +901,8 @@ class MyceliumBlock(MapBlock):
 class LilypadBlock(MapBlock):
 	display_name = 'Lily Pad'
 	name = 'waterlily'
+	def __init__(self, meta):
+		self.bounding_box = BoundingBox(1,0.2,1)
 
 @map_block(112)
 class NetherbrickBlock(MapBlock):
@@ -902,23 +917,20 @@ class NetherbrickfenceBlock(FenceBlock):
 	display_name = 'Nether Brick Fence'
 	name = 'netherFence'
 	hardness = 2
-	bounding_box = MCM_BBOX_FENCE
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(114)
-class NetherbrickstairBlock(MapBlock):
+class NetherbrickstairBlock(StairBlock):
 	display_name = 'Nether Brick Stairs'
 	name = 'stairsNetherBrick'
-	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(115)
-class NetherwartBlock(MapBlock):
+class NetherwartBlock(NoCollisionBlock):
 	display_name = 'Nether Wart'
 	name = 'netherStalk'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(116)
 class EnchantmentBlock(MapBlock):
@@ -945,12 +957,11 @@ class CauldronBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(119)
-class EndportalBlock(MapBlock):
+class EndportalBlock(NoCollisionBlock):
 	display_name = 'End Portal'
 	name = 'endPortal'
 	hardness = None
 	diggable = False
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(120)
 class EndportalframeBlock(MapBlock):
@@ -993,11 +1004,10 @@ class WooddoubleslabBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(126)
-class WoodslabBlock(MapBlock):
+class WoodslabBlock(SlabBlock):
 	display_name = 'Wooden Slab'
 	name = 'woodSlab'
 	hardness = 2
-	bounding_box = MCM_BBOX_SLAB
 
 @map_block(127)
 class CocoapodBlock(MapBlock):
@@ -1007,11 +1017,10 @@ class CocoapodBlock(MapBlock):
 	material = 'plant'
 
 @map_block(128)
-class SandstonestairBlock(MapBlock):
+class SandstonestairBlock(StairBlock):
 	display_name = 'Sandstone Stairs'
 	name = 'stairsSandStone'
 	hardness = 0.8
-	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1032,16 +1041,14 @@ class EnderchestBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(131)
-class TripwirehookBlock(MapBlock):
+class TripwirehookBlock(NoCollisionBlock):
 	display_name = 'Tripwire Hook'
 	name = 'tripWireSource'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(132)
-class TripwireBlock(MapBlock):
+class TripwireBlock(NoCollisionBlock):
 	display_name = 'Tripwire'
 	name = 'tripWire'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(133)
 class EmeraldBlock(MapBlock):
@@ -1052,22 +1059,19 @@ class EmeraldBlock(MapBlock):
 	harvest_tools = (257, 278)
 
 @map_block(134)
-class SprucestairBlock(MapBlock):
+class SprucestairBlock(StairBlock):
 	display_name = 'Spruce Wood Stairs'
 	name = 'stairsWoodSpruce'
-	bounding_box = MCM_BBOX_STAIR
 
 @map_block(135)
-class BirchstairBlock(MapBlock):
+class BirchstairBlock(StairBlock):
 	display_name = 'Birch Wood Stairs'
 	name = 'stairsWoodBirch'
-	bounding_box = MCM_BBOX_STAIR
 
 @map_block(136)
-class JunglestairBlock(MapBlock):
+class JunglestairBlock(StairBlock):
 	display_name = 'Jungle Wood Stairs'
 	name = 'stairsWoodJungle'
-	bounding_box = MCM_BBOX_STAIR
 
 @map_block(137)
 class CommandBlock(MapBlock):
@@ -1085,7 +1089,7 @@ class BeaconBlock(MapBlock):
 	hardness = 3
 
 @map_block(139)
-class CobblewallBlock(MapBlock):
+class CobblewallBlock(FenceBlock):
 	display_name = 'Cobblestone Wall'
 	name = 'cobbleWall'
 	material = MCM_MAT_ROCK
@@ -1097,23 +1101,20 @@ class FlowerpotBlock(MapBlock):
 	name = 'flowerPot'
 
 @map_block(141)
-class CarrotBlock(MapBlock):
+class CarrotBlock(NoCollisionBlock):
 	display_name = 'Carrots'
 	name = 'carrots'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(142)
-class PotatoBlock(MapBlock):
+class PotatoBlock(NoCollisionBlock):
 	display_name = 'Potatoes'
 	name = 'potatoes'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(143)
-class WoodbuttonBlock(MapBlock):
+class WoodbuttonBlock(NoCollisionBlock):
 	display_name = 'Wooden Button'
 	name = 'buttonWood'
 	hardness = 0.5
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(144)
 class MobheadBlock(MapBlock):
@@ -1137,34 +1138,30 @@ class TrappedchestBlock(MapBlock):
 	material = MCM_MAT_WOOD
 
 @map_block(147)
-class WeightedplatelightBlock(MapBlock):
+class WeightedplatelightBlock(NoCollisionBlock):
 	display_name = 'Weighted Pressure plate (Light)'
 	name = 'pressurePlateWeightedLight'
 	hardness = 0.5
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(148)
-class WeightedplateheavyBlock(MapBlock):
+class WeightedplateheavyBlock(NoCollisionBlock):
 	display_name = 'Weighted Pressure plate (Heavy)'
 	name = 'pressurePlateWeightedHeavy'
 	hardness = 0.5
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(149)
-class ComparatoroffBlock(MapBlock):
+class ComparatoroffBlock(NoCollisionBlock):
 	display_name = 'Redstone Comparator (Inactive)'
 	name = 'redstoneComparatorInactive'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(150)
-class ComparatoronBlock(MapBlock):
+class ComparatoronBlock(NoCollisionBlock):
 	display_name = 'Redstone Comparator (Active)'
 	name = 'redstoneComparatorActive'
-	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(151)
 class LightsensorBlock(MapBlock):
@@ -1206,20 +1203,18 @@ class QuartzBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(156)
-class QuartzstairBlock(MapBlock):
+class QuartzstairBlock(StairBlock):
 	display_name = 'Quartz Stairs'
 	name = 'quartzStairs'
 	hardness = 0.8
-	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(157)
-class ActivatorrailBlock(MapBlock):
+class ActivatorrailBlock(NoCollisionBlock):
 	display_name = 'Activator Rail'
 	name = 'activatorRail'
 	hardness = 0.7
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 
 @map_block(158)
@@ -1262,20 +1257,18 @@ class AcaciawoodBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(163)
-class AcaciastairsBlock(MapBlock):
+class AcaciastairBlock(StairBlock):
 	display_name = 'Acacia Stairs'
 	name = 'acaciaStairs'
 	hardness = 2
-	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(164)
-class DarkoakstairsBlock(MapBlock):
+class DarkoakstairBlock(StairBlock):
 	display_name = 'Dark Oak Stairs'
 	name = 'darkoakStairs'
 	hardness = 2
-	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1295,7 +1288,7 @@ class BarrierBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(167)
-class IrontrapdoorBlock(MapBlock):
+class IrontrapdoorBlock(TrapdoorBlock):
 	display_name = 'Iron Trapdoor'
 	name = 'ironTrapdoor'
 	hardness = 3
@@ -1325,10 +1318,9 @@ class HaybaleBlock(MapBlock):
 	material = MCM_MAT_ROCK
 
 @map_block(171)
-class CarpetBlock(MapBlock):
+class CarpetBlock(NoCollisionBlock):
 	display_name = 'Carpet'
 	name = 'carpet'
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_WOOL
 
 @map_block(172)
@@ -1355,28 +1347,25 @@ class PackediceBlock(MapBlock):
 	material = MCM_MAT_ROCK
 
 @map_block(175)
-class SunflowerBlock(MapBlock):
+class SunflowerBlock(NoCollisionBlock):
 	display_name = 'Sunflower'
 	name = 'sunflower'
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 
 @map_block(176)
-class BannerfreeBlock(MapBlock):
+class BannerfreeBlock(NoCollisionBlock):
 	display_name = 'Free Standing Banner'
 	name = 'bannerFree'
 	hardness = 1
 	stack_size = 1
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 
 @map_block(177)
-class BannerwallBlock(MapBlock):
+class BannerwallBlock(NoCollisionBlock):
 	display_name = 'Wall Mounted Banner'
 	name = 'bannerWall'
 	hardness = 1
 	stack_size = 1
-	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 
 @map_block(178)
@@ -1395,11 +1384,10 @@ class RedsandstoneBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(180)
-class RedsandstonestairsBlock(MapBlock):
+class RedsandstonestairBlock(StairBlock):
 	display_name = 'Red Sandstone Stairs'
 	name = 'redSandstoneStairs'
 	hardness = 0.8
-	bounding_box = MCM_BBOX_STAIR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1412,11 +1400,10 @@ class RedsandstonedoubleslabBlock(MapBlock):
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(182)
-class RedsandstoneslabBlock(MapBlock):
+class RedsandstoneslabBlock(SlabBlock):
 	display_name = 'Red Sandstone Slab'
 	name = 'redSandstoneSlab'
 	hardness = 0.8
-	bounding_box = MCM_BBOX_SLAB
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1425,7 +1412,6 @@ class FencegatespruceBlock(GateBlock):
 	display_name = 'Spruce Fence Gate'
 	name = 'fenceGateSpruce'
 	hardness = 2
-	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(184)
@@ -1433,7 +1419,6 @@ class FencegatebirchBlock(GateBlock):
 	display_name = 'Birch Fence Gate'
 	name = 'fenceGateBirch'
 	hardness = 2
-	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(185)
@@ -1441,7 +1426,6 @@ class FencegatejungleBlock(GateBlock):
 	display_name = 'Jungle Fence Gate'
 	name = 'fenceGateJungle'
 	hardness = 2
-	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(186)
@@ -1449,7 +1433,6 @@ class FencegatedarkoakBlock(GateBlock):
 	display_name = 'Dark Oak Fence Gate'
 	name = 'fenceGateDarkOak'
 	hardness = 2
-	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(187)
@@ -1457,7 +1440,6 @@ class FencegateacaciaBlock(GateBlock):
 	display_name = 'Acacia Fence Gate'
 	name = 'fenceGateAcacia'
 	hardness = 2
-	bounding_box = MCM_BBOX_GATE
 	material = MCM_MAT_WOOD
 
 @map_block(188)
@@ -1465,7 +1447,6 @@ class FencespruceBlock(FenceBlock):
 	display_name = 'Spruce Fence'
 	name = 'fenceSpruce'
 	hardness = 2
-	bounding_box = MCM_BBOX_FENCE
 	material = MCM_MAT_WOOD
 
 @map_block(189)
@@ -1473,7 +1454,6 @@ class FencebirchBlock(FenceBlock):
 	display_name = 'Birch Fence'
 	name = 'fenceBirch'
 	hardness = 2
-	bounding_box = MCM_BBOX_FENCE
 	material = MCM_MAT_WOOD
 
 @map_block(190)
@@ -1481,7 +1461,6 @@ class FencejungleBlock(FenceBlock):
 	display_name = 'Jungle Fence'
 	name = 'fenceJungle'
 	hardness = 2
-	bounding_box = MCM_BBOX_FENCE
 	material = MCM_MAT_WOOD
 
 @map_block(191)
@@ -1489,7 +1468,6 @@ class FencedarkoakBlock(FenceBlock):
 	display_name = 'Dark Oak Fence'
 	name = 'fenceDarkOak'
 	hardness = 2
-	bounding_box = MCM_BBOX_FENCE
 	material = MCM_MAT_WOOD
 
 @map_block(192)
@@ -1497,7 +1475,6 @@ class FenceacaciaBlock(FenceBlock):
 	display_name = 'Acacia Fence'
 	name = 'fenceAcacia'
 	hardness = 2
-	bounding_box = MCM_BBOX_FENCE
 	material = MCM_MAT_WOOD
 
 @map_block(193)
@@ -1506,7 +1483,6 @@ class DoorspruceBlock(DoorBlock):
 	name = 'doorSpruce'
 	hardness = 3
 	stack_size = 1
-	bounding_box = MCM_BBOX_DOOR
 	material = MCM_MAT_WOOD
 
 @map_block(194)
@@ -1515,7 +1491,6 @@ class DoorbirchBlock(DoorBlock):
 	name = 'doorBirch'
 	hardness = 3
 	stack_size = 1
-	bounding_box = MCM_BBOX_DOOR
 	material = MCM_MAT_WOOD
 
 @map_block(195)
@@ -1524,7 +1499,6 @@ class DoorjungleBlock(DoorBlock):
 	name = 'DoorJungle'
 	hardness = 3
 	stack_size = 1
-	bounding_box = MCM_BBOX_DOOR
 	material = MCM_MAT_WOOD
 
 @map_block(196)
@@ -1533,7 +1507,6 @@ class DooracaciaBlock(DoorBlock):
 	name = 'doorAcacia'
 	hardness = 3
 	stack_size = 1
-	bounding_box = MCM_BBOX_DOOR
 	material = MCM_MAT_WOOD
 
 @map_block(197)
@@ -1542,15 +1515,9 @@ class DoordarkoakBlock(DoorBlock):
 	name = 'doorDarkOak'
 	hardness = 3
 	stack_size = 1
-	bounding_box = MCM_BBOX_DOOR
 	material = MCM_MAT_WOOD
 
 blocks = tuple(blocks[i] for i in range(len(blocks)))
-
-NON_COLLISION_BLOCKS = []
-for block in blocks:
-	if block.bounding_box == MCM_BBOX_EMPTY:
-		NON_COLLISION_BLOCKS.append(block.block_id)
 
 biomes = {}
 def map_biome(biome_id):
