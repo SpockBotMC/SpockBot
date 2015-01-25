@@ -82,8 +82,6 @@ class GateBlock(MapBlock):
 		self.direction = meta&0x03
 		self.open = (meta>>2)&0x01 == MCM_GATE_OPEN
 		self.powered = meta>>3 == MCM_GATE_POWERED
-		self.meta = meta
-
 
 class DoorBlock(MapBlock):
 	def __init__(self, meta):

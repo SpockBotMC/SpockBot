@@ -109,7 +109,7 @@ class PhysicsPlugin:
 
 	def tick(self, _, __):
 		self.check_collision()
-		self.apply_gravity()
+		#self.apply_gravity()
 		self.apply_horizontal_drag()
 		self.apply_vector()
 
@@ -121,7 +121,13 @@ class PhysicsPlugin:
 		#feet or head collide with z
 		if self.block_collision(cb, z=1) or self.block_collision(cb, z=-1) or self.block_collision(cb, y=1, z=1) or self.block_collision(cb, y=1, z=-1):
 			self.vec.z = 0
-		#neg y is handled by apply_gravity
+		if self.block_collision(cb, y=-1): #we check below feet
+			self.pos.on_ground = True
+			self.vec.y = 0
+			self.pos.y = cb.y
+		else:
+			self.vec.add_vector(y = -PLAYER_ENTITY_GAV)
+			self.apply_vertical_drag()
 		if self.block_collision(cb, y=2): #we check +2 because above my head
 			self.vec.y = 0
 
@@ -133,7 +139,7 @@ class PhysicsPlugin:
 		#possibly we want to use the centers of blocks as the starting points for bounding boxes instead of 0,0,0
 		#this might make thinks easier when we get to more complex shapes that are in the center of a block aka fences but more complicated for the player
 		#uncenter the player position
-		pos1 = Vec3(self.pos.x-self.playerbb.w/2, self.pos.y, self.pos.z-self.playerbb.d/2)
+		pos1 = Vec3(self.pos.x-self.playerbb.w/2, self.pos.y-0.2, self.pos.z-self.playerbb.d/2)
 		bb1 = self.playerbb
 		pos2 = Vec3(cb.x+x, cb.y+y, cb.z+z)
 		bb2 = self.get_bounding_box(block)
@@ -154,25 +160,16 @@ class PhysicsPlugin:
 		elif block.bounding_box == mapdata.MCM_BBOX_FENCE:
 			return BoundingBox(1,1.5)
 		elif block.bounding_box == mapdata.MCM_BBOX_GATE:
-			return BoundingBox(1,1)
+			if block.open:
+				return None
+			else:
+				return BoundingBox(1,1)
 		elif block.bounding_box == mapdata.MCM_BBOX_DOOR:
 			return BoundingBox(1,1)
 		elif block.bounding_box == mapdata.MCM_BBOX_SLAB:
 			return BoundingBox(1,1)
 		elif block.bounding_box == mapdata.MCM_BBOX_STAIR:
 			return BoundingBox(1,1)
-
-	def apply_gravity(self):
-		p = self.pos
-		floor = self.world.get_floor(p.x, p.y, p.z)
-		if p.y != floor:
-			p.on_ground = False
-			self.vec.add_vector(y = -PLAYER_ENTITY_GAV)
-			self.apply_vertical_drag()
-			if p.y + self.vec.y <= floor:
-				p.on_ground = True
-				self.vec.y = 0
-				p.y = floor
 
 	def apply_vertical_drag(self):
 		self.vec.y = self.vec.y - self.vec.y*PLAYER_ENTITY_DRG

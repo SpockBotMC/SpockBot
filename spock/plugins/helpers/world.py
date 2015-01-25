@@ -22,18 +22,6 @@ class WorldData(smpmap.Dimension):
 		self.age = data['world_age']
 		self.time_of_day = data['time_of_day']
 
-	#TODO: Check if block is solid, not just check for air
-	def get_floor(self, x, y, z):
-		x, y, z = math.floor(x), math.floor(y), math.floor(z)
-		backup_y = y
-		block_id, _ = self.get_block(x, y, z)
-		while(block_id in mapdata.NON_COLLISION_BLOCKS and y > 0):
-			y -= 1
-			block_id, _ = self.get_block(x, y, z)
-		if y < 0:
-			return backup_y
-		return y + 1
-
 	def new_dimension(self, dimension):
 		super(self.__class__, self).__init__(dimension)
 
