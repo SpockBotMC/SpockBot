@@ -3,6 +3,11 @@
 MCM_BBOX_EMPTY  = 0x00
 MCM_BBOX_BLOCK  = 0x01
 MCM_BBOX_CUSTOM = 0x02
+MCM_BBOX_FENCE 	= 0x03
+MCM_BBOX_DOOR 	= 0x04
+MCM_BBOX_SLAB 	= 0x05
+MCM_BBOX_STAIR 	= 0x06
+
 
 MCM_MAT_ROCK    = 0x00
 MCM_MAT_DIRT    = 0x01
@@ -10,6 +15,7 @@ MCM_MAT_WOOD    = 0x02
 MCM_MAT_WEB     = 0x03
 MCM_MAT_WOOL    = 0x04
 MCM_MAT_VINE    = 0x05
+MCM_MAT_LEAVES    = 0x06
 
 blocks = {}
 def map_block(block_id):
@@ -26,9 +32,9 @@ class MapBlock:
 	display_name = 'Map Block'
 	name = 'map_block'
 	hardness = 0
-	stack_size = None
-	diggable = False
-	bounding_box = MCM_BBOX_EMPTY
+	stack_size = 64
+	diggable = True
+	bounding_box = MCM_BBOX_BLOCK
 	material = None
 	harvest_tools = None
 
@@ -42,15 +48,14 @@ class MapBlock:
 class AirBlock(MapBlock):
 	display_name = 'Air'
 	name = 'air'
+	diggable = False
+	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(1)
 class StoneBlock(MapBlock):
 	display_name = 'Stone'
 	name = 'stone'
 	hardness = 1.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -59,9 +64,6 @@ class GrassBlock(MapBlock):
 	display_name = 'Grass Block'
 	name = 'grass'
 	hardness = 0.6
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_DIRT
 
 @map_block(3)
@@ -69,9 +71,6 @@ class DirtBlock(MapBlock):
 	display_name = 'Dirt'
 	name = 'dirt'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_DIRT
 
 @map_block(4)
@@ -79,9 +78,6 @@ class CobbleBlock(MapBlock):
 	display_name = 'Cobblestone'
 	name = 'stonebrick'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -90,18 +86,12 @@ class WoodplankBlock(MapBlock):
 	display_name = 'Wooden Planks'
 	name = 'wood'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(6)
 class SaplingBlock(MapBlock):
 	display_name = 'Sapling'
 	name = 'sapling'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(7)
@@ -109,16 +99,13 @@ class BedrockBlock(MapBlock):
 	display_name = 'Bedrock'
 	name = 'bedrock'
 	hardness = None
-	stack_size = 64
 	diggable = False
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(8)
 class WaterBlock(MapBlock):
 	display_name = 'Water'
 	name = 'water'
 	hardness = 100
-	stack_size = 64
 	diggable = False
 	bounding_box = MCM_BBOX_EMPTY
 
@@ -127,7 +114,6 @@ class StationarywaterBlock(MapBlock):
 	display_name = 'Stationary Water'
 	name = 'waterStationary'
 	hardness = 100
-	stack_size = 64
 	diggable = False
 	bounding_box = MCM_BBOX_EMPTY
 
@@ -135,8 +121,7 @@ class StationarywaterBlock(MapBlock):
 class LavaBlock(MapBlock):
 	display_name = 'Lava'
 	name = 'lava'
-	hardness = 0
-	stack_size = 64
+	hardness = 100
 	diggable = False
 	bounding_box = MCM_BBOX_EMPTY
 
@@ -145,7 +130,6 @@ class StationarylavaBlock(MapBlock):
 	display_name = 'Stationary Lava'
 	name = 'lavaStationary'
 	hardness = 100
-	stack_size = 64
 	diggable = False
 	bounding_box = MCM_BBOX_EMPTY
 
@@ -154,9 +138,6 @@ class SandBlock(MapBlock):
 	display_name = 'Sand'
 	name = 'sand'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_DIRT
 
 @map_block(13)
@@ -164,9 +145,6 @@ class GravelBlock(MapBlock):
 	display_name = 'Gravel'
 	name = 'gravel'
 	hardness = 0.6
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_DIRT
 
 @map_block(14)
@@ -174,9 +152,6 @@ class GoldoreBlock(MapBlock):
 	display_name = 'Gold Ore'
 	name = 'oreGold'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (257, 278)
 
@@ -185,9 +160,6 @@ class IronoreBlock(MapBlock):
 	display_name = 'Iron Ore'
 	name = 'oreIron'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (274, 257, 278)
 
@@ -196,9 +168,6 @@ class CoaloreBlock(MapBlock):
 	display_name = 'Coal Ore'
 	name = 'oreCoal'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -207,9 +176,6 @@ class Woodblock(MapBlock):
 	display_name = 'Wood'
 	name = 'log'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(18)
@@ -217,37 +183,25 @@ class LeavesBlock(MapBlock):
 	display_name = 'Leaves'
 	name = 'leaves'
 	hardness = 0.2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
-	material = 'leaves'
+	material = MCM_MAT_LEAVES
 
 @map_block(19)
 class SpongeBlock(MapBlock):
 	display_name = 'Sponge'
 	name = 'sponge'
 	hardness = 0.6
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(20)
 class GlassBlock(MapBlock):
 	display_name = 'Glass'
 	name = 'glass'
 	hardness = 0.3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(21)
 class LapisoreBlock(MapBlock):
 	display_name = 'Lapis Lazuli Ore'
 	name = 'oreLapis'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (274, 257, 278)
 
@@ -256,9 +210,6 @@ class LapisBlock(MapBlock):
 	display_name = 'Lapis Lazuli Block'
 	name = 'blockLapis'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (274, 257, 278)
 
@@ -267,9 +218,6 @@ class DispenserBlock(MapBlock):
 	display_name = 'Dispenser'
 	name = 'dispenser'
 	hardness = 3.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -278,9 +226,6 @@ class SandstoneBlock(MapBlock):
 	display_name = 'Sandstone'
 	name = 'sandStone'
 	hardness = 0.8
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -289,9 +234,6 @@ class NoteBlock(MapBlock):
 	display_name = 'Note Block'
 	name = 'musicBlock'
 	hardness = 0.8
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(26)
@@ -300,16 +242,12 @@ class BedBlock(MapBlock):
 	name = 'bed'
 	hardness = 0.2
 	stack_size = 1
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(27)
 class PoweredrailBlock(MapBlock):
 	display_name = 'Powered Rail'
 	name = 'goldenRail'
 	hardness = 0.7
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 
@@ -318,8 +256,6 @@ class DetectorrailBlock(MapBlock):
 	display_name = 'Detector Rail'
 	name = 'detectorRail'
 	hardness = 0.7
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 
@@ -327,18 +263,12 @@ class DetectorrailBlock(MapBlock):
 class StickypistonBlock(MapBlock):
 	display_name = 'Sticky Piston'
 	name = 'pistonStickyBase'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(30)
 class CobwebBlock(MapBlock):
 	display_name = 'Cobweb'
 	name = 'web'
 	hardness = 4
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_WEB
 	harvest_tools = (359, 267, 268, 272, 276, 283)
@@ -347,91 +277,58 @@ class CobwebBlock(MapBlock):
 class TallgrassBlock(MapBlock):
 	display_name = 'Grass'
 	name = 'tallgrass'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(32)
 class DeadbushBlock(MapBlock):
 	display_name = 'Dead Bush'
 	name = 'deadbush'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(33)
 class PistonBlock(MapBlock):
 	display_name = 'Piston'
 	name = 'pistonBase'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(34)
 class PistonextensionBlock(MapBlock):
 	display_name = 'Piston Extension'
 	name = 'pistonExtension'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(35)
 class WoolBlock(MapBlock):
 	display_name = 'Wool'
 	name = 'cloth'
 	hardness = 0.8
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOL
 
 @map_block(36)
 class PistonmovedBlock(MapBlock):
 	display_name = 'Block Moved by Piston'
 	name = 'blockMovedByPiston'
-	hardness = 0
-	stack_size = 64
-	diggable = False
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(37)
 class FlowerBlock(MapBlock):
 	display_name = 'Flower'
 	name = 'flower'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(38)
 class RoseBlock(MapBlock):
 	display_name = 'Rose'
 	name = 'rose'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(39)
 class BrownshroomBlock(MapBlock):
 	display_name = 'Brown Mushroom'
 	name = 'mushroomBrown'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(40)
 class RedshroomBlock(MapBlock):
 	display_name = 'Red Mushroom'
 	name = 'mushroomRed'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(41)
@@ -439,9 +336,6 @@ class GoldBlock(MapBlock):
 	display_name = 'Block of Gold'
 	name = 'blockGold'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (257, 278)
 
@@ -450,9 +344,6 @@ class IronBlock(MapBlock):
 	display_name = 'Block of Iron'
 	name = 'blockIron'
 	hardness = 5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (274, 257, 278)
 
@@ -461,9 +352,6 @@ class DoublestoneslabBlock(MapBlock):
 	display_name = 'Double Stone Slab'
 	name = 'stoneSlabDouble'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -472,18 +360,12 @@ class StoneslabBlock(MapBlock):
 	display_name = 'Stone Slab'
 	name = 'stoneSlab'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(45)
 class BricksBlock(MapBlock):
 	display_name = 'Bricks'
 	name = 'brick'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -491,19 +373,12 @@ class BricksBlock(MapBlock):
 class TntBlock(MapBlock):
 	display_name = 'TNT'
 	name = 'tnt'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(47)
 class BookshelfBlock(MapBlock):
 	display_name = 'Bookshelf'
 	name = 'bookshelf'
 	hardness = 1.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(48)
@@ -511,9 +386,6 @@ class MossstoneBlock(MapBlock):
 	display_name = 'Moss Stone'
 	name = 'stoneMoss'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -522,9 +394,6 @@ class ObsidianBlock(MapBlock):
 	display_name = 'Obsidian'
 	name = 'obsidian'
 	hardness = 50
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (278,)
 
@@ -532,18 +401,12 @@ class ObsidianBlock(MapBlock):
 class TorchBlock(MapBlock):
 	display_name = 'Torch'
 	name = 'torch'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(51)
 class FireBlock(MapBlock):
 	display_name = 'Fire'
 	name = 'fire'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(52)
@@ -551,9 +414,6 @@ class MobspawnerBlock(MapBlock):
 	display_name = 'Monster Spawner'
 	name = 'mobSpawner'
 	hardness = 5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -561,29 +421,19 @@ class MobspawnerBlock(MapBlock):
 class WoodstairBlock(MapBlock):
 	display_name = 'Wooden Stairs'
 	name = 'stairsWood'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
-	material = MCM_MAT_WOOD
+material = MCM_MAT_WOOD
 
 @map_block(54)
 class ChestBlock(MapBlock):
 	display_name = 'Chest'
 	name = 'chest'
 	hardness = 2.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(55)
 class RedstonedustBlock(MapBlock):
 	display_name = 'Redstone Dust'
 	name = 'redstoneDust'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(56)
@@ -591,9 +441,6 @@ class DiamondoreBlock(MapBlock):
 	display_name = 'Diamond Ore'
 	name = 'oreDiamond'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (257, 278)
 
@@ -602,9 +449,6 @@ class DiamondBlock(MapBlock):
 	display_name = 'Block of Diamond'
 	name = 'blockDiamond'
 	hardness = 5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (257, 278)
 
@@ -613,18 +457,12 @@ class CraftingBlock(MapBlock):
 	display_name = 'Crafting Table'
 	name = 'workbench'
 	hardness = 2.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(59)
 class CropsBlock(MapBlock):
 	display_name = 'Wheat Crops'
 	name = 'wheat'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(60)
@@ -632,9 +470,6 @@ class FarmBlock(MapBlock):
 	display_name = 'Farmland'
 	name = 'farmland'
 	hardness = 0.6
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_DIRT
 
 @map_block(61)
@@ -642,9 +477,6 @@ class FurnaceBlock(MapBlock):
 	display_name = 'Furnace'
 	name = 'furnace'
 	hardness = 3.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -653,9 +485,6 @@ class BurningfurnaceBlock(MapBlock):
 	display_name = 'Burning Furnace'
 	name = 'furnaceBurning'
 	hardness = 3.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -665,7 +494,6 @@ class StandingsignBlock(MapBlock):
 	name = 'signPost'
 	hardness = 1
 	stack_size = 1
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_WOOD
 
@@ -675,8 +503,7 @@ class WooddoorBlock(MapBlock):
 	name = 'doorWood'
 	hardness = 3
 	stack_size = 1
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_DOOR
 	material = MCM_MAT_WOOD
 
 @map_block(65)
@@ -684,17 +511,13 @@ class LadderBlock(MapBlock):
 	display_name = 'Ladder'
 	name = 'ladder'
 	hardness = 0.4
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(66)
 class RailBlock(MapBlock):
 	display_name = 'Rail'
 	name = 'rail'
 	hardness = 0.7
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 
@@ -702,10 +525,6 @@ class RailBlock(MapBlock):
 class CobblestairBlock(MapBlock):
 	display_name = 'Cobblestone Stairs'
 	name = 'stairsStone'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -715,7 +534,6 @@ class WallsignBlock(MapBlock):
 	name = 'signWall'
 	hardness = 1
 	stack_size = 1
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(69)
@@ -723,8 +541,6 @@ class LeverBlock(MapBlock):
 	display_name = 'Lever'
 	name = 'lever'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(70)
@@ -732,8 +548,6 @@ class StoneplateBlock(MapBlock):
 	display_name = 'Stone Pressure Plate'
 	name = 'stonePressurePlate'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
@@ -744,8 +558,7 @@ class IrondoorBlock(MapBlock):
 	name = 'doorIron'
 	hardness = 5
 	stack_size = 1
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_DOOR
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -754,8 +567,6 @@ class WoodplateBlock(MapBlock):
 	display_name = 'Wooden Pressure Plate'
 	name = 'woodPressurePlate'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_WOOD
 
@@ -764,9 +575,6 @@ class RedstoneoreBlock(MapBlock):
 	display_name = 'Redstone Ore'
 	name = 'oreRedstone'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (257, 278)
 
@@ -775,9 +583,6 @@ class GlowingredstoneoreBlock(MapBlock):
 	display_name = 'Glowing Redstone Ore'
 	name = 'oreRedstoneGlowing'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (257, 278)
 
@@ -785,18 +590,12 @@ class GlowingredstoneoreBlock(MapBlock):
 class RedstonetorchoffBlock(MapBlock):
 	display_name = 'Redstone Torch (Inactive)'
 	name = 'notGateInactive'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(76)
 class RedstonetorchonBlock(MapBlock):
 	display_name = 'Redstone Torch (Active)'
 	name = 'notGateActive'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(77)
@@ -804,8 +603,6 @@ class StonebuttonBlock(MapBlock):
 	display_name = 'Stone Button'
 	name = 'buttonStone'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(78)
@@ -813,8 +610,6 @@ class GroundsnowBlock(MapBlock):
 	display_name = 'Snow'
 	name = 'snow'
 	hardness = 0.1
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_DIRT
 	harvest_tools = (269, 273, 256, 277, 284)
@@ -824,9 +619,6 @@ class IceBlock(MapBlock):
 	display_name = 'Ice'
 	name = 'ice'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 
 @map_block(80)
@@ -834,9 +626,6 @@ class SnowBlock(MapBlock):
 	display_name = 'Snow Block'
 	name = 'snowBlock'
 	hardness = 0.2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_DIRT
 	harvest_tools = (269, 273, 256, 277, 284)
 
@@ -845,27 +634,18 @@ class CactusBlock(MapBlock):
 	display_name = 'Cactus'
 	name = 'cactus'
 	hardness = 0.4
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(82)
 class ClayBlock(MapBlock):
 	display_name = 'Clay'
 	name = 'clay'
 	hardness = 0.6
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_DIRT
 
 @map_block(83)
 class ReedsBlock(MapBlock):
 	display_name = 'Sugar cane'
 	name = 'reeds'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(84)
@@ -873,9 +653,6 @@ class JukeboxBlock(MapBlock):
 	display_name = 'Jukebox'
 	name = 'jukebox'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(85)
@@ -883,9 +660,7 @@ class FenceBlock(MapBlock):
 	display_name = 'Fence'
 	name = 'fence'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_FENCE
 	material = MCM_MAT_WOOD
 
 @map_block(86)
@@ -893,9 +668,6 @@ class PumpkinBlock(MapBlock):
 	display_name = 'Pumpkin'
 	name = 'pumpkin'
 	hardness = 1
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = 'plant'
 
 @map_block(87)
@@ -903,9 +675,6 @@ class NetherrackBlock(MapBlock):
 	display_name = 'Netherrack'
 	name = 'hellrock'
 	hardness = 0.4
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -914,9 +683,6 @@ class SoulsandBlock(MapBlock):
 	display_name = 'Soul Sand'
 	name = 'hellsand'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_DIRT
 
 @map_block(89)
@@ -924,16 +690,12 @@ class GlowstoneBlock(MapBlock):
 	display_name = 'Glowstone'
 	name = 'lightgem'
 	hardness = 0.3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(90)
 class PortalBlock(MapBlock):
 	display_name = 'Portal'
 	name = 'portal'
 	hardness = None
-	stack_size = 64
 	diggable = False
 	bounding_box = MCM_BBOX_EMPTY
 
@@ -942,9 +704,6 @@ class JackBlock(MapBlock):
 	display_name = 'Jack \'o\' Lantern'
 	name = 'litpumpkin'
 	hardness = 1
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = 'plant'
 
 @map_block(92)
@@ -953,44 +712,29 @@ class CakeBlock(MapBlock):
 	name = 'cake'
 	hardness = 0.5
 	stack_size = 1
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(93)
 class RedstonerepoffBlock(MapBlock):
 	display_name = 'Redstone Repeater (Inactive)'
 	name = 'redstoneRepeaterInactive'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(94)
 class RedstonereponBlock(MapBlock):
 	display_name = 'Redstone Repeater (Active)'
 	name = 'redstoneRepeaterActive'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(95)
 class LockedchestBlock(MapBlock):
 	display_name = 'Locked chest'
 	name = 'lockedchest'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(96)
 class TrapdoorBlock(MapBlock):
 	display_name = 'Trapdoor'
 	name = 'trapdoor'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(97)
@@ -998,18 +742,12 @@ class MonstereggBlock(MapBlock):
 	display_name = 'Monster Egg'
 	name = 'monsterStoneEgg'
 	hardness = 0.75
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(98)
 class StonebrickBlock(MapBlock):
 	display_name = 'Stone Brick'
 	name = 'stonebricksmooth'
 	hardness = 1.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1018,9 +756,6 @@ class HugebrownshroomBlock(MapBlock):
 	display_name = 'Huge Brown Mushroom'
 	name = 'mushroomHugeBrown'
 	hardness = 0.2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(100)
@@ -1028,9 +763,6 @@ class HugeredshroomBlock(MapBlock):
 	display_name = 'Huge Red Mushroom'
 	name = 'mushroomHugeRed'
 	hardness = 0.2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(101)
@@ -1038,47 +770,33 @@ class IronfenceBlock(MapBlock):
 	display_name = 'Iron Bars'
 	name = 'fenceIron'
 	hardness = 5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_FENCE
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
 @map_block(102)
 class GlasspaneBlock(MapBlock):
 	display_name = 'Glass Pane'
-	name = 'thinGlass'
+	name = 'glassPane'
 	hardness = 0.3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(103)
 class MelonBlock(MapBlock):
 	display_name = 'Melon'
 	name = 'melon'
 	hardness = 1
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = 'melon'
 
 @map_block(104)
 class PumpkinstemBlock(MapBlock):
 	display_name = 'Pumpkin Stem'
 	name = 'pumpkinStem'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(105)
 class MelonstemBlock(MapBlock):
 	display_name = 'Melon Stem'
 	name = 'melonStem'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(106)
@@ -1086,8 +804,6 @@ class VinesBlock(MapBlock):
 	display_name = 'Vines'
 	name = 'vine'
 	hardness = 0.2
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_VINE
 
@@ -1096,19 +812,12 @@ class FencegateBlock(MapBlock):
 	display_name = 'Fence Gate'
 	name = 'fenceGate'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(108)
 class BrickstairBlock(MapBlock):
 	display_name = 'Brick Stairs'
 	name = 'stairsBrick'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1116,10 +825,6 @@ class BrickstairBlock(MapBlock):
 class StonebrickstairBlock(MapBlock):
 	display_name = 'Stone Brick Stairs'
 	name = 'stairsStoneBrickSmooth'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1128,28 +833,18 @@ class MyceliumBlock(MapBlock):
 	display_name = 'Mycelium'
 	name = 'mycel'
 	hardness = 0.6
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_DIRT
 
 @map_block(111)
 class LilypadBlock(MapBlock):
 	display_name = 'Lily Pad'
 	name = 'waterlily'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(112)
 class NetherbrickBlock(MapBlock):
 	display_name = 'Nether Brick'
 	name = 'netherBrick'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1158,9 +853,7 @@ class NetherbrickfenceBlock(MapBlock):
 	display_name = 'Nether Brick Fence'
 	name = 'netherFence'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_FENCE
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1168,10 +861,6 @@ class NetherbrickfenceBlock(MapBlock):
 class NetherbrickstairBlock(MapBlock):
 	display_name = 'Nether Brick Stairs'
 	name = 'stairsNetherBrick'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1179,9 +868,6 @@ class NetherbrickstairBlock(MapBlock):
 class NetherwartBlock(MapBlock):
 	display_name = 'Nether Wart'
 	name = 'netherStalk'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(116)
@@ -1189,9 +875,6 @@ class EnchantmentBlock(MapBlock):
 	display_name = 'Enchantment Table'
 	name = 'enchantmentTable'
 	hardness = 5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1200,9 +883,6 @@ class BrewingBlock(MapBlock):
 	display_name = 'Brewing Stand'
 	name = 'brewingStand'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1211,9 +891,6 @@ class CauldronBlock(MapBlock):
 	display_name = 'Cauldron'
 	name = 'cauldron'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1222,7 +899,6 @@ class EndportalBlock(MapBlock):
 	display_name = 'End Portal'
 	name = 'endPortal'
 	hardness = None
-	stack_size = 64
 	diggable = False
 	bounding_box = MCM_BBOX_EMPTY
 
@@ -1231,18 +907,13 @@ class EndportalframeBlock(MapBlock):
 	display_name = 'End Portal Frame'
 	name = 'endPortalFrame'
 	hardness = None
-	stack_size = 64
 	diggable = False
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(121)
 class EndstoneBlock(MapBlock):
 	display_name = 'End Stone'
 	name = 'whiteStone'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1251,36 +922,24 @@ class DragoneggBlock(MapBlock):
 	display_name = 'Dragon Egg'
 	name = 'dragonEgg'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(123)
 class RedstonelampoffBlock(MapBlock):
 	display_name = 'Redstone Lamp (Inactive)'
 	name = 'redstoneLightInactive'
 	hardness = 0.3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(124)
 class RedstonelamponBlock(MapBlock):
 	display_name = 'Redstone Lamp (Active)'
 	name = 'redstoneLightActive'
 	hardness = 0.3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(125)
 class WooddoubleslabBlock(MapBlock):
 	display_name = 'Wooden Double Slab'
 	name = 'woodSlabDouble'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(126)
@@ -1288,28 +947,19 @@ class WoodslabBlock(MapBlock):
 	display_name = 'Wooden Slab'
 	name = 'woodSlab'
 	hardness = 2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(127)
 class CocoapodBlock(MapBlock):
 	display_name = 'Cocoa Pod'
 	name = 'cocoa'
 	hardness = 0.2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = 'plant'
 
 @map_block(128)
 class SandstonestairBlock(MapBlock):
 	display_name = 'Sandstone Stairs'
 	name = 'stairsSandStone'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	hardness = 0.8
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1318,9 +968,6 @@ class EmeraldoreBlock(MapBlock):
 	display_name = 'Emerald Ore'
 	name = 'oreEmerald'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (257, 278)
 
@@ -1329,9 +976,6 @@ class EnderchestBlock(MapBlock):
 	display_name = 'Ender Chest'
 	name = 'enderChest'
 	hardness = 22.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1339,18 +983,12 @@ class EnderchestBlock(MapBlock):
 class TripwirehookBlock(MapBlock):
 	display_name = 'Tripwire Hook'
 	name = 'tripWireSource'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(132)
 class TripwireBlock(MapBlock):
 	display_name = 'Tripwire'
 	name = 'tripWire'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(133)
@@ -1358,9 +996,6 @@ class EmeraldBlock(MapBlock):
 	display_name = 'Block of Emerald'
 	name = 'blockEmerald'
 	hardness = 5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (257, 278)
 
@@ -1368,37 +1003,26 @@ class EmeraldBlock(MapBlock):
 class SprucestairBlock(MapBlock):
 	display_name = 'Spruce Wood Stairs'
 	name = 'stairsWoodSpruce'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_STAIR
 
 @map_block(135)
 class BirchstairBlock(MapBlock):
 	display_name = 'Birch Wood Stairs'
 	name = 'stairsWoodBirch'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_STAIR
 
 @map_block(136)
 class JunglestairBlock(MapBlock):
 	display_name = 'Jungle Wood Stairs'
 	name = 'stairsWoodJungle'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_STAIR
 
 @map_block(137)
 class CommandBlock(MapBlock):
 	display_name = 'Command Block'
 	name = 'commandBlock'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	hardness = None
+	diggable = False
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1407,18 +1031,11 @@ class BeaconBlock(MapBlock):
 	display_name = 'Beacon'
 	name = 'beacon'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(139)
 class CobblewallBlock(MapBlock):
 	display_name = 'Cobblestone Wall'
 	name = 'cobbleWall'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1426,27 +1043,17 @@ class CobblewallBlock(MapBlock):
 class FlowerpotBlock(MapBlock):
 	display_name = 'Flower Pot'
 	name = 'flowerPot'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(141)
 class CarrotBlock(MapBlock):
 	display_name = 'Carrots'
 	name = 'carrots'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(142)
 class PotatoBlock(MapBlock):
 	display_name = 'Potatoes'
 	name = 'potatoes'
-	hardness = 0
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(143)
@@ -1454,8 +1061,6 @@ class WoodbuttonBlock(MapBlock):
 	display_name = 'Wooden Button'
 	name = 'buttonWood'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(144)
@@ -1463,18 +1068,12 @@ class MobheadBlock(MapBlock):
 	display_name = 'Mob Head'
 	name = 'skull'
 	hardness = 1
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 
 @map_block(145)
 class AnvilBlock(MapBlock):
 	display_name = 'Anvil'
 	name = 'anvil'
 	hardness = 5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1483,9 +1082,6 @@ class TrappedchestBlock(MapBlock):
 	display_name = 'Trapped Chest'
 	name = 'trappedChest'
 	hardness = 2.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(147)
@@ -1493,8 +1089,6 @@ class WeightedplatelightBlock(MapBlock):
 	display_name = 'Weighted Pressure plate (Light)'
 	name = 'pressurePlateWeightedLight'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
@@ -1504,8 +1098,6 @@ class WeightedplateheavyBlock(MapBlock):
 	display_name = 'Weighted Pressure plate (Heavy)'
 	name = 'pressurePlateWeightedHeavy'
 	hardness = 0.5
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
@@ -1514,28 +1106,19 @@ class WeightedplateheavyBlock(MapBlock):
 class ComparatoroffBlock(MapBlock):
 	display_name = 'Redstone Comparator (Inactive)'
 	name = 'redstoneComparatorInactive'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(150)
 class ComparatoronBlock(MapBlock):
 	display_name = 'Redstone Comparator (Active)'
 	name = 'redstoneComparatorActive'
-	hardness = 0
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
+	bounding_box = MCM_BBOX_EMPTY
 
 @map_block(151)
 class LightsensorBlock(MapBlock):
 	display_name = 'Daylight Sensor'
 	name = 'daylightSensor'
 	hardness = 0.2
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_WOOD
 
 @map_block(152)
@@ -1543,9 +1126,6 @@ class RedstoneBlock(MapBlock):
 	display_name = 'Block of Redstone'
 	name = 'redstoneBlock'
 	hardness = 5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1554,9 +1134,6 @@ class NetherquartzoreBlock(MapBlock):
 	display_name = 'Nether Quartz Ore'
 	name = 'netherQuartzOre'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1565,9 +1142,6 @@ class HopperBlock(MapBlock):
 	display_name = 'Hopper'
 	name = 'hopper'
 	hardness = 3
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1576,9 +1150,6 @@ class QuartzBlock(MapBlock):
 	display_name = 'Block of Quartz'
 	name = 'quartzBlock'
 	hardness = 0.8
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1587,9 +1158,6 @@ class QuartzstairBlock(MapBlock):
 	display_name = 'Quartz Stairs'
 	name = 'quartzStairs'
 	hardness = 0.8
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
 
@@ -1598,8 +1166,6 @@ class ActivatorrailBlock(MapBlock):
 	display_name = 'Activator Rail'
 	name = 'activatorRail'
 	hardness = 0.7
-	stack_size = 64
-	diggable = True
 	bounding_box = MCM_BBOX_EMPTY
 	material = MCM_MAT_ROCK
 
@@ -1608,11 +1174,315 @@ class DropperBlock(MapBlock):
 	display_name = 'Dropper'
 	name = 'dropper'
 	hardness = 3.5
-	stack_size = 64
-	diggable = True
-	bounding_box = MCM_BBOX_BLOCK
 	material = MCM_MAT_ROCK
 	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(159)
+class StainedclayBlock(MapBlock):
+	display_name = 'Stained Clay'
+	name = 'stainedClay'
+	hardness = 1.25
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(160)
+class StainedglasspaneBlock(MapBlock):
+	display_name = 'Stained Glass Pane'
+	name = 'stainedGlassPane'
+	hardness = 0.3
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(161)
+class AcacialeavesBlock(MapBlock):
+	display_name = 'Acacia Leaves'
+	name = 'acaciaLeaves'
+	hardness = 0.2
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(162)
+class AcaciawoodBlock(MapBlock):
+	display_name = 'Acacia Wood'
+	name = 'acaciaWood'
+	hardness = 2
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(163)
+class AcaciastairsBlock(MapBlock):
+	display_name = 'Acacia Stairs'
+	name = 'acaciaStairs'
+	hardness = 2
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(164)
+class DarkoakstairsBlock(MapBlock):
+	display_name = 'Dark Oak Stairs'
+	name = 'darkoakStairs'
+	hardness = 2
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(165)
+class SlimeBlock(MapBlock):
+	display_name = 'Slime'
+	name = 'slime'
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(166)
+class BarrierBlock(MapBlock):
+	display_name = 'Barrier'
+	name = 'barrier'
+	hardness = None
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(167)
+class IrontrapdoorBlock(MapBlock):
+	display_name = 'Iron Trapdoor'
+	name = 'ironTrapdoor'
+	hardness = 3
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(168)
+class PrismarineBlock(MapBlock):
+	display_name = 'Prismarine'
+	name = 'prismarine'
+	hardness = 1.5
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(169)
+class SealanternBlock(MapBlock):
+	display_name = 'Sea Lantern'
+	name = 'seaLantern'
+	hardness = 0.3
+	material = MCM_MAT_ROCK
+
+@map_block(170)
+class HaybaleBlock(MapBlock):
+	display_name = 'Hay Bale'
+	name = 'haybale'
+	hardness = 0.5
+	material = MCM_MAT_ROCK
+
+@map_block(171)
+class CarpetBlock(MapBlock):
+	display_name = 'Carpet'
+	name = 'carpet'
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_WOOL
+
+@map_block(172)
+class HardenedclayBlock(MapBlock):
+	display_name = 'Hardened Clay'
+	name = 'hardenedClay'
+	hardness = 1.25
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(173)
+class CoalBlock(MapBlock):
+	display_name = 'Coal'
+	name = 'coal'
+	hardness = 5
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(174)
+class PackediceBlock(MapBlock):
+	display_name = 'Packed Ice'
+	name = 'packedIce'
+	hardness = 0.5
+	material = MCM_MAT_ROCK
+
+@map_block(175)
+class SunflowerBlock(MapBlock):
+	display_name = 'Sunflower'
+	name = 'sunflower'
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_ROCK
+
+@map_block(176)
+class BannerfreeBlock(MapBlock):
+	display_name = 'Free Standing Banner'
+	name = 'bannerFree'
+	hardness = 1
+	stack_size = 1
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_ROCK
+
+@map_block(177)
+class BannerwallBlock(MapBlock):
+	display_name = 'Wall Mounted Banner'
+	name = 'bannerWall'
+	hardness = 1
+	stack_size = 1
+	bounding_box = MCM_BBOX_EMPTY
+	material = MCM_MAT_ROCK
+
+@map_block(178)
+class LightsensorinvertedBlock(MapBlock):
+	display_name = 'Inverted Daylight Sensor'
+	name = 'daylightSensorInverted'
+	hardness = 0.2
+	material = MCM_MAT_WOOD
+
+@map_block(179)
+class RedsandstoneBlock(MapBlock):
+	display_name = 'Red Sandstone'
+	name = 'redSandstone'
+	hardness = 0.8
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(180)
+class RedsandstonestairsBlock(MapBlock):
+	display_name = 'Red Sandstone Stairs'
+	name = 'redSandstoneStairs'
+	hardness = 0.8
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(181)
+class RedsandstonedoubleslabBlock(MapBlock):
+	display_name = 'Red Sandstone Double Slab'
+	name = 'redSandstoneDoubleSlab'
+	hardness = 0.8
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(182)
+class RedsandstoneslabBlock(MapBlock):
+	display_name = 'Red Sandstone Slab'
+	name = 'redSandstoneSlab'
+	hardness = 0.8
+	material = MCM_MAT_ROCK
+	harvest_tools = (270, 274, 257, 278, 285)
+
+@map_block(183)
+class FencegatespruceBlock(MapBlock):
+	display_name = 'Spruce Fence Gate'
+	name = 'fenceGateSpruce'
+	hardness = 2
+	material = MCM_MAT_WOOD
+
+@map_block(184)
+class FencegatebirchBlock(MapBlock):
+	display_name = 'Birch Fence Gate'
+	name = 'fenceGateBirch'
+	hardness = 2
+	material = MCM_MAT_WOOD
+
+@map_block(185)
+class FencegatejungleBlock(MapBlock):
+	display_name = 'Jungle Fence Gate'
+	name = 'fenceGateJungle'
+	hardness = 2
+	material = MCM_MAT_WOOD
+
+@map_block(186)
+class FencegatedarkoakBlock(MapBlock):
+	display_name = 'Dark Oak Fence Gate'
+	name = 'fenceGateDarkOak'
+	hardness = 2
+	material = MCM_MAT_WOOD
+
+@map_block(187)
+class FencegateacaciaBlock(MapBlock):
+	display_name = 'Acacia Fence Gate'
+	name = 'fenceGateAcacia'
+	hardness = 2
+	material = MCM_MAT_WOOD
+
+@map_block(188)
+class FencespruceBlock(MapBlock):
+	display_name = 'Spruce Fence'
+	name = 'fenceSpruce'
+	hardness = 2
+	bounding_box = MCM_BBOX_FENCE
+	material = MCM_MAT_WOOD
+
+@map_block(189)
+class FencebirchBlock(MapBlock):
+	display_name = 'Birch Fence'
+	name = 'fenceBirch'
+	hardness = 2
+	bounding_box = MCM_BBOX_FENCE
+	material = MCM_MAT_WOOD
+
+@map_block(190)
+class FencejungleBlock(MapBlock):
+	display_name = 'Jungle Fence'
+	name = 'fenceJungle'
+	hardness = 2
+	bounding_box = MCM_BBOX_FENCE
+	material = MCM_MAT_WOOD
+
+@map_block(191)
+class FencedarkoakBlock(MapBlock):
+	display_name = 'Dark Oak Fence'
+	name = 'fenceDarkOak'
+	hardness = 2
+	bounding_box = MCM_BBOX_FENCE
+	material = MCM_MAT_WOOD
+
+@map_block(192)
+class FenceacaciaBlock(MapBlock):
+	display_name = 'Acacia Fence'
+	name = 'fenceAcacia'
+	hardness = 2
+	bounding_box = MCM_BBOX_FENCE
+	material = MCM_MAT_WOOD
+
+@map_block(193)
+class DoorspruceBlock(MapBlock):
+	display_name = 'Spruce Door'
+	name = 'doorSpruce'
+	hardness = 3
+	stack_size = 1
+	bounding_box = MCM_BBOX_DOOR
+	material = MCM_MAT_WOOD
+
+@map_block(194)
+class DoorbirchBlock(MapBlock):
+	display_name = 'Birch Door'
+	name = 'doorBirch'
+	hardness = 3
+	stack_size = 1
+	bounding_box = MCM_BBOX_DOOR
+	material = MCM_MAT_WOOD
+
+@map_block(195)
+class DoorjungleBlock(MapBlock):
+	display_name = 'Jungle Door'
+	name = 'DoorJungle'
+	hardness = 3
+	stack_size = 1
+	bounding_box = MCM_BBOX_DOOR
+	material = MCM_MAT_WOOD
+
+@map_block(196)
+class DooracaciaBlock(MapBlock):
+	display_name = 'Acacia Door'
+	name = 'doorAcacia'
+	hardness = 3
+	stack_size = 1
+	bounding_box = MCM_BBOX_DOOR
+	material = MCM_MAT_WOOD
+
+@map_block(197)
+class DoordarkoakBlock(MapBlock):
+	display_name = 'Dark Oak Door'
+	name = 'doorDarkOak'
+	hardness = 3
+	stack_size = 1
+	bounding_box = MCM_BBOX_DOOR
+	material = MCM_MAT_WOOD
 
 blocks = tuple(blocks[i] for i in range(len(blocks)))
 
