@@ -4,7 +4,7 @@ Provides authorization functions for Mojang's login and session servers
 
 import hashlib
 import json
-#This is for python2 compatibility 
+#This is for python2 compatibility
 try:
 	import urllib.request as request
 	from urllib.error import URLError
@@ -106,7 +106,7 @@ class AuthPlugin:
 				'serverId': serverid,
 			}).encode('utf-8')
 			headers = {'Content-Type': 'application/json'}
-			req = request.Request(url, data, headers, method='POST')
+			req = request.Request(url, data, headers)
 			try:
 				rep = request.urlopen(req).read().decode('ascii')
 			except URLError:

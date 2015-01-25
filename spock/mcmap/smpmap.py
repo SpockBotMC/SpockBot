@@ -174,6 +174,7 @@ class Dimension(object):
 		self.columns[key].unpack(bbuff, mask, skylight, continuous)
 
 	def get_block(self, x, y, z):
+		x, y, z = int(x), int(y), int(z) #Damn you python2
 		x, rx = divmod(x, 16)
 		y, ry = divmod(y, 16)
 		z, rz = divmod(z, 16)

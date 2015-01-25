@@ -10,13 +10,18 @@ from spock.mcp.mcdata import (
 	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL
 )
 
-class Info(object):	
+class Info(object):
 	def set_dict(self, data):
 		for key in data:
 			if hasattr(self, key):
 				setattr(self, key, data[key])
+
 	def get_dict(self):
 		return self.__dict__
+
+	def __repr__(self):
+		return repr(self.__dict__)
+
 	def __str__(self):
 		return str(self.__dict__)
 
@@ -57,10 +62,10 @@ class ClientInfo:
 		self.game_info = GameInfo()
 		self.spawn_position = Position()
 		self.health = PlayerHealth()
-		self.position = PlayerPosition() 
+		self.position = PlayerPosition()
 		self.inventory = Inventory()
 		self.player_list = {}
-	
+
 	def reset(self):
 		self.__init__()
 

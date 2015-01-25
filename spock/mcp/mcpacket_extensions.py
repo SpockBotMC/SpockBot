@@ -22,6 +22,7 @@ def extension(state, direction, packet_id):
 #Login SERVER_TO_CLIENT 0x01 Encryption Request
 @extension(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x01)
 class ExtensionLSTC01:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		length = datautils.unpack(MC_VARINT, bbuff)
 		packet.data['public_key'] = bbuff.recv(length)
@@ -29,6 +30,8 @@ class ExtensionLSTC01:
 		packet.data['verify_token'] = bbuff.recv(length)
 		return packet
 
+
+	@staticmethod
 	def encode_extra(packet):
 		o  = datautils.pack(MC_VARINT, len(packet.data['public_key']))
 		o += packet.data['public_key']
@@ -39,6 +42,7 @@ class ExtensionLSTC01:
 #Login CLIENT_TO_SERVER 0x01 Encryption Response
 @extension(mcdata.LOGIN_STATE, mcdata.CLIENT_TO_SERVER, 0x01)
 class ExtensionLCTS01:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		length = datautils.unpack(MC_VARINT, bbuff)
 		packet.data['shared_secret'] = bbuff.recv(length)
@@ -46,6 +50,7 @@ class ExtensionLCTS01:
 		packet.data['verify_token'] = bbuff.recv(length)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o  = datautils.pack(MC_VARINT, len(packet.data['shared_secret']))
 		o += packet.data['shared_secret']
@@ -56,6 +61,7 @@ class ExtensionLCTS01:
 #Play  SERVER_TO_CLIENT 0x0E Spawn Object
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x0E)
 class ExtensionPSTC0E:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		if packet.data['obj_data']:
 			packet.data['speed_x'] = datautils.unpack(MC_SHORT, bbuff)
@@ -63,6 +69,7 @@ class ExtensionPSTC0E:
 			packet.data['speed_z'] = datautils.unpack(MC_SHORT, bbuff)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		if packet.data['obj_data']:
 			o  = datautils.pack(MC_SHORT, packet.data['speed_x'])
@@ -73,6 +80,7 @@ class ExtensionPSTC0E:
 #Play  SERVER_TO_CLIENT 0x13 Destroy Entities
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x13)
 class ExtensionPSTC13:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		count = datautils.unpack(MC_VARINT, bbuff)
 		packet.data['eids'] = [
@@ -80,6 +88,7 @@ class ExtensionPSTC13:
 		]
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = datautils.pack(MC_VARINT, len(packet.data['eids']))
 		for eid in packet.data['eids']:
@@ -89,6 +98,7 @@ class ExtensionPSTC13:
 #Play  SERVER_TO_CLIENT 0x20 Entity Properties
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x20)
 class ExtensionPSTC20:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		packet.data['properties'] = []
 		for i in range(datautils.unpack(MC_INT, bbuff)):
@@ -106,6 +116,7 @@ class ExtensionPSTC20:
 			packet.data['properties'].append(prop)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = datautils.pack(MC_INT, len(packet.data['properties']))
 		for prop in packet.data['properties']:
@@ -121,10 +132,12 @@ class ExtensionPSTC20:
 #Play  SERVER_TO_CLIENT 0x21 Chunk Data
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x21)
 class ExtensionPSTC21:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		packet.data['data'] = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = datautils.pack(MC_VARINT, len(data))
 		o += packet.data['data']
@@ -133,6 +146,7 @@ class ExtensionPSTC21:
 #Play  SERVER_TO_CLIENT 0x22 Multi Block Change
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x22)
 class ExtensionPSTC22:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		packet.data['blocks'] = []
 		for i in range(datautils.unpack(MC_VARINT, bbuff)):
@@ -145,6 +159,7 @@ class ExtensionPSTC22:
 			})
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o  = datautils.pack(MC_VARINT, len(packet.data['blocks']))
 		for block in packet.data['blocks']:
@@ -159,6 +174,7 @@ class ExtensionPSTC22:
 #Play  SERVER_TO_CLIENT 0x26 Map Chunk Bulk
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x26)
 class ExtensionPSTC26:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		sky_light = datautils.unpack(MC_BOOL, bbuff)
 		count = datautils.unpack(MC_VARINT, bbuff)
@@ -171,6 +187,7 @@ class ExtensionPSTC26:
 		packet.data['data'] = bbuff.flush()
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = datautils.pack(MC_BOOL, packet.data['sky_light'])
 		o += datautils.pack(MC_VARINT, packet.data['metadata'])
@@ -184,6 +201,7 @@ class ExtensionPSTC26:
 #Play  SERVER_TO_CLIENT 0x27 Explosion
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x27)
 class ExtensionPSTC27:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		packet.data['blocks'] = [
 			[datautils.unpack(MC_BYTE, bbuff) for j in range(3)]
@@ -193,6 +211,7 @@ class ExtensionPSTC27:
 		packet.data['player_z'] = datautils.unpack(MC_FLOAT, bbuff)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = datautils.pack(MC_INT, len(packet.data['blocks']))
 		for block in packet.data['blocks']:
@@ -206,12 +225,14 @@ class ExtensionPSTC27:
 #Play  SERVER_TO_CLIENT 0x2A Particle
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x2A)
 class ExtensionPSTC2A:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		packet.data['data'] = [
 			datautils.unpack(MC_VARINT, bbuff)
 		for i in range(mcdata.particles[packet.data['id']][1])]
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = b''
 		for i in range(mcdata.particles[packet.data['id']][1]):
@@ -221,11 +242,13 @@ class ExtensionPSTC2A:
 #Play  SERVER_TO_CLIENT 0x2D Open Window
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x2D)
 class ExtensionPSTC2D:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		if packet.data['inv_type'] == 'EntityHorse':
 			packet.data['eid'] = datautils.unpack(MC_INT, bbuff)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		if packet.data['inv_type'] == 'EntityHorse':
 			return datautils.pack(MC_INT, packet.data['eid'])
@@ -234,12 +257,14 @@ class ExtensionPSTC2D:
 #Play  SERVER_TO_CLIENT 0x30 Window Items
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x30)
 class ExtensionPSTC30:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		packet.data['slots'] = [
 			datautils.unpack(MC_SLOT, bbuff)
 		for i in range(datautils.unpack(MC_SHORT, bbuff))]
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = datautils.pack(MC_SHORT, len(packet.data['slots']))
 		for slot in packet.data['slots']:
@@ -250,6 +275,7 @@ class ExtensionPSTC30:
 #Play  SERVER_TO_CLIENT 0x34 Maps
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x34)
 class ExtensionPSTC34:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		packet.data['icons'] = []
 		for i in range(datautils.unpack(MC_VARINT, bbuff)):
@@ -268,6 +294,7 @@ class ExtensionPSTC34:
 			packet.data['data'] = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = datautils.pack(MC_VARINT, len(packet.data['icons']))
 		for icon in packet.data['icons']:
@@ -289,6 +316,7 @@ class ExtensionPSTC34:
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x35)
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x48)
 class ExtensionUpdateNBT:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		assert(datautils.unpack(MC_BYTE, bbuff) == nbt.TAG_COMPOUND)
 		name = nbt.TAG_String(buffer = bbuff)
@@ -297,6 +325,7 @@ class ExtensionUpdateNBT:
 		packet.data['nbt'] = nbt_data
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		bbuff = utils.BoundBuffer()
 		TAG_Byte(packet.data['nbt'].id)._render_buffer(bbuff)
@@ -307,6 +336,7 @@ class ExtensionUpdateNBT:
 #Play  SERVER_TO_CLIENT 0x37 Statistics
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x37)
 class ExtensionPSTC37:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		packet.data['entries'] = [[
 			datautils.unpack(MC_STRING, bbuff),
@@ -314,6 +344,7 @@ class ExtensionPSTC37:
 		] for i in range(datautils.unpack(MC_VARINT, bbuff))]
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = datautils.pack(MC_VARINT, len(packet.data['entries']))
 		for entry in packet.data['entries']:
@@ -324,6 +355,7 @@ class ExtensionPSTC37:
 #Play  SERVER_TO_CLIENT 0x38 Player List Item
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x38)
 class ExtensionPSTC38:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		act = packet.data['action']
 		packet.data['player_list'] = []
@@ -352,6 +384,7 @@ class ExtensionPSTC38:
 			packet.data['player_list'].append(item)
 
 
+	@staticmethod
 	def encode_extra(packet):
 		act = packet.data['action']
 		o = datautils.pack(MC_VARINT, len(packet.data['player_list']))
@@ -379,12 +412,14 @@ class ExtensionPSTC38:
 #Play  SERVER_TO_CLIENT 0x3A Tab-Complete
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3A)
 class ExtensionPSTC3A:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		packet.data['matches'] = [
 			datautils.unpack(MC_STRING, bbuff)
 		for i in range(datautils.unpack(MC_VARINT, bbuff))]
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = datautils.pack(MC_VARINT, len(packet.data['matches']))
 		for match in packet.data['matches']:
@@ -394,6 +429,7 @@ class ExtensionPSTC3A:
 #Play  SERVER_TO_CLIENT 0x3B Scoreboard Objective
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3B)
 class ExtensionPSTC3B:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		act = packet.data['action']
 		if act == mcdata.SO_CREATE_BOARD or act == mcdata.SO_UPDATE_BOARD:
@@ -401,6 +437,7 @@ class ExtensionPSTC3B:
 			packet.data['type'] = datautils.unpack(MC_STRING, bbuff)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = b''
 		act = packet.data['action']
@@ -412,11 +449,13 @@ class ExtensionPSTC3B:
 #Play  SERVER_TO_CLIENT 0x3C Update Score
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3C)
 class ExtensionPSTC3C:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		if packet.data['action'] == mcdata.US_UPDATE_SCORE:
 			packet.data['value'] = datautils.unpack(MC_VARINT, bbuff)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = b''
 		if packet.data['action'] == mcdata.US_UPDATE_SCORE:
@@ -426,6 +465,7 @@ class ExtensionPSTC3C:
 #Play  SERVER_TO_CLIENT 0x3E Teams
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3E)
 class ExtensionPSTC3E:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		act = packet.data['action']
 		if act == mcdata.TE_CREATE_TEAM or act == TE_UPDATE_TEAM:
@@ -444,6 +484,7 @@ class ExtensionPSTC3E:
 			for i in range(datautils.unpack(MC_VARINT, bbuff))]
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		act = packet.data['action']
 		o = b''
@@ -468,10 +509,12 @@ class ExtensionPSTC3E:
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x3F)
 @extension(mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x17)
 class ExtensionPluginMessage:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		packet.data['data'] = bbuff.flush()
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o += packet.data['data']
 		return o
@@ -479,6 +522,7 @@ class ExtensionPluginMessage:
 #Play  SERVER_TO_CLIENT 0x42 Combat Event
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x42)
 class ExtensionPSTC42:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		if packet.data['event'] == mcdata.CE_END_COMBAT:
 			packet.data['duration'] = datautils.unpack(MC_VARINT, bbuff)
@@ -489,6 +533,7 @@ class ExtensionPSTC42:
 			packet.data['message'] = datautils.unpack(MC_STRING, bbuff)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = b''
 		if packet.data['event'] == mcdata.CE_END_COMBAT:
@@ -503,6 +548,7 @@ class ExtensionPSTC42:
 #Play  SERVER_TO_CLIENT 0x44 World Border
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x44)
 class ExtensionPSTC44:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		act = packet.data['action']
 		if act == mcdata.WB_SET_SIZE:
@@ -522,6 +568,7 @@ class ExtensionPSTC44:
 			packet.data['warn_blocks'] = datautils.unpack(MC_VARINT, bbuff)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = b''
 		act = packet.data['action']
@@ -545,6 +592,7 @@ class ExtensionPSTC44:
 #Play  SERVER_TO_CLIENT 0x45 Title
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x45)
 class ExtensionPSTC45:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		act = packet.data['action']
 		if act == mcdata.TL_TITLE or act == mcdata.TL_SUBTITLE:
@@ -555,6 +603,7 @@ class ExtensionPSTC45:
 			packet.data['fade_out'] = datautils.unpack(MC_INT, bbuff)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = b''
 		act = packet.data['action']
@@ -569,6 +618,7 @@ class ExtensionPSTC45:
 #Play  CLIENT_TO_SERVER 0x02 Use Entity
 @extension(mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x02)
 class ExtensionPCTS02:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		if packet.data['action'] == mcdata.UE_INTERACT_AT:
 			packet.data['target_x'] = datautils.unpack(MC_FLOAT, bbuff)
@@ -576,6 +626,7 @@ class ExtensionPCTS02:
 			packet.data['target_z'] = datautils.unpack(MC_FLOAT, bbuff)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = b''
 		if packet.data['action'] == mcdata.UE_INTERACT_AT:
@@ -588,11 +639,13 @@ class ExtensionPCTS02:
 #Play  CLIENT_TO_SERVER 0x14 Tab-Complete
 @extension(mcdata.PLAY_STATE, mcdata.CLIENT_TO_SERVER, 0x14)
 class ExtensionPCTS14:
+	@staticmethod
 	def decode_extra(packet, bbuff):
 		if packet.data['has_position'] == True:
 			packet.data['block_loc'] = datautils.unpack(MC_POSITION, bbuff)
 		return packet
 
+	@staticmethod
 	def encode_extra(packet):
 		o = b''
 		if packet.data['has_position'] == True:
