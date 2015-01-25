@@ -14,5 +14,4 @@ Ideas
 
 * Spin mcp/mcmap/pluginloader out into their own packages/projects?
 * Arbitrary proto version support
-* Consider Python 2.7 support
 * More specific platform support epoll/kqueue/libuv
