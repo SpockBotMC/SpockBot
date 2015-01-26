@@ -83,12 +83,12 @@ def unpack_position(bbuff):
 	position['z'] = z
 	return position
 
-#TODO: This is wrong. Doesn't return bytes, doesn't check signedness
 def pack_position(position):
-	val  = (position['x']&0x3FFFFFF)<<38
-	val |= (position['y']&0xFFF)<<26
-	val |= (position['z']&0x3FFFFFF)
-	return val
+	val  = (int(position['x'])&0x3FFFFFF)<<38
+	val |= (int(position['y'])&0xFFF)<<26
+	val |= (int(position['z'])&0x3FFFFFF)
+	#its a 64bit long so we are going to pack it as such
+	return struct.pack('>Q', val)
 
 # Slots are dictionaries that hold info about
 # inventory items, they also have funky

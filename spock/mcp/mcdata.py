@@ -719,7 +719,6 @@ packet_structs = {
 				(MC_STRING, 'inv_type'),
 				(MC_CHAT  , 'title'),
 				(MC_UBYTE , 'slot_count'),
-				(MC_BOOL  , 'use_title'),
 				#Extension
 					#Only present if 'inv_type' == 'EntityHorse'
 					#MC_INT 'eid'
