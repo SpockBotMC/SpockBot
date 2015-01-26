@@ -58,7 +58,37 @@ class InventoryPlugin:
 		ploader.provides('Inventory', self.inventory)
 		ploader.reg_event_handler('event_tick', self.tick)
 
+		#Inventory Events
+		ploader.reg_event_handler(
+			'PLAY<Open Window', self.debug
+		)
+		ploader.reg_event_handler(
+			'PLAY<Close Window', self.debug
+		)
+		ploader.reg_event_handler(
+			'PLAY<Set Slot', self.debug
+		)
+		ploader.reg_event_handler(
+			'PLAY<Window Items', self.handle_window_items
+		)
+		ploader.reg_event_handler(
+			'PLAY<Window Property', self.handle_window_prop
+		)
+		ploader.reg_event_handler(
+			'PLAY<Confirm Transaction', self.handle_confirm_transact
+		)
+
 	def tick(self, event, data):
 		pass
 
+	def debug(self, event, packet):
+		print(event, packet.data)
 
+	def handle_window_items(self, event, packet):
+		print(event, packet.data)
+
+	def handle_window_prop(self, event, packet):
+		print(event, packet.data)
+
+	def handle_confirm_transact(self, event, packet):
+		print(event, packet.data)

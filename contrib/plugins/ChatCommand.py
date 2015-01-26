@@ -40,6 +40,10 @@ class ChatCommandPlugin:
 		elif command == 'slot':
 			if len(args) == 1 and (int(args[0]) >= 0 and int(args[0]) <= 8):
 				self.net.push_packet('PLAY>Held Item Change', {'slot': int(args[0])})
+		elif command == 'place':
+			block_data = {'location': {'x': int(args[0]),'y': int(args[1]),'z': int(args[2])}, 'direction':1, 'held_item': {'id':-1}, 'cur_pos_x': 1, 'cur_pos_y': 1, 'cur_pos_z': 1}
+			print(block_data)
+			self.net.push_packet('PLAY>Player Block Placement', block_data)	
 		elif command == 'inv':
 			self.inventory.test_inventory()
 

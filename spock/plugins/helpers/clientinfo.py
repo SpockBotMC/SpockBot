@@ -5,6 +5,19 @@ Plugins subscribing to ClientInfo and its events don't have to independently
 track this information on their own.
 """
 
+INV_CHEST		= 0
+INV_WORKBENCH  	= 1
+INV_FURNACE 	= 2
+INV_DISPENSER 	= 3
+INV_ECHANTMENT 	= 4
+INV_BREWING 	= 5
+INV_NPC 		= 6
+INV_BEACON 		= 7
+INV_ANVIL 		= 8
+INV_HOPPER 		= 9
+INV_DROPPER 	= 10
+INV_HORSE 		= 11
+
 from spock.utils import pl_announce
 from spock.mcp.mcdata import (
 	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL
@@ -52,9 +65,17 @@ class PlayerPosition(Position):
 		self.pitch = 0.0
 		self.on_ground = False
 
+class ExtraInventory(Info):
+	invtype = None
+
+class ChestInventory(ExtraInventory):
+	invtype = INV_CHEST
+
 class Inventory(Info):
 	def __init__(self):
-		self.slots = [{'id':-1} for i in range(45)]
+		self.hotbar = [{'id':-1} for i in range(9)]
+		self.main = [{'id':-1} for i in range(27)]
+		self.extra = None
 
 class ClientInfo:
 	def __init__(self):
@@ -84,19 +105,6 @@ class ClientInfoPlugin:
 		)
 		ploader.reg_event_handler(
 			'PLAY<Player Position and Look', self.handle_position_update
-		)
-		#Inventory Events
-		ploader.reg_event_handler(
-			'PLAY<Set Slot', self.handle_set_slot
-		)
-		ploader.reg_event_handler(
-			'PLAY<Window Items', self.handle_window_items
-		)
-		ploader.reg_event_handler(
-			'PLAY<Window Property', self.handle_window_prop
-		)
-		ploader.reg_event_handler(
-			'PLAY<Confirm Transaction', self.handle_confirm_transact
 		)
 
 		ploader.reg_event_handler(
