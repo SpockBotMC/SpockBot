@@ -10,7 +10,7 @@ Bot framework, currently under heavy development
 
 Examples live in [contrib/examples](contrib/examples)  
 Higher level plugins live in [contrib/plugins](contrib/plugins)  
-Protocol stuff lives in [spock/mcp](spcok/mcp)  
+Protocol stuff lives in [spock/mcp](spock/mcp)  
 Map stuff lives in [spock/mcmap](spock/mcmap)  
 Important client stuff lives in [spock/plugins/core](spock/plugins/core)  
 Less important stuff lives in [spock/plugins/helpers](spock/plugins/helpers)  
