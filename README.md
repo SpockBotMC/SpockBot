@@ -34,7 +34,20 @@ to fix it.
 I'll write a real ReadMe and API docs when everything is done and stable-ish.
 For now you can check out the contrib/plugins folder to get a vague idea of what
 plugins should look like, find me on #mcdevs or email me at nickelpro@gmail.com
-if you have questions
+if you have questions'
+
+##Dependencies
+
+Python 3.x or Python 2.7+
+PyCrypto
+
+##Installation
+
+`python setup.py install`
+Depending on your distro it will be `python3 setup.py install`
+
+##Example
+[Demo](https://github.com/nickelpro/spock/blob/master/contrib/examples/demo.py)
 
 ##API Docs
 Current API docs live here https://nickelpro.github.io/spock/docs/spock/
