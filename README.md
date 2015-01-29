@@ -45,7 +45,7 @@ PyCrypto
 
 ##Installation
 
-`python setup.py install` 
+`python setup.py install`  
 Depending on your distro it will be `python3 setup.py install` 
 
 ##Example
