@@ -8,10 +8,12 @@ spock
 
 Bot framework, currently under heavy development
 
-Protocol stuff lives in spock/mcp  
-Map stuff lives in spock/mcmap  
-Important client stuff lives in spock/plugins/core  
-Less important stuff lives in spock/plugins/helpers  
+Examples live in [contrib/examples](contrib/examples) 
+Higher level plugins live in [contrib/plugins](contrib/plugins) 
+Protocol stuff lives in [spock/mcp](spcok/mcp) 
+Map stuff lives in [spock/mcmap](spock/mcmap) 
+Important client stuff lives in [spock/plugins/core](spock/plugins/core) 
+Less important stuff lives in [spock/plugins/helpers](spock/plugins/helpers) 
 
 Client could loosely be called "event-driven", by default plugins register
 handler functions to handle events that may or may not be emitted by other
@@ -38,16 +40,16 @@ if you have questions'
 
 ##Dependencies
 
-Python 3.x or Python 2.7+
-PyCrypto
+Python 3.x or Python 2.7+ 
+PyCrypto 
 
 ##Installation
 
-`python setup.py install`
-Depending on your distro it will be `python3 setup.py install`
+`python setup.py install` 
+Depending on your distro it will be `python3 setup.py install` 
 
 ##Example
-[Demo](https://github.com/nickelpro/spock/blob/master/contrib/examples/demo.py)
+[Demo](contrib/examples/demo.py)
 
 ##API Docs
 Current API docs live here https://nickelpro.github.io/spock/docs/spock/
