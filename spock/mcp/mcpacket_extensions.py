@@ -473,6 +473,7 @@ class ExtensionPSTC3E:
 			packet.data['team_suffix'] = datautils.unpack(MC_STRING, bbuff)
 			packet.data['friendly_fire'] = datautils.unpack(MC_BYTE, bbuff)
 			packet.data['name_visibility'] = datautils.unpack(MC_STRING, bbuff)
+			packet.data['color'] = datautils.unpack(MC_BYTE, bbuff)
 		if (
 			act == mcdata.TE_CREATE_TEAM or
 			act == mcdata.TE_ADDPLY_TEAM or
@@ -493,6 +494,7 @@ class ExtensionPSTC3E:
 			o += datautils.pack(MC_STRING, packet.data['team_suffix'])
 			o += datautils.pack(MC_BYTE, packet.data['friendly_fire'])
 			o += datautils.pack(MC_STRING, packet.data['name_visibility'])
+			o += datautils.pack(MC_BYTE, packet.data['color'])
 		if (
 			act == mcdata.TE_CREATE_TEAM or
 			act == mcdata.TE_ADDPLY_TEAM or

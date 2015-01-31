@@ -868,6 +868,7 @@ packet_structs = {
 						#MC_STRING 'team_suffix'
 						#MC_BYTE   'friendly_fire'
 						#MC_STRING 'name_visibility'
+						#MC_BYTE   'color'
 					#TE_ADDPLY_TEAM
 					#TE_REMPLY_TEAM
 						# List of strings 'players'
