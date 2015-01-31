@@ -957,7 +957,7 @@ packet_structs = {
 				(MC_STRING, 'hash'),
 			),
 			#Update Entity NBT
-			0x48: (
+			0x49: (
 				(MC_VARINT, 'eid'),
 				#Extension
 					#NBT Data 'nbt'

@@ -311,25 +311,32 @@ class ExtensionPSTC34:
 		return o
 
 #Play  SERVER_TO_CLIENT 0x35 Update Block Entity
-#Play  SERVER_TO_CLIENT 0x48 Update Entity NBT
+#Play  SERVER_TO_CLIENT 0x49 Update Entity NBT
 @extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x35)
-@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x48)
+@extension(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x49)
 class ExtensionUpdateNBT:
 	@staticmethod
 	def decode_extra(packet, bbuff):
-		assert(datautils.unpack(MC_BYTE, bbuff) == nbt.TAG_COMPOUND)
-		name = nbt.TAG_String(buffer = bbuff)
-		nbt_data = nbt.TAG_Compound(buffer = bbuff)
-		nbt_data.name = name
-		packet.data['nbt'] = nbt_data
+		tag_type = datautils.unpack(MC_BYTE, bbuff)
+		if tag_type == nbt.TAG_COMPOUND:
+			name = nbt.TAG_String(buffer = bbuff).value
+			nbt_data = nbt.TAG_Compound(buffer = bbuff)
+			nbt_data.name = name
+			packet.data['nbt'] = nbt_data
+		else:
+			assert(tag_type == nbt.TAG_END)
+			packet.data['nbt'] = None
 		return packet
 
 	@staticmethod
 	def encode_extra(packet):
 		bbuff = utils.BoundBuffer()
+		if packet.data['nbt'] == None:
+			packet.data['nbt'] = nbt._TAG_End()
 		TAG_Byte(packet.data['nbt'].id)._render_buffer(bbuff)
-		TAG_String(packet.data['nbt'].name)._render_buffer(bbuff)
-		packet.data['nbt']._render_buffer(bbuff)
+		if packet.data['nbt'].id == nbt.TAG_COMPOUND:
+			TAG_String(packet.data['nbt'].name)._render_buffer(bbuff)
+			packet.data['nbt']._render_buffer(bbuff)
 		return bbuff.flush()
 
 #Play  SERVER_TO_CLIENT 0x37 Statistics
