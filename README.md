@@ -1,5 +1,5 @@
 Inspired by [remyroy's COPS](http://www.reddit.com/r/Civcraft/comments/13kwjm/introducing_the_cops_civcraft_online_player_status/),
-a Minecraft client in Python. Protocol implementation based on barneymc
+a Minecraft client in Python. Protocol implementation based on [barneymc](https://github.com/barneygale/barneymc)
 
 Spock currently supports Minecraft 1.8.1
 
