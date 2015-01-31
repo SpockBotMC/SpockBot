@@ -38,4 +38,4 @@ class StartPlugin:
 		})
 
 	def login_start(self):
-		self.net.push('LOGIN>Login Start', {'name': self.auth.username})
+		self.net.push_packet('LOGIN>Login Start', {'name': self.auth.username})
