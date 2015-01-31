@@ -139,7 +139,7 @@ class ClientInfoPlugin:
 		d = packet.data
 		p.x = p.x + d['x'] if f&FLG_XPOS_REL else d['x']
 		p.y = p.y + d['y'] if f&FLG_YPOS_REL else d['y']
-		p.z = p.z + d['z'] if f&FLG_YPOS_REL else d['z']
+		p.z = p.z + d['z'] if f&FLG_ZPOS_REL else d['z']
 		p.yaw = p.yaw + d['yaw'] if f&FLG_YROT_REL else d['yaw']
 		p.pitch = p.pitch + d['pitch'] if f&FLG_XROT_REL else d['pitch']
 		self.event.emit('cl_position_update', self.client_info.position)

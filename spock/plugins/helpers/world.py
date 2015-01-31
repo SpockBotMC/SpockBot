@@ -1,7 +1,7 @@
 """
 Provides a very raw (but very fast) world map for use by plugins.
-Plugins interested in a more comprehensive world map view will eventually be
-able to use smpmap2 to interpret data from the world plugin and its events.
+Plugins interested in a more comprehensive world map view can use mcp.mapdata to
+interpret blocks and their metadata more comprehensively.
 Planned to provide light level interpretation based on sky light and time of day
 """
 

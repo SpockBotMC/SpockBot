@@ -30,18 +30,12 @@ class StartPlugin:
 			self.event.event_loop()
 
 	def handshake(self):
-		self.net.push(mcpacket.Packet(
-			ident = (mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00),
-			data = {
-				'protocol_version': mcdata.MC_PROTOCOL_VERSION,
-				'host': self.net.host,
-				'port': self.net.port,
-				'next_state': mcdata.LOGIN_STATE
-			}
-		))
+		self.net.push_packet('HANDSHAKE>Handshake', {
+			'protocol_version': mcdata.MC_PROTOCOL_VERSION,
+			'host': self.net.host,
+			'port': self.net.port,
+			'next_state': mcdata.LOGIN_STATE
+		})
 
 	def login_start(self):
-		self.net.push(mcpacket.Packet(
-			ident = (mcdata.LOGIN_STATE, mcdata.CLIENT_TO_SERVER, 0x00),
-			data = {'name': self.auth.username},
-		))
+		self.net.push('LOGIN>Login Start', {'name': self.auth.username})
