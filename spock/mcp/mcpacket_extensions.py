@@ -467,7 +467,7 @@ class ExtensionPSTC3E:
 	@staticmethod
 	def decode_extra(packet, bbuff):
 		act = packet.data['action']
-		if act == mcdata.TE_CREATE_TEAM or act == TE_UPDATE_TEAM:
+		if act == mcdata.TE_CREATE_TEAM or act == mcdata.TE_UPDATE_TEAM:
 			packet.data['display_name'] = datautils.unpack(MC_STRING, bbuff)
 			packet.data['team_prefix'] = datautils.unpack(MC_STRING, bbuff)
 			packet.data['team_suffix'] = datautils.unpack(MC_STRING, bbuff)
