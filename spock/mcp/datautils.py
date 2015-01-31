@@ -83,6 +83,7 @@ def unpack_position(bbuff):
 	position['z'] = z
 	return position
 
+#Doesn't check signedness on x or z, so still wrong
 def pack_position(position):
 	val  = (int(position['x'])&0x3FFFFFF)<<38
 	val |= (int(position['y'])&0xFFF)<<26

@@ -1,3 +1,17 @@
+"""
+This file deserves some sort of explanation for why it exists and why
+PluginLoader lives here, but its mostly just a holdover from the days when there
+was a monolithic Client god-class that handled everything. Now the "client"
+class is a (bad) settings parser and PluginLoader initalizes damn near
+everything.
+
+Eventually the client class should be just a shell for the PluginLoader to live
+in. Settings parsing should be improved and handed off to a "special" plugin.
+PluginLoader will probably always live here because it doesn't really have a
+better place to go.
+"""
+
+
 from spock.plugins import DefaultPlugins
 
 class PluginLoader:

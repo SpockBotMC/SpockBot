@@ -6,19 +6,19 @@ from collections import deque
 from spock.utils import pl_announce
 from spock.mcp import mcdata, mcpacket
 
-INV_MAIN	= "minecraft:main" #not ever sent by the server but a nice way to define player inventory
-INV_CHEST	= "minecraft:chest"
-INV_WORKBENCH  	= "minecraft:crafting_table"
-INV_FURNACE 	= "minecraft:furnace"
-INV_DISPENSER 	= "minecraft:dispenser"
+INV_MAIN        = "minecraft:main" #not ever sent by the server but a nice way to define player inventory
+INV_CHEST       = "minecraft:chest"
+INV_WORKBENCH   = "minecraft:crafting_table"
+INV_FURNACE     = "minecraft:furnace"
+INV_DISPENSER   = "minecraft:dispenser"
 INV_ENCHANTMENT = "minecraft:enchanting_table"
-INV_BREWING 	= "minecraft:brewing_stand"
-INV_VILLAGER 	= "minecraft:villager"
-INV_BEACON 	= "minecraft:beacon"
-INV_ANVIL 	= "minecraft:anvil"
-INV_HOPPER 	= "minecraft:hopper"
-INV_DROPPER 	= "minecraft:dropper"
-INV_HORSE 	= "EntityHorse"
+INV_BREWING     = "minecraft:brewing_stand"
+INV_VILLAGER    = "minecraft:villager"
+INV_BEACON      = "minecraft:beacon"
+INV_ANVIL       = "minecraft:anvil"
+INV_HOPPER      = "minecraft:hopper"
+INV_DROPPER     = "minecraft:dropper"
+INV_HORSE       = "EntityHorse"
 
 class ExtraInv:
 	inv_type = None
@@ -42,13 +42,13 @@ class ChestExtraInv(ExtraInv):
 	slot_count = 54
 	def __init__(self, slots):
 		self.slots = slots
-	
+
 class WorkbenchExtraInv(ExtraInv):
 	inv_type = INV_WORKBENCH
 	slot_count = 10
 	def __init__(self, slots):
 		self.crafting = slots[1:9]
-		self.crafting_out = slots[0] 
+		self.crafting_out = slots[0]
 
 class FurnaceExtraInv(ExtraInv):
 	inv_type = INV_FURNACE
@@ -123,7 +123,7 @@ class InventoryCore:
 		self.hotbar = [{'id':-1} for i in range(9)]
 		self.main = [{'id':-1} for i in range(27)]
 		self.extra = MainExtraInv([{'id':-1} for i in range(9)])
-	
+
 	def click_window(slot, button, mode):
 		self.clickque.append({
 			'window_id': 0,
@@ -132,7 +132,7 @@ class InventoryCore:
 			'mode': mode,
 			'clicked_item': self.clinfo.inventory.slots[slot],
 		})
-	
+
 	def test_inventory(self):
 		for i in range(9,43):
 			self.action += 1
@@ -142,7 +142,7 @@ class InventoryCore:
 				'button': 0,
 				'mode': 0,
 				'action': self.action,
-				'clicked_item': self.clinfo.inventory.slots[i], 
+				'clicked_item': self.clinfo.inventory.slots[i],
 			}
 			self.net.push_packet(
 				'PLAY>Click Window', data
@@ -154,7 +154,7 @@ class InventoryCore:
 				'button': 0,
 				'mode': 0,
 				'action': self.action,
-				'clicked_item': self.clinfo.inventory.slots[i+1], 
+				'clicked_item': self.clinfo.inventory.slots[i+1],
 			}
 			self.net.push_packet(
 				'PLAY>Click Window', data
