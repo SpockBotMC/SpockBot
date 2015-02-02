@@ -105,7 +105,7 @@ def unpack_slot(bbuff):
 		nbt_start = unpack(MC_BYTE, bbuff)
 		if nbt_start > 0:
 			assert(nbt_start == nbt.TAG_COMPOUND)
-			name = nbt.TAG_String(buffer = bbuff)
+			name = nbt.TAG_String(buffer = bbuff).value
 			ench = nbt.TAG_Compound(buffer = bbuff)
 			ench.name = name
 			slot['enchants'] = ench
