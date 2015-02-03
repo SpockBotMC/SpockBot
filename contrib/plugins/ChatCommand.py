@@ -21,12 +21,12 @@ class ChatCommandPlugin:
 		message = self.parse_chat(chat_data)
 		print('Chat:', message)
 		try:
-                        name_pos = message.find(' ')
+			name_pos = message.find(' ')
 			if name_pos == -1:
-                                player_name='???'
-                        else:
-                                player_name=' '.join(message[:name_pos].split(' '))
-                        message=message[name_pos+1:]
+					player_name='???'
+			else:
+					player_name=' '.join(message[:name_pos].split(' '))
+			message=message[name_pos+1:]
 			command = message[message.index('!'):]
 			args = []
 			spacepos = command.find(' ')
@@ -62,14 +62,14 @@ class ChatCommandPlugin:
 			self.net.push_packet('PLAY>Player Block Placement', block_data)	
 		elif command == 'inv':
 			self.inventory.test_inventory()
-                elif command == 'animation':
+		elif command == 'animation':
 			self.net.push_packet('PLAY>Animation', '')
 
 	def parse_chat(self, chat_data):
 		message = ''
 		if type(chat_data) is dict:
 			if 'text' in chat_data:
-                                message += chat_data['text']
+				message += chat_data['text']
 				if 'extra' in chat_data:
 					message += self.parse_chat(chat_data['extra'])
 			elif 'translate' in chat_data:
@@ -77,7 +77,7 @@ class ChatCommandPlugin:
 					message += self.parse_chat(chat_data['with'])
 		elif type(chat_data) is list:
 			for text in chat_data:
-                                if type(text) is dict:
+				if type(text) is dict:
 					message += self.parse_chat(text)
 				elif type(text) is unicode:
 					message += ' ' + text
