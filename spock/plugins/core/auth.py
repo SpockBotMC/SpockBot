@@ -39,20 +39,17 @@ class AuthCore:
 	def start_session(self, username, password = ''):
 		rep = {}
 		if self.authenticated:
-			print(
-				"Attempting login with username:", username,
-				"and password:", password
-			)
+			print("Attempting login with username:", username)
 			rep = self.ygg.authenticate(username, password)
-			if rep != None and 'error' not in rep:
-				print(rep)
-			else:
+			if rep == None or 'error' in rep:
 				print('Login Unsuccessful, Response:', rep)
 				self.event.emit('AUTH_ERR')
 				return rep
 			if 'selectedProfile' in rep:
 				self.selected_profile = rep['selectedProfile']
 				self.username = rep['selectedProfile']['name']
+				print("Logged in as:", self.username)
+				print("Selected Profile:", self.selected_profile)
 			else:
 				self.username = username
 		else:
