@@ -24,9 +24,9 @@ class ChatCommandPlugin:
 		try:
 			name_pos = message.find(' ')
 			if name_pos == -1:
-					player_name='???'
+				player_name='???'
 			else:
-					player_name=' '.join(message[:name_pos].split(' '))
+				player_name=' '.join(message[:name_pos].split(' '))
 			message=message[name_pos+1:]
 			command = message[message.index('!'):]
 			args = []
@@ -43,7 +43,7 @@ class ChatCommandPlugin:
 	def command_handle(self, player_name, command, args):
 		if command == '':
 			return
-		print("Command:", command)
+		print("Command:", player_name, command, args)
 		if command == 'jump' or command == 'j':
 			self.physics.jump()
 		elif command == 'speak':
