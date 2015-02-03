@@ -5,18 +5,18 @@ Plugins subscribing to ClientInfo and its events don't have to independently
 track this information on their own.
 """
 
-INV_CHEST		= 0
-INV_WORKBENCH  	= 1
-INV_FURNACE 	= 2
-INV_DISPENSER 	= 3
-INV_ECHANTMENT 	= 4
-INV_BREWING 	= 5
-INV_NPC 		= 6
-INV_BEACON 		= 7
-INV_ANVIL 		= 8
-INV_HOPPER 		= 9
-INV_DROPPER 	= 10
-INV_HORSE 		= 11
+INV_CHEST      = 0
+INV_WORKBENCH  = 1
+INV_FURNACE    = 2
+INV_DISPENSER  = 3
+INV_ECHANTMENT = 4
+INV_BREWING    = 5
+INV_NPC        = 6
+INV_BEACON     = 7
+INV_ANVIL      = 8
+INV_HOPPER     = 9
+INV_DROPPER    = 10
+INV_HORSE      = 11
 
 from spock.utils import pl_announce
 from spock.mcp.mcdata import (
@@ -130,7 +130,7 @@ class ClientInfoPlugin:
 		self.client_info.health.set_dict(packet.data)
 		self.event.emit('cl_health_update', self.client_info.health)
 		if packet.data['health'] <= 0.0:
-			self.event.emit('death', self.client_info.health)
+			self.event.emit('cl_death', self.client_info.health)
 
 	#Player Position and Look - Update client Position state
 	def handle_position_update(self, event, packet):

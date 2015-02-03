@@ -10,7 +10,7 @@ class RespawnPlugin:
 		if not ploader.requires('ClientInfo'):
 			print("RespawnPlugin requires ClientInfo, bailing out")
 		ploader.reg_event_handler(
-			'death', self.handle_death
+			'cl_death', self.handle_death
 		)
 
 	#You be dead
