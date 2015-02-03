@@ -13,11 +13,10 @@ class StartPlugin:
 	def __init__(self, ploader, settings):
 		self.event = ploader.requires('Event')
 		self.settings = ploader.requires('Settings')
-		self.client = ploader.requires('Client')
 		self.net = ploader.requires('Net')
 		self.auth = ploader.requires('Auth')
 
-		setattr(self.client, 'start', self.start)
+		setattr(ploader, 'start', self.start)
 
 	def start(self, host = 'localhost', port = 25565):
 		if 'error' not in self.auth.start_session(

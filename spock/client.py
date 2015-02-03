@@ -9,11 +9,8 @@ from spock.plugins.core.settings import SettingsPlugin
 class PluginLoader:
 	def __init__(self, **kwargs):
 		self.announce = {}
-		self.extensions = {'Client': self}
-		if 'settings_mixin' in kwargs:
-			kwargs['settings_mixin'](self, kwargs)
-		else:
-			SettingsPlugin(self, kwargs)
+		self.extensions = {}
+		kwargs.get('settings_mixin', SettingsPlugin)(self, kwargs)
 		self.fetch = self.requires('PloaderFetch')
 		self.plugins = self.fetch.get_plugins()
 
