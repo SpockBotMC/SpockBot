@@ -1029,10 +1029,8 @@ packet_structs = {
 				(MC_SHORT, 'slot'),
 			),
 			#Animation
-			#Is This ever used? Is this supposed to be empty??
 			0x0A: (
-				(MC_VARINT, 'eid'),
-				(MC_BYTE  , 'animation'),
+				#this takes no arguments
 			),
 			#Entity Action
 			0x0B: (
