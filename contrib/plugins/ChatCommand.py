@@ -5,6 +5,7 @@ its just a testing bed for stuff
 """
 
 from spock.mcp import mcdata
+from spock.utils import string_types
 import datetime
 
 class ChatCommandPlugin:
@@ -79,7 +80,7 @@ class ChatCommandPlugin:
 			for text in chat_data:
 				if type(text) is dict:
 					message += self.parse_chat(text)
-				elif type(text) is unicode:
+				elif type(text) is string_types:
 					message += ' ' + text
 					
 		return message

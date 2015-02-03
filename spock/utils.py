@@ -1,6 +1,12 @@
 """
 ALL THE UTILS!
 """
+#silly python2
+try:
+	string_types = unicode
+except NameError:
+	string_types = str
+
 class Vec3:
 	def __init__(self, x, y, z):
 		self.x = x
