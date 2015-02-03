@@ -1,8 +1,5 @@
 """
-This file deserves some sort of explanation for why it exists and why
-PluginLoader lives here, but its mostly just a holdover from the days when there
-was a monolithic Client god-class that handled everything. The Client class is
-gone now, but the file remains
+Provides reasonably not-awful plugin loading
 """
 from spock.plugins.core.settings import SettingsPlugin
 
