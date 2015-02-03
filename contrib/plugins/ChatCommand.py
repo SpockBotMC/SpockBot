@@ -1,3 +1,9 @@
+"""
+Just a dumb plugin to let me run !command arguments from ingame to fire off actions
+I will probably turn this into a useful generic plugin at some point but for now
+its just a testing bed for stuff
+"""
+
 from spock.mcp import mcdata
 import datetime
 
