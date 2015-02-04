@@ -8,8 +8,6 @@ spock
 
 Bot framework, currently under heavy development
 
-Examples live in [contrib/examples](contrib/examples)  
-Higher level plugins live in [contrib/plugins](contrib/plugins)  
 Protocol stuff lives in [spock/mcp](spock/mcp)  
 Map stuff lives in [spock/mcmap](spock/mcmap)  
 Important client stuff lives in [spock/plugins/core](spock/plugins/core)  
@@ -48,11 +46,11 @@ PyCrypto
 `python setup.py install`  
 Depending on your distro it will be `python3 setup.py install` 
 
-##Example
-[Demo](contrib/examples/demo.py)
+##Examples
+[Some Useful Examples](https://github.com/SpockBotMC/SpockBot-Contrib/tree/master/examples)
 
 ##API Docs
-Current API docs live here https://nickelpro.github.io/spock/docs/spock/
+Current API docs live here https://spockbotmc.github.io/docs/spock/
 
 ##Legal
 
