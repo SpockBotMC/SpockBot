@@ -1,10 +1,8 @@
-Inspired by [remyroy's COPS](http://www.reddit.com/r/Civcraft/comments/13kwjm/introducing_the_cops_civcraft_online_player_status/),
-a Minecraft client in Python. Protocol implementation based on [barneymc](https://github.com/barneygale/barneymc)
+SpockBot
+=====
 
 Spock currently supports Minecraft 1.8.1
 
-spock
-=====
 
 Bot framework, currently under heavy development
 
@@ -52,12 +50,16 @@ Depending on your distro it will be `python3 setup.py install`
 ##API Docs
 Current API docs live here https://spockbotmc.github.io/docs/spock/
 
+##Credits
+Inspired by [remyroy's COPS](http://www.reddit.com/r/Civcraft/comments/13kwjm/introducing_the_cops_civcraft_online_player_status/),
+a Minecraft client in Python. Protocol implementation based on [barneymc](https://github.com/barneygale/barneymc)
+
 ##Legal
 
-License is MIT and can be found in LICENSE
+License is MIT and can be found in `LICENSE`
 
 The NBT parser and the original protocol implementation came from other projects,
-relevant legal information and attribution can be found in LEGAL.md
+relevant legal information and attribution can be found in `LEGAL.md`
 
 #####P.S.
 A lot of people ask what COPS was. It was a service that tracked players on a
