@@ -54,6 +54,8 @@ Current API docs live here https://spockbotmc.github.io/docs/spock/
 Inspired by [remyroy's COPS](http://www.reddit.com/r/Civcraft/comments/13kwjm/introducing_the_cops_civcraft_online_player_status/),
 a Minecraft client in Python. Protocol implementation based on [barneymc](https://github.com/barneygale/barneymc)
 
+COPS was a service that tracked players on a minecraft server called Civcraft. It looked like [this](http://www.nickg.org/dl/cops.jpg)
+
 ##Legal
 
 License is MIT and can be found in `LICENSE`
@@ -61,6 +63,3 @@ License is MIT and can be found in `LICENSE`
 The NBT parser and the original protocol implementation came from other projects,
 relevant legal information and attribution can be found in `LEGAL.md`
 
-#####P.S.
-A lot of people ask what COPS was. It was a service that tracked players on a
-minecraft server called Civcraft. It looked like [this](http://www.nickg.org/dl/cops.jpg)
