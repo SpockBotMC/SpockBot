@@ -29,11 +29,6 @@ tested and might break at any given moment. If you support one of those use
 cases and Spock breaks for you, submit an issue with a stack trace and we'll try
 to fix it.
 
-I'll write a real ReadMe and API docs when everything is done and stable-ish.
-For now you can check out the contrib/plugins folder to get a vague idea of what
-plugins should look like, find me on #mcdevs or email me at nickelpro@gmail.com
-if you have questions'
-
 ##Dependencies
 
 Python 3.x or Python 2.7+  
@@ -49,6 +44,9 @@ Depending on your distro it will be `python3 setup.py install`
 
 ##API Docs
 Current API docs live here https://spockbotmc.github.io/docs/spock/
+
+##Support
+gamingrobot or nickelpro in #mcdevs on Freenode
 
 ##Credits
 Inspired by [remyroy's COPS](http://www.reddit.com/r/Civcraft/comments/13kwjm/introducing_the_cops_civcraft_online_player_status/),
