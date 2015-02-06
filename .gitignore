@@ -1,6 +1,8 @@
 *.pyc
 *.log
 *.swp
+config.yaml
 login.py
 run.py
+contrib/
 /build

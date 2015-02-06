@@ -2,6 +2,7 @@
 ALL THE UTILS!
 """
 #silly python2
+import copy
 try:
 	string_types = unicode
 except NameError:
@@ -86,6 +87,12 @@ def pl_announce(*args):
 		cl.pl_announce = args
 		return cl
 	return inner
+
+def get_settings(settings, defaults):
+	final_settings = copy.deepcopy(defaults)
+	for k, v in settings.items():
+		final_settings[k] = v
+	return final_settings
 
 def mapshort2id(data):
 	return data>>4, data&0x0F

@@ -140,10 +140,18 @@ class NetCore:
 
 	disconnect = reset
 
+default_settings = {
+	'username': 'Bot',
+	'password': None,
+	'bufsize': 4096,
+	'sock_quit': True,
+	'sess_quit': True,
+}
+
 @pl_announce('Net')
 class NetPlugin:
 	def __init__(self, ploader, settings):
-		settings = ploader.requires('Settings')
+		settings = utils.get_settings(settings, default_settings)
 		self.bufsize = settings['bufsize']
 		self.sock_quit = settings['sock_quit']
 		self.event = ploader.requires('Event')
@@ -173,7 +181,7 @@ class NetPlugin:
 				time.sleep(1)
 			else:
 				time.sleep(timeout)
-			
+
 
 	#SOCKET_RECV - Socket is ready to recieve data
 	def handleRECV(self, name, data):

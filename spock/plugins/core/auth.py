@@ -60,13 +60,17 @@ class AuthCore:
 		self.shared_secret = Random._UserFriendlyRNG.get_random_bytes(16)
 		return self.shared_secret
 
+default_settings = {
+	'authenticated': True,
+	'sess_quit': True,
+}
 
 @pl_announce('Auth')
 class AuthPlugin:
 	def __init__(self, ploader, settings):
+		settings = utils.get_settings(settings, default_settings)
 		self.event = ploader.requires('Event')
 		self.net = ploader.requires('Net')
-		settings = ploader.requires('Settings')
 		self.authenticated = settings['authenticated']
 		self.sess_quit = settings['sess_quit']
 		self.auth = AuthCore(self.authenticated, self.event)

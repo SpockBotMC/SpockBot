@@ -7,12 +7,20 @@ for demos and tutorials, and illustrates the basic steps for initializing
 a bot.
 """
 
+from spock import utils
 from spock.mcp import mcpacket, mcdata
+
+default_settings = {
+	'username': 'Bot',
+	'password': None,
+	'host': 'localhost',
+	'port': 25565,
+}
 
 class StartPlugin:
 	def __init__(self, ploader, settings):
+		self.settings = utils.get_settings(settings, default_settings)
 		self.event = ploader.requires('Event')
-		self.settings = ploader.requires('Settings')
 		self.net = ploader.requires('Net')
 		self.auth = ploader.requires('Auth')
 
@@ -20,8 +28,8 @@ class StartPlugin:
 
 	def start(self, host = 'localhost', port = 25565):
 		if 'error' not in self.auth.start_session(
-			self.settings['mc_username'],
-			self.settings['mc_password']
+			self.settings['username'],
+			self.settings['password']
 		):
 			self.net.connect(host, port)
 			self.handshake()
