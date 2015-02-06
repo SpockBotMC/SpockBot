@@ -34,5 +34,3 @@ class PluginLoader:
 
 	def provides(self, ident, obj):
 		self.extensions[ident] = obj
-
-Client = PluginLoader

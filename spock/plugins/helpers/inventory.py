@@ -196,19 +196,19 @@ class InventoryPlugin:
 		pass
 
 	def handle_open_window(self, event, packet):
-		logger.info("%s %s", event, packet.data)
+		logger.debug("%s %s", event, packet.data)
 
 	def handle_close_window(self, event, packet):
-		logger.info("%s %s", event, packet.data)
+		logger.debug("%s %s", event, packet.data)
 
 	def handle_set_slot(self, event, packet):
-		logger.info("%s %s", event, packet.data)
+		logger.debug("%s %s", event, packet.data)
 
 	def handle_window_items(self, event, packet):
-		logger.info("%s %s", event, packet.data)
+		logger.debug("%s %s", event, packet.data)
 
 	def handle_window_prop(self, event, packet):
-		logger.info("%s %s", event, packet.data)
+		logger.debug("%s %s", event, packet.data)
 
 	def handle_confirm_transact(self, event, packet):
-		logger.info("%s %s", event, packet.data)
+		logger.debug("%s %s", event, packet.data)
