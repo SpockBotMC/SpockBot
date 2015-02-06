@@ -18,6 +18,9 @@ from spock import utils
 from spock.mcp import mcdata, mcpacket, yggdrasil
 from spock.utils import pl_announce
 
+import logging
+logger = logging.getLogger('spock')
+
 # This function courtesy of barneygale
 def JavaHexDigest(digest):
 	d = int(digest.hexdigest(), 16)
@@ -39,17 +42,17 @@ class AuthCore:
 	def start_session(self, username, password = ''):
 		rep = {}
 		if self.authenticated:
-			print("Attempting login with username:", username)
+			logger.info("Attempting login with username: %s", username)
 			rep = self.ygg.authenticate(username, password)
 			if rep == None or 'error' in rep:
-				print('Login Unsuccessful, Response:', rep)
+				logger.error('Login Unsuccessful, Response: %s', rep)
 				self.event.emit('AUTH_ERR')
 				return rep
 			if 'selectedProfile' in rep:
 				self.selected_profile = rep['selectedProfile']
 				self.username = rep['selectedProfile']['name']
-				print("Logged in as:", self.username)
-				print("Selected Profile:", self.selected_profile)
+				logger.info("Logged in as: %s", self.username)
+				logger.info("Selected Profile: %s", self.selected_profile)
 			else:
 				self.username = username
 		else:
@@ -99,7 +102,7 @@ class AuthPlugin:
 				+ self.auth.shared_secret
 				+ pubkey
 			))
-			print('Attempting to authenticate session with sessionserver.mojang.com')
+			logger.info('Attempting to authenticate session with sessionserver.mojang.com')
 			url = "https://sessionserver.mojang.com/session/minecraft/join"
 			data = json.dumps({
 				'accessToken': self.auth.ygg.access_token,
@@ -116,7 +119,7 @@ class AuthPlugin:
 			#	print('Session Authentication Failed, Response:', rep)
 			#	self.event.emit('SESS_ERR')
 			#	return
-			print(rep)
+			logger.warning("%s", rep)
 
 		rsa_cipher = PKCS1_v1_5.new(RSA.importKey(pubkey))
 		self.net.push(mcpacket.Packet(

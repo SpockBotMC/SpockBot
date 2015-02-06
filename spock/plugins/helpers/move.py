@@ -7,13 +7,16 @@ plugin to implement SMP-compliant movement
 
 from spock.mcp import mcdata
 
+import logging
+logger = logging.getLogger('spock')
+
 class MovementPlugin:
 	def __init__(self, ploader, settings):
 		self.net = ploader.requires('Net')
 		self.clinfo = ploader.requires('ClientInfo')
 		if not self.clinfo:
 			#TODO: Make this a soft dependency?
-			print("MovementPlugin requires ClientInfo, bailing out")
+			logger.error("MovementPlugin requires ClientInfo, bailing out")
 			return
 		ploader.reg_event_handler(
 			'client_tick', self.client_tick

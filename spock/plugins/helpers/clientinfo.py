@@ -65,18 +65,6 @@ class PlayerPosition(Position):
 		self.pitch = 0.0
 		self.on_ground = False
 
-class ExtraInventory(Info):
-	invtype = None
-
-class ChestInventory(ExtraInventory):
-	invtype = INV_CHEST
-
-class Inventory(Info):
-	def __init__(self):
-		self.hotbar = [{'id':-1} for i in range(9)]
-		self.main = [{'id':-1} for i in range(27)]
-		self.extra = None
-
 class ClientInfo:
 	def __init__(self):
 		self.eid = 0
@@ -84,7 +72,6 @@ class ClientInfo:
 		self.spawn_position = Position()
 		self.health = PlayerHealth()
 		self.position = PlayerPosition()
-		self.inventory = Inventory()
 		self.player_list = {}
 
 	def reset(self):
@@ -143,25 +130,6 @@ class ClientInfoPlugin:
 		p.yaw = p.yaw + d['yaw'] if f&FLG_YROT_REL else d['yaw']
 		p.pitch = p.pitch + d['pitch'] if f&FLG_XROT_REL else d['pitch']
 		self.event.emit('cl_position_update', self.client_info.position)
-
-	def handle_set_slot(self, event, packet):
-		print(event, packet.data)
-		#inventory
-		if packet.data['window_id'] == 0:
-			self.client_info.inventory.slots[packet.data['slot']] = packet.data['slot_data']
-
-	def handle_window_items(self, event, packet):
-		print(event, packet.data)
-		#inventory
-		if packet.data['window_id'] == 0:
-			for idx, slot in enumerate(packet.data['slots']):
-				self.client_info.inventory.slots[idx] = slot
-
-	def handle_window_prop(self, event, packet):
-		print(event, packet.data)
-
-	def handle_confirm_transact(self, event, packet):
-		print(event, packet.data)
 
 	def handle_disconnect(self, name, packet):
 		self.client_info.reset()

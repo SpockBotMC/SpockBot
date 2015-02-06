@@ -10,6 +10,9 @@ from spock.mcp.mcdata import (
 	MC_STRING, MC_CHAT, MC_SLOT, MC_META
 )
 
+import logging
+logger = logging.getLogger('spock')
+
 class Packet(object):
 	def __init__(self,
 		ident = [mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00],
@@ -63,8 +66,8 @@ class Packet(object):
 			if pbuff.flush():
 				raise utils.BufferUnderflowException
 		except utils.BufferUnderflowException:
-			print('Packet decode failed')
-			print('Failed packet ident is probably:', self.str_ident)
+			logger.warning('Packet decode failed')
+			logger.warning('Failed packet ident is probably: %s', self.str_ident)
 			return None
 		return self
 

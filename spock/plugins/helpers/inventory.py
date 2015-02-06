@@ -6,6 +6,9 @@ from collections import deque
 from spock.utils import pl_announce
 from spock.mcp import mcdata, mcpacket
 
+import logging
+logger = logging.getLogger('spock')
+
 INV_MAIN        = "minecraft:main" #not ever sent by the server but a nice way to define player inventory
 INV_CHEST       = "minecraft:chest"
 INV_WORKBENCH   = "minecraft:crafting_table"
@@ -193,19 +196,19 @@ class InventoryPlugin:
 		pass
 
 	def handle_open_window(self, event, packet):
-		print(event, packet.data)
+		logger.info("%s %s", event, packet.data)
 
 	def handle_close_window(self, event, packet):
-		print(event, packet.data)
+		logger.info("%s %s", event, packet.data)
 
 	def handle_set_slot(self, event, packet):
-		print(event, packet.data)
+		logger.info("%s %s", event, packet.data)
 
 	def handle_window_items(self, event, packet):
-		print(event, packet.data)
+		logger.info("%s %s", event, packet.data)
 
 	def handle_window_prop(self, event, packet):
-		print(event, packet.data)
+		logger.info("%s %s", event, packet.data)
 
 	def handle_confirm_transact(self, event, packet):
-		print(event, packet.data)
+		logger.info("%s %s", event, packet.data)

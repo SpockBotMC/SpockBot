@@ -4,11 +4,14 @@ RespawnPlugin's scope is huge, only KeepAlivePlugin does more
 
 from spock.mcp import mcdata
 
+import logging
+logger = logging.getLogger('spock')
+
 class RespawnPlugin:
 	def __init__(self, ploader, settings):
 		self.net = ploader.requires('Net')
 		if not ploader.requires('ClientInfo'):
-			print("RespawnPlugin requires ClientInfo, bailing out")
+			logger.error("RespawnPlugin requires ClientInfo, bailing out")
 		ploader.reg_event_handler(
 			'cl_death', self.handle_death
 		)

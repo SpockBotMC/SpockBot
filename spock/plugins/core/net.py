@@ -13,6 +13,9 @@ from spock.utils import pl_announce
 from spock.mcp import mcpacket, mcdata
 from Crypto.Cipher import AES
 
+import logging
+logger = logging.getLogger('spock')
+
 class AESCipher:
 	def __init__(self, SharedSecret):
 		#Name courtesy of dx
@@ -47,7 +50,7 @@ class SelectSocket:
 		try:
 			rlist, wlist, xlist = select.select(*slist)
 		except select.error as e:
-			print(str(e))
+			logger.error(str(e))
 			rlist = []
 			wlist = []
 			xlist = []
@@ -79,16 +82,16 @@ class NetCore:
 		self.host = host
 		self.port = port
 		try:
-			print("Attempting to connect to host:", host, "port:", port)
+			logger.info("Attempting to connect to host: %s port: %s", host, port)
 			#Set the connect to be a blocking operation
 			self.sock.sock.setblocking(True)
 			self.sock.sock.connect((self.host, self.port))
 			self.sock.sock.setblocking(False)
 			self.connected = True
 			self.event.emit('connect', (self.host, self.port))
-			print("Connected to host:", host, "port:", port)
+			logger.info("Connected to host: %s port: %s", host, port)
 		except socket.error as error:
-			print("Error on Connect:", str(error))
+			logger.error("Error on Connect: %s", str(error))
 
 	def set_proto_state(self, state):
 		self.proto_state = state
@@ -206,13 +209,13 @@ class NetPlugin:
 				if self.net.sbuff:
 					self.sending = True
 			except socket.error as error:
-				print(error)
+				logger.error(str(error))
 				self.event.emit('SOCKET_ERR', error)
 
 	#SOCKET_ERR - Socket Error has occured
 	def handleERR(self, name, data):
 		self.net.reset()
-		print("Socket Error:", data)
+		logger.error("Socket Error: %s", data)
 		self.event.emit('disconnect', data)
 		if self.sock_quit and not self.event.kill_event:
 			self.event.kill()
@@ -220,7 +223,7 @@ class NetPlugin:
 	#SOCKET_HUP - Socket has hung up
 	def handleHUP(self, name, data):
 		self.net.reset()
-		print("Socket has hung up")
+		logger.error("Socket has hung up")
 		self.event.emit('disconnect', "Socket Hung Up")
 		if self.sock_quit and not self.event.kill_event:
 			self.event.kill()
@@ -238,5 +241,5 @@ class NetPlugin:
 		self.net.set_comp_state(packet.data['threshold'])
 
 	def handle_disconnect(self, name, packet):
-		print("Disconnected:", packet.data['reason'])
+		logger.info("Disconnected: %s", packet.data['reason'])
 		self.event.emit('disconnect', packet.data['reason'])
