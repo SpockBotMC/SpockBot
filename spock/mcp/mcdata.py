@@ -1030,7 +1030,7 @@ packet_structs = {
 			),
 			#Animation
 			0x0A: (
-				#this takes no arguments
+				#Empty Packet
 			),
 			#Entity Action
 			0x0B: (

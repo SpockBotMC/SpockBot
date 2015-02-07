@@ -83,19 +83,16 @@ def unpack_position(bbuff):
 	position['z'] = z
 	return position
 
-#Doesn't check signedness on x or z, so still wrong
 def pack_position(position):
 	val  = (int(position['x'])&0x3FFFFFF)<<38
 	val |= (int(position['y'])&0xFFF)<<26
 	val |= (int(position['z'])&0x3FFFFFF)
-	#its a 64bit long so we are going to pack it as such
-	return struct.pack('>Q', val)
+	return pack(MC_ULONG, val)
 
 # Slots are dictionaries that hold info about
 # inventory items, they also have funky
 # enchantment data
 
-#TODO: This is probably still wrong
 def unpack_slot(bbuff):
 	slot = {}
 	slot['id'] = unpack(MC_SHORT, bbuff)
