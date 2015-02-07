@@ -12,7 +12,7 @@ DefaultPlugins = [
 	('respawn', respawn.RespawnPlugin),
 	('move', move.MovementPlugin),
 	('world', world.WorldPlugin),
-	('client', clientinfo.ClientInfoPlugin),
+	('clientinfo', clientinfo.ClientInfoPlugin),
 	('physics', physics.PhysicsPlugin),
 	('inventory', inventory.InventoryPlugin),
 ]

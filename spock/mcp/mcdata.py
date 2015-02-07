@@ -816,7 +816,7 @@ packet_structs = {
 					#PL_UPDATE_DISPLAY
 						#MC_BOOL 'has_display'
 						#has_display == True
-							#MC_CHAT 'dsiplay_name'
+							#MC_CHAT 'display_name'
 					#PL_REMOVE_PLAYER
 						#No extra fields
 			),
