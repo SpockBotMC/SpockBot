@@ -109,6 +109,7 @@ class ClientInfoPlugin:
 			'disconnect', self.handle_disconnect
 		)
 		self.uuids = {}
+		self.defered_pl = {}
 		self.client_info = ClientInfo()
 		ploader.provides('ClientInfo', self.client_info)
 
@@ -146,18 +147,29 @@ class ClientInfoPlugin:
 	def handle_player_list(self, event, packet):
 		act = packet.data['action']
 		for pl in packet.data['player_list']:
-			#Minecraft server doesn't send PL Adds and Updates in the correct
-			#order, so just check for new uuid instead
-			if pl['uuid'] not in self.uuids and act != mcdata.PL_REMOVE_PLAYER:
+			if act == mcdata.PL_ADD_PLAYER and pl['uuid'] not in self.uuids:
 				item = PlayerListItem()
 				item.set_dict(pl)
+				if pl['uuid'] in self.defered_pl:
+					for i in self.defered_pl[pl['uuid']]:
+						item.set_dict(i)
+					del self.defered_pl[pl['uuid']]
 				self.client_info.player_list.append(item)
 				self.uuids[pl['uuid']] = item
 				self.event.emit('cl_add_player', item)
-			elif pl['uuid'] in self.uuids and act != mcdata.PL_REMOVE_PLAYER:
-				item = self.uuids[pl['uuid']]
-				item.set_dict(pl)
-				self.event.emit('cl_update_player', item)
+			elif (
+				act == mcdata.PL_UPDATE_GAMEMODE or
+				act == mcdata.PL_UPDATE_LATENCY  or
+				act == mcdata.PL_UPDATE_DISPLAY
+			):
+				if pl['uuid'] in self.uuids:
+					item = self.uuids[pl['uuid']]
+					item.set_dict(pl)
+					self.event.emit('cl_update_player', item)
+				else:
+					defered = self.defered_pl.get(pl['uuid'], [])
+					defered.append(pl)
+					self.defered_pl[pl['uuid']] = defered
 			elif act == mcdata.PL_REMOVE_PLAYER:
 				item = self.uuids[pl['uuid']]
 				self.client_info.player_list.remove(item)
