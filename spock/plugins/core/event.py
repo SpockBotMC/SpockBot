@@ -7,6 +7,9 @@ import copy
 from spock.mcp import mcdata
 from spock.utils import pl_announce
 
+import logging
+logger = logging.getLogger('spock')
+
 class EventCore:
 	def __init__(self):
 		self.kill_event = False
@@ -17,6 +20,7 @@ class EventCore:
 	def event_loop(self):
 		while not self.kill_event:
 			self.emit('event_tick')
+		logger.info('Event Kill called, shutting down')
 		self.emit('kill')
 
 	def reg_event_handler(self, event, handler):

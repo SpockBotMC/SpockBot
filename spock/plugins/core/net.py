@@ -50,7 +50,7 @@ class SelectSocket:
 		try:
 			rlist, wlist, xlist = select.select(*slist)
 		except select.error as e:
-			logger.error(str(e))
+			logger.error("Socket Error: %s", str(e))
 			rlist = []
 			wlist = []
 			xlist = []
@@ -251,4 +251,5 @@ class NetPlugin:
 
 	#Kill event - Try to shutdown the socket politely
 	def handle_kill(self, name, data):
+		logger.info("Kill event recieved, shutting down socket")
 		self.sock.shutdown()
