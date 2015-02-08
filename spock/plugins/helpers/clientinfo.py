@@ -157,7 +157,7 @@ class ClientInfoPlugin:
 					defered = self.defered_pl.get(pl['uuid'], [])
 					defered.append(pl)
 					self.defered_pl[pl['uuid']] = defered
-			elif act == mcdata.PL_REMOVE_PLAYER:
+			elif act == mcdata.PL_REMOVE_PLAYER and pl['uuid'] in self.uuids:
 				item = self.uuids[pl['uuid']]
 				self.client_info.player_list.remove(item)
 				del self.uuids[pl['uuid']]
