@@ -18,26 +18,11 @@ INV_HOPPER     = 9
 INV_DROPPER    = 10
 INV_HORSE      = 11
 
-from spock.utils import pl_announce
+from spock.utils import pl_announce, Info
 from spock.mcp import mcdata
 from spock.mcp.mcdata import (
 	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL
 )
-
-class Info(object):
-	def set_dict(self, data):
-		for key in data:
-			if hasattr(self, key):
-				setattr(self, key, data[key])
-
-	def get_dict(self):
-		return self.__dict__
-
-	def __repr__(self):
-		return repr(self.__dict__)
-
-	def __str__(self):
-		return str(self.__dict__)
 
 class Position(Info):
 	def __init__(self):

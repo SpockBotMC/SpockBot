@@ -202,10 +202,12 @@ class InventoryPlugin:
 		logger.debug("%s %s", event, packet.data)
 
 	def handle_set_slot(self, event, packet):
-		logger.debug("%s %s", event, packet.data)
+		#logger.debug("%s %s", event, packet.data)
+		pass
 
 	def handle_window_items(self, event, packet):
-		logger.debug("%s %s", event, packet.data)
+		#logger.debug("%s %s", event, packet.data)
+		pass
 
 	def handle_window_prop(self, event, packet):
 		logger.debug("%s %s", event, packet.data)

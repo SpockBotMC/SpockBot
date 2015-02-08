@@ -8,6 +8,21 @@ try:
 except NameError:
 	string_types = str
 
+class Info(object):
+	def set_dict(self, data):
+		for key in data:
+			if hasattr(self, key):
+				setattr(self, key, data[key])
+
+	def get_dict(self):
+		return self.__dict__
+
+	def __repr__(self):
+		return repr(self.__dict__)
+
+	def __str__(self):
+		return str(self.__dict__)
+
 class Vec3:
 	def __init__(self, x, y, z):
 		self.x = x

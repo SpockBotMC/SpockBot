@@ -8,9 +8,6 @@ Planned to provide light level interpretation based on sky light and time of day
 from spock.utils import pl_announce
 from spock.mcmap import smpmap, mapdata
 from spock.mcp import mcdata
-import math
-
-#TODO: Track Entities?
 
 class WorldData(smpmap.Dimension):
 	def __init__(self, dimension = mcdata.SMP_OVERWORLD):
