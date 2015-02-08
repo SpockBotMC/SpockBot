@@ -127,7 +127,7 @@ class InventoryCore:
 		self.main = [{'id':-1} for i in range(27)]
 		self.extra = MainExtraInv([{'id':-1} for i in range(9)])
 
-	def click_window(slot, button, mode):
+	def click_window(self, slot, button, mode):
 		self.clickque.append({
 			'window_id': 0,
 			'slot': slot,
