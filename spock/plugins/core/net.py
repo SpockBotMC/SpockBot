@@ -59,6 +59,10 @@ class SelectSocket:
 		if xlist:         flags.append('SOCKET_ERR')
 		return flags
 
+	def shutdown(self):
+		self.sock.shutdown(socket.SHUT_WR)
+		self.sock.close()
+
 	def reset(self):
 		self.sock.close()
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -173,6 +177,7 @@ class NetPlugin:
 		ploader.reg_event_handler('LOGIN<Login Success', self.handle_login_success)
 		ploader.reg_event_handler('LOGIN<Set Compression', self.handle_comp)
 		ploader.reg_event_handler('PLAY<Set Compression', self.handle_comp)
+		ploader.reg_event_handler('kill', self.handle_kill)
 
 	def tick(self, name, data):
 		if self.net.connected:
@@ -243,3 +248,7 @@ class NetPlugin:
 	def handle_disconnect(self, name, packet):
 		logger.info("Disconnected: %s", packet.data['reason'])
 		self.event.emit('disconnect', packet.data['reason'])
+
+	#Kill event - Try to shutdown the socket politely
+	def handle_kill(self, name, data):
+		self.sock.shutdown()
