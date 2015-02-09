@@ -34,6 +34,8 @@ class SelectSocket:
 		self.timer = timer
 		self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.sock.setblocking(False)
+		self.close = self.sock.close
+		self.shutdown = self.sock.shutdown
 		self.recv = self.sock.recv
 		self.send = self.sock.send
 
@@ -58,10 +60,6 @@ class SelectSocket:
 		if wlist:         flags.append('SOCKET_SEND')
 		if xlist:         flags.append('SOCKET_ERR')
 		return flags
-
-	def shutdown(self):
-		self.sock.shutdown(socket.SHUT_WR)
-		self.sock.close()
 
 	def reset(self):
 		self.sock.close()
@@ -165,6 +163,7 @@ class NetPlugin:
 		self.timer = ploader.requires('Timers')
 		self.sock = SelectSocket(self.timer)
 		self.net = NetCore(self.sock, self.event)
+		self.sock_dead = False
 		ploader.provides('Net', self.net)
 
 		ploader.reg_event_handler('event_tick', self.tick)
@@ -223,6 +222,7 @@ class NetPlugin:
 		logger.error("Socket Error: %s", data)
 		self.event.emit('disconnect', data)
 		if self.sock_quit and not self.event.kill_event:
+			self.sock_dead = True
 			self.event.kill()
 
 	#SOCKET_HUP - Socket has hung up
@@ -231,6 +231,7 @@ class NetPlugin:
 		logger.error("Socket has hung up")
 		self.event.emit('disconnect', "Socket Hung Up")
 		if self.sock_quit and not self.event.kill_event:
+			self.sock_dead = True
 			self.event.kill()
 
 	#Handshake - Change to whatever the next state is going to be
@@ -252,4 +253,6 @@ class NetPlugin:
 	#Kill event - Try to shutdown the socket politely
 	def handle_kill(self, name, data):
 		logger.info("Kill event recieved, shutting down socket")
-		self.sock.shutdown()
+		if not self.sock_dead:
+			self.sock.shutdown(socket.SHUT_WR)
+		self.sock.close()
