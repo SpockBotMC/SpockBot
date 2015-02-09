@@ -8,6 +8,8 @@ logger = logging.getLogger('spock')
 
 class MCEntity(Info):
 	eid = 0
+	status = 0
+	nbt = None
 
 class ClientPlayerEntity(MCEntity):
 	metadata = None
@@ -91,13 +93,13 @@ class EntityPlugin:
 			('PLAY<Entity Look and Relative Move', self.handle_relative_move),
 			('PLAY<Entity Teleport', self.handle_set_dict),
 			('PLAY<Entity Head Look', self.handle_set_dict),
-			('PLAY<Entity Status', self.handle_unhandled),
+			('PLAY<Entity Status', self.handle_set_dict),
 			('PLAY<Entity Metadata', self.handle_set_dict),
 			('PLAY<Entity Effect', self.handle_unhandled),
 			('PLAY<Remove Entity Effect', self.handle_unhandled),
 			('PLAY<Entity Properties', self.handle_unhandled),
 			('PLAY<Spawn Global Entity', self.handle_spawn_global_entity),
-			('PLAY<Update Entity NBT', self.handle_unhandled),
+			('PLAY<Update Entity NBT', self.handle_set_dict),
 		)
 		for event, handler in handles:
 			ploader.reg_event_handler(event, handler)
