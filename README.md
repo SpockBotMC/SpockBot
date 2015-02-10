@@ -36,8 +36,7 @@ PyCrypto
 
 ##Installation
 
-`python setup.py install`  
-Depending on your distro it will be `python3 setup.py install` 
+`python3 setup.py install`  
 
 ##Examples
 [Some Useful Examples](https://github.com/SpockBotMC/SpockBot-Contrib/tree/master/examples)
