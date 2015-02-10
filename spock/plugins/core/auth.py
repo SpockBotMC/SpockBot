@@ -119,7 +119,8 @@ class AuthPlugin:
 			#	print('Session Authentication Failed, Response:', rep)
 			#	self.event.emit('SESS_ERR')
 			#	return
-			logger.warning("%s", rep)
+			if rep != "":
+				logger.warning("%s", rep)
 
 		rsa_cipher = PKCS1_v1_5.new(RSA.importKey(pubkey))
 		self.net.push(mcpacket.Packet(

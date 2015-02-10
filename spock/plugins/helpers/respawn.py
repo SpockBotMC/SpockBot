@@ -10,8 +10,7 @@ logger = logging.getLogger('spock')
 class RespawnPlugin:
 	def __init__(self, ploader, settings):
 		self.net = ploader.requires('Net')
-		if not ploader.requires('ClientInfo'):
-			logger.error("RespawnPlugin requires ClientInfo, bailing out")
+		ploader.requires('ClientInfo')
 		ploader.reg_event_handler(
 			'cl_death', self.handle_death
 		)
