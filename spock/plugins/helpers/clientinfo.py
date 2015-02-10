@@ -34,7 +34,7 @@ class GameInfo(Info):
 	def __init__(self):
 		self.level_type = 0
 		self.dimension = 0
-		self.gamemode = None
+		self.gamemode = 0
 		self.difficulty = 0
 		self.max_players = 0
 
@@ -62,6 +62,8 @@ class PlayerListItem(Info):
 class ClientInfo:
 	def __init__(self):
 		self.eid = 0
+		self.name = ""
+		self.uuid = ""
 		self.game_info = GameInfo()
 		self.spawn_position = Position()
 		self.health = PlayerHealth()
@@ -76,29 +78,31 @@ class ClientInfoPlugin:
 	def __init__(self, ploader, settings):
 		self.event = ploader.requires('Event')
 		ploader.reg_event_handler(
-			'PLAY<Join Game', self.handle_join_game
-		)
+			'LOGIN<Login Success', self.handle_login_success)
 		ploader.reg_event_handler(
-			'PLAY<Spawn Position', self.handle_spawn_position
-		)
+			'PLAY<Join Game', self.handle_join_game)
 		ploader.reg_event_handler(
-			'PLAY<Update Health', self.handle_update_health
-		)
+			'PLAY<Spawn Position', self.handle_spawn_position)
 		ploader.reg_event_handler(
-			'PLAY<Player Position and Look', self.handle_position_update
-		)
+			'PLAY<Update Health', self.handle_update_health)
 		ploader.reg_event_handler(
-			'PLAY<Player List Item', self.handle_player_list
-		)
+			'PLAY<Player Position and Look', self.handle_position_update)
 		ploader.reg_event_handler(
-			'disconnect', self.handle_disconnect
-		)
+			'PLAY<Player List Item', self.handle_player_list)
+		ploader.reg_event_handler(
+			'disconnect', self.handle_disconnect)
 		self.uuids = {}
 		self.defered_pl = {}
 		self.client_info = ClientInfo()
 		ploader.provides('ClientInfo', self.client_info)
 
-	#Login Request - Update client state info
+	#Login Success - Update client name and uuid
+	def handle_login_success(self, event, packet):
+		self.client_info.uuid = packet.data['uuid']
+		self.client_info.name = packet.data['username']
+		self.event.emit('cl_login_success')
+
+	#Join Game - Update client state info
 	def handle_join_game(self, event, packet):
 		self.client_info.eid = packet.data['eid']
 		self.client_info.game_info.set_dict(packet.data)
