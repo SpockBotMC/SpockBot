@@ -103,6 +103,12 @@ def pl_announce(*args):
 		return cl
 	return inner
 
+def pl_event(*args):
+	def inner(cl):
+		cl.pl_event = args
+		return cl
+	return inner
+
 def get_settings(settings, defaults):
 	final_settings = copy.deepcopy(defaults)
 	for k, v in settings.items():
