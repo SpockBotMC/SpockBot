@@ -452,7 +452,7 @@ packet_structs = {
 			#Spawn Player
 			0x0C: (
 				(MC_VARINT, 'eid'),
-				(MC_UUID  , 'player_uuid'),
+				(MC_UUID  , 'uuid'),
 				(MC_INT   , 'x'),
 				(MC_INT   , 'y'),
 				(MC_INT   , 'z'),

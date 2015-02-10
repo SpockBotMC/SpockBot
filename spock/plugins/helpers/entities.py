@@ -152,26 +152,29 @@ class EntityPlugin:
 
 	def handle_destroy_entities(self, event, packet):
 		for eid in packet.data['eids']:
-			del self.ec.entities[eid]
-			if eid in self.ec.players:
-				del self.ec.players[eid]
-			elif eid in self.ec.objects:
-				del self.ec.objects[eid]
-			elif eid in self.ec.mobs:
-				del self.ec.mobs[eid]
-			elif eid in self.ec.paintings:
-				del self.ec.paintings[eid]
-			elif eid in self.ec.exp_orbs:
-				del self.ec.exp_orbs[eid]
-			elif eid in self.ec.global_entities:
-				del self.ec.global_entities[eid]
+			if eid in self.ec.entities:
+				del self.ec.entities[eid]
+				if eid in self.ec.players:
+					del self.ec.players[eid]
+				elif eid in self.ec.objects:
+					del self.ec.objects[eid]
+				elif eid in self.ec.mobs:
+					del self.ec.mobs[eid]
+				elif eid in self.ec.paintings:
+					del self.ec.paintings[eid]
+				elif eid in self.ec.exp_orbs:
+					del self.ec.exp_orbs[eid]
+				elif eid in self.ec.global_entities:
+					del self.ec.global_entities[eid]
 
 	def handle_relative_move(self, event, packet):
-		entity = self.ec.entities[packet.data['eid']]
-		entity.set_dict(packet.data)
-		entity.x = entity.x + packet.data['dx']
-		entity.y = entity.y + packet.data['dy']
-		entity.z = entity.z + packet.data['dz']
+		if packet.data['eid'] in self.ec.entities:
+			entity = self.ec.entities[packet.data['eid']]
+			entity.set_dict(packet.data)
+			entity.x = entity.x + packet.data['dx']
+			entity.y = entity.y + packet.data['dy']
+			entity.z = entity.z + packet.data['dz']
 
 	def handle_set_dict(self, event, packet):
-		self.ec.entities[packet.data['eid']].set_dict(packet.data)
+		if packet.data['eid'] in self.ec.entities:
+			self.ec.entities[packet.data['eid']].set_dict(packet.data)
