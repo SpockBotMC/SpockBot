@@ -3,6 +3,9 @@ from spock.plugins.pluginloader import PluginLoader
 import logging
 logger = logging.getLogger('spock')
 logger.setLevel(logging.DEBUG)
-logger.addHandler(logging.StreamHandler())
+streamHandler = logging.StreamHandler()
+formatter = logging.Formatter('[%(levelname)s]: %(message)s')
+streamHandler.setFormatter(formatter)
+logger.addHandler(streamHandler)
 
 Client = PluginLoader
