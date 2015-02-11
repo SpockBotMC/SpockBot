@@ -45,6 +45,7 @@ PyCrypto
 Current API docs live here https://spockbotmc.github.io/docs/spock/
 
 ##Support
+#spockbot on Freenode
 gamingrobot or nickelpro in #mcdevs on Freenode
 
 ##Credits
