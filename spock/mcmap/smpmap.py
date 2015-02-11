@@ -179,9 +179,7 @@ class Dimension(object):
 		y, ry = divmod(y, 16)
 		z, rz = divmod(z, 16)
 
-		if y > 0x0F:
-			return 0, 0
-		if not (x,z) in self.columns:
+		if (x, z) not in self.columns or y > 0x0F:
 			return 0, 0
 		column = self.columns[(x,z)]
 		chunk = column.chunks[y]
@@ -196,6 +194,8 @@ class Dimension(object):
 		y, ry = divmod(y, 16)
 		z, rz = divmod(z, 16)
 
+		if y > 0x0F:
+			return
 		if (x,z) in self.columns:
 			column = self.columns[(x,z)]
 		else:
@@ -215,7 +215,7 @@ class Dimension(object):
 		y, ry = divmod(y, 16)
 		z, rz = divmod(z, 16)
 
-		if not (x,z) in self.columns:
+		if (x, z) not in self.columns or y > 0x0F:
 			return 0, 0
 		column = self.columns[(x,z)]
 		chunk = column.chunks[y]
@@ -229,6 +229,8 @@ class Dimension(object):
 		y, ry = divmod(y, 16)
 		z, rz = divmod(z, 16)
 
+		if y > 0x0F:
+			return
 		if (x,z) in self.columns:
 			column = self.columns[(x, z)]
 		else:
