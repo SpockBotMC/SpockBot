@@ -45,7 +45,8 @@ PyCrypto
 Current API docs live here https://spockbotmc.github.io/docs/spock/
 
 ##Support
-gamingrobot or nickelpro in #mcdevs on Freenode
+`#spockbot` on Freenode  
+gamingrobot or nickelpro in `#mcdevs` on Freenode
 
 ##Credits
 Inspired by [remyroy's COPS](http://www.reddit.com/r/Civcraft/comments/13kwjm/introducing_the_cops_civcraft_online_player_status/),
