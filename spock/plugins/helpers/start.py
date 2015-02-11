@@ -26,11 +26,13 @@ class StartPlugin:
 
 		setattr(ploader, 'start', self.start)
 
-	def start(self, host = 'localhost', port = 25565):
+	def start(self, host = None, port = None):
 		if 'error' not in self.auth.start_session(
 			self.settings['username'],
 			self.settings['password']
 		):
+			host = host if host else self.settings['host']
+			port = port if port else self.settings['port']
 			self.net.connect(host, port)
 			self.handshake()
 			self.login_start()
