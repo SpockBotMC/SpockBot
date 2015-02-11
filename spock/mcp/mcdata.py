@@ -21,12 +21,14 @@ MC_FLOAT            = 0x09
 MC_DOUBLE           = 0x0A
 MC_VARINT           = 0x0B
 MC_VARLONG          = 0x0C
-MC_UUID             = 0x0D
-MC_POSITION         = 0x0E
-MC_STRING           = 0x0F
-MC_CHAT             = 0x10
-MC_SLOT             = 0x11
-MC_META             = 0x12
+MC_FP_INT           = 0x0D
+MC_FP_BYTE          = 0x0E
+MC_UUID             = 0x0F
+MC_POSITION         = 0x10
+MC_STRING           = 0x11
+MC_CHAT             = 0x12
+MC_SLOT             = 0x13
+MC_META             = 0x14
 
 HANDSHAKE_STATE     = 0x00
 STATUS_STATE        = 0x01
@@ -453,9 +455,9 @@ packet_structs = {
 			0x0C: (
 				(MC_VARINT, 'eid'),
 				(MC_UUID  , 'uuid'),
-				(MC_INT   , 'x'),
-				(MC_INT   , 'y'),
-				(MC_INT   , 'z'),
+				(MC_FP_INT, 'x'),
+				(MC_FP_INT, 'y'),
+				(MC_FP_INT, 'z'),
 				(MC_BYTE  , 'yaw'),
 				(MC_BYTE  , 'pitch'),
 				(MC_SHORT , 'current_item'),
@@ -470,9 +472,9 @@ packet_structs = {
 			0x0E: (
 				(MC_VARINT, 'eid'),
 				(MC_UBYTE , 'type'),
-				(MC_INT   , 'x'),
-				(MC_INT   , 'y'),
-				(MC_INT   , 'z'),
+				(MC_FP_INT, 'x'),
+				(MC_FP_INT, 'y'),
+				(MC_FP_INT, 'z'),
 				(MC_BYTE  , 'pitch'),
 				(MC_BYTE  , 'yaw'),
 				(MC_INT   , 'obj_data'),
@@ -486,9 +488,9 @@ packet_structs = {
 			0x0F: (
 				(MC_VARINT, 'eid'),
 				(MC_UBYTE , 'type'),
-				(MC_INT   , 'x'),
-				(MC_INT   , 'y'),
-				(MC_INT   , 'z'),
+				(MC_FP_INT, 'x'),
+				(MC_FP_INT, 'y'),
+				(MC_FP_INT, 'z'),
 				(MC_BYTE  , 'pitch'),
 				(MC_BYTE  , 'head_pitch'),
 				(MC_BYTE  , 'yaw'),
@@ -507,9 +509,9 @@ packet_structs = {
 			#Spawn Experience Orb
 			0x11: (
 				(MC_VARINT, 'eid'),
-				(MC_INT   , 'x'),
-				(MC_INT   , 'y'),
-				(MC_INT   , 'z'),
+				(MC_FP_INT, 'x'),
+				(MC_FP_INT, 'y'),
+				(MC_FP_INT, 'z'),
 				(MC_SHORT , 'count'),
 			),
 			#Entity Velocity
@@ -530,11 +532,11 @@ packet_structs = {
 			),
 			#Entity Relative Move
 			0x15: (
-				(MC_VARINT, 'eid'),
-				(MC_BYTE  , 'dx'),
-				(MC_BYTE  , 'dy'),
-				(MC_BYTE  , 'dz'),
-				(MC_BOOL  , 'on_ground'), #Boats move slower when true
+				(MC_VARINT , 'eid'),
+				(MC_FP_BYTE, 'dx'),
+				(MC_FP_BYTE, 'dy'),
+				(MC_FP_BYTE, 'dz'),
+				(MC_BOOL   , 'on_ground'),
 			),
 			#Entity Look
 			0x16: (
@@ -545,20 +547,20 @@ packet_structs = {
 			),
 			#Entity Look and Relative Move
 			0x17: (
-				(MC_VARINT, 'eid'),
-				(MC_BYTE  , 'dx'),
-				(MC_BYTE  , 'dy'),
-				(MC_BYTE  , 'dz'),
-				(MC_BYTE  , 'yaw'),
-				(MC_BYTE  , 'pitch'),
-				(MC_BOOL  , 'on_ground'),
+				(MC_VARINT , 'eid'),
+				(MC_FP_BYTE, 'dx'),
+				(MC_FP_BYTE, 'dy'),
+				(MC_FP_BYTE, 'dz'),
+				(MC_BYTE   , 'yaw'),
+				(MC_BYTE   , 'pitch'),
+				(MC_BOOL   , 'on_ground'),
 			),
 			#Entity Teleport
 			0x18: (
 				(MC_VARINT, 'eid'),
-				(MC_INT   , 'x'),
-				(MC_INT   , 'y'),
-				(MC_INT   , 'z'),
+				(MC_FP_INT, 'x'),
+				(MC_FP_INT, 'y'),
+				(MC_FP_INT, 'z'),
 				(MC_BYTE  , 'yaw'),
 				(MC_BYTE  , 'pitch'),
 				(MC_BOOL  , 'on_ground'),
@@ -708,10 +710,10 @@ packet_structs = {
 			#Spawn Global Entity
 			0x2C: (
 				(MC_VARINT, 'eid'),
-				(MC_BYTE, 'type'),
-				(MC_INT , 'x'),
-				(MC_INT , 'y'),
-				(MC_INT , 'z'),
+				(MC_BYTE  , 'type'),
+				(MC_FP_INT, 'x'),
+				(MC_FP_INT, 'y'),
+				(MC_FP_INT, 'z'),
 			),
 			#Open Window
 			0x2D: (

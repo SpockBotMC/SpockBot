@@ -6,8 +6,8 @@ from spock.mcp import datautils, mcdata
 from spock.mcp.mcpacket_extensions import hashed_extensions
 from spock.mcp.mcdata import (
 	MC_BOOL, MC_UBYTE, MC_BYTE, MC_USHORT, MC_SHORT, MC_UINT, MC_INT, MC_ULONG,
-	MC_LONG, MC_FLOAT, MC_DOUBLE, MC_VARINT, MC_VARLONG, MC_UUID, MC_POSITION,
-	MC_STRING, MC_CHAT, MC_SLOT, MC_META
+	MC_LONG, MC_FLOAT, MC_DOUBLE, MC_VARINT, MC_VARLONG, MC_FP_INT, MC_FP_BYTE,
+	MC_UUID, MC_POSITION, MC_STRING, MC_CHAT, MC_SLOT, MC_META
 )
 
 import logging

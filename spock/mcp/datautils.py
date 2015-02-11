@@ -5,8 +5,8 @@ from spock import utils
 from spock.mcp import mcdata, nbt
 from spock.mcp.mcdata import (
 	MC_BOOL, MC_UBYTE, MC_BYTE, MC_USHORT, MC_SHORT, MC_UINT, MC_INT, MC_ULONG,
-	MC_LONG, MC_FLOAT, MC_DOUBLE, MC_VARINT, MC_VARLONG, MC_UUID, MC_POSITION,
-	MC_STRING, MC_CHAT, MC_SLOT, MC_META
+	MC_LONG, MC_FLOAT, MC_DOUBLE, MC_VARINT, MC_VARLONG, MC_FP_INT, MC_FP_BYTE,
+	MC_UUID, MC_POSITION, MC_STRING, MC_CHAT, MC_SLOT, MC_META
 )
 
 #Unpack/Pack functions return None on error
@@ -88,6 +88,17 @@ def pack_position(position):
 	val |= (int(position['y'])&0xFFF)<<26
 	val |= (int(position['z'])&0x3FFFFFF)
 	return pack(MC_ULONG, val)
+
+#Fixed point number where the first 5 bits are dedicated to the decimal place
+#Internally vanilla mc implements these as doubles, so we do the same thing
+def unpack_fixed_point(mc_type, bbuff):
+	val = unpack(mc_type, bbuff)
+	val = float(val)/(1<<5)
+	return val
+
+def pack_fixed_point(mc_type, val):
+	val = int(val*(1<<5))
+	return pack(mc_type, val)
 
 # Slots are dictionaries that hold info about
 # inventory items, they also have funky
@@ -176,6 +187,10 @@ def unpack(data_type, bbuff):
 		return unpack_varint(bbuff)
 	elif data_type == MC_VARLONG:
 		return unpack_varlong(bbuff)
+	elif data_type == MC_FP_INT:
+		return unpack_fixed_point(MC_INT, bbuff)
+	elif data_type == MC_FP_BYTE:
+		return unpack_fixed_point(MC_BYTE, bbuff)
 	elif data_type == MC_UUID:
 		a, b = struct.unpack('>QQ', bbuff.recv(16))
 		return (a<<64)|b
@@ -200,6 +215,10 @@ def pack(data_type, data):
 		return pack_varint(data)
 	elif data_type == MC_VARLONG:
 		return pack_varlong(data)
+	elif data_type == MC_FP_INT:
+		return pack_fixed_point(MC_INT, data)
+	elif data_type == MC_FP_BYTE:
+		return pack_fixed_point(MC_BYTE, data)
 	elif data_type == MC_UUID:
 		return struct.pack('>QQ', (data>>64)&((1<<64)-1), data&((1<<64)-1))
 	elif data_type == MC_POSITION:
