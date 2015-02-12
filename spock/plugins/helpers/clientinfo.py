@@ -24,14 +24,6 @@ from spock.mcp.mcdata import (
 	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL
 )
 
-class Position(Vec3):
-	def get_position(self):
-		return self.x, self.y, self.z
-
-	def set_position(self, *coords):
-		coords = coords[0] if len(coords) == 1 else coords[:3]
-		self.x, self.y, self.z = coords
-
 class GameInfo(Info):
 	def __init__(self):
 		self.level_type = 0
@@ -46,7 +38,7 @@ class PlayerHealth(Info):
 		self.food = 20
 		self.food_saturation = 5
 
-class PlayerPosition(Position):
+class PlayerPosition(Vec3):
 	def __init__(self):
 		super(self.__class__, self).__init__()
 		self.yaw = 0.0
@@ -67,7 +59,7 @@ class ClientInfo:
 		self.name = ""
 		self.uuid = ""
 		self.game_info = GameInfo()
-		self.spawn_position = Position()
+		self.spawn_position = Vec3()
 		self.health = PlayerHealth()
 		self.position = PlayerPosition()
 		self.player_list = []
