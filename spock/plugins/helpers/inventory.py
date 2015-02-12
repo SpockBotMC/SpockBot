@@ -1,16 +1,7 @@
 """
 The Inventory plugin keeps track of open windows and their slots.
 It offers convenient methods to interact with open windows.
-
-TODO: crafting, getting slots from other windows than main inventory.
-
-Copyright (c) 2015 Gjum.
-Licensed under The MIT License, see http://opensource.org/licenses/MIT
 """
-
-__author__ = "Gjum"
-__copyright__ = "Copyright (c) 2015 Gjum"
-__license__ = "MIT"
 
 from collections import deque
 from spock.utils import pl_announce
@@ -67,19 +58,6 @@ class InventoryBase:
 		self.title = title
 		self.slots = [Slot()] * slot_count
 		self.properties = {}
-
-	# TODO REMOVE
-	# def __getattr__(self, attr_name):
-	# 	""" Override default for get_slots_hotbar() etc. """
-	# 	prefix = 'get_slots_'
-	# 	if attr_name.startswith(prefix): # get slot range
-	# 		slot_startlen_name = 'slot_startlen_%s' % attr_name[len(prefix):] # without prefix
-	# 		if slot_startlen_name in dir(self):
-	# 			slot_start, slot_len = getattr(self, slot_startlen_name)
-	# 			return self.slots[slot_start:slot_start+slot_len]
-	# 		else: # failed, try regular property
-	# 			return getattr(self, attr_name)
-	# TODO REMOVE
 
 # no @map_window_type(), because not opened/closed/updated by the server
 class InventoryPlayer(InventoryBase):
