@@ -127,11 +127,11 @@ class PhysicsPlugin:
 
 	def apply_horizontal_drag(self):
 		if self.pos.on_ground:
-			self.vec.x = self.vec.x - self.vec.x*PLAYER_GND_DRG
-			self.vec.z = self.vec.z - self.vec.z*PLAYER_GND_DRG
+			self.vec.x -= self.vec.x * PLAYER_GND_DRG
+			self.vec.z -= self.vec.z * PLAYER_GND_DRG
 		else:
-			self.vec.x = self.vec.x - self.vec.x*PLAYER_ENTITY_DRG
-			self.vec.z = self.vec.z - self.vec.z*PLAYER_ENTITY_DRG
+			self.vec.x -= self.vec.x * PLAYER_ENTITY_DRG
+			self.vec.z -= self.vec.z * PLAYER_ENTITY_DRG
 
 	def apply_vector(self):
 		p = self.pos
