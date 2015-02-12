@@ -1,7 +1,7 @@
 """
-ClientInfo is a central plugin for recording data about the client
-ex. Health, position, and some auxillary information like the player list
-Plugins subscribing to ClientInfo and its events don't have to independently
+ClientInfo is a central plugin for recording data about the client,
+e.g. Health, position, and some auxillary information like the player list.
+Plugins subscribing to ClientInfo's events don't have to independently
 track this information on their own.
 """
 
@@ -29,6 +29,13 @@ class Position(Info):
 		self.x = 0.0
 		self.y = 0.0
 		self.z = 0.0
+
+	def get_position(self):
+		return self.x, self.y, self.z
+
+	def set_position(self, *coords):
+		coords = coords[0] if len(coords) == 1 else coords[:3]
+		self.x, self.y, self.z = coords
 
 class GameInfo(Info):
 	def __init__(self):
