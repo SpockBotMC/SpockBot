@@ -228,10 +228,11 @@ class InventoryCore:
 				self.swap_into_hotbar(slot_nr)
 				return True
 		# not in inventory, search open window
-		for slot_nr, slot in enumerate(self.window.slots):
-			if wanted(slot):
-				self.swap_into_hotbar(slot_nr, player_inv=False)
-				return True
+		if self.window is not None:
+			for slot_nr, slot in enumerate(self.window.slots):
+				if wanted(slot):
+					self.swap_into_hotbar(slot_nr, player_inv=False)
+					return True
 		return False
 
 	def select_slot(self, slot_nr):
