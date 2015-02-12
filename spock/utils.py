@@ -23,13 +23,16 @@ class Info(object):
 	def __str__(self):
 		return str(self.__dict__)
 
-class Vec3:
-	def __init__(self, x, y, z):
-		self.x = x
-		self.y = y
-		self.z = z
+class Vec3(Info):
+	def __init__(self, x=0.0, y=0.0, z=0.0, vec=None):
+		if vec:
+			self.x, self.y, self.z = vec[:3]
+		else:
+			self.x = x
+			self.y = y
+			self.z = z
 
-	def add_vector(self, x = None, y = None, z = None, vec = None):
+	def add_vector(self, x=None, y=None, z=None, vec=None):
 		if vec:
 			self.x += vec.x
 			self.y += vec.y

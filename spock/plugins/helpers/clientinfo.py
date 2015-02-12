@@ -18,18 +18,13 @@ INV_HOPPER     = 9
 INV_DROPPER    = 10
 INV_HORSE      = 11
 
-from spock.utils import pl_announce, Info
+from spock.utils import pl_announce, Info, Vec3
 from spock.mcp import mcdata
 from spock.mcp.mcdata import (
 	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL
 )
 
-class Position(Info):
-	def __init__(self):
-		self.x = 0.0
-		self.y = 0.0
-		self.z = 0.0
-
+class Position(Vec3):
 	def get_position(self):
 		return self.x, self.y, self.z
 
