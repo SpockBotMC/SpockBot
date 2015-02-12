@@ -81,13 +81,13 @@ class InventoryPlayer(InventoryBase):
 	def hotbar_slots(self):
 		return self.slots[36:45]
 
-@map_window_type(0)
+@map_window_type('minecraft:chest')
 class InventoryChest(InventoryBase):
 	""" Small, large, and glitched-out superlarge chests. """
 
 	name = 'Chest'
 
-@map_window_type(1)
+@map_window_type('minecraft:crafting_table')
 class InventoryWorkbench(InventoryBase):
 	name = 'Workbench'
 
@@ -97,7 +97,7 @@ class InventoryWorkbench(InventoryBase):
 	def craft_grid_slots(self):
 		return self.slots[1:10]
 
-@map_window_type(2)
+@map_window_type('minecraft:furnace')
 class InventoryFurnace(InventoryBase):
 	name = 'Furnace'
 
@@ -116,11 +116,11 @@ class InventoryFurnace(InventoryBase):
 	def fuel_time_prop(self):
 		return self.properties[1]
 
-@map_window_type(3)
+@map_window_type('minecraft:dispenser')
 class InventoryDispenser(InventoryBase):
 	name = 'Dispenser'
 
-@map_window_type(4)
+@map_window_type('minecraft:enchanting_table')
 class InventoryEnchant(InventoryBase):
 	name = 'Encantment Table'
 
@@ -132,7 +132,7 @@ class InventoryEnchant(InventoryBase):
 
 	# TODO how does selecting the enchantment work?
 
-@map_window_type(5)
+@map_window_type('minecraft:brewing_stand')
 class InventoryBrewing(InventoryBase):
 	name = 'Brewing Stand'
 
@@ -145,13 +145,13 @@ class InventoryBrewing(InventoryBase):
 	def brew_time_prop(self):
 		return self.properties[0]
 
-@map_window_type(6)
-class InventoryNpc(InventoryBase):
+@map_window_type('minecraft:villager')
+class InventoryVillager(InventoryBase):
 	name = 'NPC Trade'
 
 # TODO NPC slot getters
 
-@map_window_type(7)
+@map_window_type('minecraft:beacon')
 class InventoryBeacon(InventoryBase):
 	name = 'Beacon'
 
@@ -167,7 +167,7 @@ class InventoryBeacon(InventoryBase):
 	def effect_two_prop(self):
 		return self.properties[2]
 
-@map_window_type(8)
+@map_window_type('minecraft:anvil')
 class InventoryAnvil(InventoryBase):
 	name = 'Anvil'
 
@@ -176,15 +176,15 @@ class InventoryAnvil(InventoryBase):
 	def max_cost_prop(self):
 		return self.properties[0]
 
-@map_window_type(9)
+@map_window_type('minecraft:hopper')
 class InventoryHopper(InventoryBase):
 	name = 'Hopper'
 
-@map_window_type(10)
+@map_window_type('minecraft:dropper')
 class InventoryDropper(InventoryBase):
 	name = 'Dropper'
 
-@map_window_type(11)
+@map_window_type('EntityHorse')
 class InventoryHorse(InventoryBase):
 	name = 'Horse'
 
