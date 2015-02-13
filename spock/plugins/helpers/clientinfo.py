@@ -5,23 +5,10 @@ Plugins subscribing to ClientInfo's events don't have to independently
 track this information on their own.
 """
 
-INV_CHEST      = 0
-INV_WORKBENCH  = 1
-INV_FURNACE    = 2
-INV_DISPENSER  = 3
-INV_ECHANTMENT = 4
-INV_BREWING    = 5
-INV_NPC        = 6
-INV_BEACON     = 7
-INV_ANVIL      = 8
-INV_HOPPER     = 9
-INV_DROPPER    = 10
-INV_HORSE      = 11
-
 from spock.utils import pl_announce, Info, Vec3
 from spock.mcp import mcdata
 from spock.mcp.mcdata import (
-	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL
+	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL, GS_GAMEMODE
 )
 
 class GameInfo(Info):
@@ -31,6 +18,15 @@ class GameInfo(Info):
 		self.gamemode = 0
 		self.difficulty = 0
 		self.max_players = 0
+
+class Abilities(Info):
+	def __init__(self):
+		self.damage = True
+		self.fly = False
+		self.flying = False
+		self.creative = False
+		self.flying_speed = 0
+		self.walking_speed = 0
 
 class PlayerHealth(Info):
 	def __init__(self):
@@ -58,6 +54,7 @@ class ClientInfo:
 		self.eid = 0
 		self.name = ""
 		self.uuid = ""
+		self.abilities = Abilities()
 		self.game_info = GameInfo()
 		self.spawn_position = Vec3()
 		self.health = PlayerHealth()
@@ -84,6 +81,10 @@ class ClientInfoPlugin:
 		ploader.reg_event_handler(
 			'PLAY<Player List Item', self.handle_player_list)
 		ploader.reg_event_handler(
+			'PLAY<Change Game State', self.handle_game_state)
+		ploader.reg_event_handler(
+			'PLAY<Player Abilities', self.handle_player_abilities)
+		ploader.reg_event_handler(
 			'disconnect', self.handle_disconnect)
 		self.uuids = {}
 		self.defered_pl = {}
@@ -91,31 +92,31 @@ class ClientInfoPlugin:
 		ploader.provides('ClientInfo', self.client_info)
 
 	#Login Success - Update client name and uuid
-	def handle_login_success(self, event, packet):
+	def handle_login_success(self, name, packet):
 		self.client_info.uuid = packet.data['uuid']
 		self.client_info.name = packet.data['username']
 		self.event.emit('cl_login_success')
 
 	#Join Game - Update client state info
-	def handle_join_game(self, event, packet):
+	def handle_join_game(self, name, packet):
 		self.client_info.eid = packet.data['eid']
 		self.client_info.game_info.set_dict(packet.data)
 		self.event.emit('cl_join_game', self.client_info.game_info)
 
 	#Spawn Position - Update client Spawn Position state
-	def handle_spawn_position(self, event, packet):
+	def handle_spawn_position(self, name, packet):
 		self.client_info.spawn_position.set_dict(packet.data['location'])
 		self.event.emit('cl_spawn_update', self.client_info.spawn_position)
 
 	#Update Health - Update client Health state
-	def handle_update_health(self, event, packet):
+	def handle_update_health(self, name, packet):
 		self.client_info.health.set_dict(packet.data)
 		self.event.emit('cl_health_update', self.client_info.health)
 		if packet.data['health'] <= 0.0:
 			self.event.emit('cl_death', self.client_info.health)
 
 	#Player Position and Look - Update client Position state
-	def handle_position_update(self, event, packet):
+	def handle_position_update(self, name, packet):
 		f = packet.data['flags']
 		p = self.client_info.position
 		d = packet.data
@@ -127,7 +128,7 @@ class ClientInfoPlugin:
 		self.event.emit('cl_position_update', self.client_info.position)
 
 	#Player List Item - Update player list
-	def handle_player_list(self, event, packet):
+	def handle_player_list(self, name, packet):
 		act = packet.data['action']
 		for pl in packet.data['player_list']:
 			if act == mcdata.PL_ADD_PLAYER and pl['uuid'] not in self.uuids:
@@ -161,5 +162,16 @@ class ClientInfoPlugin:
 				del self.uuids[pl['uuid']]
 				self.event.emit('cl_remove_player', item)
 
-	def handle_disconnect(self, name, packet):
+	#Change Game State
+	def handle_game_state(self, name, packet):
+		if packet.data['reason'] == GS_GAMEMODE:
+			self.client_info.game_info.gamemode = packet.data['value']
+
+	#Player Abilities
+	def handle_player_abilities(self, name, packet):
+		#TODO: flag stuff here
+		self.client_info.abilities.flying_speed = packet.data['flying_speed']
+		self.client_info.abilities.walking_speed = packet.data['walking_speed']
+
+	def handle_disconnect(self, name, data):
 		self.client_info.reset()

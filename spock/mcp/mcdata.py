@@ -45,6 +45,11 @@ FLG_ZPOS_REL        = 0x04
 FLG_YROT_REL        = 0x08
 FLG_XROT_REL        = 0x10
 
+GM_SURVIVAL			= 0x00
+GM_CREATIVE			= 0x01
+GM_ADVENTURE		= 0x02
+GM_SPECTATOR		= 0x03
+
 #Actions
 #Clientbound 0x38 Player List Item
 PL_ADD_PLAYER       = 0x00
@@ -98,6 +103,17 @@ UE_INTERACT_AT      = 0x02
 CL_STATUS_RESPAWN   = 0x00
 CL_STATUS_STATS     = 0x01
 CL_STATUS_INV       = 0x02
+
+#Clientbound 0x2B Change Game State
+GS_INVALID_BED		= 0x00
+GS_END_RAIN			= 0x01
+GS_START_RAIN		= 0x02
+GS_GAMEMODE			= 0x03
+GS_CREDITS			= 0x04
+GS_DEMO_MESSAGE		= 0x05
+GS_ARROW			= 0x06
+GS_FADE_VALUE		= 0x07
+GS_FADE_TIME		= 0x08
 
 data_structs = (
 	#(struct_suffix, size), #type
