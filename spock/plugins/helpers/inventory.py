@@ -225,13 +225,13 @@ class InventoryCore:
 		# not in hotbar, search inventory
 		for slot_nr, slot in enumerate(self.player.slots):
 			if wanted(slot):
-				self.swap_into_hotbar(slot_nr)
+				self.swap_with_hotbar(slot_nr)
 				return True
 		# not in inventory, search open window
 		if self.window is not None:
 			for slot_nr, slot in enumerate(self.window.slots):
 				if wanted(slot):
-					self.swap_into_hotbar(slot_nr, player_inv=False)
+					self.swap_with_hotbar(slot_nr, player_inv=False)
 					return True
 		return False
 
@@ -243,17 +243,17 @@ class InventoryCore:
 	def shift_click(self, slot, player_inv=True):
 		self.click_window(slot, INV_BUTTON_LEFT, INV_MODE_SHIFT, player_inv)
 
-	def swap_into_hotbar(self, slot, hotbar_slot=None, player_inv=True):
+	def swap_with_hotbar(self, slot, hotbar_slot=None, player_inv=True):
 		if hotbar_slot is None: hotbar_slot = self.selected_slot
 		self.click_window(slot, hotbar_slot, INV_MODE_SWAP_HOTBAR, player_inv)
 
 	def swap_slots(self, slot_a, slot_b, player_inv=True):
 		# swap A into hotbar
-		self.swap_into_hotbar(slot_a, 0, player_inv)
+		self.swap_with_hotbar(slot_a, 0, player_inv)
 		# swap A with B, B then is in hotbar
-		self.swap_into_hotbar(slot_b, 0, player_inv)
+		self.swap_with_hotbar(slot_b, 0, player_inv)
 		# swap B to A's original position, restore hotbar
-		self.swap_into_hotbar(slot_a, 0, player_inv)
+		self.swap_with_hotbar(slot_a, 0, player_inv)
 
 	def click_window(self, slot, button, mode, player_inv=True):
 		window = self.player if player_inv else self.window
