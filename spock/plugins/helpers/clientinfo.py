@@ -83,6 +83,8 @@ class ClientInfoPlugin:
 		ploader.reg_event_handler(
 			'PLAY<Change Game State', self.handle_game_state)
 		ploader.reg_event_handler(
+			'PLAY<Server Difficulty', self.handle_server_difficulty)
+		ploader.reg_event_handler(
 			'PLAY<Player Abilities', self.handle_player_abilities)
 		ploader.reg_event_handler(
 			'disconnect', self.handle_disconnect)
@@ -166,6 +168,10 @@ class ClientInfoPlugin:
 	def handle_game_state(self, name, packet):
 		if packet.data['reason'] == GS_GAMEMODE:
 			self.client_info.game_info.gamemode = packet.data['value']
+
+	#Server Difficulty
+	def handle_server_difficulty(self, name, packet):
+		self.client_info.game_info.difficulty = packet.data['difficulty']
 
 	#Player Abilities
 	def handle_player_abilities(self, name, packet):
