@@ -373,4 +373,17 @@ class InventoryPlugin:
 		self.event.emit('inv_set_slot', data)
 
 	def update_slots(self, click):
-		pass  # FIXME IMPORTANT change the slots in main inventory accordingly
+		""" Changes the slots in main inventory accordingly.
+		The server does not send slot updates after successful clicks.
+		This method simulates vanilla slot-clicking. """
+		window = self.inventory.player if 0 == click['window_id'] else self.inventory.window
+		slot = click['slot']
+		button = click['button']
+		mode = click['mode']
+		if mode == INV_MODE_SWAP_HOTBAR:
+			hotbar_slot = button
+			inv = self.inventory.player
+			window.slots[slot], inv.slots[hotbar_slot-9] = inv.slots[hotbar_slot-9], window.slots[slot]
+		else: # TODO implement all click modes
+			raise NotImplementedError('Click mode %s not implemented' % mode)
+
