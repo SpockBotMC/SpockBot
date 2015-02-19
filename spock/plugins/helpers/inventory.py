@@ -40,7 +40,7 @@ class Slot:
 		# dict of ench_id -> ench_level
 		self.enchants = enchants
 
-	def get_as_packet_data(self):
+	def get_packet_data(self):
 		""" Formats the slot for network packing.
 		Usually not needed because of the server-side inventory,
 		sending {'id': -1} is sufficient. """
@@ -297,7 +297,7 @@ class InventoryCore:
 			'slot': slot,
 			'button': button,
 			'mode': mode,
-			'clicked_item': {'id': -1},
+			'clicked_item': self.window.slots[slot].get_packet_data(),
 		})
 
 	# TODO is/should this implemented somewhere else?
@@ -307,7 +307,7 @@ class InventoryCore:
 		packet = {
 			'location': coords.get_dict(),
 			'direction': 1,
-			'held_item': {'id': -1},
+			'held_item': self.window.slots[self.selected_slot - INV_SLOTS_HOTBAR].get_packet_data(),
 			'cur_pos_x': 8,
 			'cur_pos_y': 8,
 			'cur_pos_z': 8,
