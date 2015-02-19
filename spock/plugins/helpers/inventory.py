@@ -26,6 +26,11 @@ INV_MODE_DOUBLECLICK = 6
 # player inventory window ID, not opened but updated by server
 INV_WINID_PLAYER = 0
 
+INV_SLOTS_PLAYER = 9  # crafting and armor
+INV_SLOTS_INVENTORY = 9 * 3  # above hotbar
+INV_SLOTS_HOTBAR = 9
+INV_SLOTS_ADD = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR  # always accessible
+
 class Slot:
 	def __init__(self, id=-1, amount=0, damage=0, enchants=None):
 		# ID == -1 means empty slot
@@ -56,28 +61,28 @@ def map_window_type(inv_type_id):
 class InventoryBase:
 	""" Base class for all inventory types. """
 
+	# the arguments must have the same names as the keys in the packet dict
 	def __init__(self, inv_type, window_id, title, slot_count, add_slots):
 		self.inv_type = inv_type  # unused
 		self.window_id = window_id
 		self.title = title
 
-		# slots vary by inventory type,
-		# but always contain main inventory and hotbar (last 4*9 slots of add_slots)
-		self.slots = ([Slot()] * slot_count) + add_slots[-4*9:]
+		# slots vary by inventory type, but always contain main inventory and hotbar
+		self.slots = ([Slot()] * slot_count) + add_slots[-INV_SLOTS_ADD:]
 
 		# additional info dependent on inventory type, dynamically updated by server
 		self.properties = {}
 
 	def inventory_slots(self):
-		return self.slots[-4*9:-9]
+		return self.slots[-INV_SLOTS_ADD:-INV_SLOTS_HOTBAR]
 
 	def hotbar_slots(self):
-		return self.slots[-9:]
+		return self.slots[-INV_SLOTS_HOTBAR:]
 
 	def window_slots(self):
 		""" All slots except inventory and hotbar.
 		 Useful for searching. """
-		return self.slots[:-4*9]
+		return self.slots[:-INV_SLOTS_ADD]
 
 # no @map_window_type(), because not opened by server
 class InventoryPlayer(InventoryBase):
@@ -85,8 +90,8 @@ class InventoryPlayer(InventoryBase):
 
 	name = 'Inventory'
 
-	def __init__(self, add_slots=[Slot()]*(4*9)):
-		super().__init__(-1, INV_WINID_PLAYER, self.name, 45, add_slots)  # TODO title should be in chat format
+	def __init__(self, add_slots=[Slot()] * INV_SLOTS_ADD):
+		super().__init__(-1, INV_WINID_PLAYER, self.name, INV_SLOTS_PLAYER, add_slots)  # TODO title should be in chat format
 
 	def craft_result_slot(self):
 		return self.slots[0]
@@ -256,7 +261,7 @@ class InventoryCore:
 		return False
 
 	def select_slot(self, slot_nr):
-		if 0 <= slot_nr < 9:
+		if 0 <= slot_nr < INV_SLOTS_HOTBAR:
 			self.selected_slot = slot_nr
 			self._net.push_packet('PLAY>Held Item Change', {'slot': slot_nr})
 
@@ -408,12 +413,12 @@ class InventoryPlugin:
 	def update_slots_after_click(self, click):
 		""" Changes the slots in main inventory according to a click action,
 		because the server does not send slot updates after successful clicks. """
-		# FIXME still not working as intended
 		slot, button, mode = click['slot'], click['button'], click['mode']
 		if mode == INV_MODE_SWAP_HOTBAR:
 			hotbar_slot = button
 			assert(hotbar_slot < 9)
+			slot_in_hotbar = hotbar_slot - INV_SLOTS_HOTBAR
 			slots = self.inventory.window.slots
-			slots[slot], slots[hotbar_slot - 9] = slots[hotbar_slot - 9], slots[slot]
+			slots[slot], slots[slot_in_hotbar] = slots[slot_in_hotbar], slots[slot]
 		else: # TODO implement all click modes
 			raise NotImplementedError('Click mode %i not implemented' % mode)
