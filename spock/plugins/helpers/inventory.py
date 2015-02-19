@@ -280,6 +280,11 @@ class InventoryCore:
 		# swap B to A's original position, restore hotbar
 		self.swap_with_hotbar(slot_a, 0)
 
+	def drop_item(self, slot, drop_stack=False):
+		if slot is None: slot = self.selected_slot - INV_SLOTS_HOTBAR  # convert selection to slot index
+		button = 1 if drop_stack else 0
+		self.click_window(slot, button, INV_MODE_DROP)
+
 	def click_window(self, slot, button, mode):
 		# make sure slot is in inventory,
 		# allows for slot = -9 as first slot of hotbar etc.
@@ -420,5 +425,12 @@ class InventoryPlugin:
 			slot_in_hotbar = hotbar_slot - INV_SLOTS_HOTBAR
 			slots = self.inventory.window.slots
 			slots[slot], slots[slot_in_hotbar] = slots[slot_in_hotbar], slots[slot]
+		elif mode == INV_MODE_DROP:
+			drop_stack = (1 == button)
+			slots = self.inventory.window.slots
+			if drop_stack or slots[slot].amount <= 1:
+				slots[slot] = Slot()
+			else:
+				slots[slot].amount -= 1
 		else: # TODO implement all click modes
 			raise NotImplementedError('Click mode %i not implemented' % mode)
