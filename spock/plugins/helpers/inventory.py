@@ -352,15 +352,19 @@ class InventoryPlugin:
 		self.event.emit('inv_held_item_change', packet.data)
 
 	def handle_open_window(self, event, packet):
+		old_queue = list(self.click_queue)
 		self.click_queue.clear() # TODO only remove clicks that affect the previously opened window (player inv)?
 		InvNew = inv_types[packet.data['inv_type']]
 		self.inventory.window = InvNew(add_slots=self.inventory.window.slots, **packet.data)
+		self.event.emit('inv_click_queue_cleared', {'reason': 'open_window', 'actions': old_queue})
 		self.event.emit('inv_open_window', {'window': self.inventory.window})
 
 	def handle_close_window(self, event, packet):
+		old_queue = list(self.click_queue)
 		self.click_queue.clear() # TODO only remove clicks that affect the closed window?
 		closed_window = self.inventory.window
 		self.inventory.window = InventoryPlayer(add_slots=closed_window.slots)
+		self.event.emit('inv_click_queue_cleared', {'reason': 'close_window', 'actions': old_queue})
 		self.event.emit('inv_close_window', {'window': closed_window})
 
 	def handle_set_slot(self, event, packet):
