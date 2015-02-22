@@ -39,7 +39,8 @@ class MovementPlugin:
 		self.net.push_packet('PLAY>Player Position and Look', data.get_dict())
 
 	def handle_collision(self, name, data):
-		self.physics.jump()
+		if self.movement.move_location != None:
+			self.physics.jump()
 
 	def action_tick(self, name, data):
 		self.do_pathfinding()
