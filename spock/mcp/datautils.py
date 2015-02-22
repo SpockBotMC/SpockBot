@@ -17,14 +17,14 @@ def unpack_varint(bbuff):
 	total = 0
 	shift = 0
 	val = 0x80
-	while val&0x80:
+	while val & 0x80:
 		val = struct.unpack('B', bbuff.read(1))[0]
-		total |= ((val&0x7F)<<shift)
+		total |= (val & 0x7F) << shift
 		shift += 7
 	if total >= (1<<32):
 		return None
-	if total&(1<<31):
-		total = total - (1<<32)
+	if total & (1<<31):
+		total -= 1<<32
 	return total
 
 def pack_varint(val):
@@ -32,11 +32,11 @@ def pack_varint(val):
 		return None
 	o = b''
 	if val < 0:
-		val = (1<<32)+val
-	while val>=0x80:
-		bits = val&0x7F
+		val += 1<<32
+	while val >= 0x80:
+		bits = val & 0x7F
 		val >>= 7
-		o += struct.pack('B', (0x80|bits))
+		o += struct.pack('B', (0x80 | bits))
 	bits = val&0x7F
 	o += struct.pack('B', bits)
 	return o
@@ -46,14 +46,14 @@ def unpack_varlong(bbuff):
 	total = 0
 	shift = 0
 	val = 0x80
-	while val&0x80:
+	while val & 0x80:
 		val = struct.unpack('B', bbuff.read(1))[0]
-		total |= ((val&0x7F)<<shift)
+		total |= ((val & 0x7F) << shift)
 		shift += 7
-	if total >= (1<<64):
+	if total >= 1<<64:
 		return None
-	if total&(1<<64):
-		total = total - (1<<64)
+	if total & (1<<64):
+		total -= 1 << 64
 	return total
 
 def pack_varlong(val):
@@ -61,12 +61,12 @@ def pack_varlong(val):
 		return None
 	o = b''
 	if val < 0:
-		val = (1<<64)+val
-	while val>=0x80:
-		bits = val&0x7F
+		val += 1<<64
+	while val >= 0x80:
+		bits = val & 0x7F
 		val >>= 7
-		o += struct.pack('B', (0x80|bits))
-	bits = val&0x7F
+		o += struct.pack('B', (0x80 | bits))
+	bits = val & 0x7F
 	o += struct.pack('B', bits)
 	return o
 
@@ -75,29 +75,29 @@ def pack_varlong(val):
 def unpack_position(bbuff):
 	position = {}
 	val = unpack(MC_LONG, bbuff)
-	position['x'] = val>>38;
-	position['y'] = (val>>26)&0xFFF
-	z = val&0x3FFFFFF
-	if z&(1<<25):
+	position['x'] = val >> 38
+	position['y'] = (val >> 26) & 0xFFF
+	z = val & 0x3FFFFFF
+	if z & (1<<25):
 		z -= (1<<26)
 	position['z'] = z
 	return position
 
 def pack_position(position):
-	val  = (int(position['x'])&0x3FFFFFF)<<38
-	val |= (int(position['y'])&0xFFF)<<26
-	val |= (int(position['z'])&0x3FFFFFF)
+	val  = (int(position['x']) & 0x3FFFFFF) << 38
+	val |= (int(position['y']) & 0xFFF) << 26
+	val |= (int(position['z']) & 0x3FFFFFF)
 	return pack(MC_ULONG, val)
 
 #Fixed point number where the first 5 bits are dedicated to the decimal place
 #Internally vanilla mc implements these as doubles, so we do the same thing
 def unpack_fixed_point(mc_type, bbuff):
 	val = unpack(mc_type, bbuff)
-	val = float(val)/(1<<5)
+	val = float(val) / (1<<5)
 	return val
 
 def pack_fixed_point(mc_type, val):
-	val = int(val*(1<<5))
+	val = int(val * (1<<5))
 	return pack(mc_type, val)
 
 # Slots are dictionaries that hold info about
@@ -127,8 +127,8 @@ def pack_slot(slot):
 		if 'enchants' in slot:
 			ench = slot['enchants']
 			bbuff = utils.BoundBuffer()
-			TAG_Byte(ench.id)._render_buffer(bbuff)
-			TAG_String(ench.name)._render_buffer(bbuff)
+			nbt.TAG_Byte(ench.id)._render_buffer(bbuff)
+			nbt.TAG_String(ench.name)._render_buffer(bbuff)
 			ench._render_buffer(bbuff)
 			o += bbuff.flush()
 		else:
@@ -147,25 +147,25 @@ def unpack_metadata(bbuff):
 	while head != 0x7F:
 		key = head & 0x1F # Lower 5 bits
 		typ = head >> 5 # Upper 3 bits
-		if typ < len(metadata_lookup) and typ >= 0:
+		if 0 <= typ < len(metadata_lookup):
 			val = unpack(metadata_lookup[typ], bbuff)
 		elif typ == 6:
-			val = [unpack(MC_INT, bbuff) for i in range(3)]
+			val = [unpack(MC_INT, bbuff)] * 3
 		elif typ == 7:
-			val = [unpack(MC_FLOAT, bbuff) for i in range(3)]
+			val = [unpack(MC_FLOAT, bbuff)] * 3
 		else:
 			return None
 		metadata.append((key, (typ, val)))
 		head = unpack(MC_UBYTE, bbuff)
 	return metadata
 
-def pack_metadata(metadata):
+def pack_metadata(data):
 	o = b''
 	for key, tmp in data:
 		typ, val = tmp
 		o += pack(MC_UBYTE, (typ << 5)|key)
-		if typ < len(metadata_lookup) and typ >= 0:
-			o += pack(metadata_lookup[typ], bbuff)
+		if 0 <= typ < len(metadata_lookup):
+			o += pack(metadata_lookup[typ], val)
 		elif typ == 6:
 			for i in range(3):
 				o += pack(MC_INT, val[i])
@@ -220,7 +220,7 @@ def pack(data_type, data):
 	elif data_type == MC_FP_BYTE:
 		return pack_fixed_point(MC_BYTE, data)
 	elif data_type == MC_UUID:
-		return struct.pack('>QQ', (data>>64)&((1<<64)-1), data&((1<<64)-1))
+		return struct.pack('>QQ', (data>>64) & ((1<<64) - 1), data & ((1<<64) - 1))
 	elif data_type == MC_POSITION:
 		return pack_position(data)
 	elif data_type == MC_STRING:
