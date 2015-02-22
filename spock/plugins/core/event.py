@@ -31,10 +31,15 @@ class EventCore:
 	def emit(self, event, data = None):
 		if event not in self.event_handlers:
 			self.event_handlers[event] = []
+		to_remove = []
 		for handler in self.event_handlers[event]:
-			handler(event, (data.clone() if hasattr(data, 'clone')
-				else copy.deepcopy(data)
-			))
+			if handler(
+				event,
+				data.clone() if hasattr(data, 'clone') else copy.deepcopy(data)
+			):
+				to_remove.append(handler)
+		for handler in to_remove:
+			self.event_handlers[event].remove(handler)
 
 	def kill(self, *args):
 		self.kill_event = True
