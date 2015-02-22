@@ -41,6 +41,9 @@ from spock.utils import pl_announce
 from spock.mcmap import mapdata
 from spock.utils import BoundingBox, Vec3
 
+import logging
+logger = logging.getLogger('spock')
+
 class PhysicsCore:
 	def __init__(self, vec, pos):
 		self.vec = vec
@@ -52,20 +55,18 @@ class PhysicsCore:
 			self.vec.add_vector(y = PLAYER_JMP_ACC)
 
 	def walk(self, angle, radians = False):
-		if self.pos.on_ground:
-			if not radians:
-				angle = math.radians(angle)
-			z = math.cos(angle)*PLAYER_WLK_ACC
-			x = math.sin(angle)*PLAYER_WLK_ACC
-			self.vec.add_vector(x = x, z = z)
+		if not radians:
+			angle = math.radians(angle)
+		z = math.cos(angle)*PLAYER_WLK_ACC
+		x = math.sin(angle)*PLAYER_WLK_ACC
+		self.vec.add_vector(x = x, z = z)
 
 	def sprint(self, angle, radians = False):
-		if self.pos.on_ground:
-			if not radians:
-				angle = math.radians(angle)
-			z = math.cos(angle)*PLAYER_SPR_ACC
-			x = math.sin(angle)*PLAYER_SPR_ACC
-			self.vec.add_vector(x = x, z = z)
+		if not radians:
+			angle = math.radians(angle)
+		z = math.cos(angle)*PLAYER_SPR_ACC
+		x = math.sin(angle)*PLAYER_SPR_ACC
+		self.vec.add_vector(x = x, z = z)
 
 
 @pl_announce('Physics')
@@ -74,10 +75,12 @@ class PhysicsPlugin:
 		self.vec = Vec3(0.0, 0.0, 0.0)
 		self.playerbb = BoundingBox(0.8, 1.8) #wiki says 0.6 but I made it 0.8 to give a little wiggle room
 		self.world = ploader.requires('World')
+		self.event = ploader.requires('Event')
 		clinfo = ploader.requires('ClientInfo')
 		self.pos = clinfo.position
 		ploader.reg_event_handler('physics_tick', self.tick)
-		ploader.provides('Physics', PhysicsCore(self.vec, self.pos))
+		self.pycore = PhysicsCore(self.vec, self.pos)
+		ploader.provides('Physics', self.pycore)
 
 	def tick(self, _, __):
 		self.check_collision()
@@ -86,12 +89,6 @@ class PhysicsPlugin:
 
 	def check_collision(self):
 		cb = Vec3(math.floor(self.pos.x), math.floor(self.pos.y), math.floor(self.pos.z))
-		#feet or head collide with x
-		if self.block_collision(cb, x=1) or self.block_collision(cb, x=-1) or self.block_collision(cb, y=1, x=1) or self.block_collision(cb, y=1, x=-1):
-			self.vec.x = 0
-		#feet or head collide with z
-		if self.block_collision(cb, z=1) or self.block_collision(cb, z=-1) or self.block_collision(cb, y=1, z=1) or self.block_collision(cb, y=1, z=-1):
-			self.vec.z = 0
 		if self.block_collision(cb, y=2): #we check +2 because above my head
 			self.vec.y = 0
 		if self.block_collision(cb, y=-1): #we check below feet
@@ -102,6 +99,16 @@ class PhysicsPlugin:
 			self.pos.on_ground = False
 			self.vec.add_vector(y = -PLAYER_ENTITY_GAV)
 			self.apply_vertical_drag()
+		#feet or head collide with x
+		if self.block_collision(cb, x=1) or self.block_collision(cb, x=-1) or self.block_collision(cb, y=1, x=1) or self.block_collision(cb, y=1, x=-1):
+			self.vec.x = 0
+			#replace with real info in event
+			self.event.emit("phy_collision", "x")
+		#feet or head collide with z
+		if self.block_collision(cb, z=1) or self.block_collision(cb, z=-1) or self.block_collision(cb, y=1, z=1) or self.block_collision(cb, y=1, z=-1):
+			self.vec.z = 0
+			#replace with real info in event
+			self.event.emit("phy_collision", "z")
 
 	def block_collision(self, cb, x = 0, y = 0, z = 0):
 		block_id, meta = self.world.get_block(cb.x+x, cb.y+y, cb.z+z)
@@ -126,12 +133,8 @@ class PhysicsPlugin:
 		self.vec.y = self.vec.y - self.vec.y*PLAYER_ENTITY_DRG
 
 	def apply_horizontal_drag(self):
-		if self.pos.on_ground:
-			self.vec.x -= self.vec.x * PLAYER_GND_DRG
-			self.vec.z -= self.vec.z * PLAYER_GND_DRG
-		else:
-			self.vec.x -= self.vec.x * PLAYER_ENTITY_DRG
-			self.vec.z -= self.vec.z * PLAYER_ENTITY_DRG
+		self.vec.x -= self.vec.x * PLAYER_GND_DRG
+		self.vec.z -= self.vec.z * PLAYER_GND_DRG
 
 	def apply_vector(self):
 		p = self.pos

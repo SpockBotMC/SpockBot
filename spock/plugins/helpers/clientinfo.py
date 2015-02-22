@@ -59,7 +59,7 @@ class ClientInfo:
 		self.spawn_position = Vec3()
 		self.health = PlayerHealth()
 		self.position = PlayerPosition()
-		self.player_list = []
+		self.player_list = {}
 
 	def reset(self):
 		self.__init__()
@@ -140,7 +140,7 @@ class ClientInfoPlugin:
 					for i in self.defered_pl[pl['uuid']]:
 						item.set_dict(i)
 					del self.defered_pl[pl['uuid']]
-				self.client_info.player_list.append(item)
+				self.client_info.player_list[pl['uuid']] = item
 				self.uuids[pl['uuid']] = item
 				self.event.emit('cl_add_player', item)
 			elif (
@@ -160,7 +160,7 @@ class ClientInfoPlugin:
 					self.defered_pl[pl['uuid']] = defered
 			elif act == mcdata.PL_REMOVE_PLAYER and pl['uuid'] in self.uuids:
 				item = self.uuids[pl['uuid']]
-				self.client_info.player_list.remove(item)
+				del self.client_info.player_list[pl['uuid']]
 				del self.uuids[pl['uuid']]
 				self.event.emit('cl_remove_player', item)
 
