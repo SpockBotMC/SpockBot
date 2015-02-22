@@ -414,7 +414,7 @@ class InventoryPlugin:
 		self.event.emit('inv_close_window', {'window': closed_window})
 
 	def handle_set_slot(self, event, packet):
-		self.set_slot(**packet)
+		self.set_slot(packet.data['window_id'],packet.data['slot'],packet.data['slot_data'])
 
 	def handle_window_items(self, event, packet):
 		window_id = packet.data['window_id']
