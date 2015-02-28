@@ -567,7 +567,7 @@ class StandingsignBlock(NoCollisionBlock):
 	display_name = 'Sign Post'
 	name = 'signPost'
 	hardness = 1
-	stack_size = 1
+	stack_size = 16
 	material = MCM_MAT_WOOD
 
 @map_block(64)
@@ -603,7 +603,8 @@ class WallsignBlock(NoCollisionBlock):
 	display_name = 'Wall Sign'
 	name = 'signWall'
 	hardness = 1
-	stack_size = 1
+	stack_size = 16
+	material = MCM_MAT_WOOD
 
 @map_block(69)
 class LeverBlock(NoCollisionBlock):
