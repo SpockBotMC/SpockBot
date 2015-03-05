@@ -50,7 +50,7 @@ class Slot:
 		if self.damage != other.damage: return False
 		if self.damage != other.damage: return False
 		if self.item_id == INV_ITEMID_EMPTY: return False  # for now, remove later, workaround for clicking empty slots
-		raise NotImplementedError('Stacks might differ by NBT data')
+		raise NotImplementedError('Stacks might differ by NBT data: %s %s' % (self, other))
 		# if self.nbt != other.nbt: return False  # TODO implement this correctly
 		# return True
 
@@ -292,7 +292,7 @@ class InventoryCore:
 		slot_nr = self.find_item(item_id, meta)
 		if slot_nr is False: return False
 		hotbar_slot_nr = slot_nr - self.window.hotbar_index()
-		if hotbar_slot_nr > 0:
+		if hotbar_slot_nr >= 0:
 			self.select_slot(hotbar_slot_nr)
 		else:
 			self.swap_with_hotbar(slot_nr)
@@ -329,15 +329,14 @@ class InventoryCore:
 
 	def click_slot(self, slot, button=INV_BUTTON_LEFT, mode=INV_MODE_CLICK):
 		# make sure slot is in inventory,
-		# allows for slot = -INV_SLOTS_HOTBAR as first slot of hotbar etc.
+		# allows for `slot = -INV_SLOTS_HOTBAR` as first slot of hotbar etc.
 		slot %= len(self.window.slots)
-		# action ID gets added in _send_click
+		# action and clicked_item get added in try_send_next_packet
 		self._queue_click({
 			'window_id': self.window.window_id,
 			'slot': slot,
 			'button': button,
 			'mode': mode,
-			'clicked_item': self.window.slots[slot].get_dict(),
 		})
 
 	# TODO is/should this be implemented somewhere else?
@@ -379,7 +378,7 @@ class InventoryPlugin:
 		ploader.reg_event_handler(
 			'PLAY<Window Property', self.handle_window_prop)
 		ploader.reg_event_handler(
-			'PLAY<Confirm Transaction', self.handle_confirm_transact)
+			'PLAY<Confirm Transaction', self.handle_confirm_transaction)
 		ploader.reg_event_handler(
 			'PLAY<Open Window', self.handle_open_window)
 		ploader.reg_event_handler(
@@ -438,19 +437,18 @@ class InventoryPlugin:
 		self.inventory.window.properties[packet.data['property']] = packet.data['value']
 		self.event.emit('inv_win_prop', packet.data)
 
-	def handle_confirm_transact(self, event, packet):
-		if not packet.data['accepted']:
-			# try again TODO what should be done here?
-			# Server sends all slots again, but seems to stop sending any confirm packets...
-			self.last_click['action'] = self.get_next_action_id()
-			self.net.push_packet('PLAY>Click Window', self.last_click)
-			self.event.emit('inv_click_not_accepted', self.last_click)
-			return
-		# TODO check if the wrong action ID was confirmed, never occured during testing
-		self.simulate_click(self.last_click)
+	def handle_confirm_transaction(self, event, packet):
 		last_click, self.last_click = self.last_click, None
-		self.event.emit('inv_click_accepted', last_click)
-		self.try_send_next_packet()
+		if packet.data['accepted']:
+			# TODO check if the wrong window/action ID was confirmed, never occured during testing
+			self.simulate_click(last_click)
+			self.event.emit('inv_click_accepted', last_click)
+			self.try_send_next_packet()
+		else:  # click not accepted
+			# confirm that we received this packet
+			self.net.push_packet('PLAY>Confirm Transaction', packet.data)
+			self.event.emit('inv_click_not_accepted', self.last_click)
+			# server will re-send all slots now
 
 	def queue_click(self, click):
 		# put packet into queue to wait for confirmation
@@ -462,6 +460,16 @@ class InventoryPlugin:
 		if self.last_click is None and len(self.click_queue) > 0:
 			self.last_click = packet = self.click_queue.popleft()
 			packet['action'] = self.get_next_action_id()
+			if packet['mode'] == INV_MODE_DROP:
+				if self.inventory.cursor_slot.item_id == INV_ITEMID_EMPTY:
+					packet['clicked_item'] = {'id': INV_ITEMID_EMPTY}
+				else:  # can't drop while holding an item, skip to next packet
+					self.event.emit('inv_click_not_accepted', self.last_click)
+					self.last_click = None
+					self.try_send_next_packet()
+					return
+			else:
+				packet['clicked_item'] = self.inventory.window.slots[packet['slot']].get_dict()
 			self.net.push_packet('PLAY>Click Window', packet)
 
 	def get_next_action_id(self):
@@ -496,28 +504,27 @@ class InventoryPlugin:
 					inv.cursor_slot = Slot(slots[slot_nr].item_id, slots[slot_nr].damage, take_amount, slots[slot_nr].nbt)
 					slots[slot_nr].amount -= take_amount
 				else:  # already holding an item
-					if slots[slot_nr].stacks_with(inv.cursor_slot):
+					if slots[slot_nr].item_id == INV_ITEMID_EMPTY:
+						slots[slot_nr] = Slot(inv.cursor_slot.item_id, inv.cursor_slot.damage, 1, inv.cursor_slot.nbt)
+						inv.cursor_slot.amount -= 1
+					elif slots[slot_nr].stacks_with(inv.cursor_slot):
 						# try to transfer one item
 						if slots[slot_nr].amount < slots[slot_nr].max_amount():
 							slots[slot_nr].amount += 1
 							inv.cursor_slot.amount -= 1
 						# else: clicked slot is full, do nothing
 					else:  # slot items do not stack
-						if slots[slot_nr].item_id == INV_ITEMID_EMPTY:
-							if inv.cursor_slot.amount > 1:
-								inv.cursor_slot.amount -= 1
-							else:
-								inv.cursor_slot = Slot()
-						else:
-							swap_click()
+						swap_click()
 			else: # TODO implement all buttons
 				raise NotImplementedError('Clicking with button %i not implemented' % button)
 		elif mode == INV_MODE_DROP:
-			drop_stack = (INV_BUTTON_DROP_STACK == button)
-			if drop_stack:
-				(slots[slot_nr]).amount = 0
-			else:
-				slots[slot_nr].amount -= 1
+			if inv.cursor_slot.item_id == INV_ITEMID_EMPTY:
+				drop_stack = (INV_BUTTON_DROP_STACK == button)
+				if drop_stack:
+					(slots[slot_nr]).amount = 0
+				else:
+					slots[slot_nr].amount -= 1
+			# else: can't drop while holding an item
 		else: # TODO implement all click modes
 			raise NotImplementedError('Click mode %i not implemented' % mode)
 		# clean up empty slots
