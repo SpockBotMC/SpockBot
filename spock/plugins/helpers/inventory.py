@@ -30,7 +30,6 @@ INV_MODE_DOUBLECLICK = 6
 
 INV_WINID_CURSOR = -1  # the slot that follows the cursor
 INV_WINID_PLAYER = 0  # player inventory window ID/type, not opened but updated by server
-INV_TYPE_PLAYER = -1  # non-official, used internally to avoid ID collisions
 INV_ITEMID_EMPTY = -1
 
 INV_SLOTS_PLAYER = 9  # crafting and armor
@@ -121,7 +120,7 @@ class InventoryPlayer(InventoryBase):
 	name = 'Inventory'
 
 	def __init__(self, add_slots=[Slot()] * INV_SLOTS_ADD):
-		super().__init__(-1, INV_WINID_PLAYER, self.name, INV_SLOTS_PLAYER, add_slots)  # TODO title should be in chat format
+		super().__init__('player', INV_WINID_PLAYER, self.name, INV_SLOTS_PLAYER, add_slots)  # TODO title should be in chat format
 
 	def craft_result_slot(self):
 		return self.slots[0]
