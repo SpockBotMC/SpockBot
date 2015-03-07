@@ -441,13 +441,12 @@ class InventoryPlugin:
 		if packet.data['accepted']:
 			# TODO check if the wrong window/action ID was confirmed, never occured during testing
 			self.simulate_click(last_click)
-			self.event.emit('inv_click_accepted', last_click)
 			self.try_send_next_packet()
 		else:  # click not accepted
 			# confirm that we received this packet
 			self.net.push_packet('PLAY>Confirm Transaction', packet.data)
-			self.event.emit('inv_click_not_accepted', self.last_click)
 			# server will re-send all slots now
+			# TODO call self.try_send_next_packet() later
 
 	def queue_click(self, click):
 		# put packet into queue to wait for confirmation
@@ -458,17 +457,16 @@ class InventoryPlugin:
 		# only send if all previous packets got confirmed
 		if self.last_click is None and len(self.click_queue) > 0:
 			self.last_click = packet = self.click_queue.popleft()
-			packet['action'] = self.get_next_action_id()
 			if packet['mode'] == INV_MODE_DROP:
-				if self.inventory.cursor_slot.item_id == INV_ITEMID_EMPTY:
-					packet['clicked_item'] = {'id': INV_ITEMID_EMPTY}
-				else:  # can't drop while holding an item, skip to next packet
-					self.event.emit('inv_click_not_accepted', self.last_click)
+				if self.inventory.cursor_slot.item_id != INV_ITEMID_EMPTY:
+					# can't drop while holding an item, skip to next packet
 					self.last_click = None
 					self.try_send_next_packet()
 					return
+				packet['clicked_item'] = self.inventory.cursor_slot.get_dict()
 			else:
 				packet['clicked_item'] = self.inventory.window.slots[packet['slot']].get_dict()
+			packet['action'] = self.get_next_action_id()
 			self.net.push_packet('PLAY>Click Window', packet)
 
 	def get_next_action_id(self):
