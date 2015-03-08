@@ -28,6 +28,7 @@ INV_MODE_DROP = 4
 INV_MODE_PAINT = 5
 INV_MODE_DOUBLECLICK = 6
 
+INV_SLOT_NR_CURSOR = -1
 INV_WINID_CURSOR = -1  # the slot that follows the cursor
 INV_WINID_PLAYER = 0  # player inventory window ID/type, not opened but updated by server
 INV_ITEMID_EMPTY = -1
@@ -38,11 +39,16 @@ INV_SLOTS_HOTBAR = 9
 INV_SLOTS_ADD = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR  # always accessible
 
 class Slot:
-	def __init__(self, id=INV_ITEMID_EMPTY, damage=0, amount=0, enchants=None):
+	def __init__(self, window, slot_nr, id=INV_ITEMID_EMPTY, damage=0, amount=0, enchants=None):
+		self.window = window
+		self.slot_nr = slot_nr
 		self.item_id = id
 		self.damage = damage
 		self.amount = amount
 		self.nbt = enchants
+
+	def move_to_window(self, window, slot_nr):
+		self.window, self.slot_nr = window, slot_nr
 
 	def stacks_with(self, other):
 		if self.item_id != other.item_id: return False
@@ -68,9 +74,18 @@ class Slot:
 		return data
 
 	def __repr__(self):
-		if self.item_id == INV_ITEMID_EMPTY: return 'Slot()'
-		args = str(self.get_dict()).strip('{}').replace("'", '').replace(': ', '=')
-		return 'Slot(%s)' % args
+		if self.item_id != INV_ITEMID_EMPTY:
+			args = str(self.get_dict()).strip('{}').replace("'", '').replace(': ', '=')
+		else: args = 'empty'
+		return 'Slot(window=%s, slot_nr=%i, %s)' % (self.window, self.slot_nr, args)
+
+class SlotCursor(Slot):
+	def __init__(self, id=INV_ITEMID_EMPTY, damage=0, amount=0, enchants=None):
+		class CursorWindow:
+			window_id = INV_WINID_CURSOR
+			def __repr__(self):
+				return 'CursorWindow()'
+		super().__init__(CursorWindow(), INV_SLOT_NR_CURSOR, id, damage, amount, enchants)
 
 # look up a class by window type ID when opening windows
 inv_types = {}
@@ -91,10 +106,18 @@ class InventoryBase:
 		self.title = title
 
 		# slots vary by inventory type, but always contain main inventory and hotbar
-		self.slots = ([Slot()] * slot_count) + add_slots[-INV_SLOTS_ADD:]
+		# create own slots, ...
+		self.slots = [Slot(self, slot_nr) for slot_nr in range(slot_count)]
+		# ... append player inventory slots, which have to be moved
+		for slot_nr_add, inv_slot in enumerate(add_slots[-INV_SLOTS_ADD:]):
+			inv_slot.move_to_window(self, slot_nr_add + slot_count)
+			self.slots.append(inv_slot)
 
 		# additional info dependent on inventory type, dynamically updated by server
 		self.properties = {}
+
+	def __repr__(self):
+		return 'Inventory(id=%i, title=%s)' % (self.window_id, self.title)
 
 	def inventory_index(self):
 		return len(self.slots) - INV_SLOTS_ADD
@@ -119,7 +142,9 @@ class InventoryPlayer(InventoryBase):
 
 	name = 'Inventory'
 
-	def __init__(self, add_slots=[Slot()] * INV_SLOTS_ADD):
+	def __init__(self, add_slots=None):
+		if add_slots is None:
+			add_slots = [Slot(self, slot_nr) for slot_nr in range(INV_SLOTS_ADD)]
 		super().__init__('player', INV_WINID_PLAYER, self.name, INV_SLOTS_PLAYER, add_slots)  # TODO title should be in chat format
 
 	def craft_result_slot(self):
@@ -250,14 +275,14 @@ class InventoryHorse(InventoryBase):
 	# TODO horse slot getters
 
 class InventoryCore:
-	""" Handles operations with and contains the player inventory. """
+	""" Handles operations with the player inventory. """
 
-	def __init__(self, net, queue_click):
-		self._net = net
-		self._queue_click = queue_click  # method to queue a click action, used in click_window
+	def __init__(self, net_plugin, click_slot):
+		self._net = net_plugin
+		self.click_slot = click_slot
 		self.selected_slot = 0
-		self.cursor_slot = Slot()  # the slot that moves with the mouse when clicking a slot
-		self.window = InventoryPlayer()  # TODO rename? as other plugins access this quite often
+		self.cursor_slot = SlotCursor()  # the slot that moves with the mouse when clicking a slot
+		self.window = InventoryPlayer()
 
 	def find_item(self, item_id, meta=-1):
 		""" Returns the first slot containing the item or False if not found.
@@ -326,18 +351,6 @@ class InventoryCore:
 		button = INV_BUTTON_DROP_STACK if drop_stack else INV_BUTTON_DROP_SINGLE
 		self.click_slot(slot, button, INV_MODE_DROP)
 
-	def click_slot(self, slot, button=INV_BUTTON_LEFT, mode=INV_MODE_CLICK):
-		# make sure slot is in inventory,
-		# allows for `slot = -INV_SLOTS_HOTBAR` as first slot of hotbar etc.
-		slot %= len(self.window.slots)
-		# action and clicked_item get added in try_send_next_packet
-		self._queue_click({
-			'window_id': self.window.window_id,
-			'slot': slot,
-			'button': button,
-			'mode': mode,
-		})
-
 	# TODO is/should this be implemented somewhere else?
 	def interact_with_block(self, coords):
 		""" Clicks on a block to open its window.
@@ -352,6 +365,11 @@ class InventoryCore:
 		}
 		self._net.push_packet('PLAY>Player Block Placement', packet)
 
+	# TODO is/should this be implemented somewhere else?
+	def interact_with_entity(self, entity_id):
+		""" Clicks on an entity to open its window. """
+		self._net.push_packet('PLAY>Use Entity', {'target': entity_id, 'action': 0})
+
 	def close_window(self):
 		self._net.push_packet('PLAY>Close Window', {'window_id': self.window.window_id})
 
@@ -364,7 +382,7 @@ class InventoryPlugin:
 		self.clinfo = ploader.requires('ClientInfo')
 		self.event = ploader.requires('Event')
 		self.net = ploader.requires('Net')
-		self.inventory = InventoryCore(self.net, self.queue_click)
+		self.inventory = InventoryCore(self.net, self.click_slot)
 		ploader.provides('Inventory', self.inventory)
 
 		# Inventory events
@@ -386,8 +404,7 @@ class InventoryPlugin:
 		ploader.reg_event_handler(
 			'PLAY>Close Window', self.handle_close_window)
 
-		# click sending queue
-		self.click_queue = deque()
+		# click sending
 		self.action_id = 0
 		self.last_click = None  # stores the last click action for confirmation
 
@@ -396,41 +413,34 @@ class InventoryPlugin:
 		self.event.emit('inv_held_item_change', packet.data)
 
 	def handle_open_window(self, event, packet):
-		old_queue = list(self.click_queue)
-		self.click_queue.clear() # TODO only remove clicks that affect the previously opened window (player inv)?
 		InvNew = inv_types[packet.data['inv_type']]
 		self.inventory.window = InvNew(add_slots=self.inventory.window.slots, **packet.data)
-		self.event.emit('inv_click_queue_cleared', {'reason': 'inv_open_window', 'actions': old_queue})
 		self.event.emit('inv_open_window', {'window': self.inventory.window})
 
 	def handle_close_window(self, event, packet):
-		old_queue = list(self.click_queue)
-		self.click_queue.clear() # TODO only remove clicks that affect the closed window?
 		closed_window = self.inventory.window
 		self.inventory.window = InventoryPlayer(add_slots=closed_window.slots)
-		self.event.emit('inv_click_queue_cleared', {'reason': 'inv_close_window', 'actions': old_queue})
 		self.event.emit('inv_close_window', {'window': closed_window})
 
 	def handle_set_slot(self, event, packet):
-		self.set_slot(packet.data['window_id'],packet.data['slot'],packet.data['slot_data'])
+		self.set_slot(packet.data['window_id'], packet.data['slot'], packet.data['slot_data'])
 
 	def handle_window_items(self, event, packet):
 		window_id = packet.data['window_id']
 		for slot_nr, slot_data in enumerate(packet.data['slots']):
 			self.set_slot(window_id, slot_nr, slot_data)
 
-	def set_slot(self, window_id, slot, slot_data):
-		if window_id == INV_WINID_CURSOR and slot == -1:
-			self.inventory.cursor_slot = Slot(**slot_data)
+	def set_slot(self, window_id, slot_nr, slot_data):
+		if window_id == INV_WINID_CURSOR and slot_nr == INV_SLOT_NR_CURSOR:
+			slot = self.inventory.cursor_slot = SlotCursor(**slot_data)
 		elif window_id == self.inventory.window.window_id:
-			self.inventory.window.slots[slot] = Slot(**slot_data)
+			slot = self.inventory.window.slots[slot_nr] = Slot(self.inventory.window, slot_nr, **slot_data)
 		else:
-			raise ValueError('Unexpected window ID (%i) or slot (%i)' % (window_id, slot))
-		self.emit_set_slot(window_id, slot, slot_data)
+			raise ValueError('Unexpected window ID (%i) or slot_nr (%i)' % (window_id, slot_nr))
+		self.emit_set_slot(slot)
 
-	def emit_set_slot(self, window_id, slot_nr, slot_data):
-		emit_data = {'window_id': window_id, 'slot_nr': slot_nr, 'slot': Slot(**slot_data)}
-		self.event.emit('inv_set_slot', emit_data)
+	def emit_set_slot(self, slot):
+		self.event.emit('inv_set_slot', {'slot': slot})
 
 	def handle_window_prop(self, event, packet):
 		self.inventory.window.properties[packet.data['property']] = packet.data['value']
@@ -440,116 +450,122 @@ class InventoryPlugin:
 		last_click, self.last_click = self.last_click, None
 		if packet.data['accepted']:
 			# TODO check if the wrong window/action ID was confirmed, never occured during testing
-			self.simulate_click(last_click)
-			self.try_send_next_packet()
+			# change the slots in main inventory according to a click action,
+			# because the server does not send slot updates after successful clicks
+			slot_nr, button, mode = last_click['slot'], last_click['button'], last_click['mode']
+			slot = self.inventory.window.slots[slot_nr]
+			cursor = self.inventory.cursor_slot
+			ClickSimulator(self).simulate(slot, cursor, button, mode)
 		else:  # click not accepted
 			# confirm that we received this packet
 			self.net.push_packet('PLAY>Confirm Transaction', packet.data)
 			# server will re-send all slots now
-			# TODO call self.try_send_next_packet() later
 
-	def queue_click(self, click):
-		# put packet into queue to wait for confirmation
-		self.click_queue.append(click)
-		self.try_send_next_packet()
-
-	def try_send_next_packet(self):
-		# only send if all previous packets got confirmed
-		if self.last_click is None and len(self.click_queue) > 0:
-			self.last_click = packet = self.click_queue.popleft()
-			if packet['mode'] == INV_MODE_DROP:
-				if self.inventory.cursor_slot.item_id != INV_ITEMID_EMPTY:
-					# can't drop while holding an item, skip to next packet
-					self.last_click = None
-					self.try_send_next_packet()
-					return
-				packet['clicked_item'] = self.inventory.cursor_slot.get_dict()
-			else:
-				packet['clicked_item'] = self.inventory.window.slots[packet['slot']].get_dict()
-			packet['action'] = self.get_next_action_id()
-			self.net.push_packet('PLAY>Click Window', packet)
+	def click_slot(self, slot, button=INV_BUTTON_LEFT, mode=INV_MODE_CLICK):
+		""" Returns True if the click could be sent, False otherwise. """
+		# only send if previous packet got confirmed
+		if self.last_click is not None:
+			return False
+		# make sure slot is in inventory,
+		# allows for `slot = -INV_SLOTS_HOTBAR` as first slot of hotbar etc.
+		slot %= len(self.window.slots)
+		# action and clicked_item get added in try_send_next_packet
+		packet = {
+			'window_id': self.window.window_id,
+			'slot': slot,
+			'button': button,
+			'mode': mode,
+		}
+		if mode == INV_MODE_DROP:
+			if self.cursor_slot.item_id != INV_ITEMID_EMPTY:
+				# can't drop while holding an item, skip to next packet
+				return False
+			packet['clicked_item'] = self.cursor_slot.get_dict()
+		else:
+			packet['clicked_item'] = self.window.slots[slot].get_dict()
+		packet['action'] = self.get_next_action_id()
+		# remember packet to wait for confirmation
+		self.last_click = packet
+		self.net.push_packet('PLAY>Click Window', packet)
+		return True
 
 	def get_next_action_id(self):
 		self.action_id += 1
 		return self.action_id
 
-	def simulate_click(self, click_action):
-		""" Changes the slots in main inventory according to a click action,
-		because the server does not send slot updates after successful clicks. """
-		slot_nr, button, mode = click_action['slot'], click_action['button'], click_action['mode']
-		cursor = self.inventory.cursor_slot
-		slot = self.inventory.window.slots[slot_nr]
-		def on_slots_changed():
-			self.emit_set_slot(INV_WINID_CURSOR, -1, self.inventory.cursor_slot.get_dict())
-			self.emit_set_slot(self.inventory.window.window_id, slot_nr, self.inventory.window.slots[slot_nr].get_dict())
-		ClickSimulator(cursor, slot, button, mode, on_slots_changed)
-
 class ClickSimulator:
-	def __init__(self, cursor, slot, button, mode, on_slots_changed):
-		self.cursor = cursor
-		self.slot = slot
-		self.button = button
-		self.mode = mode
-		if self.simulate():
-			on_slots_changed()
+	def __init__(self, inv_plugin):
+		self.inv_plugin = inv_plugin
 
-	def simulate(self):
+	def simulate(self, changed_slot, cursor, button, mode):
 		""" Applies the click action to the given slots.
 		Returns True if at least one slot changed, False otherwise. """
-		if self.mode == INV_MODE_CLICK: return self.click()
-		elif self.mode == INV_MODE_DROP: return self.drop()
+		self.clicked = changed_slot
+		self.cursor = cursor
+		self.button = button
+		self.mode = mode
+		self.dirty = set()  # slots that might have changed, for emit_set_slot
+		if self.mode == INV_MODE_CLICK: self.click()
+		elif self.mode == INV_MODE_DROP: self.drop()
 		else: raise NotImplementedError('Click mode %i not implemented' % self.mode)
+		for changed_slot in self.dirty:
+			self.inv_plugin.emit_set_slot(changed_slot)
 
 	def click(self):
-		if self.button == INV_BUTTON_LEFT: return self.left_click()
-		elif self.button == INV_BUTTON_RIGHT: return self.right_click()
+		if self.button == INV_BUTTON_LEFT: self.left_click()
+		elif self.button == INV_BUTTON_RIGHT: self.right_click()
 		else: raise NotImplementedError('Clicking with button %i not implemented' % self.button)
 
 	def left_click(self):
-		if self.slot.stacks_with(self.cursor):
-			self.transfer_from_cursor(self.cursor.amount)
+		if self.clicked.stacks_with(self.cursor):
+			self.transfer(self.cursor, self.clicked, self.cursor.amount)
 		else:
-			self.swap_cursor_with_slot()
+			self.swap_slots(self.cursor, self.clicked)
 
 	def right_click(self):
 		if self.cursor.item_id == INV_ITEMID_EMPTY:
-			# take full slot and put smaller half back
-			self.swap_cursor_with_slot()
-			self.transfer_from_cursor(self.cursor.amount / 2)
+			# transfer half, round up
+			self.transfer(self.clicked, self.cursor, (self.clicked.amount+1) // 2)
 		else:  # already holding an item
-			if self.slot.item_id == INV_ITEMID_EMPTY or self.slot.stacks_with(self.cursor):
-				self.transfer_from_cursor(1)
+			if self.clicked.item_id == INV_ITEMID_EMPTY or self.clicked.stacks_with(self.cursor):
+				self.transfer(self.cursor, self.clicked, 1)
 			else:  # slot items do not stack
-				self.swap_cursor_with_slot()
+				self.swap_slots(self.cursor, self.clicked)
 
 	def drop(self):
 		if self.cursor.item_id == INV_ITEMID_EMPTY:
 			if self.button == INV_BUTTON_DROP_STACK:
-				self.slot.amount = 0
+				self.clicked.amount = 0
 			else:
-				self.slot.amount -= 1
-			self.cleanup_if_empty(self.slot)
-			return True
-		else:  # can't drop while holding an item
-			return False
+				self.clicked.amount -= 1
+			self.cleanup_if_empty(self.clicked)
+		# else: can't drop while holding an item
 
 	def copy_slot_type(self, slot_from, slot_to):
 		slot_to.item_id, slot_to.damage, slot_to.nbt = slot_from.item_id, slot_from.damage, slot_from.nbt
+		self.mark_dirty(slot_to)
 
-	def swap_cursor_with_slot(self):
-		self.slot.item_id, self.cursor.item_id = self.cursor.item_id, self.slot.item_id
-		self.slot.damage,  self.cursor.damage  = self.cursor.damage,  self.slot.damage
-		self.slot.amount,  self.cursor.amount  = self.cursor.amount,  self.slot.amount
-		self.slot.nbt,     self.cursor.nbt     = self.cursor.nbt,     self.slot.nbt
+	def swap_slots(self, slot_a, slot_b):
+		slot_a.item_id, slot_b.item_id = slot_b.item_id, slot_a.item_id
+		slot_a.damage,  slot_b.damage  = slot_b.damage,  slot_a.damage
+		slot_a.amount,  slot_b.amount  = slot_b.amount,  slot_a.amount
+		slot_a.nbt,     slot_b.nbt     = slot_b.nbt,     slot_a.nbt
+		self.mark_dirty(slot_a)
+		self.mark_dirty(slot_b)
 
-	def transfer_from_cursor(self, max_amount):
-		amount = min(max_amount, self.cursor.amount, self.slot.max_amount() - self.slot.amount)
+	def transfer(self, from_slot, to_slot, max_amount):
+		amount = min(max_amount, from_slot.amount, to_slot.max_amount() - to_slot.amount)
 		if amount <= 0: return
-		self.copy_slot_type(self.cursor, self.slot)
-		self.slot.amount += amount
-		self.cursor.amount -= amount
-		self.cleanup_if_empty(self.cursor)
+		self.copy_slot_type(from_slot, to_slot)
+		to_slot.amount += amount
+		from_slot.amount -= amount
+		self.cleanup_if_empty(from_slot)
 
 	def cleanup_if_empty(self, slot):
 		if slot.amount <= 0:
-			self.copy_slot_type(Slot(), slot)
+			empty_slot_at_same_position = Slot(slot.window, slot.slot_nr)
+			self.copy_slot_type(empty_slot_at_same_position, slot)
+		self.mark_dirty(slot)
+
+	def mark_dirty(self, slot):
+		self.dirty.add(slot)
