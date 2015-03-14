@@ -65,7 +65,7 @@ class Packet(object):
 			#Payload
 			for dtype, name in mcdata.hashed_structs[self.ident]:
 				self.data[name] = datautils.unpack(dtype, pbuff)
-				#Extension
+			#Extension
 			if self.ident in hashed_extensions:
 				hashed_extensions[self.ident].decode_extra(self, pbuff)
 			if pbuff.buff:
