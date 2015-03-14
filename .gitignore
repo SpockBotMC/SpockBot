@@ -1,6 +1,7 @@
 *.pyc
 *.log
 *.swp
+packetlog
 config.yaml
 login.py
 run.py

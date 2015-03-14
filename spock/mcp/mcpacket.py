@@ -13,6 +13,12 @@ from spock.mcp.mcdata import (
 import logging
 logger = logging.getLogger('spock')
 
+class PacketDecodeFailure(Exception):
+	def __init__(self, packet, pbuff, underflow = False):
+		self.packet = packet
+		self.pbuff = pbuff
+		self.underflow = underflow
+
 class Packet(object):
 	def __init__(self,
 		ident = [mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00],
@@ -49,8 +55,8 @@ class Packet(object):
 			packet_data = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
 		else:
 			return None
-
 		pbuff = utils.BoundBuffer(packet_data)
+
 		try:
 			#Ident
 			self.__ident[2] = datautils.unpack(MC_VARINT, pbuff)
@@ -59,16 +65,13 @@ class Packet(object):
 			#Payload
 			for dtype, name in mcdata.hashed_structs[self.ident]:
 				self.data[name] = datautils.unpack(dtype, pbuff)
-			#Extension
+				#Extension
 			if self.ident in hashed_extensions:
 				hashed_extensions[self.ident].decode_extra(self, pbuff)
-			#Not technically an underflow, but we want to do the same thing
-			if pbuff.flush():
-				raise utils.BufferUnderflowException
+			if pbuff.buff:
+				raise PacketDecodeFailure(self, pbuff)
 		except utils.BufferUnderflowException:
-			logger.warning('Packet decode failed')
-			logger.warning('Failed packet ident is probably: %s', self.str_ident)
-			return None
+			raise PacketDecodeFailure(self, pbuff, True)
 		return self
 
 	def encode(self, proto_comp_state, proto_comp_threshold, comp_level = 6):

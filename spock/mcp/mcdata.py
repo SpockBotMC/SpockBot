@@ -487,7 +487,7 @@ packet_structs = {
 			#Spawn Object
 			0x0E: (
 				(MC_VARINT, 'eid'),
-				(MC_UBYTE , 'type'),
+				(MC_UBYTE , 'obj_type'),
 				(MC_FP_INT, 'x'),
 				(MC_FP_INT, 'y'),
 				(MC_FP_INT, 'z'),

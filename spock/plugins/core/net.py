@@ -126,9 +126,15 @@ class NetCore:
 			except utils.BufferUnderflowException:
 				self.rbuff.revert()
 				break
-			if packet:
-				self.event.emit(packet.ident, packet)
-				self.event.emit(packet.str_ident, packet)
+			except mcpacket.PacketDecodeFailure as err:
+				logger.warning('Packet decode failed')
+				logger.warning(
+					'Failed packet ident is probably: %s', err.packet.str_ident
+				)
+				self.event.emit('PACKET_ERR', err)
+				break
+			self.event.emit(packet.ident, packet)
+			self.event.emit(packet.str_ident, packet)
 
 	def enable_crypto(self, secret_key):
 		self.cipher = AESCipher(secret_key)
