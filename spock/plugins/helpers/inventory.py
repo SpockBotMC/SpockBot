@@ -3,7 +3,6 @@ The Inventory plugin keeps track of the open window and its slots
 and offers convenient methods for inventory manipulation.
 """
 
-from collections import deque
 from spock.utils import pl_announce
 
 # the button codes used in send_click
@@ -55,6 +54,9 @@ class Slot:
 			if self.nbt is not None:
 				data['enchants'] = self.nbt
 		return data
+
+	def __bool__(self):
+		return self.item_id > 0
 
 	def __repr__(self):
 		if self.item_id != INV_ITEMID_EMPTY:
@@ -309,7 +311,7 @@ class BaseClick:
 	def mark_dirty(self, slot):
 		self.dirty.add(slot)
 
-class NormalClick(BaseClick):
+class SingleClick(BaseClick):
 	def __init__(self, slot_nr, button=INV_BUTTON_LEFT):
 		self.slot_nr = slot_nr
 		self.button= button
@@ -379,8 +381,10 @@ class InventoryCore:
 		self.window = InventoryPlayer()
 
 	def find_item(self, item_id, meta=-1):
-		""" Returns the first slot containing the item or False if not found.
-		Searches held item, hotbar, player inventory, open window in this order. """
+		"""
+		Returns the first slot containing the item or None if not found.
+		Searches held item, hotbar, player inventory, open window in this order.
+		"""
 
 		wanted = lambda s: item_id == s.item_id and meta in (-1, s.damage)
 
@@ -400,7 +404,7 @@ class InventoryCore:
 		for slot_nr, slot in enumerate(self.window.window_slots()):
 			if wanted(slot):
 				return slot_nr
-		return False
+		return None
 
 	def hold_item(self, item_id, meta=-1):
 		""" Tries to place a stack of the specified item ID
@@ -408,57 +412,62 @@ class InventoryCore:
 		Returns True if successful, False otherwise. """
 
 		slot_nr = self.find_item(item_id, meta)
-		if slot_nr is False: return False
+		if slot_nr is None: return False
 		hotbar_slot_nr = slot_nr - self.window.hotbar_index()
 		if hotbar_slot_nr >= 0:
-			self.select_slot(hotbar_slot_nr)
+			return self.select_slot(hotbar_slot_nr)
 		else:
-			self.swap_with_hotbar(slot_nr)
-		return True
+			return self.swap_with_hotbar(slot_nr)
 
 	def select_slot(self, slot_nr):
-		if 0 <= slot_nr < INV_SLOTS_HOTBAR and slot_nr != self.selected_slot:
+		if not 0 <= slot_nr < INV_SLOTS_HOTBAR:
+			return False
+		if slot_nr != self.selected_slot:
 			self.selected_slot = slot_nr
 			self._net.push_packet('PLAY>Held Item Change', {'slot': slot_nr})
+		return True
 
 	def swap_with_hotbar(self, slot, hotbar_slot=None):
 		if hotbar_slot is None: hotbar_slot = self.selected_slot
 		# TODO not implemented yet (see simulate_click)
-		# self.click_window(slot, hotbar_slot, INV_MODE_SWAP_HOTBAR)
-		self.swap_slots(slot, hotbar_slot + self.window.hotbar_index())
+		# will be something like:
+		# return self.send_click(SwapClick(slot, hotbar_slot))
+		return self.swap_slots(slot, hotbar_slot + self.window.hotbar_index())
 
-	def click_slot(self, slot):
-		self.send_click(NormalClick(slot))
+	def click_slot(self, slot, right=False):
+		button = INV_BUTTON_RIGHT if right else INV_BUTTON_LEFT
+		return self.send_click(SingleClick(slot, button))
 
 	def swap_slots(self, slot_a, slot_b):
 		# pick up A
-		one = NormalClick(slot_a)
+		one = SingleClick(slot_a)
 		# pick up B, place A at B's position
-		two = NormalClick(slot_b)
+		two = SingleClick(slot_b)
 		# place B at A's original position
-		three = NormalClick(slot_a)
+		three = SingleClick(slot_a)
 		one.add_successor(two)
 		two.add_successor(three)
-		self.send_click(one)
+		return self.send_click(one)
 
 	def drop_item(self, slot=None, drop_stack=False):
 		if slot is None:  # drop held item
 			slot = self.selected_slot + self.window.hotbar_index()
-		self.send_click(DropClick(slot, drop_stack))
+		return self.send_click(DropClick(slot, drop_stack))
 
 	# TODO is/should this be implemented somewhere else?
 	def interact_with_block(self, coords):
-		""" Clicks on a block to open its window.
-		`coords` is a Vec3 with the block coordinates. """
-		packet = {
+		"""
+		Clicks on a block to open its window.
+		:param coords: Vec3 with the block coordinates
+		"""
+		self._net.push_packet('PLAY>Player Block Placement', {
 			'location': coords.get_dict(),
 			'direction': 1,
 			'held_item': self.get_held_item().get_dict(),
 			'cur_pos_x': 8,
 			'cur_pos_y': 8,
 			'cur_pos_z': 8,
-		}
-		self._net.push_packet('PLAY>Player Block Placement', packet)
+		})
 
 	# TODO is/should this be implemented somewhere else?
 	def interact_with_entity(self, entity_id):
@@ -549,8 +558,9 @@ class InventoryPlugin:
 			last_click.success(self.inventory, self.emit_set_slot)
 		else:  # click not accepted
 			# confirm that we received this packet
-			self.net.push_packet('PLAY>Confirm Transaction', packet.data)
-			# server will re-send all slots now
+			packet.new_ident('PLAY>Confirm Transaction')
+			self.net.push(packet)
+			# 1.8 server will re-send all slots now
 
 	def send_click(self, click):
 		""" Returns True if the click could be sent, False otherwise. """
