@@ -16,6 +16,7 @@ class EventCore:
 		self.event_handlers = defaultdict(list)
 		signal.signal(signal.SIGINT, self.kill)
 		signal.signal(signal.SIGTERM, self.kill)
+		self.unique_response_counter = 0
 
 	def event_loop(self):
 		while not self.kill_event:
@@ -25,6 +26,10 @@ class EventCore:
 
 	def reg_event_handler(self, event, handler):
 		self.event_handlers[event].append(handler)
+
+	def get_unique_response_event(self):
+		self.unique_response_counter += 1
+		return 'response_%i' % self.unique_response_counter
 
 	def emit(self, event, data = None):
 		to_remove = []
