@@ -407,9 +407,12 @@ class InventoryCore:
 		return None
 
 	def hold_item(self, item_id, meta=-1):
-		""" Tries to place a stack of the specified item ID
+		"""
+		Tries to place a stack of the specified item ID
 		in the hotbar and select it.
-		Returns True if successful, False otherwise. """
+		Returns True if done, False if failed, otherwise a
+		unique event name, which is later emitted exactly once.
+		"""
 
 		slot_nr = self.find_item(item_id, meta)
 		if slot_nr is None: return False
@@ -551,28 +554,35 @@ class InventoryPlugin:
 		self.event.emit('inv_win_prop', packet.data)
 
 	def handle_confirm_transaction(self, event, packet):
-		last_click, self.last_click = self.last_click, None
-		if packet.data['accepted']:
+		(click, response), self.last_click = self.last_click, None
+		accepted = packet.data['accepted']
+		if accepted:
 			# TODO check if the wrong window/action ID was confirmed, never occured during testing
-			# update inventory, because server does not send slot updates after successful clicks
-			last_click.success(self.inventory, self.emit_set_slot)
+			# update inventory, because 1.8 server does not send slot updates after successful clicks
+			click.success(self.inventory, self.emit_set_slot)
 		else:  # click not accepted
 			# confirm that we received this packet
 			packet.new_ident('PLAY>Confirm Transaction')
 			self.net.push(packet)
 			# 1.8 server will re-send all slots now
+		# provide feedback for clicking method
+		self.event.emit(response, {'accepted': accepted, 'click': click})
 
 	def send_click(self, click):
-		""" Returns True if the click could be sent, False otherwise. """
+		"""
+		Returns unique response event name if the
+		click could be sent, None otherwise.
+		"""
 		# only send if previous packet got confirmed
-		if self.last_click is not None:
-			return False
+		if self.last_click:
+			return None
 		packet = click.get_packet(self.inventory)
 		if not packet:
-			return False
+			return None
 		packet['window_id'] = self.inventory.window.window_id
 		packet['action'] = self.action_id
 		self.action_id += 1
-		self.last_click = click
+		response = self.event.get_unique_response_event()
+		self.last_click = (click, response)
 		self.net.push_packet('PLAY>Click Window', packet)
-		return True
+		return response
