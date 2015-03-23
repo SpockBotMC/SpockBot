@@ -385,13 +385,15 @@ class InventoryCore:
 		self.cursor_slot = SlotCursor()  # the slot that moves with the mouse when clicking a slot
 		self.window = InventoryPlayer()
 
-	def find_item(self, item_id, meta=-1):
+	def find_item(self, item_id, meta=-1, start=0):
 		"""
 		Returns the first slot containing the item or None if not found.
 		Searches held item, hotbar, player inventory, open window in this order.
 		"""
 
-		wanted = lambda s: item_id == s.item_id and meta in (-1, s.damage)
+		wanted = lambda s: s.slot_nr >= start \
+							and item_id == s.item_id \
+							and meta in (-1, s.damage)
 
 		slot = self.window.hotbar_slots()[self.selected_slot]
 		if wanted(slot):
