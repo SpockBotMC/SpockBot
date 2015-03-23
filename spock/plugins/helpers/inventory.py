@@ -385,6 +385,18 @@ class InventoryCore:
 		self.cursor_slot = SlotCursor()  # the slot that moves with the mouse when clicking a slot
 		self.window = InventoryPlayer()
 
+	def total_stored(self, item_id, meta=-1, slots=None):
+		"""
+		Calculates the total number of items of that type
+		in the current window or given slot range.
+		"""
+		wanted = lambda s: item_id == s.item_id and meta in (-1, s.damage)
+		amount = 0
+		for slot in slots or self.window.slots:
+			if wanted(slot):
+				amount += slot.amount
+		return amount
+
 	def find_item(self, item_id, meta=-1, start=0):
 		"""
 		Returns the first slot containing the item or None if not found.
