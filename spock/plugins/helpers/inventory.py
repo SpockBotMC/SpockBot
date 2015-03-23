@@ -489,6 +489,7 @@ class InventoryPlugin:
 		self.clinfo = ploader.requires('ClientInfo')
 		self.event = ploader.requires('Event')
 		self.net = ploader.requires('Net')
+		self.timer = ploader.requires('Timers')
 		self.inventory = InventoryCore(self.net, self.send_click)
 		ploader.provides('Inventory', self.inventory)
 
@@ -560,13 +561,15 @@ class InventoryPlugin:
 			# TODO check if the wrong window/action ID was confirmed, never occured during testing
 			# update inventory, because 1.8 server does not send slot updates after successful clicks
 			click.success(self.inventory, self.emit_set_slot)
+			self.event.emit(response, {'accepted': accepted, 'click': click})
 		else:  # click not accepted
 			# confirm that we received this packet
 			packet.new_ident('PLAY>Confirm Transaction')
 			self.net.push(packet)
 			# 1.8 server will re-send all slots now
-		# provide feedback for clicking method
-		self.event.emit(response, {'accepted': accepted, 'click': click})
+			def cb():
+				self.event.emit(response, {'accepted': accepted, 'click': click})
+			self.timer.reg_event_timer(0.5, cb, runs=1)
 
 	def send_click(self, click):
 		"""
