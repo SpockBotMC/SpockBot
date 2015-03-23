@@ -115,12 +115,6 @@ class InventoryBase:
 	def __repr__(self):
 		return 'Inventory(id=%i, title=%s)' % (self.window_id, self.title)
 
-	def inventory_index(self):
-		return len(self.slots) - INV_SLOTS_ADD
-
-	def hotbar_index(self):
-		return len(self.slots) - INV_SLOTS_HOTBAR
-
 	def inventory_slots(self):
 		return self.slots[-INV_SLOTS_ADD:-INV_SLOTS_HOTBAR]
 
@@ -401,20 +395,20 @@ class InventoryCore:
 
 		slot = self.window.hotbar_slots()[self.selected_slot]
 		if wanted(slot):
-			return self.selected_slot + self.window.hotbar_index()
+			return self.selected_slot + self.window.hotbar_slots()[0].slot_nr
 		# not selected, search for it
 		# hotbar is at the end of the inventory, search there first
-		for slot_nr, slot in enumerate(self.window.hotbar_slots()):
+		for nr, slot in enumerate(self.window.hotbar_slots()):
 			if wanted(slot):
-				return slot_nr + self.window.hotbar_index()
+				return nr + self.window.hotbar_slots()[0].slot_nr
 		# not in hotbar, search inventory
-		for slot_nr, slot in enumerate(self.window.inventory_slots()):
+		for nr, slot in enumerate(self.window.inventory_slots()):
 			if wanted(slot):
-				return slot_nr + self.window.inventory_index()
+				return nr + self.window.inventory_slots()[0].slot_nr
 		# not in inventory, search open window's slots
-		for slot_nr, slot in enumerate(self.window.window_slots()):
+		for nr, slot in enumerate(self.window.window_slots()):
 			if wanted(slot):
-				return slot_nr
+				return nr
 		return None
 
 	def hold_item(self, item_id, meta=-1):
@@ -427,7 +421,7 @@ class InventoryCore:
 
 		slot_nr = self.find_item(item_id, meta)
 		if slot_nr is None: return False
-		hotbar_slot_nr = slot_nr - self.window.hotbar_index()
+		hotbar_slot_nr = slot_nr - self.hotbar_start()
 		if hotbar_slot_nr >= 0:
 			return self.select_slot(hotbar_slot_nr)
 		else:
@@ -446,7 +440,7 @@ class InventoryCore:
 		# TODO not implemented yet (see simulate_click)
 		# will be something like:
 		# return self.send_click(SwapClick(slot, hotbar_slot))
-		return self.swap_slots(slot, hotbar_slot + self.window.hotbar_index())
+		return self.swap_slots(slot, hotbar_slot + self.hotbar_start())
 
 	def click_slot(self, slot, right=False):
 		button = INV_BUTTON_RIGHT if right else INV_BUTTON_LEFT
@@ -465,7 +459,7 @@ class InventoryCore:
 
 	def drop_item(self, slot=None, drop_stack=False):
 		if slot is None:  # drop held item
-			slot = self.selected_slot + self.window.hotbar_index()
+			slot = self.selected_slot + self.hotbar_start()
 		return self.send_click(DropClick(slot, drop_stack))
 
 	# TODO is/should this be implemented somewhere else?
@@ -492,7 +486,10 @@ class InventoryCore:
 		self._net.push_packet('PLAY>Close Window', {'window_id': self.window.window_id})
 
 	def get_held_item(self):
-		return self.window.slots[self.selected_slot + self.window.hotbar_index()]
+		return self.window.slots[self.selected_slot + self.hotbar_start()]
+
+	def hotbar_start(self):
+		return self.window.hotbar_slots()[0].slot_nr
 
 @pl_announce('Inventory')
 class InventoryPlugin:
