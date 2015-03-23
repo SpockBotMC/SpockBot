@@ -36,14 +36,25 @@ class Slot:
 		if self.item_id != other.item_id: return False
 		if self.damage != other.damage: return False
 		if self.damage != other.damage: return False
-		if self.item_id == INV_ITEMID_EMPTY: return False  # for now, remove later, workaround for clicking empty slots
-		raise NotImplementedError('Stacks might differ by NBT data: %s %s' % (self, other))
+		# raise NotImplementedError('Stacks might differ by NBT data: %s %s' % (self, other))
 		# if self.nbt != other.nbt: return False  # TODO implement this correctly
-		# return True
+		return self.max_amount() != 1
 
 	def max_amount(self):
 		# TODO add the real values for ALL THE ITEMS! And blocks.
-		raise NotImplementedError()
+		# use some dummy values for now
+		if self.item_id in (-1,
+				256, 257, 258, 259, 261, 282,
+				326, 327, 333, 335, 342, 343, 346, 347, 355, 358, 359, 373, 374, 379, 380, 386, 387, 398,
+				403, 407, 408, 422, 417, 418, 419) \
+			or self.item_id in range(267, 280) \
+			or self.item_id in range(283, 287) \
+			or self.item_id in range(290, 295) \
+			or self.item_id in range(298, 318) \
+			or self.item_id in range(2256, 2268) \
+			: return 1
+		# TODO some stack up to 16
+		return 64
 
 	def get_dict(self):
 		""" Formats the slot for network packing. """
