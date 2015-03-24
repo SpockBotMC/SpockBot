@@ -602,8 +602,13 @@ class InventoryPlugin:
 		if self.last_click:
 			return None
 		packet = click.get_packet(self.inventory)
-		if not packet:
-			return None
+		try:
+			craft_result_slot = self.inventory.window.craft_result_slot().slot_nr
+			if packet['slot'] == craft_result_slot:
+				# send wrong click to update inventory after crafting
+				packet['clicked_item'] = {'id': -1}
+		except AttributeError:
+			pass  # not crafting
 		packet['window_id'] = self.inventory.window.window_id
 		packet['action'] = self.action_id
 		self.action_id += 1
