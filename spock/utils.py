@@ -92,7 +92,7 @@ class CartesianVector(BaseVector):
 		return self.__class__(*map(lambda a:-a, self))
 
 	def __sub__(self, other):
-		return self.__class__(*map(lambda a:a[0] - a[1], zip(self, -other)))
+		return self.__class__(*map(lambda a:a[0] - a[1], zip(self, other)))
 
 	__isub__ = __sub__
 
