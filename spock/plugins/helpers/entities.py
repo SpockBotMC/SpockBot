@@ -105,6 +105,7 @@ class EntityPlugin:
 			ploader.reg_event_handler(event, handler)
 		self.ec = EntityCore()
 		ploader.provides('Entities', self.ec)
+		self.event = ploader.requires('Event')
 
 	#TODO: Implement all these things
 	def handle_unhandled(self, event, packet):
@@ -119,40 +120,47 @@ class EntityPlugin:
 		entity.set_dict(packet.data)
 		self.ec.entities[packet.data['eid']] = entity
 		self.ec.players[packet.data['eid']] = entity
+		self.event.emit('entity_spawn', {'entity': entity})
 
 	def handle_spawn_object(self, event, packet):
 		entity = ObjectEntity()
 		entity.set_dict(packet.data)
 		self.ec.entities[packet.data['eid']] = entity
 		self.ec.objects[packet.data['eid']] = entity
+		self.event.emit('entity_spawn', {'entity': entity})
 
 	def handle_spawn_mob(self, event, packet):
 		entity = MobEntity()
 		entity.set_dict(packet.data)
 		self.ec.entities[packet.data['eid']] = entity
 		self.ec.mobs[packet.data['eid']] = entity
+		self.event.emit('entity_spawn', {'entity': entity})
 
 	def handle_spawn_painting(self, event, packet):
 		entity = PaintingEntity()
 		entity.set_dict(packet.data)
 		self.ec.entities[packet.data['eid']] = entity
 		self.ec.paintings[packet.data['eid']] = entity
+		self.event.emit('entity_spawn', {'entity': entity})
 
 	def handle_spawn_experience_orb(self, event, packet):
 		entity = ExpEntity()
 		entity.set_dict(packet.data)
 		self.ec.entities[packet.data['eid']] = entity
 		self.ec.exp_orbs[packet.data['eid']] = entity
+		self.event.emit('entity_spawn', {'entity': entity})
 
 	def handle_spawn_global_entity(self, event, packet):
 		entity = GlobalEntity()
 		entity.set_dict(packet.data)
 		self.ec.entities[packet.data['eid']] = entity
 		self.ec.global_entities[packet.data['eid']] = entity
+		self.event.emit('entity_spawn', {'entity': entity})
 
 	def handle_destroy_entities(self, event, packet):
 		for eid in packet.data['eids']:
 			if eid in self.ec.entities:
+				entity = self.ec.entities[eid]
 				del self.ec.entities[eid]
 				if eid in self.ec.players:
 					del self.ec.players[eid]
@@ -166,14 +174,17 @@ class EntityPlugin:
 					del self.ec.exp_orbs[eid]
 				elif eid in self.ec.global_entities:
 					del self.ec.global_entities[eid]
+				self.event.emit('entity_destroy', {'entity': entity})
 
 	def handle_relative_move(self, event, packet):
 		if packet.data['eid'] in self.ec.entities:
 			entity = self.ec.entities[packet.data['eid']]
+			old_pos = [entity.x, entity.y, entity.z]
 			entity.set_dict(packet.data)
 			entity.x = entity.x + packet.data['dx']
 			entity.y = entity.y + packet.data['dy']
 			entity.z = entity.z + packet.data['dz']
+			self.event.emit('entity_move', {'entity': entity, 'old_pos': old_pos})
 
 	def handle_set_dict(self, event, packet):
 		if packet.data['eid'] in self.ec.entities:
