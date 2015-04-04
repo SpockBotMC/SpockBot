@@ -9,7 +9,6 @@ ToDo
 * Expand World API/smpmap2
 * Make physics more correct/fix liquid physics/more correct gravity/implement creative mode flight/many other things (knockback lol)
 * "Getting Started" Guide for devs
-* Find a home for entity tracking
 * Make demo less shit
 
 Ideas
