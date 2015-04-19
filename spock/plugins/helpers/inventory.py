@@ -295,14 +295,6 @@ class BaseClick:
 		self.apply(inv_plugin)
 		for changed_slot in self.dirty:
 			emit_set_slot(changed_slot)
-		for succ in getattr(self, 'successors', []):
-			inv_plugin.send_click(succ)
-		self.successors = []
-
-	def add_successor(self, succ):
-		if not hasattr(self, 'successors'):
-			self.successors = []
-		self.successors.append(succ)
 
 	# helper functions, used by children
 
