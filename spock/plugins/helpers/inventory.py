@@ -67,12 +67,16 @@ class Slot:
 		return data
 
 	def __bool__(self):
-		return self.item_id > 0
+		"""
+		True if and only if the slot is empty.
+		"""
+		return self.amount > 0
 
 	def __repr__(self):
-		if self.item_id != INV_ITEMID_EMPTY:
+		if self.item.item_id == INV_ITEMID_EMPTY:
+			args = 'empty'
+		else:
 			args = str(self.get_dict()).strip('{}').replace("'", '').replace(': ', '=')
-		else: args = 'empty'
 		return 'Slot(window=%s, slot_nr=%i, %s)' % (self.window, self.slot_nr, args)
 
 class SlotCursor(Slot):
@@ -266,12 +270,27 @@ class InventoryHorse(InventoryBase):
 
 class BaseClick:
 	def get_packet(self, inv_plugin):
+		"""
+		Called by send_click() to prepare the sent packet.
+		Abstract method.
+		:param inv_plugin: inventory plugin instance, to get slot contents etc.
+		"""
 		raise NotImplementedError()
 
 	def apply(self, inv_plugin):
+		"""
+		Called by success().
+		Abstract method.
+		:param inv_plugin: inventory plugin instance, to set slot contents etc.
+		"""
 		raise NotImplementedError()
 
 	def success(self, inv_plugin, emit_set_slot):
+		"""
+		Called when the click was successful and should be applied to the inventory.
+		:param inv_plugin: inventory plugin instance, to set slot contents etc.
+		:param emit_set_slot: function to signal a slot change, should be InventoryPlugin's emit_set_slot()
+		"""
 		self.dirty = set()
 		self.apply(inv_plugin)
 		for changed_slot in self.dirty:
