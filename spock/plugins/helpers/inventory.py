@@ -18,7 +18,7 @@ INV_ITEMID_EMPTY = -1
 INV_SLOTS_PLAYER = 9  # crafting and armor
 INV_SLOTS_INVENTORY = 9 * 3  # above hotbar
 INV_SLOTS_HOTBAR = 9
-INV_SLOTS_ADD = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR  # always accessible
+INV_SLOTS_PERSISTENT = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR  # always accessible
 
 class Slot:
 	def __init__(self, window, slot_nr, id=INV_ITEMID_EMPTY, damage=0, amount=0, enchants=None):
@@ -101,7 +101,7 @@ class InventoryBase:
 	""" Base class for all inventory types. """
 
 	# the arguments must have the same names as the keys in the packet dict
-	def __init__(self, inv_type, window_id, title, slot_count, add_slots):
+	def __init__(self, inv_type, window_id, title, slot_count, persistent_slots):
 		self.inv_type = inv_type
 		self.window_id = window_id
 		self.title = title
@@ -109,9 +109,9 @@ class InventoryBase:
 		# slots vary by inventory type, but always contain main inventory and hotbar
 		# create own slots, ...
 		self.slots = [Slot(self, slot_nr) for slot_nr in range(slot_count)]
-		# ... append player inventory slots, which have to be moved
-		for slot_nr_add, inv_slot in enumerate(add_slots[-INV_SLOTS_ADD:]):
-			inv_slot.move_to_window(self, slot_nr_add + slot_count)
+		# ... append persistent slots, which have to be moved
+		for p_slot_nr, inv_slot in enumerate(persistent_slots[-INV_SLOTS_PERSISTENT:]):
+			inv_slot.move_to_window(self, p_slot_nr + slot_count)
 			self.slots.append(inv_slot)
 
 		# additional info dependent on inventory type, dynamically updated by server
@@ -121,8 +121,12 @@ class InventoryBase:
 		return 'Inventory(id=%i, title=%s)' % (self.window_id, self.title)
 
 	@property
+	def persistent_slots(self):
+		return self.slots[-INV_SLOTS_PERSISTENT:]
+
+	@property
 	def inventory_slots(self):
-		return self.slots[-INV_SLOTS_ADD:-INV_SLOTS_HOTBAR]
+		return self.slots[-INV_SLOTS_PERSISTENT:-INV_SLOTS_HOTBAR]
 
 	@property
 	def hotbar_slots(self):
@@ -132,7 +136,7 @@ class InventoryBase:
 	def window_slots(self):
 		""" All slots except inventory and hotbar.
 		 Useful for searching. """
-		return self.slots[:-INV_SLOTS_ADD]
+		return self.slots[:-INV_SLOTS_PERSISTENT]
 
 # no @map_window_type(), because not opened by server
 class InventoryPlayer(InventoryBase):
@@ -140,10 +144,10 @@ class InventoryPlayer(InventoryBase):
 
 	name = 'Inventory'
 
-	def __init__(self, add_slots=None):
-		if add_slots is None:
-			add_slots = [Slot(self, slot_nr) for slot_nr in range(INV_SLOTS_ADD)]
-		super().__init__('player', INV_WINID_PLAYER, self.name, INV_SLOTS_PLAYER, add_slots)  # TODO title should be in chat format
+	def __init__(self, persistent_slots=None):
+		if persistent_slots is None:
+			persistent_slots = [Slot(self, slot_nr) for slot_nr in range(INV_SLOTS_PERSISTENT)]
+		super().__init__('player', INV_WINID_PLAYER, self.name, INV_SLOTS_PLAYER, persistent_slots)  # TODO title should be in chat format
 
 	@property
 	def craft_result_slot(self):
@@ -435,7 +439,7 @@ class InventoryCore:
 	def find_item(self, item_id, meta=-1, start=0):
 		"""
 		Returns the first slot containing the item or None if not found.
-		Searches held item, hotbar, add_slots, open window in this order.
+		Searches held item, hotbar, inventory, open window in this order.
 		Skips the first `start` slots of the current window.
 		"""
 
@@ -547,12 +551,12 @@ class InventoryPlugin:
 
 	def handle_open_window(self, event, packet):
 		InvType = inv_types[packet.data['inv_type']]
-		self.inventory.window = InvType(add_slots=self.inventory.window.slots, **packet.data)
+		self.inventory.window = InvType(persistent_slots=self.inventory.window.slots, **packet.data)
 		self.event.emit('inv_open_window', {'window': self.inventory.window})
 
 	def handle_close_window(self, event, packet):
 		closed_window = self.inventory.window
-		self.inventory.window = InventoryPlayer(add_slots=closed_window.slots)
+		self.inventory.window = InventoryPlayer(persistent_slots=closed_window.slots)
 		self.event.emit('inv_close_window', {'window': closed_window})
 
 	def handle_set_slot(self, event, packet):
