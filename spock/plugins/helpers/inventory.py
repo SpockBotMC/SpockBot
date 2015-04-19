@@ -444,22 +444,6 @@ class InventoryCore:
 				return nr
 		return None
 
-	def hold_item(self, item_id, meta=-1):
-		"""
-		Tries to place a stack of the specified item ID
-		in the hotbar and select it.
-		Returns True if done, False if failed, otherwise a
-		unique event name, which is later emitted exactly once.
-		"""
-
-		slot_nr = self.find_item(item_id, meta)
-		if slot_nr is None: return False
-		hotbar_slot_nr = slot_nr - self.hotbar_start()
-		if hotbar_slot_nr >= 0:
-			return self.select_slot(hotbar_slot_nr)
-		else:
-			return self.swap_with_hotbar(slot_nr)
-
 	def select_slot(self, slot_nr):
 		if not 0 <= slot_nr < INV_SLOTS_HOTBAR:
 			return False
@@ -468,27 +452,10 @@ class InventoryCore:
 			self._net.push_packet('PLAY>Held Item Change', {'slot': slot_nr})
 		return True
 
-	def swap_with_hotbar(self, slot, hotbar_slot=None):
-		if hotbar_slot is None: hotbar_slot = self.selected_slot
-		# TODO not implemented yet (see simulate_click)
-		# will be something like:
-		# return self.send_click(SwapClick(slot, hotbar_slot))
-		return self.swap_slots(slot, hotbar_slot + self.hotbar_start())
-
 	def click_slot(self, slot, right=False):
 		button = INV_BUTTON_RIGHT if right else INV_BUTTON_LEFT
 		return self.send_click(SingleClick(slot, button))
 
-	def swap_slots(self, slot_a, slot_b):
-		# pick up A
-		one = SingleClick(slot_a)
-		# pick up B, place A at B's position
-		two = SingleClick(slot_b)
-		# place B at A's original position
-		three = SingleClick(slot_a)
-		one.add_successor(two)
-		two.add_successor(three)
-		return self.send_click(one)
 
 	def drop_item(self, slot=None, drop_stack=False):
 		if slot is None:  # drop held item
