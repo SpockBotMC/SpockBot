@@ -466,7 +466,6 @@ class InventoryCore:
 		if hotbar_index != self.active_slot_nr:
 			self.active_slot_nr = hotbar_index
 			self._net.push_packet('PLAY>Held Item Change', {'slot': hotbar_index})
-		return True
 
 	def click_slot(self, slot, right=False):
 		button = INV_BUTTON_RIGHT if right else INV_BUTTON_LEFT
@@ -539,7 +538,7 @@ class InventoryPlugin:
 			'PLAY>Close Window', self.handle_close_window)
 
 		# click sending
-		self.action_id = 0
+		self.action_id = 1  # start at 1 so bool(action_id) is False only for None, see send_click
 		self.last_click = None  # stores the last click action for confirmation
 
 	def handle_held_item_change(self, event, packet):
@@ -581,27 +580,28 @@ class InventoryPlugin:
 		self.event.emit('inv_win_prop', packet.data)
 
 	def handle_confirm_transaction(self, event, packet):
-		(click, response), self.last_click = self.last_click, None
+		click, self.last_click = self.last_click, None
+		action_id = packet.data['action']
 		accepted = packet.data['accepted']
+		def emit_response_event():
+			self.event.emit('inv_click_response_%s' % action_id, {'accepted': accepted, 'click': click})
 		if accepted:
 			# TODO check if the wrong window/action ID was confirmed, never occured during testing
 			# update inventory, because 1.8 server does not send slot updates after successful clicks
 			click.on_success(self.inventory, self.emit_set_slot)
-			self.event.emit(response, {'accepted': accepted, 'click': click})
+			emit_response_event()
 		else:  # click not accepted
 			# confirm that we received this packet
 			packet.new_ident('PLAY>Confirm Transaction')
 			self.net.push(packet)
 			# 1.8 server will re-send all slots now
-			def cb():
-				self.event.emit(response, {'accepted': accepted, 'click': click})
 			# TODO are 2 ticks always enough?
-			self.timer.reg_tick_timer(2, cb, runs=1)
+			self.timer.reg_tick_timer(2, emit_response_event, runs=1)
 
 	def send_click(self, click):
 		"""
-		Returns unique response event name if the
-		click could be sent, None otherwise.
+		Returns the click's action ID if the click could be sent,
+		None if the previous click has not been received and confirmed yet.
 		"""
 		# only send if previous click got confirmed
 		if self.last_click:
@@ -617,7 +617,6 @@ class InventoryPlugin:
 		packet['window_id'] = self.inventory.window.window_id
 		packet['action'] = self.action_id
 		self.action_id += 1
-		response = self.event.get_unique_response_event()
-		self.last_click = (click, response)
+		self.last_click = click
 		self.net.push_packet('PLAY>Click Window', packet)
-		return response
+		return self.action_id
