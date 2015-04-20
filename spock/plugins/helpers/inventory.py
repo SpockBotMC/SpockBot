@@ -436,10 +436,10 @@ class InventoryCore:
 				amount += slot.amount
 		return amount
 
-	def find_item(self, item_id, meta=-1, start=0):
+	def find_slot(self, item_id, meta=-1, start=0):
 		"""
 		Returns the first slot containing the item or None if not found.
-		Searches held item, hotbar, inventory, open window in this order.
+		Searches active hotbar slot, hotbar, inventory, open window in this order.
 		Skips the first `start` slots of the current window.
 		"""
 
@@ -447,22 +447,15 @@ class InventoryCore:
 							and item_id == s.item_id \
 							and meta in (-1, s.damage)
 
-		slot = self.window.hotbar_slots[self.active_slot_nr]
-		if wanted(slot):
-			return self.active_slot_nr + self.window.hotbar_slots[0].slot_nr
-		# not selected, search for it
-		# hotbar is at the end of the inventory, search there first
-		for nr, slot in enumerate(self.window.hotbar_slots):
-			if wanted(slot):
-				return nr + self.window.hotbar_slots[0].slot_nr
-		# not in hotbar, search inventory
-		for nr, slot in enumerate(self.window.inventory_slots):
-			if wanted(slot):
-				return nr + self.window.inventory_slots[0].slot_nr
-		# not in inventory, search open window's slots
-		for nr, slot in enumerate(self.window.window_slots):
-			if wanted(slot):
-				return nr
+		if wanted(self.active_slot):
+			return self.active_slot
+
+		for slots in (self.window.hotbar_slots,
+					  self.window.inventory_slots,
+					  self.window.window_slots):
+			for slot in slots:
+				if wanted(slot):
+					return slot
 		return None
 
 	def select_active_slot(self, hotbar_index):
@@ -475,7 +468,7 @@ class InventoryCore:
 		button = INV_BUTTON_RIGHT if right else INV_BUTTON_LEFT
 		return self.send_click(SingleClick(slot, button))
 
-	def drop_item(self, slot=None, drop_stack=False):
+	def drop_slot(self, slot=None, drop_stack=False):
 		if slot is None:  # drop held item
 			slot = self.active_slot
 		return self.send_click(DropClick(slot, drop_stack))
