@@ -473,26 +473,6 @@ class InventoryCore:
 			slot = self.active_slot
 		return self.send_click(DropClick(slot, drop_stack))
 
-	# TODO is/should this be implemented somewhere else?
-	def interact_with_block(self, coords):
-		"""
-		Clicks on a block to open its window.
-		:param coords: Vec3 with the block coordinates
-		"""
-		self._net.push_packet('PLAY>Player Block Placement', {
-			'location': coords.get_dict(),
-			'direction': 1,
-			'held_item': self.active_slot.get_dict(),
-			'cur_pos_x': 8,
-			'cur_pos_y': 8,
-			'cur_pos_z': 8,
-		})
-
-	# TODO is/should this be implemented somewhere else?
-	def interact_with_entity(self, entity_id):
-		""" Clicks on an entity to open its window. """
-		self._net.push_packet('PLAY>Use Entity', {'target': entity_id, 'action': 0})
-
 	def close_window(self):
 		# TODO does the server send a close window, or should we close the window now?
 		self._net.push_packet('PLAY>Close Window', {'window_id': self.window.window_id})
