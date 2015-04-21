@@ -1,6 +1,6 @@
 """
-The Inventory plugin keeps track of the open window and its slots
-and offers convenient methods for inventory manipulation.
+The Inventory plugin keeps track of the inventory
+and provides simple inventory manipulation.
 """
 
 from spock.utils import pl_announce
@@ -476,6 +476,13 @@ class InventoryCore:
 	def close_window(self):
 		# TODO does the server send a close window, or should we close the window now?
 		self._net.push_packet('PLAY>Close Window', {'window_id': self.window.window_id})
+
+	def creative_set_slot(self, slot):
+		# TODO test
+		self._net.push_packet('PLAY>Creative Inventory Action', {
+			'slot': slot.slot_nr,
+			'clicked_item': slot.get_dict(),
+		})
 
 	@property
 	def active_slot(self):
