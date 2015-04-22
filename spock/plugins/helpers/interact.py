@@ -46,9 +46,8 @@ class InteractPlugin:
 		if not self.noswing:
 			self.net.push_packet('PLAY>Animation', {})
 
-	def _entity_action(self, action, jump_boost=100, entity_id=None):
-		if entity_id is None:
-			entity_id = self.clinfo.eid
+	def _entity_action(self, action, jump_boost=100):
+		entity_id = self.clinfo.eid
 		self.net.push_packet('PLAY>Entity Action', {
 			'eid': entity_id,
 			'action': action,
@@ -95,14 +94,13 @@ class InteractPlugin:
 		self.look_at(self.clinfo.position.yaw + yaw,
 					 self.clinfo.position.pitch + pitch)
 
-	def look_at(self, yaw=None, pitch=None, pos=None):
-		if pos is not None:
-			delta_x = pos.x - self.clinfo.position.x
-			delta_y = pos.y - self.clinfo.position.y + 1.7  # player height
-			delta_z = pos.z - self.clinfo.position.z
-			groundDistance = math.sqrt(delta_x * delta_x + delta_z * delta_z)
-			pitch = math.atan2(delta_y, groundDistance) * 180 / math.pi
-			yaw = math.atan2(-delta_x, -delta_z) * 180 / math.pi
+	def look_at(self, pos):
+		delta_x = pos.x - self.clinfo.position.x
+		delta_y = pos.y - self.clinfo.position.y + 1.7  # player height
+		delta_z = pos.z - self.clinfo.position.z
+		groundDistance = math.sqrt(delta_x * delta_x + delta_z * delta_z)
+		pitch = math.atan2(delta_y, groundDistance) * 180 / math.pi
+		yaw = math.atan2(-delta_x, -delta_z) * 180 / math.pi
 		self.look(yaw, pitch)
 
 	def dig_block(self, coords):
