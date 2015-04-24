@@ -42,17 +42,17 @@ class AuthCore:
 	def start_session(self, username, password = ''):
 		rep = {}
 		if self.authenticated:
-			logger.info("Attempting login with username: %s", username)
+			logger.info("AUTHCORE: Attempting login with username: %s", username)
 			rep = self.ygg.authenticate(username, password)
 			if rep == None or 'error' in rep:
-				logger.error('Login Unsuccessful, Response: %s', rep)
+				logger.error('AUTHCORE: Login Unsuccessful, Response: %s', rep)
 				self.event.emit('AUTH_ERR')
 				return rep
 			if 'selectedProfile' in rep:
 				self.selected_profile = rep['selectedProfile']
 				self.username = rep['selectedProfile']['name']
-				logger.info("Logged in as: %s", self.username)
-				logger.info("Selected Profile: %s", self.selected_profile)
+				logger.info("AUTHCORE: Logged in as: %s", self.username)
+				logger.info("AUTHCORE: Selected Profile: %s", self.selected_profile)
 			else:
 				self.username = username
 		else:
@@ -71,7 +71,7 @@ default_settings = {
 @pl_announce('Auth')
 class AuthPlugin:
 	def __init__(self, ploader, settings):
-		settings = utils.get_settings(settings, default_settings)
+		settings = utils.get_settings(default_settings, settings)
 		self.event = ploader.requires('Event')
 		self.net = ploader.requires('Net')
 		self.authenticated = settings['authenticated']
@@ -81,8 +81,7 @@ class AuthPlugin:
 		ploader.reg_event_handler('AUTH_ERR', self.handleAUTHERR)
 		ploader.reg_event_handler('SESS_ERR', self.handleSESSERR)
 		ploader.reg_event_handler(
-			(mcdata.LOGIN_STATE, mcdata.SERVER_TO_CLIENT, 0x01),
-			self.handle01
+			'LOGIN<Encryption Request', self.handle_encryption_request
 		)
 		ploader.provides('Auth', self.auth)
 
@@ -94,7 +93,7 @@ class AuthPlugin:
 			self.event.kill()
 
 	#Encryption Key Request - Request for client to start encryption
-	def handle01(self, name, packet):
+	def handle_encryption_request(self, name, packet):
 		pubkey = packet.data['public_key']
 		if self.authenticated:
 			serverid = JavaHexDigest(hashlib.sha1(
@@ -102,7 +101,7 @@ class AuthPlugin:
 				+ self.auth.shared_secret
 				+ pubkey
 			))
-			logger.info('Attempting to authenticate session with sessionserver.mojang.com')
+			logger.info("AUTHPLUGIN: Attempting to authenticate session with sessionserver.mojang.com")
 			url = "https://sessionserver.mojang.com/session/minecraft/join"
 			data = json.dumps({
 				'accessToken': self.auth.ygg.access_token,
@@ -120,14 +119,15 @@ class AuthPlugin:
 			#	self.event.emit('SESS_ERR')
 			#	return
 			if rep != "":
-				logger.warning("%s", rep)
+				logger.warning("AUTHPLUGIN: %s", rep)
+			logger.info("AUTHPLUGIN: Session authentication successful")
 
 		rsa_cipher = PKCS1_v1_5.new(RSA.importKey(pubkey))
-		self.net.push(mcpacket.Packet(
-			ident = (mcdata.LOGIN_STATE, mcdata.CLIENT_TO_SERVER, 0x01),
-			data = {
+		self.net.push_packet(
+			'LOGIN>Encryption Response',
+			{
 				'shared_secret': rsa_cipher.encrypt(self.auth.shared_secret),
 				'verify_token': rsa_cipher.encrypt(packet.data['verify_token']),
 			}
-		))
+		)
 		self.net.enable_crypto(self.auth.shared_secret)

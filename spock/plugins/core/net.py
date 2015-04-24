@@ -52,13 +52,13 @@ class SelectSocket:
 		try:
 			rlist, wlist, xlist = select.select(*slist)
 		except select.error as e:
-			logger.error("Socket Error: %s", str(e))
+			logger.error("SELECTSOCKET: Socket Error: %s", str(e))
 			rlist = []
 			wlist = []
 			xlist = []
-		if rlist:         flags.append('SOCKET_RECV')
-		if wlist:         flags.append('SOCKET_SEND')
-		if xlist:         flags.append('SOCKET_ERR')
+		if rlist: flags.append('SOCKET_RECV')
+		if wlist: flags.append('SOCKET_SEND')
+		if xlist: flags.append('SOCKET_ERR')
 		return flags
 
 	def reset(self):
@@ -84,16 +84,16 @@ class NetCore:
 		self.host = host
 		self.port = port
 		try:
-			logger.info("Attempting to connect to host: %s port: %s", host, port)
+			logger.info("NETCORE: Attempting to connect to host: %s port: %s", host, port)
 			#Set the connect to be a blocking operation
 			self.sock.sock.setblocking(True)
 			self.sock.sock.connect((self.host, self.port))
 			self.sock.sock.setblocking(False)
 			self.connected = True
 			self.event.emit('connect', (self.host, self.port))
-			logger.info("Connected to host: %s port: %s", host, port)
+			logger.info("NETCORE: Connected to host: %s port: %s", host, port)
 		except socket.error as error:
-			logger.error("Error on Connect: %s", str(error))
+			logger.error("NETCORE: Error on Connect: %s", str(error))
 
 	def set_proto_state(self, state):
 		self.proto_state = state
@@ -127,9 +127,9 @@ class NetCore:
 				self.rbuff.revert()
 				break
 			except mcpacket.PacketDecodeFailure as err:
-				logger.warning('Packet decode failed')
+				logger.warning('NETCORE: Packet decode failed')
 				logger.warning(
-					'Failed packet ident is probably: %s', err.packet.str_ident
+					'NETCORE: Failed packet ident is probably: %s', err.packet.str_ident
 				)
 				self.event.emit('PACKET_ERR', err)
 				break
@@ -162,7 +162,7 @@ default_settings = {
 @pl_announce('Net')
 class NetPlugin:
 	def __init__(self, ploader, settings):
-		settings = utils.get_settings(settings, default_settings)
+		settings = utils.get_settings(default_settings, settings)
 		self.bufsize = settings['bufsize']
 		self.sock_quit = settings['sock_quit']
 		self.event = ploader.requires('Event')
@@ -225,7 +225,7 @@ class NetPlugin:
 	#SOCKET_ERR - Socket Error has occured
 	def handleERR(self, name, data):
 		self.net.reset()
-		logger.error("Socket Error: %s", data)
+		logger.error("NETPLUGIN: Socket Error: %s", data)
 		self.event.emit('disconnect', data)
 		if self.sock_quit and not self.event.kill_event:
 			self.sock_dead = True
@@ -234,7 +234,7 @@ class NetPlugin:
 	#SOCKET_HUP - Socket has hung up
 	def handleHUP(self, name, data):
 		self.net.reset()
-		logger.error("Socket has hung up")
+		logger.error("NETPLUGIN: Socket has hung up")
 		self.event.emit('disconnect', "Socket Hung Up")
 		if self.sock_quit and not self.event.kill_event:
 			self.sock_dead = True
@@ -253,12 +253,12 @@ class NetPlugin:
 		self.net.set_comp_state(packet.data['threshold'])
 
 	def handle_disconnect(self, name, packet):
-		logger.info("Disconnected: %s", packet.data['reason'])
+		logger.info("NETPLUGIN: Disconnected: %s", packet.data['reason'])
 		self.event.emit('disconnect', packet.data['reason'])
 
 	#Kill event - Try to shutdown the socket politely
 	def handle_kill(self, name, data):
-		logger.info("Kill event recieved, shutting down socket")
+		logger.info("NETPLUGIN: Kill event recieved, shutting down socket")
 		if not self.sock_dead:
 			self.sock.shutdown(socket.SHUT_WR)
 		self.sock.close()

@@ -112,11 +112,8 @@ def pl_event(*args):
 		return cl
 	return inner
 
-def get_settings(settings, defaults):
-	final_settings = copy.deepcopy(defaults)
-	for k, v in settings.items():
-		final_settings[k] = v
-	return final_settings
+def get_settings(defaults, settings):
+	return dict(copy.deepcopy(defaults), **settings)
 
 def mapshort2id(data):
 	return data>>4, data&0x0F

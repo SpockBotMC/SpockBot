@@ -19,7 +19,7 @@ default_settings = {
 
 class StartPlugin:
 	def __init__(self, ploader, settings):
-		self.settings = utils.get_settings(settings, default_settings)
+		self.settings = utils.get_settings(default_settings, settings)
 		self.event = ploader.requires('Event')
 		self.net = ploader.requires('Net')
 		self.auth = ploader.requires('Auth')

@@ -15,7 +15,7 @@ class PloaderFetch:
 @pl_announce('PloaderFetch')
 class SettingsPlugin:
 	def __init__(self, ploader, kwargs):
-		settings = get_settings(kwargs, kwargs.get('settings', {}))
+		settings = get_settings(kwargs.get('settings', {}), kwargs)
 		plugin_list = settings.get('plugins', DefaultPlugins)
 		plugins = []
 		plugin_settings = {}
