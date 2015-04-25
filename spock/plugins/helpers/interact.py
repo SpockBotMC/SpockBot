@@ -111,17 +111,20 @@ class InteractPlugin:
 			'on_ground': self.clinfo.position.on_ground
 		})
 
-	def look_relative(self, yaw=0, pitch=0):
-		self.look(self.clinfo.position.yaw + yaw,
-		          self.clinfo.position.pitch + pitch)
+	def look_rel(self, d_yaw=0.0, d_pitch=0.0):
+		self.look(self.clinfo.position.yaw + d_yaw,
+		          self.clinfo.position.pitch + d_pitch)
 
 	def look_at(self, pos):
 		delta_x = pos.x - self.clinfo.position.x
 		delta_y = pos.y - self.clinfo.position.y + PLAYER_HEIGHT
 		delta_z = pos.z - self.clinfo.position.z
-		ground_distance = math.sqrt(delta_x * delta_x + delta_z * delta_z)
-		pitch = math.atan2(delta_y, ground_distance) * 180 / math.pi
-		yaw = math.atan2(-delta_x, -delta_z) * 180 / math.pi
+		self.look_at_rel(Vec3(delta_x, delta_y, delta_z))
+
+	def look_at_rel(self, delta):
+		ground_distance = math.sqrt(delta.x * delta.x + delta.z * delta.z)
+		pitch = math.atan2(delta.y, ground_distance) * 180 / math.pi
+		yaw = math.atan2(-delta.x, -delta.z) * 180 / math.pi
 		self.look(yaw, pitch)
 
 	def _send_dig_block(self, status, pos=None, face=FACE_Y_POS):
