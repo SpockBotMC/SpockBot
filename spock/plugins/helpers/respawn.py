@@ -3,17 +3,16 @@ RespawnPlugin's scope is huge, only KeepAlivePlugin does more
 """
 
 from spock.mcp import mcdata
+from spock.plugins.plugin_base import BasePlugin
 
 import logging
 logger = logging.getLogger('spock')
 
-class RespawnPlugin:
-	def __init__(self, ploader, settings):
-		self.net = ploader.requires('Net')
-		ploader.requires('ClientInfo')
-		ploader.reg_event_handler(
-			'cl_death', self.handle_death
-		)
+class RespawnPlugin(BasePlugin):
+	requires = ('Net', 'ClientInfo')
+	events = {
+		'cl_death': 'handle_death'
+	}
 
 	#You be dead
 	def handle_death(self, name, data):
