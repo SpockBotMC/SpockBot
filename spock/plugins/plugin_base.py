@@ -1,4 +1,4 @@
-from ..utils import get_settings
+from spock.utils import get_settings
 
 class BasePlugin(object):
 	"""A base class for cleaner plugin code.
