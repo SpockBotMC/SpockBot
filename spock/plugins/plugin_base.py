@@ -1,6 +1,12 @@
 from ..utils import get_settings
 
 class BasePlugin(object):
+	"""A base class for cleaner plugin code.
+
+	Extending from BasePlugin allows you to declare any requirements, default
+	settings, and event listeners in a declarative way. Define the appropriate
+	attributes on your subclass and enjoy cleaner code.
+	"""
 	requires = ()
 	defaults = {}
 	events = {}
