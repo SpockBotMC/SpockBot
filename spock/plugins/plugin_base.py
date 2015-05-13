@@ -1,9 +1,9 @@
 from spock.utils import get_settings
 
-class BasePlugin(object):
+class PluginBase(object):
 	"""A base class for cleaner plugin code.
 
-	Extending from BasePlugin allows you to declare any requirements, default
+	Extending from PluginBase allows you to declare any requirements, default
 	settings, and event listeners in a declarative way. Define the appropriate
 	attributes on your subclass and enjoy cleaner code.
 	"""
