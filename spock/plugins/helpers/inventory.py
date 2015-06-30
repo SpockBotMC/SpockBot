@@ -1,9 +1,8 @@
 """
-The Inventory plugin keeps track of the open window and its slots
-and offers convenient methods for inventory manipulation.
+The Inventory plugin keeps track of the inventory
+and provides simple inventory manipulation.
 """
 
-from collections import deque
 from spock.utils import pl_announce
 
 # the button codes used in send_click
@@ -19,7 +18,7 @@ INV_ITEMID_EMPTY = -1
 INV_SLOTS_PLAYER = 9  # crafting and armor
 INV_SLOTS_INVENTORY = 9 * 3  # above hotbar
 INV_SLOTS_HOTBAR = 9
-INV_SLOTS_ADD = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR  # always accessible
+INV_SLOTS_PERSISTENT = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR  # always accessible
 
 class Slot:
 	def __init__(self, window, slot_nr, id=INV_ITEMID_EMPTY, damage=0, amount=0, enchants=None):
@@ -37,14 +36,26 @@ class Slot:
 		if self.item_id != other.item_id: return False
 		if self.damage != other.damage: return False
 		if self.damage != other.damage: return False
-		if self.item_id == INV_ITEMID_EMPTY: return False  # for now, remove later, workaround for clicking empty slots
-		raise NotImplementedError('Stacks might differ by NBT data: %s %s' % (self, other))
+		# raise NotImplementedError('Stacks might differ by NBT data: %s %s' % (self, other))
 		# if self.nbt != other.nbt: return False  # TODO implement this correctly
-		# return True
+		return self.max_amount != 1
 
+	@property
 	def max_amount(self):
 		# TODO add the real values for ALL THE ITEMS! And blocks.
-		raise NotImplementedError()
+		# use some dummy values for now
+		if self.item_id in (-1,
+				256, 257, 258, 259, 261, 282,
+				326, 327, 333, 335, 342, 343, 346, 347, 355, 358, 359, 373, 374, 379, 380, 386, 387, 398,
+				403, 407, 408, 422, 417, 418, 419) \
+			or self.item_id in range(267, 280) \
+			or self.item_id in range(283, 287) \
+			or self.item_id in range(290, 295) \
+			or self.item_id in range(298, 318) \
+			or self.item_id in range(2256, 2268) \
+			: return 1
+		# TODO some stack up to 16
+		return 64
 
 	def get_dict(self):
 		""" Formats the slot for network packing. """
@@ -56,10 +67,17 @@ class Slot:
 				data['enchants'] = self.nbt
 		return data
 
+	def is_empty(self):
+		return self.amount <= 0
+
+	def __bool__(self):
+		return not self.is_empty()
+
 	def __repr__(self):
-		if self.item_id != INV_ITEMID_EMPTY:
+		if self.item_id == INV_ITEMID_EMPTY:
+			args = 'empty'
+		else:
 			args = str(self.get_dict()).strip('{}').replace("'", '').replace(': ', '=')
-		else: args = 'empty'
 		return 'Slot(window=%s, slot_nr=%i, %s)' % (self.window, self.slot_nr, args)
 
 class SlotCursor(Slot):
@@ -83,7 +101,7 @@ class InventoryBase:
 	""" Base class for all inventory types. """
 
 	# the arguments must have the same names as the keys in the packet dict
-	def __init__(self, inv_type, window_id, title, slot_count, add_slots):
+	def __init__(self, inv_type, window_id, title, slot_count, persistent_slots):
 		self.inv_type = inv_type
 		self.window_id = window_id
 		self.title = title
@@ -91,9 +109,9 @@ class InventoryBase:
 		# slots vary by inventory type, but always contain main inventory and hotbar
 		# create own slots, ...
 		self.slots = [Slot(self, slot_nr) for slot_nr in range(slot_count)]
-		# ... append player inventory slots, which have to be moved
-		for slot_nr_add, inv_slot in enumerate(add_slots[-INV_SLOTS_ADD:]):
-			inv_slot.move_to_window(self, slot_nr_add + slot_count)
+		# ... append persistent slots, which have to be moved
+		for p_slot_nr, inv_slot in enumerate(persistent_slots[-INV_SLOTS_PERSISTENT:]):
+			inv_slot.move_to_window(self, p_slot_nr + slot_count)
 			self.slots.append(inv_slot)
 
 		# additional info dependent on inventory type, dynamically updated by server
@@ -102,22 +120,23 @@ class InventoryBase:
 	def __repr__(self):
 		return 'Inventory(id=%i, title=%s)' % (self.window_id, self.title)
 
-	def inventory_index(self):
-		return len(self.slots) - INV_SLOTS_ADD
+	@property
+	def persistent_slots(self):
+		return self.slots[-INV_SLOTS_PERSISTENT:]
 
-	def hotbar_index(self):
-		return len(self.slots) - INV_SLOTS_HOTBAR
-
+	@property
 	def inventory_slots(self):
-		return self.slots[-INV_SLOTS_ADD:-INV_SLOTS_HOTBAR]
+		return self.slots[-INV_SLOTS_PERSISTENT:-INV_SLOTS_HOTBAR]
 
+	@property
 	def hotbar_slots(self):
 		return self.slots[-INV_SLOTS_HOTBAR:]
 
+	@property
 	def window_slots(self):
 		""" All slots except inventory and hotbar.
 		 Useful for searching. """
-		return self.slots[:-INV_SLOTS_ADD]
+		return self.slots[:-INV_SLOTS_PERSISTENT]
 
 # no @map_window_type(), because not opened by server
 class InventoryPlayer(InventoryBase):
@@ -125,17 +144,20 @@ class InventoryPlayer(InventoryBase):
 
 	name = 'Inventory'
 
-	def __init__(self, add_slots=None):
-		if add_slots is None:
-			add_slots = [Slot(self, slot_nr) for slot_nr in range(INV_SLOTS_ADD)]
-		super().__init__('player', INV_WINID_PLAYER, self.name, INV_SLOTS_PLAYER, add_slots)  # TODO title should be in chat format
+	def __init__(self, persistent_slots=None):
+		if persistent_slots is None:
+			persistent_slots = [Slot(self, slot_nr) for slot_nr in range(INV_SLOTS_PERSISTENT)]
+		super().__init__('player', INV_WINID_PLAYER, self.name, INV_SLOTS_PLAYER, persistent_slots)  # TODO title should be in chat format
 
+	@property
 	def craft_result_slot(self):
 		return self.slots[0]
 
+	@property
 	def craft_grid_slots(self):
 		return self.slots[1:5]
 
+	@property
 	def armor_slots(self):
 		return self.slots[5:9]
 
@@ -149,9 +171,11 @@ class InventoryChest(InventoryBase):
 class InventoryWorkbench(InventoryBase):
 	name = 'Workbench'
 
+	@property
 	def craft_result_slot(self):
 		return self.slots[0]
 
+	@property
 	def craft_grid_slots(self):
 		return self.slots[1:10]
 
@@ -161,19 +185,24 @@ class InventoryWorkbench(InventoryBase):
 class InventoryFurnace(InventoryBase):
 	name = 'Furnace'
 
+	@property
 	def smelted_slot(self):
 		return self.slots[0]
 
+	@property
 	def fuel_slot(self):
 		return self.slots[1]
 
+	@property
 	def result_slot(self):
 		return self.slots[2]
 
-	def progress_prop(self):
+	@property
+	def progress(self):
 		return self.properties[0]
 
-	def fuel_time_prop(self):
+	@property
+	def fuel_time(self):
 		return self.properties[1]
 
 @map_window_type('minecraft:dispenser')
@@ -184,9 +213,11 @@ class InventoryDispenser(InventoryBase):
 class InventoryEnchant(InventoryBase):
 	name = 'Encantment Table'
 
+	@property
 	def enchanted_slot(self):
 		return self.slots[0]
 
+	@property
 	def lapis_slot(self):
 		return self.slots[1]
 
@@ -196,13 +227,16 @@ class InventoryEnchant(InventoryBase):
 class InventoryBrewing(InventoryBase):
 	name = 'Brewing Stand'
 
+	@property
 	def ingredient_slot(self):
 		return self.slots[0]
 
+	@property
 	def result_slots(self):
 		return self.slots[1:4]
 
-	def brew_time_prop(self):
+	@property
+	def brew_time(self):
 		return self.properties[0]
 
 @map_window_type('minecraft:villager')
@@ -216,16 +250,20 @@ class InventoryVillager(InventoryBase):
 class InventoryBeacon(InventoryBase):
 	name = 'Beacon'
 
+	@property
 	def input_slot(self):
 		return self.slots[0]
 
-	def level_prop(self):
+	@property
+	def level(self):
 		return self.properties[0]
 
-	def effect_one_prop(self):
+	@property
+	def effect_one(self):
 		return self.properties[1]
 
-	def effect_two_prop(self):
+	@property
+	def effect_two(self):
 		return self.properties[2]
 
 	# TODO choosing/applying the effect
@@ -236,7 +274,8 @@ class InventoryAnvil(InventoryBase):
 
 	# TODO anvil slot getters
 
-	def max_cost_prop(self):
+	@property
+	def max_cost(self):
 		return self.properties[0]
 
 @map_window_type('minecraft:hopper')
@@ -259,26 +298,34 @@ class InventoryHorse(InventoryBase):
 
 class BaseClick:
 	def get_packet(self, inv_plugin):
+		"""
+		Called by send_click() to prepare the sent packet.
+		Abstract method.
+		:param inv_plugin: inventory plugin instance, to get slot contents etc.
+		"""
 		raise NotImplementedError()
 
 	def apply(self, inv_plugin):
+		"""
+		Called by on_success().
+		Abstract method.
+		:param inv_plugin: inventory plugin instance, to set slot contents etc.
+		"""
 		raise NotImplementedError()
 
-	def success(self, inv_plugin, emit_set_slot):
+	def on_success(self, inv_plugin, emit_set_slot):
+		"""
+		Called when the click was successful and should be applied to the inventory.
+		:param inv_plugin: inventory plugin instance, to set slot contents etc.
+		:param emit_set_slot: function to signal a slot change, should be InventoryPlugin's emit_set_slot()
+		"""
 		self.dirty = set()
 		self.apply(inv_plugin)
 		for changed_slot in self.dirty:
 			emit_set_slot(changed_slot)
-		for succ in getattr(self, 'successors', []):
-			inv_plugin.send_click(succ)
-		self.successors = []
 
-	def add_successor(self, succ):
-		if not hasattr(self, 'successors'):
-			self.successors = []
-		self.successors.append(succ)
-
-	# helper functions, used by children
+	# helper methods, used by children
+	# all argument instances are modified in-place
 
 	def copy_slot_type(self, slot_from, slot_to):
 		slot_to.item_id, slot_to.damage, slot_to.nbt = slot_from.item_id, slot_from.damage, slot_from.nbt
@@ -293,15 +340,15 @@ class BaseClick:
 		self.mark_dirty(slot_b)
 
 	def transfer(self, from_slot, to_slot, max_amount):
-		amount = min(max_amount, from_slot.amount, to_slot.max_amount() - to_slot.amount)
-		if amount <= 0: return
+		transfer_amount = min(max_amount, from_slot.amount, to_slot.max_amount - to_slot.amount)
+		if transfer_amount <= 0: return
 		self.copy_slot_type(from_slot, to_slot)
-		to_slot.amount += amount
-		from_slot.amount -= amount
+		to_slot.amount += transfer_amount
+		from_slot.amount -= transfer_amount
 		self.cleanup_if_empty(from_slot)
 
 	def cleanup_if_empty(self, slot):
-		if slot.amount <= 0:
+		if slot.is_empty():
 			empty_slot_at_same_position = Slot(slot.window, slot.slot_nr)
 			self.copy_slot_type(empty_slot_at_same_position, slot)
 		self.mark_dirty(slot)
@@ -309,23 +356,23 @@ class BaseClick:
 	def mark_dirty(self, slot):
 		self.dirty.add(slot)
 
-class NormalClick(BaseClick):
-	def __init__(self, slot_nr, button=INV_BUTTON_LEFT):
-		self.slot_nr = slot_nr
+class SingleClick(BaseClick):
+	def __init__(self, slot, button=INV_BUTTON_LEFT):
+		self.slot = slot
 		self.button= button
 		if button not in (INV_BUTTON_LEFT, INV_BUTTON_RIGHT):
 			raise NotImplementedError('Clicking with button %s not implemented' % button)
 
 	def get_packet(self, inv_plugin):
 		return {
-			'slot': self.slot_nr,
+			'slot': self.slot.slot_nr,
 			'button': self.button,
 			'mode': 0,
-			'clicked_item': inv_plugin.window.slots[self.slot_nr].get_dict(),
+			'clicked_item': self.slot.get_dict(),
 		}
 
 	def apply(self, inv_plugin):
-		clicked = inv_plugin.window.slots[self.slot_nr]
+		clicked = self.slot
 		cursor = inv_plugin.cursor_slot
 		if self.button == INV_BUTTON_LEFT:
 			if clicked.stacks_with(cursor):
@@ -336,7 +383,7 @@ class NormalClick(BaseClick):
 			if cursor.item_id == INV_ITEMID_EMPTY:
 				# transfer half, round up
 				self.transfer(clicked, cursor, (clicked.amount+1) // 2)
-			elif clicked.item_id == INV_ITEMID_EMPTY or clicked.stacks_with(cursor):
+			elif clicked.is_empty() or clicked.stacks_with(cursor):
 				self.transfer(cursor, clicked, 1)
 			else:  # slot items do not stack
 				self.swap_slots(cursor, clicked)
@@ -344,28 +391,27 @@ class NormalClick(BaseClick):
 			raise NotImplementedError('Clicking with button %s not implemented' % self.button)
 
 class DropClick(BaseClick):
-	def __init__(self, slot_nr, drop_stack=False):
-		self.slot_nr = slot_nr
+	def __init__(self, slot, drop_stack=False):
+		self.slot = slot
 		self.drop_stack = drop_stack
 
 	def get_packet(self, inv_plugin):
 		if inv_plugin.cursor_slot.item_id != INV_ITEMID_EMPTY:
 			return None  # can't drop while holding an item
 		return {
-			'slot': self.slot_nr,
+			'slot': self.slot.slot_nr,
 			'button': 1 if self.drop_stack else 0,
 			'mode': 4,
 			'clicked_item': inv_plugin.cursor_slot.get_dict(),
 		}
 
 	def apply(self, inv_plugin):
-		if inv_plugin.cursor_slot.item_id == INV_ITEMID_EMPTY:
-			clicked_slot = inv_plugin.window.slots[self.slot_nr]
+		if inv_plugin.cursor_slot.is_empty():
 			if self.drop_stack:
-				clicked_slot.amount = 0
+				self.slot.amount = 0
 			else:
-				clicked_slot.amount -= 1
-			self.cleanup_if_empty(clicked_slot)
+				self.slot.amount -= 1
+			self.cleanup_if_empty(self.slot)
 		# else: can't drop while holding an item
 
 class InventoryCore:
@@ -374,102 +420,77 @@ class InventoryCore:
 	def __init__(self, net_plugin, send_click):
 		self._net = net_plugin
 		self.send_click = send_click
-		self.selected_slot = 0
+		self.active_slot_nr = 0
 		self.cursor_slot = SlotCursor()  # the slot that moves with the mouse when clicking a slot
 		self.window = InventoryPlayer()
 
-	def find_item(self, item_id, meta=-1):
-		""" Returns the first slot containing the item or False if not found.
-		Searches held item, hotbar, player inventory, open window in this order. """
-
+	def total_stored(self, item_id, meta=-1, slots=None):
+		"""
+		Calculates the total number of items of that type
+		in the current window or given slot range.
+		"""
 		wanted = lambda s: item_id == s.item_id and meta in (-1, s.damage)
-
-		slot = self.window.hotbar_slots()[self.selected_slot]
-		if wanted(slot):
-			return self.selected_slot + self.window.hotbar_index()
-		# not selected, search for it
-		# hotbar is at the end of the inventory, search there first
-		for slot_nr, slot in enumerate(self.window.hotbar_slots()):
+		amount = 0
+		for slot in slots or self.window.slots:
 			if wanted(slot):
-				return slot_nr + self.window.hotbar_index()
-		# not in hotbar, search inventory
-		for slot_nr, slot in enumerate(self.window.inventory_slots()):
-			if wanted(slot):
-				return slot_nr + self.window.inventory_index()
-		# not in inventory, search open window's slots
-		for slot_nr, slot in enumerate(self.window.window_slots()):
-			if wanted(slot):
-				return slot_nr
-		return False
+				amount += slot.amount
+		return amount
 
-	def hold_item(self, item_id, meta=-1):
-		""" Tries to place a stack of the specified item ID
-		in the hotbar and select it.
-		Returns True if successful, False otherwise. """
+	def find_slot(self, item_id, meta=-1, start=0):
+		"""
+		Returns the first slot containing the item or None if not found.
+		Searches active hotbar slot, hotbar, inventory, open window in this order.
+		Skips the first `start` slots of the current window.
+		"""
 
-		slot_nr = self.find_item(item_id, meta)
-		if slot_nr is False: return False
-		hotbar_slot_nr = slot_nr - self.window.hotbar_index()
-		if hotbar_slot_nr >= 0:
-			self.select_slot(hotbar_slot_nr)
-		else:
-			self.swap_with_hotbar(slot_nr)
-		return True
+		wanted = lambda s: s.slot_nr >= start \
+							and item_id == s.item_id \
+							and meta in (-1, s.damage)
 
-	def select_slot(self, slot_nr):
-		if 0 <= slot_nr < INV_SLOTS_HOTBAR and slot_nr != self.selected_slot:
-			self.selected_slot = slot_nr
-			self._net.push_packet('PLAY>Held Item Change', {'slot': slot_nr})
+		if wanted(self.active_slot):
+			return self.active_slot
 
-	def swap_with_hotbar(self, slot, hotbar_slot=None):
-		if hotbar_slot is None: hotbar_slot = self.selected_slot
-		# TODO not implemented yet (see simulate_click)
-		# self.click_window(slot, hotbar_slot, INV_MODE_SWAP_HOTBAR)
-		self.swap_slots(slot, hotbar_slot + self.window.hotbar_index())
+		for slots in (self.window.hotbar_slots,
+					  self.window.inventory_slots,
+					  self.window.window_slots):
+			for slot in slots:
+				if wanted(slot):
+					return slot
+		return None
 
-	def click_slot(self, slot):
-		self.send_click(NormalClick(slot))
+	def select_active_slot(self, hotbar_index):
+		assert 0 <= hotbar_index < INV_SLOTS_HOTBAR, 'Invalid hotbar index'
+		if hotbar_index != self.active_slot_nr:
+			self.active_slot_nr = hotbar_index
+			self._net.push_packet('PLAY>Held Item Change', {'slot': hotbar_index})
 
-	def swap_slots(self, slot_a, slot_b):
-		# pick up A
-		one = NormalClick(slot_a)
-		# pick up B, place A at B's position
-		two = NormalClick(slot_b)
-		# place B at A's original position
-		three = NormalClick(slot_a)
-		one.add_successor(two)
-		two.add_successor(three)
-		self.send_click(one)
+	def click_slot(self, slot, right=False):
+		button = INV_BUTTON_RIGHT if right else INV_BUTTON_LEFT
+		return self.send_click(SingleClick(slot, button))
 
-	def drop_item(self, slot=None, drop_stack=False):
+	def drop_slot(self, slot=None, drop_stack=False):
 		if slot is None:  # drop held item
-			slot = self.selected_slot + self.window.hotbar_index()
-		self.send_click(DropClick(slot, drop_stack))
-
-	# TODO is/should this be implemented somewhere else?
-	def interact_with_block(self, coords):
-		""" Clicks on a block to open its window.
-		`coords` is a Vec3 with the block coordinates. """
-		packet = {
-			'location': coords.get_dict(),
-			'direction': 1,
-			'held_item': self.get_held_item().get_dict(),
-			'cur_pos_x': 8,
-			'cur_pos_y': 8,
-			'cur_pos_z': 8,
-		}
-		self._net.push_packet('PLAY>Player Block Placement', packet)
-
-	# TODO is/should this be implemented somewhere else?
-	def interact_with_entity(self, entity_id):
-		""" Clicks on an entity to open its window. """
-		self._net.push_packet('PLAY>Use Entity', {'target': entity_id, 'action': 0})
+			slot = self.active_slot
+		return self.send_click(DropClick(slot, drop_stack))
 
 	def close_window(self):
+		# TODO does the server send a close window, or should we close the window now?
 		self._net.push_packet('PLAY>Close Window', {'window_id': self.window.window_id})
 
-	def get_held_item(self):
-		return self.window.slots[self.selected_slot + self.window.hotbar_index()]
+	def creative_set_slot(self, slot):
+		# TODO test
+		self._net.push_packet('PLAY>Creative Inventory Action', {
+			'slot': slot.slot_nr,
+			'clicked_item': slot.get_dict(),
+		})
+
+	@property
+	def active_slot(self):
+		return self.window.hotbar_slots[self.active_slot_nr]
+
+	@property
+	def hotbar_start(self):
+		return self.window.hotbar_slots[0].slot_nr
 
 @pl_announce('Inventory')
 class InventoryPlugin:
@@ -477,6 +498,7 @@ class InventoryPlugin:
 		self.clinfo = ploader.requires('ClientInfo')
 		self.event = ploader.requires('Event')
 		self.net = ploader.requires('Net')
+		self.timer = ploader.requires('Timers')
 		self.inventory = InventoryCore(self.net, self.send_click)
 		ploader.provides('Inventory', self.inventory)
 
@@ -500,21 +522,21 @@ class InventoryPlugin:
 			'PLAY>Close Window', self.handle_close_window)
 
 		# click sending
-		self.action_id = 0
+		self.action_id = 1  # start at 1 so bool(action_id) is False only for None, see send_click
 		self.last_click = None  # stores the last click action for confirmation
 
 	def handle_held_item_change(self, event, packet):
-		self.inventory.selected_slot = packet.data['slot']
+		self.inventory.active_slot_nr = packet.data['slot']
 		self.event.emit('inv_held_item_change', packet.data)
 
 	def handle_open_window(self, event, packet):
-		InvNew = inv_types[packet.data['inv_type']]
-		self.inventory.window = InvNew(add_slots=self.inventory.window.slots, **packet.data)
+		InvType = inv_types[packet.data['inv_type']]
+		self.inventory.window = InvType(persistent_slots=self.inventory.window.slots, **packet.data)
 		self.event.emit('inv_open_window', {'window': self.inventory.window})
 
 	def handle_close_window(self, event, packet):
 		closed_window = self.inventory.window
-		self.inventory.window = InventoryPlayer(add_slots=closed_window.slots)
+		self.inventory.window = InventoryPlayer(persistent_slots=closed_window.slots)
 		self.event.emit('inv_close_window', {'window': closed_window})
 
 	def handle_set_slot(self, event, packet):
@@ -542,27 +564,43 @@ class InventoryPlugin:
 		self.event.emit('inv_win_prop', packet.data)
 
 	def handle_confirm_transaction(self, event, packet):
-		last_click, self.last_click = self.last_click, None
-		if packet.data['accepted']:
+		click, self.last_click = self.last_click, None
+		action_id = packet.data['action']
+		accepted = packet.data['accepted']
+		def emit_response_event():
+			self.event.emit('inv_click_response_%s' % action_id, {'accepted': accepted, 'click': click})
+		if accepted:
 			# TODO check if the wrong window/action ID was confirmed, never occured during testing
-			# update inventory, because server does not send slot updates after successful clicks
-			last_click.success(self.inventory, self.emit_set_slot)
+			# update inventory, because 1.8 server does not send slot updates after successful clicks
+			click.on_success(self.inventory, self.emit_set_slot)
+			emit_response_event()
 		else:  # click not accepted
 			# confirm that we received this packet
-			self.net.push_packet('PLAY>Confirm Transaction', packet.data)
-			# server will re-send all slots now
+			packet.new_ident('PLAY>Confirm Transaction')
+			self.net.push(packet)
+			# 1.8 server will re-send all slots now
+			# TODO are 2 ticks always enough?
+			self.timer.reg_tick_timer(2, emit_response_event, runs=1)
 
 	def send_click(self, click):
-		""" Returns True if the click could be sent, False otherwise. """
-		# only send if previous packet got confirmed
-		if self.last_click is not None:
-			return False
+		"""
+		Returns the click's action ID if the click could be sent,
+		None if the previous click has not been received and confirmed yet.
+		"""
+		# only send if previous click got confirmed
+		if self.last_click:
+			return None
 		packet = click.get_packet(self.inventory)
-		if not packet:
-			return False
+		try:
+			craft_result_slot = self.inventory.window.craft_result_slot.slot_nr
+			if packet['slot'] == craft_result_slot:
+				# send wrong click to update inventory after crafting
+				packet['clicked_item'] = {'id': -1}
+		except AttributeError:
+			pass  # not crafting
 		packet['window_id'] = self.inventory.window.window_id
 		packet['action'] = self.action_id
 		self.action_id += 1
 		self.last_click = click
 		self.net.push_packet('PLAY>Click Window', packet)
-		return True
+		return self.action_id
