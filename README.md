@@ -54,7 +54,7 @@ gamingrobot or nickelpro in `#mcdevs` on Freenode
 Inspired by [remyroy's COPS](http://www.reddit.com/r/Civcraft/comments/13kwjm/introducing_the_cops_civcraft_online_player_status/),
 a Minecraft client in Python. Protocol implementation based on [barneymc](https://github.com/barneygale/barneymc)
 
-COPS was a service that tracked players on a minecraft server called Civcraft. It looked like [this](http://www.nickg.org/dl/cops.jpg)
+COPS was a service that tracked players on a minecraft server called Civcraft. It looked like [this](http://i.imgur.com/SR2qII5.jpg)
 
 ##Legal
 
