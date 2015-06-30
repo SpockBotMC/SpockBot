@@ -7,6 +7,7 @@ Also provides very basic pathfinding
 from spock.utils import pl_announce
 from spock.mcp import mcdata
 from spock.utils import Position
+from spock.plugins.base import PluginBase
 import math
 
 import logging
@@ -19,21 +20,22 @@ class MovementCore:
 		self.move_location = Position(x, y, z)
 
 @pl_announce('Movement')
-class MovementPlugin:
+class MovementPlugin(PluginBase):
+	requires = ('Net', 'Physics', 'ClientInfo')
+	events = {
+		'client_tick': 'client_tick',
+		'action_tick': 'action_tick',
+		'cl_position_update': 'handle_position_update',
+		'phy_collision': 'handle_collision',
+	}
 	def __init__(self, ploader, settings):
-		self.net = ploader.requires('Net')
-		self.clinfo = ploader.requires('ClientInfo')
-		self.physics = ploader.requires('Physics')
-		ploader.reg_event_handler('client_tick', self.client_tick)
-		ploader.reg_event_handler('action_tick', self.action_tick)
-		ploader.reg_event_handler('cl_position_update', self.handle_position_update)
-		ploader.reg_event_handler('phy_collision', self.handle_collision)
+		super(self.__class__, self).__init__(ploader, settings)
+
 		self.movement = MovementCore()
 		ploader.provides('Movement', self.movement)
 
-
 	def client_tick(self, name, data):
-		self.net.push_packet('PLAY>Player Position', self.clinfo.position.get_dict())
+		self.net.push_packet('PLAY>Player Position', self.clientinfo.position.get_dict())
 
 	def handle_position_update(self, name, data):
 		self.net.push_packet('PLAY>Player Position and Look', data.get_dict())
@@ -47,11 +49,11 @@ class MovementPlugin:
 
 	def do_pathfinding(self):
 		if self.movement.move_location != None:
-			if self.movement.move_location.x == math.floor(self.clinfo.position.x) and self.movement.move_location.z == math.floor(self.clinfo.position.z):
+			if self.movement.move_location.x == math.floor(self.clientinfo.position.x) and self.movement.move_location.z == math.floor(self.clientinfo.position.z):
 				self.movement.move_location = None;
 			else:
-				dx = self.movement.move_location.x - self.clinfo.position.x
-				dz = self.movement.move_location.z - self.clinfo.position.z
+				dx = self.movement.move_location.x - self.clientinfo.position.x
+				dz = self.movement.move_location.z - self.clientinfo.position.z
 				deg = 0
 				if abs(dx) >= abs(dz):
 					#we should go along x

@@ -3,7 +3,7 @@ RespawnPlugin's scope is huge, only KeepAlivePlugin does more
 """
 
 from spock.mcp import mcdata
-from spock.plugins.plugin_base import PluginBase
+from spock.plugins.base import PluginBase
 
 import logging
 logger = logging.getLogger('spock')

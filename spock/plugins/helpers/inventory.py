@@ -4,6 +4,7 @@ and provides simple inventory manipulation.
 """
 
 from spock.utils import pl_announce
+from spock.plugins.base import PluginBase
 
 # the button codes used in send_click
 INV_BUTTON_LEFT = 0
@@ -493,33 +494,24 @@ class InventoryCore:
 		return self.window.hotbar_slots[0].slot_nr
 
 @pl_announce('Inventory')
-class InventoryPlugin:
+class InventoryPlugin(PluginBase):
+	requires = ('Event', 'Net', 'Timers')
+	events = {
+		'PLAY<Held Item Change': 'handle_held_item_change',
+		'PLAY<Set Slot': 'handle_set_slot',
+		'PLAY<Window Items': 'handle_window_items',
+		'PLAY<Window Property': 'handle_window_prop',
+		'PLAY<Confirm Transaction': 'handle_confirm_transaction',
+		'PLAY<Open Window': 'handle_open_window',
+		'PLAY<Close Window': 'handle_close_window',
+		# also register to serverbound, as server does not send Close Window when we do
+		'PLAY>Close Window': 'handle_close_window',
+	}
 	def __init__(self, ploader, settings):
-		self.clinfo = ploader.requires('ClientInfo')
-		self.event = ploader.requires('Event')
-		self.net = ploader.requires('Net')
-		self.timer = ploader.requires('Timers')
+		super(self.__class__, self).__init__(ploader, settings)
+
 		self.inventory = InventoryCore(self.net, self.send_click)
 		ploader.provides('Inventory', self.inventory)
-
-		# Inventory events
-		ploader.reg_event_handler(
-			'PLAY<Held Item Change', self.handle_held_item_change)
-		ploader.reg_event_handler(
-			'PLAY<Set Slot', self.handle_set_slot)
-		ploader.reg_event_handler(
-			'PLAY<Window Items', self.handle_window_items)
-		ploader.reg_event_handler(
-			'PLAY<Window Property', self.handle_window_prop)
-		ploader.reg_event_handler(
-			'PLAY<Confirm Transaction', self.handle_confirm_transaction)
-		ploader.reg_event_handler(
-			'PLAY<Open Window', self.handle_open_window)
-		ploader.reg_event_handler(
-			'PLAY<Close Window', self.handle_close_window)
-		# also register to serverbound, as server does not send Close Window when we do
-		ploader.reg_event_handler(
-			'PLAY>Close Window', self.handle_close_window)
 
 		# click sending
 		self.action_id = 1  # start at 1 so bool(action_id) is False only for None, see send_click
@@ -580,7 +572,7 @@ class InventoryPlugin:
 			self.net.push(packet)
 			# 1.8 server will re-send all slots now
 			# TODO are 2 ticks always enough?
-			self.timer.reg_tick_timer(2, emit_response_event, runs=1)
+			self.timers.reg_tick_timer(2, emit_response_event, runs=1)
 
 	def send_click(self, click):
 		"""

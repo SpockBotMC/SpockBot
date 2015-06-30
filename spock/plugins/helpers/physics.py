@@ -41,6 +41,7 @@ from spock.utils import pl_announce
 from spock.mcmap import mapdata
 from spock.utils import BoundingBox, Position
 from spock.vector import Vector3
+from spock.plugins.base import PluginBase
 
 import logging
 logger = logging.getLogger('spock')
@@ -53,35 +54,36 @@ class PhysicsCore:
 	def jump(self):
 		if self.pos.on_ground:
 			self.pos.on_ground = False
-			self.vec + Vector3(0,PLAYER_JMP_ACC,0)
+			self.vec += Vector3(0,PLAYER_JMP_ACC,0)
 
 	def walk(self, angle, radians = False):
 		if not radians:
 			angle = math.radians(angle)
 		z = math.cos(angle)*PLAYER_WLK_ACC
 		x = math.sin(angle)*PLAYER_WLK_ACC
-		self.vec + Vector3(x,0,z)
+		self.vec += Vector3(x,0,z)
 
 	def sprint(self, angle, radians = False):
 		if not radians:
 			angle = math.radians(angle)
 		z = math.cos(angle)*PLAYER_SPR_ACC
 		x = math.sin(angle)*PLAYER_SPR_ACC
-		self.vec + Vector3(x,0,z)
+		self.vec += Vector3(x,0,z)
 
 
 @pl_announce('Physics')
-class PhysicsPlugin:
+class PhysicsPlugin(PluginBase):
+	requires = ('Event', 'ClientInfo', 'World')
+	events = {
+		'physics_tick': 'tick',
+	}
 	def __init__(self, ploader, settings):
+		super(self.__class__, self).__init__(ploader, settings)
+
 		self.vec = Vector3(0.0, 0.0, 0.0)
 		self.playerbb = BoundingBox(0.8, 1.8) #wiki says 0.6 but I made it 0.8 to give a little wiggle room
-		self.world = ploader.requires('World')
-		self.event = ploader.requires('Event')
-		clinfo = ploader.requires('ClientInfo')
-		self.pos = clinfo.position
-		ploader.reg_event_handler('physics_tick', self.tick)
-		self.pycore = PhysicsCore(self.vec, self.pos)
-		ploader.provides('Physics', self.pycore)
+		self.pos = self.clientinfo.position
+		ploader.provides('Physics', PhysicsCore(self.vec, self.pos))
 
 	def tick(self, _, __):
 		self.check_collision()
@@ -98,7 +100,7 @@ class PhysicsPlugin:
 			self.pos.y = cb.y
 		else:
 			self.pos.on_ground = False
-			self.vec.add_vector(y = -PLAYER_ENTITY_GAV)
+			self.vec -= Vector3(0,PLAYER_ENTITY_GAV,0)
 			self.apply_vertical_drag()
 		#feet or head collide with x
 		if self.block_collision(cb, x=1) or self.block_collision(cb, x=-1) or self.block_collision(cb, y=1, x=1) or self.block_collision(cb, y=1, x=-1):

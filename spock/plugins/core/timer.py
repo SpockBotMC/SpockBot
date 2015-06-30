@@ -7,6 +7,7 @@ makes them, server tick-timers are based on time updates from the server
 import time
 from spock.mcp import mcdata
 from spock.utils import pl_announce
+from spock.plugins.base import PluginBase
 
 class BaseTimer(object):
 	def __init__(self, callback, runs = -1):
@@ -102,19 +103,19 @@ class WorldTick:
 		self.age = 0
 
 @pl_announce('Timers')
-class TimerPlugin:
+class TimerPlugin(PluginBase):
+	requires = ('World')
+	events = {
+		'event_tick': 'tick',
+		'disconnect': 'handle_disconnect',
+	}
 	def __init__(self, ploader, settings):
-		self.world = ploader.requires('World')
+		super(self.__class__, self).__init__(ploader, settings)
 		if not self.world:
 			self.world = WorldTick()
-			ploader.reg_event_handler(
-				(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, 0x03),
-				self.handle03
-			)
+			ploader.reg_event_handler('PLAY<Time Update', self.handle_time_update)
 		self.timer_core = TimerCore(self.world)
 		ploader.provides('Timers', self.timer_core)
-		ploader.reg_event_handler('event_tick', self.tick)
-		ploader.reg_event_handler('disconnect', self.handle_disconnect)
 
 	def tick(self, name, data):
 		for timer in self.timer_core.timers:
@@ -127,7 +128,7 @@ class TimerPlugin:
 				self.timer_core.persist_timers.remove(timer)
 
 	#Time Update - We grab world age if the world plugin isn't available
-	def handle03(self, name, packet):
+	def handle_time_update(self, name, packet):
 		self.world.age = packet.data['world_age']
 
 	def handle_disconnect(self, name, data):

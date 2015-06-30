@@ -9,21 +9,18 @@ a bot.
 
 from spock import utils
 from spock.mcp import mcpacket, mcdata
+from spock.plugins.base import PluginBase
 
-default_settings = {
-	'username': 'Bot',
-	'password': None,
-	'host': 'localhost',
-	'port': 25565,
-}
-
-class StartPlugin:
+class StartPlugin(PluginBase):
+	requires = ('Event', 'Net', 'Auth')
+	defaults = {
+		'username': 'Bot',
+		'password': None,
+		'host': 'localhost',
+		'port': 25565,
+	}
 	def __init__(self, ploader, settings):
-		self.settings = utils.get_settings(default_settings, settings)
-		self.event = ploader.requires('Event')
-		self.net = ploader.requires('Net')
-		self.auth = ploader.requires('Auth')
-
+		super(self.__class__, self).__init__(ploader, settings)
 		setattr(ploader, 'start', self.start)
 
 	def start(self, host = None, port = None):

@@ -6,7 +6,7 @@ DefaultPlugins = [
 	('net', net.NetPlugin),
 	('auth', auth.AuthPlugin),
 	('ticker', ticker.TickerPlugin),
-	('timer', timer.TimerPlugin),
+	('timers', timer.TimerPlugin),
 	('start', start.StartPlugin),
 	('keepalive', keepalive.KeepalivePlugin),
 	('respawn', respawn.RespawnPlugin),
@@ -17,3 +17,4 @@ DefaultPlugins = [
 	('physics', physics.PhysicsPlugin),
 	('inventory', inventory.InventoryPlugin),
 ]
+

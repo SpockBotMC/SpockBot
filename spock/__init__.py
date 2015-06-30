@@ -1,4 +1,4 @@
-from spock.plugins.pluginloader import PluginLoader
+from spock.plugins.loader import PluginLoader
 
 import logging
 logger = logging.getLogger('spock')

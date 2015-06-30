@@ -10,6 +10,7 @@ from spock.mcp import mcdata
 from spock.mcp.mcdata import (
 	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL, GS_GAMEMODE
 )
+from spock.plugins.base import PluginBase
 
 class GameInfo(Info):
 	def __init__(self):
@@ -65,29 +66,22 @@ class ClientInfo:
 		self.__init__()
 
 @pl_announce('ClientInfo')
-class ClientInfoPlugin:
+class ClientInfoPlugin(PluginBase):
+	requires = ('Event')
+	events = {
+		'LOGIN<Login Success': 'handle_login_success',
+		'PLAY<Join Game': 'handle_join_game',
+		'PLAY<Spawn Position': 'handle_spawn_position',
+		'PLAY<Update Health': 'handle_update_health',
+		'PLAY<Player Position and Look': 'handle_position_update',
+		'PLAY<Player List Item': 'handle_player_list',
+		'PLAY<Change Game State': 'handle_game_state',
+		'PLAY<Server Difficulty': 'handle_server_difficulty',
+		'PLAY<Player Abilities': 'handle_player_abilities',
+		'disconnect': 'handle_disconnect',
+	}
 	def __init__(self, ploader, settings):
-		self.event = ploader.requires('Event')
-		ploader.reg_event_handler(
-			'LOGIN<Login Success', self.handle_login_success)
-		ploader.reg_event_handler(
-			'PLAY<Join Game', self.handle_join_game)
-		ploader.reg_event_handler(
-			'PLAY<Spawn Position', self.handle_spawn_position)
-		ploader.reg_event_handler(
-			'PLAY<Update Health', self.handle_update_health)
-		ploader.reg_event_handler(
-			'PLAY<Player Position and Look', self.handle_position_update)
-		ploader.reg_event_handler(
-			'PLAY<Player List Item', self.handle_player_list)
-		ploader.reg_event_handler(
-			'PLAY<Change Game State', self.handle_game_state)
-		ploader.reg_event_handler(
-			'PLAY<Server Difficulty', self.handle_server_difficulty)
-		ploader.reg_event_handler(
-			'PLAY<Player Abilities', self.handle_player_abilities)
-		ploader.reg_event_handler(
-			'disconnect', self.handle_disconnect)
+		super(self.__class__, self).__init__(ploader, settings)
 		self.uuids = {}
 		self.defered_pl = {}
 		self.client_info = ClientInfo()

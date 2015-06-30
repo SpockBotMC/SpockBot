@@ -8,6 +8,7 @@ Planned to provide light level interpretation based on sky light and time of day
 from spock.utils import pl_announce
 from spock.mcmap import smpmap, mapdata
 from spock.mcp import mcdata
+from spock.plugins.base import PluginBase
 
 class WorldData(smpmap.Dimension):
 	def __init__(self, dimension = mcdata.SMP_OVERWORLD):
@@ -26,26 +27,25 @@ class WorldData(smpmap.Dimension):
 		self.__init__(self.dimension)
 
 @pl_announce('World')
-class WorldPlugin:
+class WorldPlugin(PluginBase):
+	requires = ('Event')
+	events = {
+		'PLAY<Join Game': 'handle_new_dimension',
+		'PLAY<Respawn': 'handle_new_dimension',
+		'PLAY<Time Update': 'handle_time_update',
+		'PLAY<Chunk Data': 'handle_chunk_data',
+		'PLAY<Multi Block Change': 'handle_multi_block_change',
+		'PLAY<Block Change': 'handle_block_change',
+		'PLAY<Map Chunk Bulk': 'handle_map_chunk_bulk',
+		'disconnect': 'handle_disconnect',
+	}
 	def __init__(self, ploader, settings):
+		super(self.__class__, self).__init__(ploader, settings)
 		self.world = WorldData()
-		self.event = ploader.requires('Event')
 		ploader.provides('World', self.world)
-		packets = (0x01, 0x07, 0x03, 0x21, 0x22, 0x23, 0x26)
-		handlers = (
-			self.handle_new_dimension, self.handle_new_dimension,
-			self.handle03, self.handle21, self.handle22, self.handle23,
-			self.handle26
-		)
-		for i in range(len(packets)):
-			ploader.reg_event_handler(
-				(mcdata.PLAY_STATE, mcdata.SERVER_TO_CLIENT, packets[i]),
-				handlers[i]
-			)
-		ploader.reg_event_handler('disconnect', self.handle_disconnect)
 
 	#Time Update - Update World Time
-	def handle03(self, name, packet):
+	def handle_time_update(self, name, packet):
 		self.world.update_time(packet.data)
 		self.event.emit('w_time_update', packet.data)
 
@@ -55,11 +55,11 @@ class WorldPlugin:
 		self.event.emit('w_new_dimension', packet.data['dimension'])
 
 	#Chunk Data - Update World state
-	def handle21(self, name, packet):
+	def handle_chunk_data(self, name, packet):
 		self.world.unpack_column(packet.data)
 
 	#Multi Block Change - Update multiple blocks
-	def handle22(self, name, packet):
+	def handle_multi_block_change(self, name, packet):
 		chunk_x = packet.data['chunk_x']*16
 		chunk_z = packet.data['chunk_z']*16
 		for block in packet.data['blocks']:
@@ -77,14 +77,14 @@ class WorldPlugin:
 			})
 
 	#Block Change - Update a single block
-	def handle23(self, name, packet):
+	def handle_block_change(self, name, packet):
 		p = packet.data['location']
 		block_data = packet.data['block_data']
 		self.world.set_block(p['x'], p['y'], p['z'], data = block_data)
 		self.event.emit('w_block_update', packet.data)
 
 	#Map Chunk Bulk - Update World state
-	def handle26(self, name, packet):
+	def handle_map_chunk_bulk(self, name, packet):
 		self.world.unpack_bulk(packet.data)
 
 	def handle_disconnect(self, name, data):

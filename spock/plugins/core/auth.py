@@ -17,6 +17,7 @@ from Crypto import Random
 from spock import utils
 from spock.mcp import mcdata, mcpacket, yggdrasil
 from spock.utils import pl_announce
+from spock.plugins.base import PluginBase
 
 import logging
 logger = logging.getLogger('spock')
@@ -63,26 +64,24 @@ class AuthCore:
 		self.shared_secret = Random._UserFriendlyRNG.get_random_bytes(16)
 		return self.shared_secret
 
-default_settings = {
-	'authenticated': True,
-	'sess_quit': True,
-}
-
 @pl_announce('Auth')
-class AuthPlugin:
+class AuthPlugin(PluginBase):
+	requires = ('Event', 'Net')
+	defaults = {
+		'authenticated': True,
+		'sess_quit': True,
+	}
+	events = {
+		'AUTH_ERR': 'handleAUTHERR',
+		'SESS_ERR': 'handleSESSERR',
+		'LOGIN<Encryption Request': 'handle_encryption_request',
+	}
 	def __init__(self, ploader, settings):
-		settings = utils.get_settings(default_settings, settings)
-		self.event = ploader.requires('Event')
-		self.net = ploader.requires('Net')
-		self.authenticated = settings['authenticated']
-		self.sess_quit = settings['sess_quit']
+		super(self.__class__, self).__init__(ploader, settings)
+		self.authenticated = self.settings['authenticated']
+		self.sess_quit = self.settings['sess_quit']
 		self.auth = AuthCore(self.authenticated, self.event)
 		self.auth.gen_shared_secret()
-		ploader.reg_event_handler('AUTH_ERR', self.handleAUTHERR)
-		ploader.reg_event_handler('SESS_ERR', self.handleSESSERR)
-		ploader.reg_event_handler(
-			'LOGIN<Encryption Request', self.handle_encryption_request
-		)
 		ploader.provides('Auth', self.auth)
 
 	def handleAUTHERR(self, name, data):

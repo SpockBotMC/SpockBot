@@ -4,11 +4,13 @@ afraid of anything.
 """
 
 from spock.mcp import mcdata, mcpacket
+from spock.plugins.base import PluginBase
 
-class KeepalivePlugin:
-	def __init__(self, ploader, settings):
-		self.net = ploader.requires('Net')
-		ploader.reg_event_handler('PLAY<Keep Alive', self.handle_keep_alive)
+class KeepalivePlugin(PluginBase):
+	requires = ('Net')
+	events = {
+		'PLAY<Keep Alive': 'handle_keep_alive',
+	}
 
 	#Keep Alive - Reflects data back to server
 	def handle_keep_alive(self, name, packet):

@@ -10,6 +10,7 @@ import select
 import time
 from spock import utils
 from spock.utils import pl_announce
+from spock.plugins.base import PluginBase
 from spock.mcp import mcpacket, mcdata
 from Crypto.Cipher import AES
 
@@ -151,45 +152,45 @@ class NetCore:
 
 	disconnect = reset
 
-default_settings = {
-	'username': 'Bot',
-	'password': None,
-	'bufsize': 4096,
-	'sock_quit': True,
-	'sess_quit': True,
-}
 
 @pl_announce('Net')
-class NetPlugin:
+class NetPlugin(PluginBase):
+	requires = ('Event', 'Timers')
+	defaults = {
+		'username': 'Bot',
+		'password': None,
+		'bufsize': 4096,
+		'sock_quit': True,
+		'sess_quit': True,
+	}
+	events = {
+		'event_tick': 'tick',
+		'SOCKET_RECV': 'handleRECV',
+		'SOCKET_SEND': 'handleSEND',
+		'SOCKET_ERR': 'handleERR',
+		'SOCKET_HUP': 'handleHUP',
+		'PLAY<Disconnect': 'handle_disconnect',
+		'HANDSHAKE>Handshake': 'handle_handshake',
+		'LOGIN<Login Success': 'handle_login_success',
+		'LOGIN<Set Compression': 'handle_comp',
+		'PLAY<Set Compression': 'handle_comp',
+		'kill': 'handle_kill',
+	}
 	def __init__(self, ploader, settings):
-		settings = utils.get_settings(default_settings, settings)
-		self.bufsize = settings['bufsize']
-		self.sock_quit = settings['sock_quit']
-		self.event = ploader.requires('Event')
-		self.timer = ploader.requires('Timers')
-		self.sock = SelectSocket(self.timer)
+		super(self.__class__, self).__init__(ploader, settings)
+		self.bufsize = self.settings['bufsize']
+		self.sock_quit = self.settings['sock_quit']
+		self.sock = SelectSocket(self.timers)
 		self.net = NetCore(self.sock, self.event)
 		self.sock_dead = False
 		ploader.provides('Net', self.net)
-
-		ploader.reg_event_handler('event_tick', self.tick)
-		ploader.reg_event_handler('SOCKET_RECV', self.handleRECV)
-		ploader.reg_event_handler('SOCKET_SEND', self.handleSEND)
-		ploader.reg_event_handler('SOCKET_ERR', self.handleERR)
-		ploader.reg_event_handler('SOCKET_HUP', self.handleHUP)
-		ploader.reg_event_handler('PLAY<Disconnect', self.handle_disconnect)
-		ploader.reg_event_handler('HANDSHAKE>Handshake', self.handle_handshake)
-		ploader.reg_event_handler('LOGIN<Login Success', self.handle_login_success)
-		ploader.reg_event_handler('LOGIN<Set Compression', self.handle_comp)
-		ploader.reg_event_handler('PLAY<Set Compression', self.handle_comp)
-		ploader.reg_event_handler('kill', self.handle_kill)
 
 	def tick(self, name, data):
 		if self.net.connected:
 			for flag in self.sock.poll():
 				self.event.emit(flag)
 		else:
-			timeout = self.timer.get_timeout()
+			timeout = self.timers.get_timeout()
 			if timeout == -1:
 				time.sleep(1)
 			else:
