@@ -32,14 +32,16 @@ to fix it.
 ##Dependencies
 
 Python 3.x or Python 2.7+  
-PyCrypto 
+PyCrypto
 
 ##Installation
 
 `python3 setup.py install`  
 
 ##Examples
-[Some Useful Examples](https://github.com/SpockBotMC/SpockBot-Contrib/tree/master/examples)
+Refer to the [example bot](https://github.com/SpockBotMC/SpockBot/tree/master/examples/basic) for instructions on how to write a bot and a plugin that provides some common functionality.
+
+Also see [Some Useful Examples](https://github.com/SpockBotMC/SpockBot-Contrib/tree/master/examples) for additional examples contributed by the community.
 
 ##API Docs
 Current API docs live here https://spockbotmc.github.io/docs/spock/
@@ -60,4 +62,3 @@ License is MIT and can be found in `LICENSE`
 
 The NBT parser and the original protocol implementation came from other projects,
 relevant legal information and attribution can be found in `LEGAL.md`
-
