@@ -39,7 +39,8 @@ PLAYER_JMP_ACC    = 0.45
 import math
 from spock.utils import pl_announce
 from spock.mcmap import mapdata
-from spock.utils import BoundingBox, Vec3
+from spock.utils import BoundingBox, Position
+from spock.vector import Vector3
 
 import logging
 logger = logging.getLogger('spock')
@@ -52,27 +53,27 @@ class PhysicsCore:
 	def jump(self):
 		if self.pos.on_ground:
 			self.pos.on_ground = False
-			self.vec.add_vector(y = PLAYER_JMP_ACC)
+			self.vec + Vector3(0,PLAYER_JMP_ACC,0)
 
 	def walk(self, angle, radians = False):
 		if not radians:
 			angle = math.radians(angle)
 		z = math.cos(angle)*PLAYER_WLK_ACC
 		x = math.sin(angle)*PLAYER_WLK_ACC
-		self.vec.add_vector(x = x, z = z)
+		self.vec + Vector3(x,0,z)
 
 	def sprint(self, angle, radians = False):
 		if not radians:
 			angle = math.radians(angle)
 		z = math.cos(angle)*PLAYER_SPR_ACC
 		x = math.sin(angle)*PLAYER_SPR_ACC
-		self.vec.add_vector(x = x, z = z)
+		self.vec + Vector3(x,0,z)
 
 
 @pl_announce('Physics')
 class PhysicsPlugin:
 	def __init__(self, ploader, settings):
-		self.vec = Vec3(0.0, 0.0, 0.0)
+		self.vec = Vector3(0.0, 0.0, 0.0)
 		self.playerbb = BoundingBox(0.8, 1.8) #wiki says 0.6 but I made it 0.8 to give a little wiggle room
 		self.world = ploader.requires('World')
 		self.event = ploader.requires('Event')
@@ -88,7 +89,7 @@ class PhysicsPlugin:
 		self.apply_vector()
 
 	def check_collision(self):
-		cb = Vec3(math.floor(self.pos.x), math.floor(self.pos.y), math.floor(self.pos.z))
+		cb = Position(math.floor(self.pos.x), math.floor(self.pos.y), math.floor(self.pos.z))
 		if self.block_collision(cb, y=2): #we check +2 because above my head
 			self.vec.y = 0
 		if self.block_collision(cb, y=-1): #we check below feet
@@ -118,11 +119,11 @@ class PhysicsPlugin:
 		#possibly we want to use the centers of blocks as the starting points for bounding boxes instead of 0,0,0
 		#this might make thinks easier when we get to more complex shapes that are in the center of a block aka fences but more complicated for the player
 		#uncenter the player position and bump it up a little down to prevent colliding in the floor
-		pos1 = Vec3(self.pos.x-self.playerbb.w/2, self.pos.y-0.2, self.pos.z-self.playerbb.d/2)
+		pos1 = Position(self.pos.x-self.playerbb.w/2, self.pos.y-0.2, self.pos.z-self.playerbb.d/2)
 		bb1 = self.playerbb
 		bb2 = block.bounding_box
 		if bb2 != None:
-			pos2 = Vec3(cb.x+x+bb2.x, cb.y+y+bb2.y, cb.z+z+bb2.z)
+			pos2 = Position(cb.x+x+bb2.x, cb.y+y+bb2.y, cb.z+z+bb2.z)
 			if ((pos1.x + bb1.w) >= (pos2.x) and (pos1.x) <= (pos2.x + bb2.w)) and \
 				((pos1.y + bb1.h) >= (pos2.y) and (pos1.y) <= (pos2.y + bb2.h)) and \
 				((pos1.z + bb1.d) >= (pos2.z) and (pos1.z) <= (pos2.z + bb2.d)):
@@ -130,7 +131,7 @@ class PhysicsPlugin:
 		return False
 
 	def apply_vertical_drag(self):
-		self.vec.y = self.vec.y - self.vec.y*PLAYER_ENTITY_DRG
+		self.vec.y -= self.vec.y*PLAYER_ENTITY_DRG
 
 	def apply_horizontal_drag(self):
 		self.vec.x -= self.vec.x * PLAYER_GND_DRG

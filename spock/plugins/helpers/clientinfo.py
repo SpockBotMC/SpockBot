@@ -5,7 +5,7 @@ Plugins subscribing to ClientInfo's events don't have to independently
 track this information on their own.
 """
 
-from spock.utils import pl_announce, Info, Vec3
+from spock.utils import pl_announce, Info, Position
 from spock.mcp import mcdata
 from spock.mcp.mcdata import (
 	FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL, GS_GAMEMODE
@@ -34,7 +34,7 @@ class PlayerHealth(Info):
 		self.food = 20
 		self.food_saturation = 5
 
-class PlayerPosition(Vec3):
+class PlayerPosition(Position):
 	def __init__(self):
 		super(self.__class__, self).__init__()
 		self.yaw = 0.0
@@ -56,7 +56,7 @@ class ClientInfo:
 		self.uuid = ""
 		self.abilities = Abilities()
 		self.game_info = GameInfo()
-		self.spawn_position = Vec3()
+		self.spawn_position = Position()
 		self.health = PlayerHealth()
 		self.position = PlayerPosition()
 		self.player_list = {}

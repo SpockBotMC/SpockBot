@@ -6,7 +6,7 @@ Also provides very basic pathfinding
 
 from spock.utils import pl_announce
 from spock.mcp import mcdata
-from spock.utils import Vec3
+from spock.utils import Position
 import math
 
 import logging
@@ -16,7 +16,7 @@ class MovementCore:
 	def __init__(self):
 		self.move_location = None
 	def move_to(self, x, y, z):
-		self.move_location = Vec3(x, y, z)
+		self.move_location = Position(x, y, z)
 
 @pl_announce('Movement')
 class MovementPlugin:
