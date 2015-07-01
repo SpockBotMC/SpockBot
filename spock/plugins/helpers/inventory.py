@@ -87,7 +87,7 @@ class SlotCursor(Slot):
 			window_id = INV_WINID_CURSOR
 			def __repr__(self):
 				return 'CursorWindow()'
-		super().__init__(CursorWindow(), INV_SLOT_NR_CURSOR, id, damage, amount, enchants)
+		super(self.__class__, self).__init__(CursorWindow(), INV_SLOT_NR_CURSOR, id, damage, amount, enchants)
 
 # look up a class by window type ID when opening windows
 inv_types = {}
@@ -148,7 +148,7 @@ class InventoryPlayer(InventoryBase):
 	def __init__(self, persistent_slots=None):
 		if persistent_slots is None:
 			persistent_slots = [Slot(self, slot_nr) for slot_nr in range(INV_SLOTS_PERSISTENT)]
-		super().__init__('player', INV_WINID_PLAYER, self.name, INV_SLOTS_PLAYER, persistent_slots)  # TODO title should be in chat format
+		super(self.__class__, self).__init__('player', INV_WINID_PLAYER, self.name, INV_SLOTS_PLAYER, persistent_slots)  # TODO title should be in chat format
 
 	@property
 	def craft_result_slot(self):
@@ -292,7 +292,7 @@ class InventoryHorse(InventoryBase):
 	name = 'Horse'
 
 	def __init__(self, eid=0, **args):
-		super().__init__(**args)
+		super(self.__class__, self).__init__(**args)
 		self.horse_entity_id = eid
 
 	# TODO horse slot getters
