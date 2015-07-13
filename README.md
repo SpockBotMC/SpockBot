@@ -31,7 +31,7 @@ to fix it.
 
 ##Dependencies
 
-Python 3.x or Python 2.7+  
+Python 3.x or Python 2.7.x  
 PyCrypto
 
 ##Installation
