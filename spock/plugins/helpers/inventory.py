@@ -21,7 +21,7 @@ INV_SLOTS_INVENTORY = 9 * 3  # above hotbar
 INV_SLOTS_HOTBAR = 9
 INV_SLOTS_PERSISTENT = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR  # always accessible
 
-class Slot:
+class Slot(object):
 	def __init__(self, window, slot_nr, id=INV_ITEMID_EMPTY, damage=0, amount=0, enchants=None):
 		self.window = window
 		self.slot_nr = slot_nr
@@ -98,7 +98,7 @@ def map_window_type(inv_type_id):
 		return cl
 	return inner
 
-class InventoryBase:
+class InventoryBase(object):
 	""" Base class for all inventory types. """
 
 	# the arguments must have the same names as the keys in the packet dict

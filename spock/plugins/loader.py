@@ -2,7 +2,7 @@
 Provides reasonably not-awful plugin loading
 """
 from spock.plugins.core.settings import SettingsPlugin
-
+import traceback
 import logging
 logger = logging.getLogger('spock')
 
@@ -32,8 +32,9 @@ class PluginLoader:
 			plugin = self.plugins.pop()
 			try:
 				plugin(self, self.fetch.get_plugin_settings(plugin))
-			except TypeError:
-				logger.error('LOADER: Plugin %s __init__ is incorrect', plugin.__name__)
+			except Exception, e:
+				logger.error('LOADER: Plugin %s failed to load', plugin.__name__)
+				print(traceback.format_exc())
 
 
 	def requires(self, ident, soft = False, warning = None):
