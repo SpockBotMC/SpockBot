@@ -78,7 +78,7 @@ class CartesianVector(BaseVector):
 		return self.__class__(*map(lambda a: a[0] > a[1], zip(self, other)))
 
 	def __eq__(self, other):
-		return self.__class__(*map(lambda a: a[0] > a[1], zip(self, other)))
+		return self.__class__(*map(lambda a: a[0] == a[1], zip(self, other)))
 
 
 class Vector3(CartesianVector):
@@ -131,8 +131,8 @@ class Vector3(CartesianVector):
 
 	def set_dict(self, data):
 		if set(("x", "y", "z")) <= set(data):
-			self.vector[0] = data['x'] 
-			self.vector[1] = data['y'] 
+			self.vector[0] = data['x']
+			self.vector[1] = data['y']
 			self.vector[2] = data['z']
 
 	def get_dict(self):
