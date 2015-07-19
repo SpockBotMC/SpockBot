@@ -1,3 +1,5 @@
+import math
+
 class BaseVector(object):
 	_internal_vec_type = list
 	def __init__(self, *values):
