@@ -32,7 +32,7 @@ class PluginLoader:
 			plugin = self.plugins.pop()
 			try:
 				plugin(self, self.fetch.get_plugin_settings(plugin))
-			except Exception, e:
+			except Exception as e:
 				logger.error('LOADER: Plugin %s failed to load', plugin.__name__)
 				print(traceback.format_exc())
 
