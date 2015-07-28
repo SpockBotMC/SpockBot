@@ -1,7 +1,7 @@
 SpockBot
 =====
 
-Spock currently supports Minecraft 1.8.7
+Spock currently supports Minecraft 1.8.8
 
 
 Bot framework, currently under heavy development
