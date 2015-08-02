@@ -10,6 +10,11 @@ from spock.mcp.mcdata import (
 	MC_UUID, MC_POSITION, MC_STRING, MC_CHAT, MC_SLOT, MC_META
 )
 
+try:
+  basestring
+except NameError:
+  basestring = str
+
 import logging
 logger = logging.getLogger('spock')
 
@@ -24,7 +29,7 @@ class Packet(object):
 		ident = [mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00],
 		data = None
 	):
-		if isinstance(ident, str):
+		if isinstance(ident, basestring):
 			ident = mcdata.packet_str2ident[ident]
 		self.__ident = list(ident)
 		#Quick hack to fake default ident
@@ -38,8 +43,6 @@ class Packet(object):
 		return Packet(self.ident, copy.deepcopy(self.data))
 
 	def new_ident(self, ident):
-		if type(ident) is str:
-			ident = mcdata.packet_str2ident[ident]
 		self.__init__(ident, self.data)
 
 	def decode(self, bbuff, proto_comp_state):
@@ -101,7 +104,6 @@ class Packet(object):
 			return None
 
 	def __repr__(self):
-		if self.ident[1] == mcdata.CLIENT_TO_SERVER: s = ">>>"
-		else: s = "<<<"
-		format = "[%s] %s (0x%02X, 0x%02X): %-"+str(max([len(i) for i in mcdata.hashed_names.values()])+1)+"s%s"
-		return format % (strftime("%H:%M:%S", gmtime()), s, self.ident[0], self.ident[2], mcdata.hashed_names[self.ident], str(self.data))
+		s = ('<<<', '>>>')[self.ident[1]]
+		f = "[%s] %s (0x%02X, 0x%02X): %-"+str(max([len(i) for i in mcdata.hashed_names.values()])+1)+"s%s"
+		return f % (strftime("%H:%M:%S", gmtime()), s, self.ident[0], self.ident[2], mcdata.hashed_names[self.ident], str(self.data))

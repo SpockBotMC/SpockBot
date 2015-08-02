@@ -122,7 +122,7 @@ class NetCore:
 			try:
 				packet = mcpacket.Packet(ident = (
 					self.proto_state,
-					mcdata.SERVER_TO_CLIENT,
+					mcdata.SERVER_TO_CLIENT
 				)).decode(self.rbuff, self.comp_state)
 			except utils.BufferUnderflowException:
 				self.rbuff.revert()
@@ -152,16 +152,12 @@ class NetCore:
 
 	disconnect = reset
 
-
 @pl_announce('Net')
 class NetPlugin(PluginBase):
 	requires = ('Event', 'Timers')
 	defaults = {
-		'username': 'Bot',
-		'password': None,
 		'bufsize': 4096,
 		'sock_quit': True,
-		'sess_quit': True,
 	}
 	events = {
 		'event_tick': 'tick',
@@ -176,6 +172,7 @@ class NetPlugin(PluginBase):
 		'PLAY<Set Compression': 'handle_comp',
 		'kill': 'handle_kill',
 	}
+
 	def __init__(self, ploader, settings):
 		super(self.__class__, self).__init__(ploader, settings)
 		self.bufsize = self.settings['bufsize']
@@ -203,7 +200,7 @@ class NetPlugin(PluginBase):
 			try:
 				data = self.sock.recv(self.bufsize)
 				#print('read:', len(data))
-				if not data: #Just because we have to support socket.select
+				if not data:
 					self.event.emit('SOCKET_HUP')
 					return
 				self.net.read_packet(data)
