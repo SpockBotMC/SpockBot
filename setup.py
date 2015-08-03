@@ -4,6 +4,7 @@ from setuptools import find_packages
 setup (
     name='spock',
     description='Minecraft library in python',
+    license='MIT',
     long_description=open('README.md').read(),
     version='1.2',
     packages=find_packages(exclude=['tests', 'tests.*']),
