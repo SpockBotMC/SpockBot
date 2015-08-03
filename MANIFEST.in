@@ -1,0 +1,7 @@
+include *.md
+include AUTHORS
+include LICENSE
+include tox.ini
+recursive-include examples *.md
+recursive-include examples *.py
+recursive-include tests *.py

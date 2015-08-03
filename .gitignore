@@ -7,3 +7,7 @@ login.py
 run.py
 contrib/
 /build
+/.tox/
+*.egg-info/
+xunit-*.xml
+.coverage
