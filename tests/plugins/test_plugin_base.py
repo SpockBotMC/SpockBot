@@ -1,5 +1,5 @@
 from unittest import TestCase
-from spock.plugins.plugin_base import PluginBase
+from spock.plugins.base import PluginBase
 
 class PluginLoaderMock(object):
 	events = {}

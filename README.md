@@ -23,7 +23,7 @@ MC protocol, since there aren't many plugins that provide higher abstractions
 than MC packets. That said the API is starting to shape up quite nicely, we've
 got timers, basic physics, and the beginnings of a World API.
 
-Spock officially supports Python 3.x on \*Nix operating systems and requires
+Spock officially supports Python 3.x on \*nix operating systems and requires
 PyCrypto. It also runs on Windows and under Python 2.7+ but that's not regularly
 tested and might break at any given moment. If you support one of those use
 cases and Spock breaks for you, submit an issue with a stack trace and we'll try
@@ -39,7 +39,7 @@ PyCrypto
 `python3 setup.py install`  
 
 ##Examples
-Refer to the [example bot](https://github.com/SpockBotMC/SpockBot/tree/master/examples/basic) for instructions on how to write a bot and a plugin that provides some common functionality.
+Refer to the [example bot](examples/basic) for instructions on how to write a bot and a plugin that provides some common functionality.
 
 Also see [Some Useful Examples](https://github.com/SpockBotMC/SpockBot-Contrib/tree/master/examples) for additional examples contributed by the community.
 
