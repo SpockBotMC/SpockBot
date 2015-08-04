@@ -1,0 +1,33 @@
+sudo: false
+
+language: python
+
+python:
+  - "2.7_with_system_site_packages"
+
+env:
+  - TOX_ENV=py27
+  - TOX_ENV=py30
+  - TOX_ENV=py31
+  - TOX_ENV=py32
+  - TOX_ENV=py33
+  - TOX_ENV=py34
+  - TOX_ENV=flake8
+
+install:
+  - "pip install tox"
+
+script:
+  - "tox -e $TOX_ENV"
+
+after_success:
+        - "if [ `echo $TOX_ENV | grep -v flake8` ]; then pip install coveralls; coveralls; fi"
+
+notifications:
+  irc:
+    channels:
+      - "irc.freenode.org#spockbot"
+    on_success: change
+    on_failure: change
+    use_notice: true
+    skip_join: true
