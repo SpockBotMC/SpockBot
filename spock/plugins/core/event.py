@@ -1,10 +1,10 @@
 """
 Provides the core event loop
 """
-import signal
 import copy
-from collections import defaultdict
 import logging
+import signal
+from collections import defaultdict
 
 from spock.utils import pl_announce
 

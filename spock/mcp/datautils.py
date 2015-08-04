@@ -1,13 +1,12 @@
-import struct
 import json
+import struct
 
 from spock import utils
 from spock.mcp import mcdata, nbt
-from spock.mcp.mcdata import (
-    MC_UBYTE, MC_BYTE, MC_SHORT, MC_INT, MC_ULONG,
-    MC_LONG, MC_FLOAT, MC_VARINT, MC_VARLONG, MC_FP_INT, MC_FP_BYTE,
-    MC_UUID, MC_POSITION, MC_STRING, MC_CHAT, MC_SLOT, MC_META
-)
+from spock.mcp.mcdata import (MC_BYTE, MC_CHAT, MC_FLOAT, MC_FP_BYTE,
+                              MC_FP_INT, MC_INT, MC_LONG, MC_META, MC_POSITION,
+                              MC_SHORT, MC_SLOT, MC_STRING, MC_UBYTE, MC_ULONG,
+                              MC_UUID, MC_VARINT, MC_VARLONG)
 
 
 # Unpack/Pack functions return None on error
@@ -123,8 +122,8 @@ def unpack_slot(bbuff):
         if nbt_start > 0:
             if nbt_start != nbt.TAG_COMPOUND:
                 return None
-            name = nbt.TAG_String(buffer=bbuff).value
-            ench = nbt.TAG_Compound(buffer=bbuff)
+            name = nbt.TagString(buffer=bbuff).value
+            ench = nbt.TagCompound(buffer=bbuff)
             ench.name = name
             slot['enchants'] = ench
     return slot
@@ -138,8 +137,8 @@ def pack_slot(slot):
         if 'enchants' in slot:
             ench = slot['enchants']
             bbuff = utils.BoundBuffer()
-            nbt.TAG_Byte(ench.id)._render_buffer(bbuff)
-            nbt.TAG_String(ench.name)._render_buffer(bbuff)
+            nbt.TagByte(ench.id)._render_buffer(bbuff)
+            nbt.TagString(ench.name)._render_buffer(bbuff)
             ench._render_buffer(bbuff)
             o += bbuff.flush()
         else:

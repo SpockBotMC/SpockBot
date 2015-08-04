@@ -4,27 +4,28 @@ servers and processing incoming packet data.
 Coordinates with the Timers plugin to honor clock-time timers
 """
 
-import socket
-import select
-import time
 import logging
+import select
+import socket
+import time
+
+from Crypto.Cipher import AES
 
 from spock import utils
-from spock.utils import pl_announce
+from spock.mcp import mcdata, mcpacket
 from spock.plugins.base import PluginBase
-from spock.mcp import mcpacket, mcdata
-from Crypto.Cipher import AES
+from spock.utils import pl_announce
 
 logger = logging.getLogger('spock')
 
 
 class AESCipher:
-    def __init__(self, SharedSecret):
+    def __init__(self, shared_secret):
         # Name courtesy of dx
-        self.encryptifier = AES.new(SharedSecret, AES.MODE_CFB,
-                                    IV=SharedSecret)
-        self.decryptifier = AES.new(SharedSecret, AES.MODE_CFB,
-                                    IV=SharedSecret)
+        self.encryptifier = AES.new(shared_secret, AES.MODE_CFB,
+                                    IV=shared_secret)
+        self.decryptifier = AES.new(shared_secret, AES.MODE_CFB,
+                                    IV=shared_secret)
 
     def encrypt(self, data):
         return self.encryptifier.encrypt(data)
@@ -173,10 +174,10 @@ class NetPlugin(PluginBase):
     }
     events = {
         'event_tick': 'tick',
-        'SOCKET_RECV': 'handleRECV',
-        'SOCKET_SEND': 'handleSEND',
-        'SOCKET_ERR': 'handleERR',
-        'SOCKET_HUP': 'handleHUP',
+        'SOCKET_RECV': 'handle_recv',
+        'SOCKET_SEND': 'handle_send',
+        'SOCKET_ERR': 'handle_err',
+        'SOCKET_HUP': 'handle_hup',
         'PLAY<Disconnect': 'handle_disconnect',
         'HANDSHAKE>Handshake': 'handle_handshake',
         'LOGIN<Login Success': 'handle_login_success',
@@ -206,7 +207,7 @@ class NetPlugin(PluginBase):
                 time.sleep(timeout)
 
     # SOCKET_RECV - Socket is ready to recieve data
-    def handleRECV(self, name, data):
+    def handle_recv(self, name, data):
         if self.net.connected:
             try:
                 data = self.sock.recv(self.bufsize)
@@ -220,7 +221,7 @@ class NetPlugin(PluginBase):
 
     # SOCKET_SEND - Socket is ready to send data and Send buffer contains
     # data to send
-    def handleSEND(self, name, data):
+    def handle_send(self, name, data):
         if self.net.connected:
             try:
                 sent = self.sock.send(self.net.sbuff)
@@ -232,7 +233,7 @@ class NetPlugin(PluginBase):
                 self.event.emit('SOCKET_ERR', error)
 
     # SOCKET_ERR - Socket Error has occured
-    def handleERR(self, name, data):
+    def handle_err(self, name, data):
         self.net.reset()
         logger.error("NETPLUGIN: Socket Error: %s", data)
         self.event.emit('disconnect', data)
@@ -241,7 +242,7 @@ class NetPlugin(PluginBase):
             self.event.kill()
 
     # SOCKET_HUP - Socket has hung up
-    def handleHUP(self, name, data):
+    def handle_hup(self, name, data):
         self.net.reset()
         logger.error("NETPLUGIN: Socket has hung up")
         self.event.emit('disconnect', "Socket Hung Up")

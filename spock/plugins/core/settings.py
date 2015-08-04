@@ -1,5 +1,5 @@
-from spock.utils import pl_announce, get_settings
 from spock.plugins import DefaultPlugins
+from spock.utils import get_settings, pl_announce
 
 
 class PloaderFetch:

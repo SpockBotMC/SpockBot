@@ -3,8 +3,8 @@ The Inventory plugin keeps track of the inventory
 and provides simple inventory manipulation.
 """
 
-from spock.utils import pl_announce
 from spock.plugins.base import PluginBase
+from spock.utils import pl_announce
 
 # the button codes used in send_click
 INV_BUTTON_LEFT = 0
@@ -579,8 +579,8 @@ class InventoryPlugin(PluginBase):
         self.event.emit('inv_held_item_change', packet.data)
 
     def handle_open_window(self, event, packet):
-        InvType = inv_types[packet.data['inv_type']]
-        self.inventory.window = InvType(
+        inv_type = inv_types[packet.data['inv_type']]
+        self.inventory.window = inv_type(
             persistent_slots=self.inventory.window.slots, **packet.data)
         self.event.emit('inv_open_window', {'window': self.inventory.window})
 

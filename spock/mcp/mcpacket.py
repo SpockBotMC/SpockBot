@@ -1,20 +1,18 @@
-import copy
-import zlib
-from time import gmtime, strftime
-
-from spock import utils
-from spock.mcp import datautils, mcdata
-from spock.mcp.mcpacket_extensions import hashed_extensions
-from spock.mcp.mcdata import (
-    MC_VARINT
-)
-
 try:
     basestring
 except NameError:
     basestring = str
 
+import copy
 import logging
+import zlib
+from time import gmtime, strftime
+
+from spock import utils
+from spock.mcp import datautils, mcdata
+from spock.mcp.mcdata import MC_VARINT
+from spock.mcp.mcpacket_extensions import hashed_extensions
+
 
 logger = logging.getLogger('spock')
 
