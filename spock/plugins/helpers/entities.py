@@ -3,8 +3,8 @@ An entity tracker
 """
 import logging
 
-from spock.utils import pl_announce, Info
 from spock.plugins.base import PluginBase
+from spock.utils import Info, pl_announce
 
 logger = logging.getLogger('spock')
 

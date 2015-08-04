@@ -5,13 +5,13 @@ Plugins subscribing to ClientInfo's events don't have to independently
 track this information on their own.
 """
 
-from spock.utils import pl_announce, Info, Position
 from spock.mcp import mcdata
 from spock.mcp.mcdata import (
-    FLG_XPOS_REL, FLG_YPOS_REL, FLG_ZPOS_REL, FLG_YROT_REL, FLG_XROT_REL,
+    FLG_XPOS_REL, FLG_XROT_REL, FLG_YPOS_REL, FLG_YROT_REL, FLG_ZPOS_REL,
     GS_GAMEMODE
 )
 from spock.plugins.base import PluginBase
+from spock.utils import Info, Position, pl_announce
 
 
 class GameInfo(Info):

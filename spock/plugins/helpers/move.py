@@ -5,12 +5,11 @@ directions.
 Also provides very basic pathfinding
 """
 
-import math
 import logging
+import math
 
-from spock.utils import pl_announce
-from spock.utils import Position
 from spock.plugins.base import PluginBase
+from spock.utils import Position, pl_announce
 
 logger = logging.getLogger('spock')
 

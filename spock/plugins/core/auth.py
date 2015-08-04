@@ -11,20 +11,22 @@ try:
 except ImportError:
     import urllib2 as request
     from urllib2 import URLError
+import logging
+
+from Crypto import Random
 from Crypto.Cipher import PKCS1_v1_5
 from Crypto.PublicKey import RSA
-from Crypto import Random
-from spock.mcp import yggdrasil
-from spock.utils import pl_announce
-from spock.plugins.base import PluginBase
 
-import logging
+from spock.mcp import yggdrasil
+from spock.plugins.base import PluginBase
+from spock.utils import pl_announce
+
 
 logger = logging.getLogger('spock')
 
 
 # This function courtesy of barneygale
-def JavaHexDigest(digest):
+def java_hex_digest(digest):
     d = int(digest.hexdigest(), 16)
     if d >> 39 * 4 & 0x8:
         d = "-%x" % ((-d) & (2 ** (40 * 4) - 1))
@@ -77,8 +79,8 @@ class AuthPlugin(PluginBase):
         'sess_quit': True,
     }
     events = {
-        'AUTH_ERR': 'handleAUTHERR',
-        'SESS_ERR': 'handleSESSERR',
+        'AUTH_ERR': 'handle_auth_error',
+        'SESS_ERR': 'handle_session_error',
         'LOGIN<Encryption Request': 'handle_encryption_request',
     }
 
@@ -90,10 +92,10 @@ class AuthPlugin(PluginBase):
         self.auth.gen_shared_secret()
         ploader.provides('Auth', self.auth)
 
-    def handleAUTHERR(self, name, data):
+    def handle_auth_error(self, name, data):
         self.event.kill()
 
-    def handleSESSERR(self, name, data):
+    def handle_session_error(self, name, data):
         if self.sess_quit:
             self.event.kill()
 
@@ -101,7 +103,7 @@ class AuthPlugin(PluginBase):
     def handle_encryption_request(self, name, packet):
         pubkey = packet.data['public_key']
         if self.authenticated:
-            serverid = JavaHexDigest(hashlib.sha1(
+            serverid = java_hex_digest(hashlib.sha1(
                 packet.data['server_id'].encode('ascii')
                 + self.auth.shared_secret
                 + pubkey

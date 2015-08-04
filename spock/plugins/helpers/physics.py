@@ -37,14 +37,13 @@ PLAYER_GND_DRG = 0.41
 # Seems about right, not based on anything
 PLAYER_JMP_ACC = 0.45
 
-import math
 import logging
+import math
 
-from spock.utils import pl_announce
 from spock.mcmap import mapdata
-from spock.utils import BoundingBox, Position
-from spock.vector import Vector3
 from spock.plugins.base import PluginBase
+from spock.utils import BoundingBox, Position, pl_announce
+from spock.vector import Vector3
 
 logger = logging.getLogger('spock')
 
