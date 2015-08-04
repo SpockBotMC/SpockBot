@@ -1,5 +1,6 @@
 SpockBot
 =====
+[![Build Status](https://travis-ci.org/SpockBotMC/SpockBot.svg)](https://travis-ci.org/SpockBotMC/SpockBot)
 
 Spock currently supports Minecraft 1.8.8
 
