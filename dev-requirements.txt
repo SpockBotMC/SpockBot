@@ -12,3 +12,12 @@ tox
 
 # Check all files in git are in MANIFEST.in
 check-manifest
+
+# Build documentation
+sphinx
+
+# To make wheel packages
+wheel
+
+# Securely upload packages to PyPI
+twine
