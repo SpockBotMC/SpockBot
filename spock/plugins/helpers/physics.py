@@ -5,46 +5,49 @@ keep update client position for gravity/knockback/water-flow etc. But it should
 also eventually provide functions to track other entities affected by SMP
 physics
 
-Minecraft client/player physics is unfortunately very poorly documented. Most of
+Minecraft client/player physics is unfortunately very poorly documented.
+Most of
 these values are based of experimental results and the contributions of a
 handful of people (Thank you 0pteron!) to the Minecraft wiki talk page on
 Entities and Transportation. Ideally someone will decompile the client with MCP
 and document the totally correct values and behaviors.
 """
-#Gravitational constants defined in blocks/(client tick)^2
+# Gravitational constants defined in blocks/(client tick)^2
 PLAYER_ENTITY_GAV = 0.08
 THROWN_ENTITY_GAV = 0.03
 RIDING_ENTITY_GAV = 0.04
-BLOCK_ENTITY_GAV  = 0.04
-ARROW_ENTITY_GAV  = 0.05
+BLOCK_ENTITY_GAV = 0.04
+ARROW_ENTITY_GAV = 0.05
 
-#Air drag constants defined in 1/tick
+# Air drag constants defined in 1/tick
 PLAYER_ENTITY_DRG = 0.02
 THROWN_ENTITY_DRG = 0.01
 RIDING_ENTITY_DRG = 0.05
-BLOCK_ENTITY_DRG  = 0.02
-ARROW_ENTITY_DRG  = 0.01
+BLOCK_ENTITY_DRG = 0.02
+ARROW_ENTITY_DRG = 0.01
 
-#Player ground acceleration isn't actually linear, but we're going to pretend
-#that it is. Max ground velocity for a walking client is 0.215blocks/tick, it
-#takes a dozen or so ticks to get close to max velocity. Sprint is 0.28, just
-#apply more acceleration to reach a higher max ground velocity
-PLAYER_WLK_ACC    = 0.15
-PLAYER_SPR_ACC    = 0.20
-PLAYER_GND_DRG    = 0.41
+# Player ground acceleration isn't actually linear, but we're going to pretend
+# that it is. Max ground velocity for a walking client is 0.215blocks/tick, it
+# takes a dozen or so ticks to get close to max velocity. Sprint is 0.28, just
+# apply more acceleration to reach a higher max ground velocity
+PLAYER_WLK_ACC = 0.15
+PLAYER_SPR_ACC = 0.20
+PLAYER_GND_DRG = 0.41
 
-#Seems about right, not based on anything
-PLAYER_JMP_ACC    = 0.45
+# Seems about right, not based on anything
+PLAYER_JMP_ACC = 0.45
 
 import math
+import logging
+
 from spock.utils import pl_announce
 from spock.mcmap import mapdata
 from spock.utils import BoundingBox, Position
 from spock.vector import Vector3
 from spock.plugins.base import PluginBase
 
-import logging
 logger = logging.getLogger('spock')
+
 
 class PhysicsCore:
     def __init__(self, vec, pos):
@@ -54,21 +57,21 @@ class PhysicsCore:
     def jump(self):
         if self.pos.on_ground:
             self.pos.on_ground = False
-            self.vec += Vector3(0,PLAYER_JMP_ACC,0)
+            self.vec += Vector3(0, PLAYER_JMP_ACC, 0)
 
-    def walk(self, angle, radians = False):
+    def walk(self, angle, radians=False):
         if not radians:
             angle = math.radians(angle)
-        z = math.cos(angle)*PLAYER_WLK_ACC
-        x = math.sin(angle)*PLAYER_WLK_ACC
-        self.vec += Vector3(x,0,z)
+        z = math.cos(angle) * PLAYER_WLK_ACC
+        x = math.sin(angle) * PLAYER_WLK_ACC
+        self.vec += Vector3(x, 0, z)
 
-    def sprint(self, angle, radians = False):
+    def sprint(self, angle, radians=False):
         if not radians:
             angle = math.radians(angle)
-        z = math.cos(angle)*PLAYER_SPR_ACC
-        x = math.sin(angle)*PLAYER_SPR_ACC
-        self.vec += Vector3(x,0,z)
+        z = math.cos(angle) * PLAYER_SPR_ACC
+        x = math.sin(angle) * PLAYER_SPR_ACC
+        self.vec += Vector3(x, 0, z)
 
 
 @pl_announce('Physics')
@@ -77,11 +80,14 @@ class PhysicsPlugin(PluginBase):
     events = {
         'physics_tick': 'tick',
     }
+
     def __init__(self, ploader, settings):
         super(self.__class__, self).__init__(ploader, settings)
 
         self.vec = Vector3(0.0, 0.0, 0.0)
-        self.playerbb = BoundingBox(0.8, 1.8) #wiki says 0.6 but I made it 0.8 to give a little wiggle room
+        self.playerbb = BoundingBox(0.8,
+                                    1.8)  # wiki says 0.6 but I made it 0.8
+        # to give a little wiggle room
         self.pos = self.clientinfo.position
         ploader.provides('Physics', PhysicsCore(self.vec, self.pos))
 
@@ -91,49 +97,65 @@ class PhysicsPlugin(PluginBase):
         self.apply_vector()
 
     def check_collision(self):
-        cb = Position(math.floor(self.pos.x), math.floor(self.pos.y), math.floor(self.pos.z))
-        if self.block_collision(cb, y=2): #we check +2 because above my head
+        cb = Position(math.floor(self.pos.x), math.floor(self.pos.y),
+                      math.floor(self.pos.z))
+        if self.block_collision(cb, y=2):  # we check +2 because above my head
             self.vec.y = 0
-        if self.block_collision(cb, y=-1): #we check below feet
+        if self.block_collision(cb, y=-1):  # we check below feet
             self.pos.on_ground = True
             self.vec.y = 0
             self.pos.y = cb.y
         else:
             self.pos.on_ground = False
-            self.vec -= Vector3(0,PLAYER_ENTITY_GAV,0)
+            self.vec -= Vector3(0, PLAYER_ENTITY_GAV, 0)
             self.apply_vertical_drag()
-        #feet or head collide with x
-        if self.block_collision(cb, x=1) or self.block_collision(cb, x=-1) or self.block_collision(cb, y=1, x=1) or self.block_collision(cb, y=1, x=-1):
+        # feet or head collide with x
+        if self.block_collision(cb, x=1) or \
+                self.block_collision(cb, x=-1) or \
+                self.block_collision(cb, y=1, x=1) or \
+                self.block_collision(cb, y=1, x=-1):
             self.vec.x = 0
-            #replace with real info in event
+            # replace with real info in event
             self.event.emit("phy_collision", "x")
-        #feet or head collide with z
-        if self.block_collision(cb, z=1) or self.block_collision(cb, z=-1) or self.block_collision(cb, y=1, z=1) or self.block_collision(cb, y=1, z=-1):
+        # feet or head collide with z
+        if self.block_collision(cb, z=1) or \
+                self.block_collision(cb, z=-1) or \
+                self.block_collision(cb, y=1, z=1) or \
+                self.block_collision(cb, y=1, z=-1):
             self.vec.z = 0
-            #replace with real info in event
+            # replace with real info in event
             self.event.emit("phy_collision", "z")
 
-    def block_collision(self, cb, x = 0, y = 0, z = 0):
-        block_id, meta = self.world.get_block(cb.x+x, cb.y+y, cb.z+z)
+    def block_collision(self, cb, x=0, y=0, z=0):
+        block_id, meta = self.world.get_block(cb.x + x, cb.y + y, cb.z + z)
         block = mapdata.get_block(block_id, meta)
-        if block == None:
+        if block is None:
             return False
-        #possibly we want to use the centers of blocks as the starting points for bounding boxes instead of 0,0,0
-        #this might make thinks easier when we get to more complex shapes that are in the center of a block aka fences but more complicated for the player
-        #uncenter the player position and bump it up a little down to prevent colliding in the floor
-        pos1 = Position(self.pos.x-self.playerbb.w/2, self.pos.y-0.2, self.pos.z-self.playerbb.d/2)
+        # possibly we want to use the centers of blocks as the starting
+        # points for bounding boxes instead of 0,0,0
+        # this might make thinks easier when we get to more complex shapes
+        # that are in the center of a block aka fences but more complicated
+        # for the player
+        # uncenter the player position and bump it up a little down to
+        # prevent colliding in the floor
+        pos1 = Position(self.pos.x - self.playerbb.w / 2, self.pos.y - 0.2,
+                        self.pos.z - self.playerbb.d / 2)
         bb1 = self.playerbb
         bb2 = block.bounding_box
-        if bb2 != None:
-            pos2 = Position(cb.x+x+bb2.x, cb.y+y+bb2.y, cb.z+z+bb2.z)
-            if ((pos1.x + bb1.w) >= (pos2.x) and (pos1.x) <= (pos2.x + bb2.w)) and \
-                ((pos1.y + bb1.h) >= (pos2.y) and (pos1.y) <= (pos2.y + bb2.h)) and \
-                ((pos1.z + bb1.d) >= (pos2.z) and (pos1.z) <= (pos2.z + bb2.d)):
+        if bb2 is not None:
+            pos2 = Position(cb.x + x + bb2.x, cb.y + y + bb2.y,
+                            cb.z + z + bb2.z)
+            if ((pos1.x + bb1.w) >= (pos2.x) and (pos1.x) <= (
+                    pos2.x + bb2.w)) and (
+                (pos1.y + bb1.h) >= (pos2.y) and (pos1.y) <= (
+                    pos2.y + bb2.h)) and (
+                (pos1.z + bb1.d) >= (pos2.z) and (pos1.z) <= (
+                    pos2.z + bb2.d)):
                 return True
         return False
 
     def apply_vertical_drag(self):
-        self.vec.y -= self.vec.y*PLAYER_ENTITY_DRG
+        self.vec.y -= self.vec.y * PLAYER_ENTITY_DRG
 
     def apply_horizontal_drag(self):
         self.vec.x -= self.vec.x * PLAYER_GND_DRG

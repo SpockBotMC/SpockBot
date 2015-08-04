@@ -1,13 +1,15 @@
 """
 Provides reasonably not-awful plugin loading
 """
-from spock.plugins.core.settings import SettingsPlugin
-import traceback
 import logging
+
+from spock.plugins.core.settings import SettingsPlugin
+
 logger = logging.getLogger('spock')
 
 base_warn = "PluginLoader could not satisfy %s dependency for %s"
 pl_warn = base_warn + ": %s"
+
 
 class PluginLoader:
     def __init__(self, **kwargs):
@@ -32,12 +34,11 @@ class PluginLoader:
             plugin = self.plugins.pop()
             try:
                 plugin(self, self.fetch.get_plugin_settings(plugin))
-            except Exception as e:
-                logger.error('LOADER: Plugin %s failed to load', plugin.__name__)
-                print(traceback.format_exc())
+            except Exception:
+                logger.exception('LOADER: Plugin %s failed to load',
+                                 plugin.__name__)
 
-
-    def requires(self, ident, soft = False, warning = None):
+    def requires(self, ident, soft=False, warning=None):
         if ident not in self.extensions:
             if ident in self.announce:
                 plugin = self.announce[ident]

@@ -1,7 +1,9 @@
 import math
 
+
 class BaseVector(object):
     _internal_vec_type = list
+
     def __init__(self, *values):
         self.vector = self._internal_vec_type(values)
 
@@ -9,7 +11,8 @@ class BaseVector(object):
         return self.vector.__iter__()
 
     def __repr__(self):
-        return "%s(" % self.__class__.__name__ + ", ".join(map(str, self.vector)) + ")"
+        return "%s(" % self.__class__.__name__ + ", ".join(
+            map(str, self.vector)) + ")"
 
     __str__ = __repr__
 
@@ -24,7 +27,6 @@ class BaseVector(object):
 
 
 class CartesianVector(BaseVector):
-
     # Math operations
     # Is __abs__ really useful ?
     def __abs__(self):
@@ -36,21 +38,21 @@ class CartesianVector(BaseVector):
     __iadd__ = __add__
 
     def __neg__(self):
-        return self.__class__(*map(lambda a:-a, self))
+        return self.__class__(*map(lambda a: -a, self))
 
     def __sub__(self, other):
-        return self.__class__(*map(lambda a:a[0] - a[1], zip(self, other)))
+        return self.__class__(*map(lambda a: a[0] - a[1], zip(self, other)))
 
     __isub__ = __sub__
 
     def __mul__(self, other):
-        return self.__class__(*map(lambda a:a * other, self))
+        return self.__class__(*map(lambda a: a * other, self))
 
     __imul__ = __mul__
     __rmul__ = __mul__
 
     def __truediv__(self, other):
-        return self.__class__(*map(lambda a:a / other, self))
+        return self.__class__(*map(lambda a: a / other, self))
 
     __itruediv__ = __truediv__
 
@@ -63,7 +65,7 @@ class CartesianVector(BaseVector):
         return self.__class__(*map(math.trunc, self))
 
     def norm(self):
-        return math.sqrt(sum(map(lambda a:a*a, self)))
+        return math.sqrt(sum(map(lambda a: a * a, self)))
 
     # Comparisons
     # XXX : Maybe return another type of Vector
@@ -85,7 +87,7 @@ class CartesianVector(BaseVector):
 
 class Vector3(CartesianVector):
     def __init__(self, *args):
-        assert len(args)==3, "Wrong length"
+        assert len(args) == 3, "Wrong length"
         super(self.__class__, self).__init__(*args)
 
     # Some shortcuts
@@ -118,14 +120,14 @@ class Vector3(CartesianVector):
         Calculate the yaw and pitch of this vector
         """
         try:
-            c = math.sqrt( self.x**2 + self.z**2 )
-            alpha1 = -math.asin(self.x/c)/math.pi*180
-            alpha2 =  math.acos(self.z/c)/math.pi*180
+            c = math.sqrt(self.x ** 2 + self.z ** 2)
+            alpha1 = -math.asin(self.x / c) / math.pi * 180
+            alpha2 = math.acos(self.z / c) / math.pi * 180
             if alpha2 > 90:
                 yaw = 180 - alpha1
             else:
                 yaw = alpha1
-            pitch = math.asin(-self.y/c)/math.pi*180
+            pitch = math.asin(-self.y / c) / math.pi * 180
         except ZeroDivisionError:
             yaw = 0
             pitch = 0
@@ -138,14 +140,16 @@ class Vector3(CartesianVector):
             self.vector[2] = data['z']
 
     def get_dict(self):
-        return {'x': self.vector[0],'y': self.vector[1],'z':self.vector[2]}
+        return {'x': self.vector[0], 'y': self.vector[1], 'z': self.vector[2]}
+
 
 class YawPitch(BaseVector):
     """
     Store the yaw and pitch (in degrees)
     """
+
     def __init__(self, *args):
-        assert len(args)==2, "Wrong length"
+        assert len(args) == 2, "Wrong length"
         super(self.__class__, self).__init__(*args)
 
     # Some shortcuts
@@ -161,7 +165,7 @@ class YawPitch(BaseVector):
     @property
     def ryaw(self):
         """Yaw in radians"""
-        return self.vector[0]/180*math.pi
+        return self.vector[0] / 180 * math.pi
 
     @property
     def pitch(self):
@@ -175,11 +179,11 @@ class YawPitch(BaseVector):
     @property
     def rpitch(self):
         """Pitch in radians"""
-        return self.vector[1]/180*math.pi
+        return self.vector[1] / 180 * math.pi
 
     def unit_vector(self):
         """Generate a unit vector (norm = 1)"""
         x = -math.cos(self.rpitch) * math.sin(self.ryaw)
         y = -math.sin(self.rpitch)
-        z =  math.cos(self.rpitch) * math.cos(self.ryaw)
+        z = math.cos(self.rpitch) * math.cos(self.ryaw)
         return Vector3(x, y, z)

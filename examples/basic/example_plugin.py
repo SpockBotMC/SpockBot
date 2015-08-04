@@ -26,6 +26,7 @@ from spock.utils import pl_announce
 from spock.mcp.mcpacket import Packet
 from spock.mcmap import mapdata
 
+
 # Required class decorator
 @pl_announce('ExamplePlugin')
 class ExamplePlugin:
@@ -41,10 +42,12 @@ class ExamplePlugin:
 
         # Example of registering an event handler
         # Event types are enumerated here:
-        #  https://github.com/SpockBotMC/SpockBot/blob/master/spock/mcp/mcdata.py#L213
+        #  https://github.com/SpockBotMC/SpockBot/blob/master/spock/mcp
+        # /mcdata.py#L213
         ploader.reg_event_handler('PLAY<Chat Message', self.chat_event_handler)
 
-        # This event will be triggered after authentication when the bot joins the game
+        # This event will be triggered after authentication when the bot
+        # joins the game
         ploader.reg_event_handler("cl_join_game", self.perform_initial_actions)
 
         # Example of registering a timer that triggers a method periodically
@@ -82,16 +85,22 @@ class ExamplePlugin:
         x, y, z = 5, 5, 5
         block_id, meta = self.world.get_block(x, y, z)
         block_placed = mapdata.get_block(block_id, meta)
-        print('Before changing the block, the type had id {0} and name {1}.'.format(block_id,
-                                                                                    block_placed.name))
+        print(
+            'Before changing the block, the type had id {0} and name {'
+            '1}.'.format(
+                block_id,
+                block_placed.name))
 
         # Place a block (choosing the type randomly from a list of types)
-        self.place_block(x, y, z, random.choice(['waterlily', 'red_mushroom', 'brown_mushroom']))
+        self.place_block(x, y, z, random.choice(
+            ['waterlily', 'red_mushroom', 'brown_mushroom']))
 
     def emit_chat_message(self, msg):
         """Helper method that sends chat messages or chat commands"""
         self.net.push(Packet(ident='PLAY>Chat Message', data={'message': msg}))
 
     def place_block(self, x, y, z, block_type):
-        """Helper method that places a block by using the 'setblock' chat command"""
-        self.emit_chat_message('/setblock {0} {1} {2} {3}'.format(x, y, z, block_type))
+        """Helper method that places a block by using the 'setblock' chat
+        command"""
+        self.emit_chat_message(
+            '/setblock {0} {1} {2} {3}'.format(x, y, z, block_type))

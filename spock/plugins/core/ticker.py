@@ -6,6 +6,7 @@ from spock.plugins.base import PluginBase
 
 CLIENT_TICK_RATE = 0.05
 
+
 class TickerPlugin(PluginBase):
     requires = ('Event', 'Timers')
     events = {
