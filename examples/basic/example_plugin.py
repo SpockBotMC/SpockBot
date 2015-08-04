@@ -85,11 +85,8 @@ class ExamplePlugin:
         x, y, z = 5, 5, 5
         block_id, meta = self.world.get_block(x, y, z)
         block_placed = mapdata.get_block(block_id, meta)
-        print(
-            'Before changing the block, the type had id {0} and name {'
-            '1}.'.format(
-                block_id,
-                block_placed.name))
+        print('Before changing the block, the type had id %d and name %s.' %
+              (block_id, block_placed.name))
 
         # Place a block (choosing the type randomly from a list of types)
         self.place_block(x, y, z, random.choice(
