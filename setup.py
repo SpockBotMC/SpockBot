@@ -6,7 +6,7 @@ setup (
     description='Minecraft library in python',
     license='MIT',
     long_description=open('README.md').read(),
-    version='1.2',
+    version='0.1.2',
     packages=find_packages(exclude=['tests', 'tests.*']),
     install_requires=[
         'PyCrypto >= 2.6.1',
