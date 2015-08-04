@@ -629,9 +629,8 @@ class InventoryPlugin(PluginBase):
 
         if accepted:
             # TODO check if the wrong window/action ID was confirmed,
-            # never occured during testing
-            # update inventory, because 1.8 server does not send slot
-            # updates after successful clicks
+            # never occured during testing update inventory, because 1.8
+            # server does not send slot updates after successful clicks
             click.on_success(self.inventory, self.emit_set_slot)
             emit_response_event()
         else:  # click not accepted

@@ -154,9 +154,8 @@ class ClientInfoPlugin(PluginBase):
                     item.set_dict(pl)
                     self.event.emit('cl_update_player', item)
                 # Sometime the server sends updates before it gives us the
-                # player
-                # We store those in a list and apply them when ADD_PLAYER is
-                #  sent
+                # player. We store those in a list and apply them when
+                # ADD_PLAYER is sent
                 else:
                     defered = self.defered_pl.get(pl['uuid'], [])
                     defered.append(pl)

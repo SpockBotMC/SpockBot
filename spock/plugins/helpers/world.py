@@ -1,10 +1,8 @@
 """
-Provides a very raw (but very fast) world map for use by plugins.
-Plugins interested in a more comprehensive world map view can use
-mcp.mapdata to
-interpret blocks and their metadata more comprehensively.
-Planned to provide light level interpretation based on sky light and time of
-day
+Provides a very raw (but very fast) world map for use by plugins. Plugins
+interested in a more comprehensive world map view can use mcp.mapdata to
+interpret blocks and their metadata more comprehensively. Planned to provide
+light level interpretation based on sky light and time of day
 """
 
 from spock.utils import pl_announce

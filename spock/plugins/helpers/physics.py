@@ -85,9 +85,8 @@ class PhysicsPlugin(PluginBase):
         super(self.__class__, self).__init__(ploader, settings)
 
         self.vec = Vector3(0.0, 0.0, 0.0)
-        self.playerbb = BoundingBox(0.8,
-                                    1.8)  # wiki says 0.6 but I made it 0.8
-        # to give a little wiggle room
+        # wiki says 0.6 but I made it 0.8 to give a little wiggle room
+        self.playerbb = BoundingBox(0.8, 1.8)
         self.pos = self.clientinfo.position
         ploader.provides('Physics', PhysicsCore(self.vec, self.pos))
 
@@ -132,12 +131,11 @@ class PhysicsPlugin(PluginBase):
         if block is None:
             return False
         # possibly we want to use the centers of blocks as the starting
-        # points for bounding boxes instead of 0,0,0
-        # this might make thinks easier when we get to more complex shapes
-        # that are in the center of a block aka fences but more complicated
-        # for the player
-        # uncenter the player position and bump it up a little down to
-        # prevent colliding in the floor
+        # points for bounding boxes instead of 0,0,0 this might make thinks
+        # easier when we get to more complex shapes that are in the center
+        # of a block aka fences but more complicated for the player uncenter
+        # the player position and bump it up a little down to prevent
+        # colliding in the floor
         pos1 = Position(self.pos.x - self.playerbb.w / 2, self.pos.y - 0.2,
                         self.pos.z - self.playerbb.d / 2)
         bb1 = self.playerbb
