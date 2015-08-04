@@ -13,16 +13,20 @@ INV_BUTTON_MIDDLE = 2
 
 INV_SLOT_NR_CURSOR = -1
 INV_WINID_CURSOR = -1  # the slot that follows the cursor
-INV_WINID_PLAYER = 0  # player inventory window ID/type, not opened but updated by server
+# player inventory window ID/type, not opened but updated by server
+INV_WINID_PLAYER = 0
 INV_ITEMID_EMPTY = -1
 
 INV_SLOTS_PLAYER = 9  # crafting and armor
 INV_SLOTS_INVENTORY = 9 * 3  # above hotbar
 INV_SLOTS_HOTBAR = 9
-INV_SLOTS_PERSISTENT = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR  # always accessible
+# always accessible
+INV_SLOTS_PERSISTENT = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR
+
 
 class Slot(object):
-    def __init__(self, window, slot_nr, id=INV_ITEMID_EMPTY, damage=0, amount=0, enchants=None):
+    def __init__(self, window, slot_nr, id=INV_ITEMID_EMPTY, damage=0,
+                 amount=0, enchants=None):
         self.window = window
         self.slot_nr = slot_nr
         self.item_id = id
@@ -34,27 +38,30 @@ class Slot(object):
         self.window, self.slot_nr = window, slot_nr
 
     def stacks_with(self, other):
-        if self.item_id != other.item_id: return False
-        if self.damage != other.damage: return False
-        if self.damage != other.damage: return False
-        # raise NotImplementedError('Stacks might differ by NBT data: %s %s' % (self, other))
-        # if self.nbt != other.nbt: return False  # TODO implement this correctly
+        if self.item_id != other.item_id:
+            return False
+        if self.damage != other.damage:
+            return False
+        # raise NotImplementedError('Stacks might differ by NBT data: %s %s'
+        # % (self, other))
+        # if self.nbt != other.nbt: return False
+        # TODO implement this correctly
         return self.max_amount != 1
 
     @property
     def max_amount(self):
         # TODO add the real values for ALL THE ITEMS! And blocks.
         # use some dummy values for now
-        if self.item_id in (-1,
-                256, 257, 258, 259, 261, 282,
-                326, 327, 333, 335, 342, 343, 346, 347, 355, 358, 359, 373, 374, 379, 380, 386, 387, 398,
-                403, 407, 408, 422, 417, 418, 419) \
-            or self.item_id in range(267, 280) \
-            or self.item_id in range(283, 287) \
-            or self.item_id in range(290, 295) \
-            or self.item_id in range(298, 318) \
-            or self.item_id in range(2256, 2268) \
-            : return 1
+        items_single = [-1, 256, 257, 258, 259, 261, 282, 326, 327, 333, 335,
+                        342, 343, 346, 347, 355, 358, 359, 373, 374, 379, 380,
+                        386, 387, 398, 403, 407, 408, 422, 417, 418, 419]
+        items_single.extend(range(267, 280))
+        items_single.extend(range(283, 287))
+        items_single.extend(range(290, 295))
+        items_single.extend(range(298, 318))
+        items_single.extend(range(2256, 2268))
+        for self.item_id in items_single:
+            return 1
         # TODO some stack up to 16
         return 64
 
@@ -78,44 +85,58 @@ class Slot(object):
         if self.item_id == INV_ITEMID_EMPTY:
             args = 'empty'
         else:
-            args = str(self.get_dict()).strip('{}').replace("'", '').replace(': ', '=')
-        return 'Slot(window=%s, slot_nr=%i, %s)' % (self.window, self.slot_nr, args)
+            args = str(self.get_dict()).strip('{}').replace("'", '').replace(
+                ': ', '=')
+        return 'Slot(window=%s, slot_nr=%i, %s)' % (
+            self.window, self.slot_nr, args)
+
 
 class SlotCursor(Slot):
     def __init__(self, id=INV_ITEMID_EMPTY, damage=0, amount=0, enchants=None):
         class CursorWindow:
             window_id = INV_WINID_CURSOR
+
             def __repr__(self):
                 return 'CursorWindow()'
-        super(self.__class__, self).__init__(CursorWindow(), INV_SLOT_NR_CURSOR, id, damage, amount, enchants)
+
+        super(self.__class__, self).__init__(CursorWindow(),
+                                             INV_SLOT_NR_CURSOR, id, damage,
+                                             amount, enchants)
 
 # look up a class by window type ID when opening windows
 inv_types = {}
+
+
 def map_window_type(inv_type_id):
     def inner(cl):
         inv_types[inv_type_id] = cl
         cl.inv_type = inv_type_id
         return cl
+
     return inner
+
 
 class InventoryBase(object):
     """ Base class for all inventory types. """
 
     # the arguments must have the same names as the keys in the packet dict
-    def __init__(self, inv_type, window_id, title, slot_count, persistent_slots):
+    def __init__(self, inv_type, window_id, title, slot_count,
+                 persistent_slots):
         self.inv_type = inv_type
         self.window_id = window_id
         self.title = title
 
-        # slots vary by inventory type, but always contain main inventory and hotbar
-        # create own slots, ...
+        # slots vary by inventory type, but always contain main inventory and
+        # hotbar create own slots, ...
         self.slots = [Slot(self, slot_nr) for slot_nr in range(slot_count)]
         # ... append persistent slots, which have to be moved
-        for p_slot_nr, inv_slot in enumerate(persistent_slots[-INV_SLOTS_PERSISTENT:]):
+        for p_slot_nr, inv_slot in enumerate(
+                persistent_slots[-INV_SLOTS_PERSISTENT:]):
             inv_slot.move_to_window(self, p_slot_nr + slot_count)
             self.slots.append(inv_slot)
 
-        # additional info dependent on inventory type, dynamically updated by server
+        # additional info dependent on inventory type, dynamically updated
+        # by server
         self.properties = {}
 
     def __repr__(self):
@@ -139,6 +160,7 @@ class InventoryBase(object):
          Useful for searching. """
         return self.slots[:-INV_SLOTS_PERSISTENT]
 
+
 # no @map_window_type(), because not opened by server
 class InventoryPlayer(InventoryBase):
     """ The player's inventory is always open when no other window is open. """
@@ -147,8 +169,12 @@ class InventoryPlayer(InventoryBase):
 
     def __init__(self, persistent_slots=None):
         if persistent_slots is None:
-            persistent_slots = [Slot(self, slot_nr) for slot_nr in range(INV_SLOTS_PERSISTENT)]
-        super(self.__class__, self).__init__('player', INV_WINID_PLAYER, self.name, INV_SLOTS_PLAYER, persistent_slots)  # TODO title should be in chat format
+            persistent_slots = [Slot(self, slot_nr) for slot_nr in
+                                range(INV_SLOTS_PERSISTENT)]
+        # TODO title should be in chat format
+        super(self.__class__, self).__init__('player', INV_WINID_PLAYER,
+                                             self.name, INV_SLOTS_PLAYER,
+                                             persistent_slots)
 
     @property
     def craft_result_slot(self):
@@ -162,11 +188,13 @@ class InventoryPlayer(InventoryBase):
     def armor_slots(self):
         return self.slots[5:9]
 
+
 @map_window_type('minecraft:chest')
 class InventoryChest(InventoryBase):
     """ Small, large, and glitched-out superlarge chests. """
 
     name = 'Chest'
+
 
 @map_window_type('minecraft:crafting_table')
 class InventoryWorkbench(InventoryBase):
@@ -180,7 +208,9 @@ class InventoryWorkbench(InventoryBase):
     def craft_grid_slots(self):
         return self.slots[1:10]
 
-    # TODO crafting recipes? might be done in other plugin, as this is very complex
+        # TODO crafting recipes? might be done in other plugin, as this is very
+        # complex
+
 
 @map_window_type('minecraft:furnace')
 class InventoryFurnace(InventoryBase):
@@ -206,9 +236,11 @@ class InventoryFurnace(InventoryBase):
     def fuel_time(self):
         return self.properties[1]
 
+
 @map_window_type('minecraft:dispenser')
 class InventoryDispenser(InventoryBase):
     name = 'Dispenser'
+
 
 @map_window_type('minecraft:enchanting_table')
 class InventoryEnchant(InventoryBase):
@@ -222,7 +254,8 @@ class InventoryEnchant(InventoryBase):
     def lapis_slot(self):
         return self.slots[1]
 
-    # TODO enchanting
+        # TODO enchanting
+
 
 @map_window_type('minecraft:brewing_stand')
 class InventoryBrewing(InventoryBase):
@@ -240,12 +273,15 @@ class InventoryBrewing(InventoryBase):
     def brew_time(self):
         return self.properties[0]
 
+
 @map_window_type('minecraft:villager')
 class InventoryVillager(InventoryBase):
     name = 'NPC Trade'
 
-    # TODO NPC slot getters
-    # TODO trading
+
+# TODO NPC slot getters
+# TODO trading
+
 
 @map_window_type('minecraft:beacon')
 class InventoryBeacon(InventoryBase):
@@ -267,7 +303,8 @@ class InventoryBeacon(InventoryBase):
     def effect_two(self):
         return self.properties[2]
 
-    # TODO choosing/applying the effect
+        # TODO choosing/applying the effect
+
 
 @map_window_type('minecraft:anvil')
 class InventoryAnvil(InventoryBase):
@@ -279,13 +316,16 @@ class InventoryAnvil(InventoryBase):
     def max_cost(self):
         return self.properties[0]
 
+
 @map_window_type('minecraft:hopper')
 class InventoryHopper(InventoryBase):
     name = 'Hopper'
 
+
 @map_window_type('minecraft:dropper')
 class InventoryDropper(InventoryBase):
     name = 'Dropper'
+
 
 @map_window_type('EntityHorse')
 class InventoryHorse(InventoryBase):
@@ -295,30 +335,30 @@ class InventoryHorse(InventoryBase):
         super(self.__class__, self).__init__(**args)
         self.horse_entity_id = eid
 
-    # TODO horse slot getters
+        # TODO horse slot getters
+
 
 class BaseClick:
     def get_packet(self, inv_plugin):
-        """
-        Called by send_click() to prepare the sent packet.
+        """Called by send_click() to prepare the sent packet.
         Abstract method.
         :param inv_plugin: inventory plugin instance, to get slot contents etc.
         """
         raise NotImplementedError()
 
     def apply(self, inv_plugin):
-        """
-        Called by on_success().
+        """Called by on_success().
         Abstract method.
         :param inv_plugin: inventory plugin instance, to set slot contents etc.
         """
         raise NotImplementedError()
 
     def on_success(self, inv_plugin, emit_set_slot):
-        """
-        Called when the click was successful and should be applied to the inventory.
+        """Called when the click was successful and should be
+        applied to the inventory.
         :param inv_plugin: inventory plugin instance, to set slot contents etc.
-        :param emit_set_slot: function to signal a slot change, should be InventoryPlugin's emit_set_slot()
+        :param emit_set_slot: function to signal a slot change, should be
+        InventoryPlugin's emit_set_slot()
         """
         self.dirty = set()
         self.apply(inv_plugin)
@@ -329,20 +369,23 @@ class BaseClick:
     # all argument instances are modified in-place
 
     def copy_slot_type(self, slot_from, slot_to):
-        slot_to.item_id, slot_to.damage, slot_to.nbt = slot_from.item_id, slot_from.damage, slot_from.nbt
+        slot_to.item_id, slot_to.damage = slot_from.item_id, slot_from.damage
+        slot_to.nbt = slot_from.nbt
         self.mark_dirty(slot_to)
 
     def swap_slots(self, slot_a, slot_b):
         slot_a.item_id, slot_b.item_id = slot_b.item_id, slot_a.item_id
-        slot_a.damage,  slot_b.damage  = slot_b.damage,  slot_a.damage
-        slot_a.amount,  slot_b.amount  = slot_b.amount,  slot_a.amount
-        slot_a.nbt,     slot_b.nbt     = slot_b.nbt,     slot_a.nbt
+        slot_a.damage, slot_b.damage = slot_b.damage, slot_a.damage
+        slot_a.amount, slot_b.amount = slot_b.amount, slot_a.amount
+        slot_a.nbt, slot_b.nbt = slot_b.nbt, slot_a.nbt
         self.mark_dirty(slot_a)
         self.mark_dirty(slot_b)
 
     def transfer(self, from_slot, to_slot, max_amount):
-        transfer_amount = min(max_amount, from_slot.amount, to_slot.max_amount - to_slot.amount)
-        if transfer_amount <= 0: return
+        transfer_amount = min(max_amount, from_slot.amount,
+                              to_slot.max_amount - to_slot.amount)
+        if transfer_amount <= 0:
+            return
         self.copy_slot_type(from_slot, to_slot)
         to_slot.amount += transfer_amount
         from_slot.amount -= transfer_amount
@@ -357,12 +400,14 @@ class BaseClick:
     def mark_dirty(self, slot):
         self.dirty.add(slot)
 
+
 class SingleClick(BaseClick):
     def __init__(self, slot, button=INV_BUTTON_LEFT):
         self.slot = slot
-        self.button= button
+        self.button = button
         if button not in (INV_BUTTON_LEFT, INV_BUTTON_RIGHT):
-            raise NotImplementedError('Clicking with button %s not implemented' % button)
+            raise NotImplementedError(
+                'Clicking with button %s not implemented' % button)
 
     def get_packet(self, inv_plugin):
         return {
@@ -383,13 +428,15 @@ class SingleClick(BaseClick):
         elif self.button == INV_BUTTON_RIGHT:
             if cursor.item_id == INV_ITEMID_EMPTY:
                 # transfer half, round up
-                self.transfer(clicked, cursor, (clicked.amount+1) // 2)
+                self.transfer(clicked, cursor, (clicked.amount + 1) // 2)
             elif clicked.is_empty() or clicked.stacks_with(cursor):
                 self.transfer(cursor, clicked, 1)
             else:  # slot items do not stack
                 self.swap_slots(cursor, clicked)
         else:
-            raise NotImplementedError('Clicking with button %s not implemented' % self.button)
+            raise NotImplementedError(
+                'Clicking with button %s not implemented' % self.button)
+
 
 class DropClick(BaseClick):
     def __init__(self, slot, drop_stack=False):
@@ -413,7 +460,8 @@ class DropClick(BaseClick):
             else:
                 self.slot.amount -= 1
             self.cleanup_if_empty(self.slot)
-        # else: can't drop while holding an item
+            # else: can't drop while holding an item
+
 
 class InventoryCore:
     """ Handles operations with the player inventory. """
@@ -422,7 +470,8 @@ class InventoryCore:
         self._net = net_plugin
         self.send_click = send_click
         self.active_slot_nr = 0
-        self.cursor_slot = SlotCursor()  # the slot that moves with the mouse when clicking a slot
+        # the slot that moves with the mouse when clicking a slot
+        self.cursor_slot = SlotCursor()
         self.window = InventoryPlayer()
 
     def total_stored(self, item_id, meta=-1, slots=None):
@@ -440,13 +489,14 @@ class InventoryCore:
     def find_slot(self, item_id, meta=-1, start=0):
         """
         Returns the first slot containing the item or None if not found.
-        Searches active hotbar slot, hotbar, inventory, open window in this order.
+        Searches active hotbar slot, hotbar, inventory, open window in this
+        order.
         Skips the first `start` slots of the current window.
         """
 
         wanted = lambda s: s.slot_nr >= start \
-                            and item_id == s.item_id \
-                            and meta in (-1, s.damage)
+            and item_id == s.item_id \
+            and meta in (-1, s.damage)
 
         if wanted(self.active_slot):
             return self.active_slot
@@ -463,7 +513,8 @@ class InventoryCore:
         assert 0 <= hotbar_index < INV_SLOTS_HOTBAR, 'Invalid hotbar index'
         if hotbar_index != self.active_slot_nr:
             self.active_slot_nr = hotbar_index
-            self._net.push_packet('PLAY>Held Item Change', {'slot': hotbar_index})
+            self._net.push_packet('PLAY>Held Item Change',
+                                  {'slot': hotbar_index})
 
     def click_slot(self, slot, right=False):
         button = INV_BUTTON_RIGHT if right else INV_BUTTON_LEFT
@@ -475,8 +526,10 @@ class InventoryCore:
         return self.send_click(DropClick(slot, drop_stack))
 
     def close_window(self):
-        # TODO does the server send a close window, or should we close the window now?
-        self._net.push_packet('PLAY>Close Window', {'window_id': self.window.window_id})
+        # TODO does the server send a close window, or should we close the
+        # window now?
+        self._net.push_packet('PLAY>Close Window',
+                              {'window_id': self.window.window_id})
 
     def creative_set_slot(self, slot):
         # TODO test
@@ -493,6 +546,7 @@ class InventoryCore:
     def hotbar_start(self):
         return self.window.hotbar_slots[0].slot_nr
 
+
 @pl_announce('Inventory')
 class InventoryPlugin(PluginBase):
     requires = ('Event', 'Net', 'Timers')
@@ -504,9 +558,11 @@ class InventoryPlugin(PluginBase):
         'PLAY<Confirm Transaction': 'handle_confirm_transaction',
         'PLAY<Open Window': 'handle_open_window',
         'PLAY<Close Window': 'handle_close_window',
-        # also register to serverbound, as server does not send Close Window when we do
+        # also register to serverbound, as server does not send Close Window
+        # when we do
         'PLAY>Close Window': 'handle_close_window',
     }
+
     def __init__(self, ploader, settings):
         super(self.__class__, self).__init__(ploader, settings)
 
@@ -514,7 +570,8 @@ class InventoryPlugin(PluginBase):
         ploader.provides('Inventory', self.inventory)
 
         # click sending
-        self.action_id = 1  # start at 1 so bool(action_id) is False only for None, see send_click
+        self.action_id = 1  # start at 1 so bool(action_id) is False only
+        # for None, see send_click
         self.last_click = None  # stores the last click action for confirmation
 
     def handle_held_item_change(self, event, packet):
@@ -523,16 +580,19 @@ class InventoryPlugin(PluginBase):
 
     def handle_open_window(self, event, packet):
         InvType = inv_types[packet.data['inv_type']]
-        self.inventory.window = InvType(persistent_slots=self.inventory.window.slots, **packet.data)
+        self.inventory.window = InvType(
+            persistent_slots=self.inventory.window.slots, **packet.data)
         self.event.emit('inv_open_window', {'window': self.inventory.window})
 
     def handle_close_window(self, event, packet):
         closed_window = self.inventory.window
-        self.inventory.window = InventoryPlayer(persistent_slots=closed_window.slots)
+        self.inventory.window = InventoryPlayer(
+            persistent_slots=closed_window.slots)
         self.event.emit('inv_close_window', {'window': closed_window})
 
     def handle_set_slot(self, event, packet):
-        self.set_slot(packet.data['window_id'], packet.data['slot'], packet.data['slot_data'])
+        self.set_slot(packet.data['window_id'], packet.data['slot'],
+                      packet.data['slot_data'])
 
     def handle_window_items(self, event, packet):
         window_id = packet.data['window_id']
@@ -543,27 +603,34 @@ class InventoryPlugin(PluginBase):
         if window_id == INV_WINID_CURSOR and slot_nr == INV_SLOT_NR_CURSOR:
             slot = self.inventory.cursor_slot = SlotCursor(**slot_data)
         elif window_id == self.inventory.window.window_id:
-            slot = self.inventory.window.slots[slot_nr] = Slot(self.inventory.window, slot_nr, **slot_data)
+            slot = self.inventory.window.slots[slot_nr] = Slot(
+                self.inventory.window, slot_nr, **slot_data)
         else:
-            raise ValueError('Unexpected window ID (%i) or slot_nr (%i)' % (window_id, slot_nr))
+            raise ValueError('Unexpected window ID (%i) or slot_nr (%i)' % (
+                window_id, slot_nr))
         self.emit_set_slot(slot)
 
     def emit_set_slot(self, slot):
         self.event.emit('inv_set_slot', {'slot': slot})
 
     def handle_window_prop(self, event, packet):
-        self.inventory.window.properties[packet.data['property']] = packet.data['value']
+        self.inventory.window.properties[packet.data['property']] = \
+            packet.data['value']
         self.event.emit('inv_win_prop', packet.data)
 
     def handle_confirm_transaction(self, event, packet):
         click, self.last_click = self.last_click, None
         action_id = packet.data['action']
         accepted = packet.data['accepted']
+
         def emit_response_event():
-            self.event.emit('inv_click_response_%s' % action_id, {'accepted': accepted, 'click': click})
+            self.event.emit('inv_click_response_%s' % action_id,
+                            {'accepted': accepted, 'click': click})
+
         if accepted:
-            # TODO check if the wrong window/action ID was confirmed, never occured during testing
-            # update inventory, because 1.8 server does not send slot updates after successful clicks
+            # TODO check if the wrong window/action ID was confirmed,
+            # never occured during testing update inventory, because 1.8
+            # server does not send slot updates after successful clicks
             click.on_success(self.inventory, self.emit_set_slot)
             emit_response_event()
         else:  # click not accepted

@@ -4,30 +4,34 @@ servers and processing incoming packet data.
 Coordinates with the Timers plugin to honor clock-time timers
 """
 
-import sys
 import socket
 import select
 import time
+import logging
+
 from spock import utils
 from spock.utils import pl_announce
 from spock.plugins.base import PluginBase
 from spock.mcp import mcpacket, mcdata
 from Crypto.Cipher import AES
 
-import logging
 logger = logging.getLogger('spock')
+
 
 class AESCipher:
     def __init__(self, SharedSecret):
-        #Name courtesy of dx
-        self.encryptifier = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
-        self.decryptifier = AES.new(SharedSecret, AES.MODE_CFB, IV=SharedSecret)
+        # Name courtesy of dx
+        self.encryptifier = AES.new(SharedSecret, AES.MODE_CFB,
+                                    IV=SharedSecret)
+        self.decryptifier = AES.new(SharedSecret, AES.MODE_CFB,
+                                    IV=SharedSecret)
 
     def encrypt(self, data):
         return self.encryptifier.encrypt(data)
 
     def decrypt(self, data):
         return self.decryptifier.decrypt(data)
+
 
 class SelectSocket:
     def __init__(self, timer):
@@ -48,7 +52,7 @@ class SelectSocket:
         else:
             slist = [(self.sock,), (), (self.sock,)]
         timeout = self.timer.get_timeout()
-        if timeout>=0:
+        if timeout >= 0:
             slist.append(timeout)
         try:
             rlist, wlist, xlist = select.select(*slist)
@@ -57,15 +61,19 @@ class SelectSocket:
             rlist = []
             wlist = []
             xlist = []
-        if rlist: flags.append('SOCKET_RECV')
-        if wlist: flags.append('SOCKET_SEND')
-        if xlist: flags.append('SOCKET_ERR')
+        if rlist:
+            flags.append('SOCKET_RECV')
+        if wlist:
+            flags.append('SOCKET_SEND')
+        if xlist:
+            flags.append('SOCKET_ERR')
         return flags
 
     def reset(self):
         self.sock.close()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setblocking(False)
+
 
 class NetCore:
     def __init__(self, sock, event):
@@ -81,12 +89,13 @@ class NetCore:
         self.sbuff = b''
         self.rbuff = utils.BoundBuffer()
 
-    def connect(self, host = 'localhost', port = 25565):
+    def connect(self, host='localhost', port=25565):
         self.host = host
         self.port = port
         try:
-            logger.info("NETCORE: Attempting to connect to host: %s port: %s", host, port)
-            #Set the connect to be a blocking operation
+            logger.info("NETCORE: Attempting to connect to host: %s port: %s",
+                        host, port)
+            # Set the connect to be a blocking operation
             self.sock.sock.setblocking(True)
             self.sock.sock.connect((self.host, self.port))
             self.sock.sock.setblocking(False)
@@ -102,7 +111,7 @@ class NetCore:
 
     def set_comp_state(self, threshold):
         self.comp_threshold = threshold
-        if threshold >=0:
+        if threshold >= 0:
             self.comp_state = mcdata.PROTO_COMP_ON
 
     def push(self, packet):
@@ -115,12 +124,13 @@ class NetCore:
     def push_packet(self, ident, data):
         self.push(mcpacket.Packet(ident, data))
 
-    def read_packet(self, data = b''):
-        self.rbuff.append(self.cipher.decrypt(data) if self.encrypted else data)
+    def read_packet(self, data=b''):
+        self.rbuff.append(
+            self.cipher.decrypt(data) if self.encrypted else data)
         while True:
             self.rbuff.save()
             try:
-                packet = mcpacket.Packet(ident = (
+                packet = mcpacket.Packet(ident=(
                     self.proto_state,
                     mcdata.SERVER_TO_CLIENT
                 )).decode(self.rbuff, self.comp_state)
@@ -130,7 +140,8 @@ class NetCore:
             except mcpacket.PacketDecodeFailure as err:
                 logger.warning('NETCORE: Packet decode failed')
                 logger.warning(
-                    'NETCORE: Failed packet ident is probably: %s', err.packet.str_ident
+                    'NETCORE: Failed packet ident is probably: %s',
+                    err.packet.str_ident
                 )
                 self.event.emit('PACKET_ERR', err)
                 break
@@ -151,6 +162,7 @@ class NetCore:
         self.__init__(self.sock, self.event)
 
     disconnect = reset
+
 
 @pl_announce('Net')
 class NetPlugin(PluginBase):
@@ -193,13 +205,12 @@ class NetPlugin(PluginBase):
             else:
                 time.sleep(timeout)
 
-
-    #SOCKET_RECV - Socket is ready to recieve data
+    # SOCKET_RECV - Socket is ready to recieve data
     def handleRECV(self, name, data):
         if self.net.connected:
             try:
                 data = self.sock.recv(self.bufsize)
-                #print('read:', len(data))
+                # print('read:', len(data))
                 if not data:
                     self.event.emit('SOCKET_HUP')
                     return
@@ -207,8 +218,8 @@ class NetPlugin(PluginBase):
             except socket.error as error:
                 self.event.emit('SOCKET_ERR', error)
 
-
-    #SOCKET_SEND - Socket is ready to send data and Send buffer contains data to send
+    # SOCKET_SEND - Socket is ready to send data and Send buffer contains
+    # data to send
     def handleSEND(self, name, data):
         if self.net.connected:
             try:
@@ -220,7 +231,7 @@ class NetPlugin(PluginBase):
                 logger.error(str(error))
                 self.event.emit('SOCKET_ERR', error)
 
-    #SOCKET_ERR - Socket Error has occured
+    # SOCKET_ERR - Socket Error has occured
     def handleERR(self, name, data):
         self.net.reset()
         logger.error("NETPLUGIN: Socket Error: %s", data)
@@ -229,7 +240,7 @@ class NetPlugin(PluginBase):
             self.sock_dead = True
             self.event.kill()
 
-    #SOCKET_HUP - Socket has hung up
+    # SOCKET_HUP - Socket has hung up
     def handleHUP(self, name, data):
         self.net.reset()
         logger.error("NETPLUGIN: Socket has hung up")
@@ -238,15 +249,15 @@ class NetPlugin(PluginBase):
             self.sock_dead = True
             self.event.kill()
 
-    #Handshake - Change to whatever the next state is going to be
+    # Handshake - Change to whatever the next state is going to be
     def handle_handshake(self, name, packet):
         self.net.set_proto_state(packet.data['next_state'])
 
-    #Login Success - Change to Play state
+    # Login Success - Change to Play state
     def handle_login_success(self, name, packet):
         self.net.set_proto_state(mcdata.PLAY_STATE)
 
-    #Handle Set Compression packets
+    # Handle Set Compression packets
     def handle_comp(self, name, packet):
         self.net.set_comp_state(packet.data['threshold'])
 
@@ -254,7 +265,7 @@ class NetPlugin(PluginBase):
         logger.info("NETPLUGIN: Disconnected: %s", packet.data['reason'])
         self.event.emit('disconnect', packet.data['reason'])
 
-    #Kill event - Try to shutdown the socket politely
+    # Kill event - Try to shutdown the socket politely
     def handle_kill(self, name, data):
         logger.info("NETPLUGIN: Kill event recieved, shutting down socket")
         if not self.sock_dead:

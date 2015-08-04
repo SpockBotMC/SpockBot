@@ -7,9 +7,9 @@ for demos and tutorials, and illustrates the basic steps for initializing
 a bot.
 """
 
-from spock import utils
-from spock.mcp import mcpacket, mcdata
+from spock.mcp import mcdata
 from spock.plugins.base import PluginBase
+
 
 class StartPlugin(PluginBase):
     requires = ('Event', 'Net', 'Auth')
@@ -19,14 +19,15 @@ class StartPlugin(PluginBase):
         'host': 'localhost',
         'port': 25565,
     }
+
     def __init__(self, ploader, settings):
         super(self.__class__, self).__init__(ploader, settings)
         setattr(ploader, 'start', self.start)
 
-    def start(self, host = None, port = None):
+    def start(self, host=None, port=None):
         if 'error' not in self.auth.start_session(
-            self.settings['username'],
-            self.settings['password']
+                self.settings['username'],
+                self.settings['password']
         ):
             host = host if host else self.settings['host']
             port = port if port else self.settings['port']

@@ -1,5 +1,7 @@
 from unittest import TestCase
+
 from spock.plugins.base import PluginBase
+
 
 class PluginLoaderMock(object):
     events = {}
@@ -8,8 +10,10 @@ class PluginLoaderMock(object):
         return True
 
     def reg_event_handler(self, event, handler):
-        self.events[event] = [] if event not in self.events else self.events[event]
+        self.events[event] = [] if event not in self.events else self.events[
+            event]
         self.events[event].append(handler)
+
 
 class TestPluginBase(PluginBase):
     requires = ('Net', 'Auth')
@@ -18,6 +22,7 @@ class TestPluginBase(PluginBase):
 
     def callback(self):
         pass
+
 
 class PluginBaseTest(TestCase):
     def setUp(self):

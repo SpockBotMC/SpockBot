@@ -1,19 +1,23 @@
 """
 An entity tracker
 """
+import logging
+
 from spock.utils import pl_announce, Info
 from spock.plugins.base import PluginBase
 
-import logging
 logger = logging.getLogger('spock')
+
 
 class MCEntity(Info):
     eid = 0
     status = 0
     nbt = None
 
+
 class ClientPlayerEntity(MCEntity):
     metadata = None
+
 
 class MovementEntity(MCEntity):
     x = 0
@@ -23,10 +27,12 @@ class MovementEntity(MCEntity):
     pitch = 0
     on_ground = True
 
+
 class PlayerEntity(MovementEntity):
     uuid = 0
     current_item = 0
     metadata = None
+
 
 class ObjectEntity(MovementEntity):
     obj_type = 0
@@ -34,6 +40,7 @@ class ObjectEntity(MovementEntity):
     speed_x = 0
     speed_y = 0
     speed_z = 0
+
 
 class MobEntity(MovementEntity):
     mob_type = 0
@@ -44,6 +51,7 @@ class MobEntity(MovementEntity):
     velocity_z = 0
     metadata = None
 
+
 class PaintingEntity(MCEntity):
     title = ""
     location = {
@@ -53,17 +61,20 @@ class PaintingEntity(MCEntity):
     }
     direction = 0
 
+
 class ExpEntity(MCEntity):
     x = 0
     y = 0
     z = 0
     count = 0
 
+
 class GlobalEntity(MCEntity):
     global_type = 0
     x = 0
     y = 0
     z = 0
+
 
 class EntityCore:
     def __init__(self):
@@ -75,6 +86,7 @@ class EntityCore:
         self.paintings = {}
         self.exp_orbs = {}
         self.global_entities = {}
+
 
 @pl_announce('Entities')
 class EntityPlugin(PluginBase):
@@ -102,12 +114,13 @@ class EntityPlugin(PluginBase):
         'PLAY<Spawn Global Entity': 'handle_spawn_global_entity',
         'PLAY<Update Entity NBT': 'handle_set_dict',
     }
+
     def __init__(self, ploader, settings):
         super(self.__class__, self).__init__(ploader, settings)
         self.ec = EntityCore()
         ploader.provides('Entities', self.ec)
 
-    #TODO: Implement all these things
+    # TODO: Implement all these things
     def handle_unhandled(self, event, packet):
         pass
 
@@ -184,7 +197,8 @@ class EntityPlugin(PluginBase):
             entity.x = entity.x + packet.data['dx']
             entity.y = entity.y + packet.data['dy']
             entity.z = entity.z + packet.data['dz']
-            self.event.emit('entity_move', {'entity': entity, 'old_pos': old_pos})
+            self.event.emit('entity_move',
+                            {'entity': entity, 'old_pos': old_pos})
 
     def handle_set_dict(self, event, packet):
         if packet.data['eid'] in self.ec.entities:

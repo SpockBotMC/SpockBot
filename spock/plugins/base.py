@@ -1,9 +1,10 @@
 from spock.utils import get_settings
 
 try:
-  basestring
+    basestring
 except NameError:
-  basestring = str
+    basestring = str
+
 
 class PluginBase(object):
     """A base class for cleaner plugin code.
@@ -22,15 +23,19 @@ class PluginBase(object):
 
         # Load all the plugin's dependencies.
         if isinstance(self.requires, basestring):
-            setattr(self, self.requires.lower(), ploader.requires(self.requires))
+            setattr(self, self.requires.lower(),
+                    ploader.requires(self.requires))
         else:
             for requirement in self.requires:
-                setattr(self, requirement.lower(), ploader.requires(requirement))
+                setattr(self, requirement.lower(),
+                        ploader.requires(requirement))
 
         # Setup the plugin's event handlers.
         for event in self.events.keys():
             if hasattr(self, self.events[event]):
-                ploader.reg_event_handler(event, getattr(self, self.events[event]))
+                ploader.reg_event_handler(event,
+                                          getattr(self, self.events[event]))
             else:
                 raise AttributeError("'%s' object has no attribute '%s'"
-                                 % (self.__class__.__name__, self.events[event]))
+                                     % (self.__class__.__name__,
+                                        self.events[event]))
