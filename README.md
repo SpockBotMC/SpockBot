@@ -41,7 +41,7 @@ PyCrypto
 ##Examples
 Refer to the [example bot](examples/basic) for instructions on how to write a bot and a plugin that provides some common functionality.
 
-Also see [Some Useful Examples](examples) for additional examples contributed by the community.
+Also see [Some Useful Examples](https://github.com/SpockBotMC/SpockBot-Contrib/tree/master/examples) for additional examples contributed by the community.
 
 ##API Docs
 Current API docs live here https://spockbotmc.github.io/docs/spock/
