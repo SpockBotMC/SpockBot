@@ -19,12 +19,12 @@ START_COORDINATES = (10, 2, 10, 0, 0)
 
 import random
 
+# Import any modules that you need in your plugin
+from spock.mcmap import mapdata
+from spock.mcp.mcpacket import Packet
+
 # Required import
 from spock.utils import pl_announce
-
-# Import any modules that you need in your plugin
-from spock.mcp.mcpacket import Packet
-from spock.mcmap import mapdata
 
 
 # Required class decorator

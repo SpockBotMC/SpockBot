@@ -1,12 +1,11 @@
-from spock.mcp import mcdata
-from spock.mcp import datautils
-from spock.mcp import nbt
 from spock import utils
-from spock.mcp.mcdata import (
-    MC_BOOL, MC_UBYTE, MC_BYTE, MC_USHORT, MC_SHORT, MC_INT, MC_FLOAT,
-    MC_DOUBLE, MC_VARINT, MC_VARLONG, MC_UUID,
-    MC_POSITION, MC_STRING, MC_CHAT, MC_SLOT
-)
+from spock.mcp import datautils
+from spock.mcp import mcdata
+from spock.mcp import nbt
+from spock.mcp.mcdata import (MC_BOOL, MC_BYTE, MC_CHAT, MC_DOUBLE, MC_FLOAT,
+                              MC_INT, MC_POSITION, MC_SHORT, MC_SLOT,
+                              MC_STRING, MC_UBYTE, MC_USHORT, MC_UUID,
+                              MC_VARINT, MC_VARLONG)
 
 hashed_extensions = {}
 extensions = tuple(tuple({} for i in j) for j in mcdata.packet_structs)
@@ -336,8 +335,8 @@ class ExtensionUpdateNBT:
     def decode_extra(packet, bbuff):
         tag_type = datautils.unpack(MC_BYTE, bbuff)
         if tag_type == nbt.TAG_COMPOUND:
-            name = nbt.TAG_String(buffer=bbuff).value
-            nbt_data = nbt.TAG_Compound(buffer=bbuff)
+            name = nbt.TagString(buffer=bbuff).value
+            nbt_data = nbt.TagCompound(buffer=bbuff)
             nbt_data.name = name
             packet.data['nbt'] = nbt_data
         else:
@@ -349,7 +348,7 @@ class ExtensionUpdateNBT:
     def encode_extra(packet):
         bbuff = utils.BoundBuffer()
         if packet.data['nbt'] is None:
-            packet.data['nbt'] = nbt._TAG_End()
+            packet.data['nbt'] = nbt._TagEnd()
         TAG_Byte(packet.data['nbt'].id)._render_buffer(bbuff)
         if packet.data['nbt'].id == nbt.TAG_COMPOUND:
             TAG_String(packet.data['nbt'].name)._render_buffer(bbuff)

@@ -1,6 +1,6 @@
-from spock.plugins.core import event, net, auth, timer, ticker
-from spock.plugins.helpers import start, keepalive, clientinfo, entities, \
-    world, move, respawn, physics, inventory
+from spock.plugins.core import auth, event, net, ticker, timer
+from spock.plugins.helpers import clientinfo, entities, inventory, keepalive, \
+    move, physics, respawn, start, world
 
 DefaultPlugins = [
     ('event', event.EventPlugin),
