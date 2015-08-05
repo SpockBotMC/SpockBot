@@ -144,7 +144,7 @@ class ExtensionPSTC21:
 
     @staticmethod
     def encode_extra(packet):
-        o = datautils.pack(MC_VARINT, len(data))
+        o = datautils.pack(MC_VARINT, len(packet.data['data']))
         o += packet.data['data']
         return o
 
@@ -349,9 +349,9 @@ class ExtensionUpdateNBT:
         bbuff = utils.BoundBuffer()
         if packet.data['nbt'] is None:
             packet.data['nbt'] = nbt._TagEnd()
-        TAG_Byte(packet.data['nbt'].id)._render_buffer(bbuff)
+        nbt.TagByte(packet.data['nbt'].id)._render_buffer(bbuff)
         if packet.data['nbt'].id == nbt.TAG_COMPOUND:
-            TAG_String(packet.data['nbt'].name)._render_buffer(bbuff)
+            nbt.TagString(packet.data['nbt'].name)._render_buffer(bbuff)
             packet.data['nbt']._render_buffer(bbuff)
         return bbuff.flush()
 
@@ -541,7 +541,7 @@ class ExtensionPluginMessage:
 
     @staticmethod
     def encode_extra(packet):
-        o += packet.data['data']
+        o = packet.data['data']
         return o
 
 

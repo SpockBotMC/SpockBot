@@ -12,3 +12,4 @@ contrib/
 *.egg-info/
 xunit-*.xml
 .coverage
+/tags
