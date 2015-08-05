@@ -135,6 +135,3 @@ def mapshort2id(data):
 
 def byte_to_hex(byte_str):
     return ''.join(["%02X " % x for x in byte_str]).strip()
-
-
-

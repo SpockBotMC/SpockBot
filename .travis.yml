@@ -21,12 +21,15 @@ script:
   - "tox -e $TOX_ENV"
 
 after_success:
-        - "if [ `echo $TOX_ENV | grep -v flake8` ]; then pip install coveralls; coveralls; fi"
+  - "if [ `echo $TOX_ENV | grep -v flake8` ]; then pip install coveralls; coveralls; fi"
 
 notifications:
   irc:
     channels:
       - "irc.freenode.org#spockbot"
+    template:
+      - "%{repository_name}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+      - "Build details: %{build_url}"
     on_success: change
     on_failure: change
     use_notice: false
