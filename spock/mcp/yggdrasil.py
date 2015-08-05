@@ -4,10 +4,8 @@ try:
     import simplejson as json
 except ImportError:
     import json
-from six.moves import urllib
-
-from urllib.error import HTTPError
-from urllib.request import Request, urlopen
+from six.moves.urllib.error import HTTPError
+from six.moves.urllib.request import Request, urlopen
 
 
 class YggAuth:
@@ -21,12 +19,12 @@ class YggAuth:
         try:
             resp = urlopen(Request(
                 url='https://authserver.mojang.com' + endpoint,
-                data=json.dumps(payload),
+                data=json.dumps(payload).encode(),
                 headers={'Content-Type': 'application/json'})
             )
         except HTTPError as e:
             resp = e
-        data = resp.read()
+        data = resp.read().decode()
         return json.loads(data) if data else dict()
 
     def authenticate(self, username=None, password=None, client_token=None):
