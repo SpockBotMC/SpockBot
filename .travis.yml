@@ -29,5 +29,5 @@ notifications:
       - "irc.freenode.org#spockbot"
     on_success: change
     on_failure: change
-    use_notice: true
-    skip_join: true
+    use_notice: false
+    skip_join: false
