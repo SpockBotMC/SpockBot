@@ -7,8 +7,8 @@ import mock
 from spock.mcp.yggdrasil import YggAuth
 
 
-@mock.patch('six.moves.urllib.request.Request')
-@mock.patch('six.moves.urllib.request.urlopen')
+@mock.patch('spock.mcp.yggdrasil.Request')
+@mock.patch('spock.mcp.yggdrasil.urlopen')
 class YggAuthRequestTest(unittest.TestCase):
     def test_request_is_done(self, urlopen, request):
         decode = urlopen.return_value.read.return_value.decode
@@ -20,9 +20,10 @@ class YggAuthRequestTest(unittest.TestCase):
 
         # First create the request
         request.assert_called_once_with(
-            'https://authserver.mojang.com/test',
-            '[{"a": "b"}, "c", "d", "e"]',
-            '{"Content-Type": "application/json"}')
+            url='https://authserver.mojang.com/test',
+            data=b'[{"a": "b"}, "c", "d", "e"]',
+            headers={'Content-Type': 'application/json'}
+        )
 
         # Then send it
         urlopen.assert_called_once_with(request.return_value)
