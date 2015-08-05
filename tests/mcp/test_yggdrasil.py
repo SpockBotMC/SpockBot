@@ -3,6 +3,9 @@ from __future__ import unicode_literals
 import unittest
 
 import mock
+from mock.mock import MagicMock
+
+from six.moves.urllib.error import HTTPError
 
 from spock.mcp.yggdrasil import YggAuth
 
@@ -33,6 +36,22 @@ class YggAuthRequestTest(unittest.TestCase):
         self.assertTrue(decode.called)
 
         self.assertEqual(res, {'test': 1})
+
+    def test_request_raises_error(self, urlopen, request):
+        exception_data = MagicMock()
+        exception_data.read.return_value.decode.return_value = '{"error": 1}'
+        urlopen.side_effect = HTTPError('', '', '', '', exception_data)
+
+        ygg = YggAuth()
+        self.assertFalse(urlopen.called)
+        self.assertFalse(request.called)
+        res = ygg._ygg_req('/test', {'a': 'b'})
+
+        # Read the response
+        self.assertTrue(exception_data.read.called)
+        self.assertTrue(exception_data.read.return_value.decode.called)
+
+        self.assertEqual(res, {'error': 1})
 
 
 @mock.patch('spock.mcp.yggdrasil.YggAuth._ygg_req')
@@ -90,4 +109,36 @@ class YggAuthTest(unittest.TestCase):
         self.assertEqual(res, ygg_req.return_value)
 
     def test_refresh_success(self, ygg_req):
-        pass
+        ygg_req.return_value = {'accessToken': 'myaccess',
+                                'clientToken': 'mytoken'}
+
+        res = self.ygg.refresh('clienttoken', 'accesstoken')
+
+        ygg_req.assert_called_once_with('/refresh', {
+            'accessToken': 'accesstoken',
+            'clientToken': 'clienttoken',
+        })
+
+        self.assertEqual(self.ygg.username, None)
+        self.assertEqual(self.ygg.password, None)
+        self.assertEqual(self.ygg.client_token, 'mytoken')
+        self.assertEqual(self.ygg.access_token, 'myaccess')
+
+        self.assertEqual(res, ygg_req.return_value)
+
+    def test_refresh_failure(self, ygg_req):
+        ygg_req.return_value = {'error': 1}
+
+        res = self.ygg.refresh('clienttoken', 'accesstoken')
+
+        ygg_req.assert_called_once_with('/refresh', {
+            'accessToken': 'accesstoken',
+            'clientToken': 'clienttoken',
+        })
+
+        self.assertEqual(self.ygg.username, None)
+        self.assertEqual(self.ygg.password, None)
+        self.assertEqual(self.ygg.client_token, 'clienttoken')
+        self.assertEqual(self.ygg.access_token, 'accesstoken')
+
+        self.assertEqual(res, ygg_req.return_value)
