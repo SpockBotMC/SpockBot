@@ -1,15 +1,18 @@
 *.pyc
 *.log
 *.swp
-packetlog
 config.yaml
 login.py
 run.py
 contrib/
+
+#generated files
 /dist/
-/build
+/build/
 /.tox/
 *.egg-info/
 xunit-*.xml
 .coverage
 /tags
+packetlog
+/htmlcov/
