@@ -76,7 +76,7 @@ class GlobalEntity(MCEntity):
     z = 0
 
 
-class EntityCore:
+class EntityCore(object):
     def __init__(self):
         self.client_player = ClientPlayerEntity()
         self.entities = {}
@@ -116,7 +116,7 @@ class EntityPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(self.__class__, self).__init__(ploader, settings)
+        super(PluginBase, self).__init__(ploader, settings)
         self.ec = EntityCore()
         ploader.provides('Entities', self.ec)
 

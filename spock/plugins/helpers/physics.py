@@ -48,7 +48,7 @@ from spock.vector import Vector3
 logger = logging.getLogger('spock')
 
 
-class PhysicsCore:
+class PhysicsCore(object):
     def __init__(self, vec, pos):
         self.vec = vec
         self.pos = pos
@@ -81,7 +81,7 @@ class PhysicsPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(self.__class__, self).__init__(ploader, settings)
+        super(PluginBase, self).__init__(ploader, settings)
 
         self.vec = Vector3(0.0, 0.0, 0.0)
         # wiki says 0.6 but I made it 0.8 to give a little wiggle room

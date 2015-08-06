@@ -14,7 +14,7 @@ from spock.utils import Position, pl_announce
 logger = logging.getLogger('spock')
 
 
-class MovementCore:
+class MovementCore(object):
     def __init__(self):
         self.move_location = None
 
@@ -33,7 +33,7 @@ class MovementPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(self.__class__, self).__init__(ploader, settings)
+        super(PluginBase, self).__init__(ploader, settings)
 
         self.movement = MovementCore()
         ploader.provides('Movement', self.movement)

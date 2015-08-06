@@ -25,7 +25,7 @@ DIMENSION_OVERWOLD = 0x00
 DIMENSION_END = 0x01
 
 
-class ChunkData:
+class ChunkData(object):
     length = 16 * 16 * 16
     ty = 'B'
     data = None
@@ -94,14 +94,14 @@ class ChunkDataNibble(ChunkData):
             self.data[i] = (self.data[i] & 0x0F) | ((data & 0x0F) << 4)
 
 
-class Chunk:
+class Chunk(object):
     def __init__(self):
         self.block_data = ChunkDataShort()
         self.light_block = ChunkDataNibble()
         self.light_sky = ChunkDataNibble()
 
 
-class ChunkColumn:
+class ChunkColumn(object):
     def __init__(self):
         self.chunks = [None] * 16
         self.biome = BiomeData()

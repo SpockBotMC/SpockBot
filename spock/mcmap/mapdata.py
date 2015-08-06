@@ -72,7 +72,7 @@ def get_block(block_id, meta=0, init=True):
         return blocks[block_id] if block_id < len(blocks) else None
 
 
-class MapBlock:
+class MapBlock(object):
     display_name = 'Map Block'
     name = 'map_block'
     hardness = 0
@@ -1736,7 +1736,7 @@ def get_biome(biome_id):
     return biomes[biome_id]() if biome_id in biomes else None
 
 
-class MapBiome:
+class MapBiome(object):
     name = 'Map Biome'
     temperature = 0.0
 

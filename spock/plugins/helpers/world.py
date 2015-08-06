@@ -13,7 +13,7 @@ from spock.utils import pl_announce
 
 class WorldData(smpmap.Dimension):
     def __init__(self, dimension=mcdata.SMP_OVERWORLD):
-        super(self.__class__, self).__init__(dimension)
+        super(smpmap.Dimension, self).__init__(dimension)
         self.age = 0
         self.time_of_day = 0
 
@@ -22,7 +22,7 @@ class WorldData(smpmap.Dimension):
         self.time_of_day = data['time_of_day']
 
     def new_dimension(self, dimension):
-        super(self.__class__, self).__init__(dimension)
+        super(smpmap.Dimension, self).__init__(dimension)
 
     def reset(self):
         self.__init__(self.dimension)
@@ -43,7 +43,7 @@ class WorldPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(self.__class__, self).__init__(ploader, settings)
+        super(PluginBase, self).__init__(ploader, settings)
         self.world = WorldData()
         ploader.provides('World', self.world)
 

@@ -11,7 +11,7 @@ from spock.utils import pl_announce
 logger = logging.getLogger('spock')
 
 
-class EventCore:
+class EventCore(object):
     def __init__(self):
         self.kill_event = False
         self.event_handlers = defaultdict(list)
@@ -45,6 +45,6 @@ class EventCore:
 
 
 @pl_announce('Event')
-class EventPlugin:
+class EventPlugin(object):
     def __init__(self, ploader, settings):
         ploader.provides('Event', EventCore())

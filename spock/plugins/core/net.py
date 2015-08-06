@@ -19,7 +19,7 @@ from spock.utils import pl_announce
 logger = logging.getLogger('spock')
 
 
-class AESCipher:
+class AESCipher(object):
     def __init__(self, shared_secret):
         # Name courtesy of dx
         self.encryptifier = AES.new(shared_secret, AES.MODE_CFB,
@@ -34,7 +34,7 @@ class AESCipher:
         return self.decryptifier.decrypt(data)
 
 
-class SelectSocket:
+class SelectSocket(object):
     def __init__(self, timer):
         self.sending = False
         self.timer = timer
@@ -76,7 +76,7 @@ class SelectSocket:
         self.sock.setblocking(False)
 
 
-class NetCore:
+class NetCore(object):
     def __init__(self, sock, event):
         self.sock = sock
         self.event = event
@@ -187,7 +187,7 @@ class NetPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(self.__class__, self).__init__(ploader, settings)
+        super(PluginBase, self).__init__(ploader, settings)
         self.bufsize = self.settings['bufsize']
         self.sock_quit = self.settings['sock_quit']
         self.sock = SelectSocket(self.timers)

@@ -70,6 +70,11 @@ class Slot(object):
         data = {'id': self.item_id}
         if self.item_id != INV_ITEMID_EMPTY:
             data['damage'] = self.damage
+
+
+
+
+
             data['amount'] = self.amount
             if self.nbt is not None:
                 data['enchants'] = self.nbt
@@ -93,15 +98,14 @@ class Slot(object):
 
 class SlotCursor(Slot):
     def __init__(self, id=INV_ITEMID_EMPTY, damage=0, amount=0, enchants=None):
-        class CursorWindow:
+        class CursorWindow(object):
             window_id = INV_WINID_CURSOR
 
             def __repr__(self):
                 return 'CursorWindow()'
 
-        super(self.__class__, self).__init__(CursorWindow(),
-                                             INV_SLOT_NR_CURSOR, id, damage,
-                                             amount, enchants)
+        super(Slot, self).__init__(CursorWindow(), INV_SLOT_NR_CURSOR, id,
+                                   damage, amount, enchants)
 
 # look up a class by window type ID when opening windows
 inv_types = {}
@@ -172,9 +176,9 @@ class InventoryPlayer(InventoryBase):
             persistent_slots = [Slot(self, slot_nr) for slot_nr in
                                 range(INV_SLOTS_PERSISTENT)]
         # TODO title should be in chat format
-        super(self.__class__, self).__init__('player', INV_WINID_PLAYER,
-                                             self.name, INV_SLOTS_PLAYER,
-                                             persistent_slots)
+        super(InventoryBase, self).__init__('player', INV_WINID_PLAYER,
+                                            self.name, INV_SLOTS_PLAYER,
+                                            persistent_slots)
 
     @property
     def craft_result_slot(self):
@@ -332,13 +336,13 @@ class InventoryHorse(InventoryBase):
     name = 'Horse'
 
     def __init__(self, eid=0, **args):
-        super(self.__class__, self).__init__(**args)
+        super(InventoryBase, self).__init__(**args)
         self.horse_entity_id = eid
 
         # TODO horse slot getters
 
 
-class BaseClick:
+class BaseClick(object):
     def get_packet(self, inv_plugin):
         """Called by send_click() to prepare the sent packet.
         Abstract method.
@@ -463,7 +467,7 @@ class DropClick(BaseClick):
             # else: can't drop while holding an item
 
 
-class InventoryCore:
+class InventoryCore(object):
     """ Handles operations with the player inventory. """
 
     def __init__(self, net_plugin, send_click):
@@ -564,7 +568,7 @@ class InventoryPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(self.__class__, self).__init__(ploader, settings)
+        super(PluginBase, self).__init__(ploader, settings)
 
         self.inventory = InventoryCore(self.net, self.send_click)
         ploader.provides('Inventory', self.inventory)

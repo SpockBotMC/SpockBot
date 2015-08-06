@@ -11,7 +11,7 @@ base_warn = "PluginLoader could not satisfy %s dependency for %s"
 pl_warn = base_warn + ": %s"
 
 
-class PluginLoader:
+class PluginLoader(object):
     def __init__(self, **kwargs):
         self.announce = {}
         self.extensions = {}

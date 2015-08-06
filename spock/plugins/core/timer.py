@@ -45,7 +45,7 @@ class BaseTimer(object):
 # Time based timer
 class EventTimer(BaseTimer):
     def __init__(self, wait_time, callback, runs=1):
-        super(self.__class__, self).__init__(callback, runs)
+        super(BaseTimer, self).__init__(callback, runs)
         self.wait_time = wait_time
         self.end_time = time.time() + self.wait_time
 
@@ -65,7 +65,7 @@ class EventTimer(BaseTimer):
 # World tick based timer
 class TickTimer(BaseTimer):
     def __init__(self, world, wait_ticks, callback, runs=1):
-        super(self.__class__, self).__init__(callback, runs)
+        super(BaseTimer, self).__init__(callback, runs)
         self.world = world
         self.wait_ticks = wait_ticks
         self.end_tick = self.world.age + self.wait_ticks
@@ -79,7 +79,7 @@ class TickTimer(BaseTimer):
         self.end_tick = self.world.age + self.wait_ticks
 
 
-class TimerCore:
+class TimerCore(object):
     def __init__(self, world):
         self.timers = []
         self.persist_timers = []
@@ -106,7 +106,7 @@ class TimerCore:
                        persist)
 
 
-class WorldTick:
+class WorldTick(object):
     def __init__(self):
         self.age = 0
 
@@ -120,7 +120,7 @@ class TimerPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(self.__class__, self).__init__(ploader, settings)
+        super(PluginBase, self).__init__(ploader, settings)
         if not self.world:
             self.world = WorldTick()
             ploader.reg_event_handler('PLAY<Time Update',

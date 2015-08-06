@@ -50,7 +50,7 @@ class Position(Info):
         return Vector3(self.x, self.y, self.z)
 
 
-class BoundingBox:
+class BoundingBox(object):
     def __init__(self, w, h, d=None, offset=(0, 0, 0)):
         self.x = offset[0]
         self.y = offset[1]
@@ -67,7 +67,7 @@ class BufferUnderflowException(Exception):
     pass
 
 
-class BoundBuffer:
+class BoundBuffer(object):
     backup = b''
 
     def __init__(self, *args):

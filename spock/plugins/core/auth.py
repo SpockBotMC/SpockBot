@@ -35,7 +35,7 @@ def java_hex_digest(digest):
     return d
 
 
-class AuthCore:
+class AuthCore(object):
     def __init__(self, authenticated, event):
         self.event = event
         self.authenticated = authenticated
@@ -85,7 +85,7 @@ class AuthPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(self.__class__, self).__init__(ploader, settings)
+        super(PluginBase, self).__init__(ploader, settings)
         self.authenticated = self.settings['authenticated']
         self.sess_quit = self.settings['sess_quit']
         self.auth = AuthCore(self.authenticated, self.event)

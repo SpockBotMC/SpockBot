@@ -8,7 +8,7 @@ except ImportError:
     from urllib2 import HTTPError
 
 
-class YggAuth:
+class YggAuth(object):
     def __init__(self, client_token=None, access_token=None, username=None,
                  password=None):
         self.username = username
