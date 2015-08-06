@@ -172,8 +172,8 @@ class InventoryPlayer(InventoryBase):
                                 range(INV_SLOTS_PERSISTENT)]
         # TODO title should be in chat format
         super(InventoryPlayer, self).__init__('player', INV_WINID_PLAYER,
-                                            self.name, INV_SLOTS_PLAYER,
-                                            persistent_slots)
+                                              self.name, INV_SLOTS_PLAYER,
+                                              persistent_slots)
 
     @property
     def craft_result_slot(self):
