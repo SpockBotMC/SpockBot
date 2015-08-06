@@ -142,3 +142,53 @@ class YggAuthTest(unittest.TestCase):
         self.assertEqual(self.ygg.access_token, 'accesstoken')
 
         self.assertEqual(res, ygg_req.return_value)
+
+    def test_signout(self, ygg_req):
+        ygg_req.return_value = {'whatever': 'dict'}
+
+        res = self.ygg.signout('user', 'pass')
+
+        ygg_req.assert_called_once_with('/signout', {
+            'username': 'user',
+            'password': 'pass',
+        })
+
+        self.assertEqual(self.ygg.username, 'user')
+        self.assertEqual(self.ygg.password, 'pass')
+        self.assertEqual(self.ygg.client_token, None)
+        self.assertEqual(self.ygg.access_token, None)
+
+        self.assertEqual(res, ygg_req.return_value)
+
+    def test_invalidate(self, ygg_req):
+        ygg_req.return_value = {'whatever': 'dict'}
+
+        res = self.ygg.invalidate('clienttoken', 'accesstoken')
+
+        ygg_req.assert_called_once_with('/invalidate', {
+            'clientToken': 'clienttoken',
+            'accessToken': 'accesstoken',
+        })
+
+        self.assertEqual(self.ygg.username, None)
+        self.assertEqual(self.ygg.password, None)
+        self.assertEqual(self.ygg.client_token, 'clienttoken')
+        self.assertEqual(self.ygg.access_token, 'accesstoken')
+
+        self.assertEqual(res, ygg_req.return_value)
+
+    def test_validate(self, ygg_req):
+        ygg_req.return_value = {'whatever': 'dict'}
+
+        res = self.ygg.validate('accesstoken')
+
+        ygg_req.assert_called_once_with('/validate', {
+            'accessToken': 'accesstoken',
+        })
+
+        self.assertEqual(self.ygg.username, None)
+        self.assertEqual(self.ygg.password, None)
+        self.assertEqual(self.ygg.client_token, None)
+        self.assertEqual(self.ygg.access_token, 'accesstoken')
+
+        self.assertEqual(res, ygg_req.return_value)
