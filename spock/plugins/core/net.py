@@ -187,7 +187,7 @@ class NetPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(PluginBase, self).__init__(ploader, settings)
+        super(NetPlugin, self).__init__(ploader, settings)
         self.bufsize = self.settings['bufsize']
         self.sock_quit = self.settings['sock_quit']
         self.sock = SelectSocket(self.timers)

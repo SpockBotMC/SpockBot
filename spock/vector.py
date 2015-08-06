@@ -88,7 +88,7 @@ class CartesianVector(BaseVector):
 class Vector3(CartesianVector):
     def __init__(self, *args):
         assert len(args) == 3, "Wrong length"
-        super(CartesianVector, self).__init__(*args)
+        super(Vector3, self).__init__(*args)
 
     # Some shortcuts
     @property
@@ -150,7 +150,7 @@ class YawPitch(BaseVector):
 
     def __init__(self, *args):
         assert len(args) == 2, "Wrong length"
-        super(BaseVector, self).__init__(*args)
+        super(YawPitch, self).__init__(*args)
 
     # Some shortcuts
     @property

@@ -33,7 +33,7 @@ class MovementPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(PluginBase, self).__init__(ploader, settings)
+        super(MovementPlugin, self).__init__(ploader, settings)
 
         self.movement = MovementCore()
         ploader.provides('Movement', self.movement)

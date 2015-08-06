@@ -81,7 +81,7 @@ class PhysicsPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(PluginBase, self).__init__(ploader, settings)
+        super(PhysicsPlugin, self).__init__(ploader, settings)
 
         self.vec = Vector3(0.0, 0.0, 0.0)
         # wiki says 0.6 but I made it 0.8 to give a little wiggle room

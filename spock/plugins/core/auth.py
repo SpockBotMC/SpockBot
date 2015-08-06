@@ -85,7 +85,7 @@ class AuthPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(PluginBase, self).__init__(ploader, settings)
+        super(AuthPlugin, self).__init__(ploader, settings)
         self.authenticated = self.settings['authenticated']
         self.sess_quit = self.settings['sess_quit']
         self.auth = AuthCore(self.authenticated, self.event)

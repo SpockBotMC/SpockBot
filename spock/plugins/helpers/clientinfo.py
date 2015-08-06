@@ -42,7 +42,7 @@ class PlayerHealth(Info):
 
 class PlayerPosition(Position):
     def __init__(self):
-        super(Position, self).__init__()
+        super(PlayerPosition, self).__init__()
         self.yaw = 0.0
         self.pitch = 0.0
         self.on_ground = False
@@ -90,7 +90,7 @@ class ClientInfoPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(PluginBase, self).__init__(ploader, settings)
+        super(ClientInfoPlugin, self).__init__(ploader, settings)
         self.uuids = {}
         self.defered_pl = {}
         self.client_info = ClientInfo()

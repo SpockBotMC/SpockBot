@@ -21,7 +21,7 @@ class StartPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(PluginBase, self).__init__(ploader, settings)
+        super(StartPlugin, self).__init__(ploader, settings)
         setattr(ploader, 'start', self.start)
 
     def start(self, host=None, port=None):

@@ -116,7 +116,7 @@ class EntityPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(PluginBase, self).__init__(ploader, settings)
+        super(EntityPlugin, self).__init__(ploader, settings)
         self.ec = EntityCore()
         ploader.provides('Entities', self.ec)
 
