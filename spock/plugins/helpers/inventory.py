@@ -70,11 +70,6 @@ class Slot(object):
         data = {'id': self.item_id}
         if self.item_id != INV_ITEMID_EMPTY:
             data['damage'] = self.damage
-
-
-
-
-
             data['amount'] = self.amount
             if self.nbt is not None:
                 data['enchants'] = self.nbt
