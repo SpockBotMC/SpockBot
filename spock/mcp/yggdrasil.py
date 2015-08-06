@@ -8,7 +8,7 @@ from six.moves.urllib.error import HTTPError
 from six.moves.urllib.request import Request, urlopen
 
 
-class YggAuth:
+class YggAuth(object):
     def __init__(self):
         self.username = None
         self.password = None
