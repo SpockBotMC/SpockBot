@@ -1,112 +1,120 @@
-import json
+from __future__ import unicode_literals
 # This is for python2 compatibility
 try:
-    import urllib.request as request
-    from urllib.error import HTTPError
+    import simplejson as json
 except ImportError:
-    import urllib2 as request
-    from urllib2 import HTTPError
+    import json
+from six.moves.urllib.error import HTTPError
+from six.moves.urllib.request import Request, urlopen
 
 
 class YggAuth(object):
-    def __init__(self, client_token=None, access_token=None, username=None,
-                 password=None):
-        self.username = username
-        self.password = password
-        self.client_token = client_token
-
-        self.access_token = None  # validate needs self.access_token to exist
-        self.access_token = None if self.validate(access_token) else \
-            access_token
-
-    def _gen_req(self, endpoint, payload):
-        url = 'https://authserver.mojang.com' + endpoint
-        data = json.dumps(payload).encode('utf-8')
-        headers = {'Content-Type': 'application/json'}
-        return request.Request(url, data, headers)
-
-    def _gen_rep(self, req):
-        try:
-            rep = request.urlopen(req)
-        except HTTPError as reperr:
-            rep = reperr
-        data = rep.read().decode('utf-8')
-        return json.loads(data) if data else None
+    def __init__(self):
+        self.username = None
+        self.password = None
+        self.client_token = None
+        self.access_token = None
 
     def _ygg_req(self, endpoint, payload):
-        return self._gen_rep(self._gen_req(endpoint, payload))
+        try:
+            resp = urlopen(Request(
+                url='https://authserver.mojang.com' + endpoint,
+                data=json.dumps(payload).encode(),
+                headers={'Content-Type': 'application/json'})
+            )
+        except HTTPError as e:
+            resp = e
+        data = resp.read().decode()
+        return json.loads(data) if data else dict()
 
-    # Generate an access token using a username and password
-    # (Any existing client token is invalidated if not provided)
-    # Returns response dict on success, otherwise error dict
     def authenticate(self, username=None, password=None, client_token=None):
+        """
+        Generate an access token using an username and password. Any existing
+        client token is invalidated if not provided.
+
+        :rtype: :class:`dict` Response or error dict
+        """
         endpoint = '/authenticate'
+        self.username = username or self.username
+        self.password = password or self.password
+        self.client_token = client_token or self.client_token
+
         payload = {
             'agent': {
                 'name': 'Minecraft',
                 'version': 1,
             },
+            'username': self.username,
+            'password': self.password,
+            'clientToken': self.client_token,
         }
-        if username:
-            self.username = username
-        payload['username'] = self.username
-        if password:
-            self.password = password
-        payload['password'] = self.password
-        payload[
-            'clientToken'] = client_token if client_token else \
-            self.client_token
         rep = self._ygg_req(endpoint, payload)
-        if rep is not None and 'error' not in rep:
+        if rep and 'error' not in rep:
             self.access_token = rep['accessToken']
             self.client_token = rep['clientToken']
         return rep
 
-    # Generate an access token with a client/access token pair
-    # (The used access token is invalidated)
-    # Returns response dict on success, otherwise error dict
     def refresh(self, client_token=None, access_token=None):
+        """
+        Generate an access token with a client/access token pair. Used
+        access token is invalidated.
+
+        :rtype: :class:`dict` Response or error dict
+        """
         endpoint = '/refresh'
-        payload = {}
-        payload[
-            'accessToken'] = access_token if access_token else \
-            self.access_token
-        payload[
-            'clientToken'] = client_token if client_token else \
-            self.client_token
+        self.access_token = access_token or self.access_token
+        self.client_token = client_token or self.client_token
+
+        payload = {
+            'accessToken': self.access_token,
+            'clientToken': self.client_token,
+        }
         rep = self._ygg_req(endpoint, payload)
-        if 'error' not in rep:
+        if rep and 'error' not in rep:
             self.access_token = rep['accessToken']
             self.client_token = rep['clientToken']
         return rep
 
-    # Invalidate access tokens with a username and password
-    # Returns None on success, otherwise error dict
     def signout(self, username=None, password=None):
+        """
+        Invalidate access tokens with a username and password.
+
+        :rtype: :class:`dict` Empty or error dict
+        """
         endpoint = '/signout'
-        payload = {}
-        payload['username'] = username if username else self.username
-        payload['password'] = password if password else self.password
+        self.username = username or self.username
+        self.password = password or self.username
+
+        payload = {
+            'username': self.username,
+            'password': self.password,
+        }
         return self._ygg_req(endpoint, payload)
 
-    # Invalidate access tokens with a client/access token pair
-    # Returns None on success, otherwise error dict
     def invalidate(self, client_token=None, access_token=None):
+        """
+        Invalidate access tokens with a client/access token pair
+
+        :rtype: :class:`dict` Empty or error dict
+        """
         endpoint = '/invalidate'
-        payload = {}
-        payload[
-            'accessToken'] = access_token if access_token else \
-            self.access_token
-        payload[
-            'clientToken'] = client_token if client_token else \
-            self.client_token
+        self.access_token = access_token or self.access_token
+        self.client_token = client_token or self.client_token
+
+        payload = {
+            'accessToken': self.access_token,
+            'clientToken': self.client_token,
+        }
         return self._ygg_req(endpoint, payload)
 
-    # Check if an access token is valid
-    # Returns None on success (ie valid access token), otherwise error dict
     def validate(self, access_token=None):
+        """
+        Check if an access token is valid
+
+        :rtype: :class:`dict` Empty or error dict
+        """
         endpoint = '/validate'
-        payload = {}
-        payload['accessToken'] = access_token if access_token\
-            else self.access_token
+        self.access_token = access_token or self.access_token
+
+        payload = dict(accessToken=self.access_token)
         return self._ygg_req(endpoint, payload)

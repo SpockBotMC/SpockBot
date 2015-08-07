@@ -13,6 +13,7 @@ setup(
     packages=find_packages(exclude=['tests', 'tests.*']),
     install_requires=[
         'PyCrypto >= 2.6.1',
+        'six',
     ],
     keywords=['minecraft'],
     classifiers=[

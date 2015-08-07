@@ -9,6 +9,7 @@ pytest-capturelog
 pytest-cov
 pytest-xdist
 tox
+mock
 
 # Check all files in git are in MANIFEST.in
 check-manifest
