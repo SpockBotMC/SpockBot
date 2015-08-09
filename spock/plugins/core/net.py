@@ -1,7 +1,7 @@
 """
 Provides an asynchronous, crypto and compression aware socket for connecting to
 servers and processing incoming packet data.
-Coordinates with the Timers plugin to honor clock-time timers
+Coordinates with the Timers plugin to honor wall-clock timers
 """
 
 import logging
@@ -34,24 +34,23 @@ class AESCipher(object):
         return self.decryptifier.decrypt(data)
 
 
-class SelectSocket(object):
+class SelectSocket(socket.socket):
+    """
+    Provides an asynchronous socket with a poll method built on
+    top of select.select for cross-platform compatiability
+    """
     def __init__(self, timer):
+        super(SelectSocket, self).__init__(socket.AF_INET, socket.SOCK_STREAM)
         self.sending = False
         self.timer = timer
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setblocking(False)
-        self.close = self.sock.close
-        self.shutdown = self.sock.shutdown
-        self.recv = self.sock.recv
-        self.send = self.sock.send
 
     def poll(self):
         flags = []
         if self.sending:
             self.sending = False
-            slist = [(self.sock,), (self.sock,), (self.sock,)]
+            slist = [(self,), (self,), (self,)]
         else:
-            slist = [(self.sock,), (), (self.sock,)]
+            slist = [(self,), (), (self,)]
         timeout = self.timer.get_timeout()
         if timeout >= 0:
             slist.append(timeout)
@@ -59,9 +58,7 @@ class SelectSocket(object):
             rlist, wlist, xlist = select.select(*slist)
         except select.error as e:
             logger.error("SELECTSOCKET: Socket Error: %s", str(e))
-            rlist = []
-            wlist = []
-            xlist = []
+            rlist, wlist, xlist = [], [], []
         if rlist:
             flags.append('SOCKET_RECV')
         if wlist:
@@ -69,11 +66,6 @@ class SelectSocket(object):
         if xlist:
             flags.append('SOCKET_ERR')
         return flags
-
-    def reset(self):
-        self.sock.close()
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setblocking(False)
 
 
 class NetCore(object):
@@ -97,9 +89,9 @@ class NetCore(object):
             logger.info("NETCORE: Attempting to connect to host: %s port: %s",
                         host, port)
             # Set the connect to be a blocking operation
-            self.sock.sock.setblocking(True)
-            self.sock.sock.connect((self.host, self.port))
-            self.sock.sock.setblocking(False)
+            self.sock.setblocking(True)
+            self.sock.connect((self.host, self.port))
+            self.sock.setblocking(False)
             self.connected = True
             self.event.emit('connect', (self.host, self.port))
             logger.info("NETCORE: Connected to host: %s port: %s", host, port)
@@ -128,7 +120,7 @@ class NetCore(object):
     def read_packet(self, data=b''):
         self.rbuff.append(
             self.cipher.decrypt(data) if self.encrypted else data)
-        while True:
+        while self.rbuff:
             self.rbuff.save()
             try:
                 packet = mcpacket.Packet(ident=(
@@ -158,11 +150,8 @@ class NetCore(object):
         self.encrypted = False
 
     def reset(self):
-        self.connected = False
-        self.sock.reset()
-        self.__init__(self.sock, self.event)
-
-    disconnect = reset
+        self.sock.close()
+        self.__init__(self.sock.__class__, self.event, self.sock.timer)
 
 
 @pl_announce('Net')
@@ -211,7 +200,6 @@ class NetPlugin(PluginBase):
         if self.net.connected:
             try:
                 data = self.sock.recv(self.bufsize)
-                # print('read:', len(data))
                 if not data:
                     self.event.emit('SOCKET_HUP')
                     return
@@ -227,7 +215,7 @@ class NetPlugin(PluginBase):
                 sent = self.sock.send(self.net.sbuff)
                 self.net.sbuff = self.net.sbuff[sent:]
                 if self.net.sbuff:
-                    self.sending = True
+                    self.sock.sending = True
             except socket.error as error:
                 logger.error(str(error))
                 self.event.emit('SOCKET_ERR', error)
