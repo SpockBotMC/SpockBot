@@ -1,0 +1,12 @@
+include *.md
+include *.rst
+include AUTHORS
+include LICENSE
+include MANIFEST.in
+include tox.ini
+include *.py
+include *.txt
+include .travis.yml
+recursive-include examples *.md
+recursive-include examples *.py
+recursive-include tests *.py

@@ -1,6 +1,7 @@
-from spock.plugins.pluginloader import PluginLoader
-
 import logging
+
+from spock.plugins.loader import PluginLoader
+
 logger = logging.getLogger('spock')
 logger.setLevel(logging.DEBUG)
 streamHandler = logging.StreamHandler()

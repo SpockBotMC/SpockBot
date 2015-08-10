@@ -1,0 +1,24 @@
+# Check code style, errors, etc.
+flake8
+flake8-import-order
+pep8-naming
+
+# Test runners
+pytest
+pytest-capturelog
+pytest-cov
+pytest-xdist
+tox
+mock
+
+# Check all files in git are in MANIFEST.in
+check-manifest
+
+# Build documentation
+sphinx
+
+# To make wheel packages
+wheel
+
+# Securely upload packages to PyPI
+twine

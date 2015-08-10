@@ -7,44 +7,42 @@ for demos and tutorials, and illustrates the basic steps for initializing
 a bot.
 """
 
-from spock import utils
-from spock.mcp import mcpacket, mcdata
+from spock.mcp import mcdata
+from spock.plugins.base import PluginBase
 
-default_settings = {
-	'username': 'Bot',
-	'password': None,
-	'host': 'localhost',
-	'port': 25565,
-}
 
-class StartPlugin:
-	def __init__(self, ploader, settings):
-		self.settings = utils.get_settings(settings, default_settings)
-		self.event = ploader.requires('Event')
-		self.net = ploader.requires('Net')
-		self.auth = ploader.requires('Auth')
+class StartPlugin(PluginBase):
+    requires = ('Event', 'Net', 'Auth')
+    defaults = {
+        'username': 'Bot',
+        'password': None,
+        'host': 'localhost',
+        'port': 25565,
+    }
 
-		setattr(ploader, 'start', self.start)
+    def __init__(self, ploader, settings):
+        super(StartPlugin, self).__init__(ploader, settings)
+        setattr(ploader, 'start', self.start)
 
-	def start(self, host = None, port = None):
-		if 'error' not in self.auth.start_session(
-			self.settings['username'],
-			self.settings['password']
-		):
-			host = host if host else self.settings['host']
-			port = port if port else self.settings['port']
-			self.net.connect(host, port)
-			self.handshake()
-			self.login_start()
-			self.event.event_loop()
+    def start(self, host=None, port=None):
+        if 'error' not in self.auth.start_session(
+                self.settings['username'],
+                self.settings['password']
+        ):
+            host = host if host else self.settings['host']
+            port = port if port else self.settings['port']
+            self.net.connect(host, port)
+            self.handshake()
+            self.login_start()
+            self.event.event_loop()
 
-	def handshake(self):
-		self.net.push_packet('HANDSHAKE>Handshake', {
-			'protocol_version': mcdata.MC_PROTOCOL_VERSION,
-			'host': self.net.host,
-			'port': self.net.port,
-			'next_state': mcdata.LOGIN_STATE
-		})
+    def handshake(self):
+        self.net.push_packet('HANDSHAKE>Handshake', {
+            'protocol_version': mcdata.MC_PROTOCOL_VERSION,
+            'host': self.net.host,
+            'port': self.net.port,
+            'next_state': mcdata.LOGIN_STATE
+        })
 
-	def login_start(self):
-		self.net.push_packet('LOGIN>Login Start', {'name': self.auth.username})
+    def login_start(self):
+        self.net.push_packet('LOGIN>Login Start', {'name': self.auth.username})
