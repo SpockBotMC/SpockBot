@@ -149,9 +149,8 @@ class NetCore(object):
         self.cipher = None
         self.encrypted = False
 
-    def reset(self):
-        self.sock.close()
-        self.__init__(self.sock.__class__, self.event, self.sock.timer)
+    def reset(self, sock):
+        self.__init__(sock, self.event)
 
 
 @pl_announce('Net')
@@ -222,7 +221,9 @@ class NetPlugin(PluginBase):
 
     # SOCKET_ERR - Socket Error has occured
     def handle_err(self, name, data):
-        self.net.reset()
+        self.sock.close()
+        self.sock = SelectSocket(self.timers)
+        self.net.reset(self.sock)
         logger.error("NETPLUGIN: Socket Error: %s", data)
         self.event.emit('disconnect', data)
         if self.sock_quit and not self.event.kill_event:
@@ -231,7 +232,9 @@ class NetPlugin(PluginBase):
 
     # SOCKET_HUP - Socket has hung up
     def handle_hup(self, name, data):
-        self.net.reset()
+        self.sock.close()
+        self.sock = SelectSocket(self.timers)
+        self.net.reset(self.sock)
         logger.error("NETPLUGIN: Socket has hung up")
         self.event.emit('disconnect', "Socket Hung Up")
         if self.sock_quit and not self.event.kill_event:
