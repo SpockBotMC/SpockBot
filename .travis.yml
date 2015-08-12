@@ -22,6 +22,11 @@ script:
 
 after_success:
   - "if [ `echo $TOX_ENV | grep -v flake8` ]; then pip install coveralls; coveralls; fi"
+  
+# whitelist
+branches:
+  only:
+    - master
 
 notifications:
   irc:
