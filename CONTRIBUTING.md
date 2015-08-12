@@ -40,7 +40,7 @@ $ tox
 
 ### Pull Request
 If `tox` comes back with a success you are ready for a pull request.
-Commit your changes to your feature branch, push them and create a pull request.
+Commit your changes to your feature branch, push them to your fork and create a pull request.
 
 ## Testing
 We highly encourage writing tests, we use the pytest framework and you can run `tox` to test your newly written tests.
