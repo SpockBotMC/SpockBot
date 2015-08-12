@@ -1,3 +1,5 @@
+from __future__ import division
+
 import math
 
 
@@ -35,7 +37,9 @@ class CartesianVector(BaseVector):
     def __add__(self, other):
         return self.__class__(*map(sum, zip(self, other)))
 
-    __iadd__ = __add__
+    def __iadd__(self, other):
+        self.vector = list(map(sum, zip(self, other)))
+        return self
 
     def __neg__(self):
         return self.__class__(*map(lambda a: -a, self))
@@ -43,18 +47,25 @@ class CartesianVector(BaseVector):
     def __sub__(self, other):
         return self.__class__(*map(lambda a: a[0] - a[1], zip(self, other)))
 
-    __isub__ = __sub__
+    def __isub__(self, other):
+        self.vector = list(map(lambda a: a[0] - a[1], zip(self, other)))
+        return self
 
     def __mul__(self, other):
         return self.__class__(*map(lambda a: a * other, self))
 
-    __imul__ = __mul__
+    def __imul__(self, other):
+        self.vector = list(map(lambda a: a * other, self))
+        return self
+
     __rmul__ = __mul__
 
     def __truediv__(self, other):
         return self.__class__(*map(lambda a: a / other, self))
 
-    __itruediv__ = __truediv__
+    def __itruediv__(self, other):
+        self.vector = list(map(lambda a: a / other, self))
+        return self
 
     # More advanced math
 
