@@ -67,6 +67,9 @@ class CartesianVector(BaseVector):
         self.vector = list(map(lambda a: a / other, self))
         return self
 
+    __div__ = __truediv__
+    __idiv__ = __itruediv__
+
     # More advanced math
 
     def trunc(self):
