@@ -211,7 +211,7 @@ def unpack(data_type, bbuff):
     elif data_type == MC_POSITION:
         return unpack_position(bbuff)
     elif data_type == MC_STRING:
-        return bbuff.recv(unpack(MC_VARINT, bbuff)).decode('utf-8')
+        return bbuff.recv(unpack(MC_VARINT, bbuff)).decode('utf-8', 'replace')
     elif data_type == MC_CHAT:
         return json.loads(unpack(MC_STRING, bbuff))
     elif data_type == MC_SLOT:
@@ -240,7 +240,7 @@ def pack(data_type, data):
     elif data_type == MC_POSITION:
         return pack_position(data)
     elif data_type == MC_STRING:
-        data = data.encode('utf-8')
+        data = data.encode('utf-8', 'replace')
         return pack(MC_VARINT, len(data)) + data
     elif data_type == MC_CHAT:
         return pack(MC_STRING, json.dumps(data))
