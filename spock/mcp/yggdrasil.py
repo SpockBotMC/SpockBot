@@ -19,12 +19,12 @@ class YggAuth(object):
         try:
             resp = urlopen(Request(
                 url='https://authserver.mojang.com' + endpoint,
-                data=json.dumps(payload).encode(),
+                data=json.dumps(payload).encode('utf-8'),
                 headers={'Content-Type': 'application/json'})
             )
         except HTTPError as e:
             resp = e
-        data = resp.read().decode()
+        data = resp.read().decode('utf-8')
         return json.loads(data) if data else dict()
 
     def authenticate(self, username=None, password=None, client_token=None):
