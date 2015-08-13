@@ -161,9 +161,15 @@ def unpack_metadata(bbuff):
         if 0 <= typ < len(metadata_lookup):
             val = unpack(metadata_lookup[typ], bbuff)
         elif typ == 6:
-            val = [unpack(MC_INT, bbuff)] * 3
+            x = unpack(MC_INT, bbuff)
+            y = unpack(MC_INT, bbuff)
+            z = unpack(MC_INT, bbuff)
+            val = [x, y, z]
         elif typ == 7:
-            val = [unpack(MC_FLOAT, bbuff)] * 3
+            pitch = unpack(MC_FLOAT, bbuff)
+            yaw = unpack(MC_FLOAT, bbuff)
+            roll = unpack(MC_FLOAT, bbuff)
+            val = [pitch, yaw, roll]
         else:
             return None
         metadata.append((key, (typ, val)))
