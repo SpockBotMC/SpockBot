@@ -1,6 +1,7 @@
-*.pyc
+*.py[doc]
 *.log
 *.swp
+*~
 config.yaml
 login.py
 run.py
