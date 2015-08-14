@@ -65,7 +65,7 @@ class EventTimer(BaseTimer):
 # World tick based timer
 class TickTimer(BaseTimer):
     def __init__(self, world, wait_ticks, callback, runs=1):
-        super(EventTimer, self).__init__(callback, runs)
+        super(TickTimer, self).__init__(callback, runs)
         self.world = world
         self.wait_ticks = wait_ticks
         self.end_tick = self.world.age + self.wait_ticks
