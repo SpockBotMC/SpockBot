@@ -12,9 +12,10 @@ By default, the client sends swing and look packets like the vanilla client.
 This can be disabled by setting the auto_swing and auto_look flags.
 """
 import math
+
 from spock.plugins.base import PluginBase
-from spock.vector import Vector3
 from spock.utils import pl_announce
+from spock.vector import Vector3
 
 PLAYER_HEIGHT = 1.74
 
@@ -44,6 +45,7 @@ DIG_FINISH = 2
 DIG_DROP_STACK = 3
 DIG_DROP_ITEM = 4
 DIG_DEACTIVATE_ITEM = 5
+
 
 @pl_announce('Interact')
 class InteractPlugin(PluginBase):
@@ -138,9 +140,11 @@ class InteractPlugin(PluginBase):
         })
 
     def start_digging(self, pos):
-        if self.auto_look: self.look_at(pos)  # TODO look at block center
+        if self.auto_look:
+            self.look_at(pos)  # TODO look at block center
         self._send_dig_block(DIG_START, pos)
-        if self.auto_swing: self.swing_arm()
+        if self.auto_swing:
+            self.swing_arm()
         # TODO send swing animation until done or stopped
 
     def cancel_digging(self):
@@ -156,13 +160,17 @@ class InteractPlugin(PluginBase):
         self.start_digging(pos)
         self.finish_digging()
 
-    def click_block(self, pos, face=1, cursor_pos=Vector3(8,8,8), look_at_block=True):
+    def click_block(self, pos, face=1, cursor_pos=Vector3(8, 8, 8),
+                    look_at_block=True):
         """
-        Click on a block, e.g. push button, open window, make redstone ore glow.
-        :param face: side of the reference block on which the block is placed on
-        :param cursor_pos: where to click inside the block, each dimension 0..15
+        Click on a block.
+        Examples: push button, open window, make redstone ore glow
+        :param face: side of the block on which the block is placed on
+        :param cursor_pos: where to click inside the block, each dimension 0-15
         """
-        if look_at_block and self.auto_look: self.look_at(pos)  # TODO look at cursor_pos
+        if look_at_block and self.auto_look:
+            # TODO look at cursor_pos
+            self.look_at(pos)
         self.net.push_packet('PLAY>Player Block Placement', {
             'location': pos.get_dict(),
             'direction': face,
@@ -171,21 +179,26 @@ class InteractPlugin(PluginBase):
             'cur_pos_y': int(cursor_pos.y),
             'cur_pos_z': int(cursor_pos.z),
         })
-        if self.auto_swing: self.swing_arm()
+        if self.auto_swing:
+            self.swing_arm()
 
-    def place_block(self, pos, face=1, cursor_pos=Vector3(8,8,8), look_at_block=True, sneak=True):
+    def place_block(self, pos, face=1, cursor_pos=Vector3(8, 8, 8),
+                    look_at_block=True, sneak=True):
         """
         Place a block next to pos. If the block at pos is air, place at pos.
         """
         sneaking_before = self.sneaking
-        if sneak: self.sneak()
+        if sneak:
+            self.sneak()
         self.click_block(pos, face, cursor_pos, look_at_block)
-        if sneak: self.sneak(sneaking_before)
+        if sneak:
+            self.sneak(sneaking_before)
 
     def use_bucket(self, pos):  # TODO
         """
         Using buckets is different from placing blocks.
-        See "Special note on using buckets" in http://wiki.vg/Protocol#Player_Block_Placement
+        See "Special note on using buckets"
+        in http://wiki.vg/Protocol#Player_Block_Placement
         """
         raise NotImplementedError
 
@@ -211,7 +224,8 @@ class InteractPlugin(PluginBase):
         Uses (right-click) an entity to open its window.
         Setting `cursor_pos` sets `action` to "interact at".
         """
-        if self.auto_look: self.look_at(entity)  # TODO look at cursor_pos
+        if self.auto_look:
+            self.look_at(entity)  # TODO look at cursor_pos
         if cursor_pos is not None:
             action = INTERACT_ENTITY_AT
         packet = {'target': entity.eid, 'action': action}
@@ -220,7 +234,8 @@ class InteractPlugin(PluginBase):
             packet['target_y'] = cursor_pos.y
             packet['target_z'] = cursor_pos.z
         self.net.push_packet('PLAY>Use Entity', packet)
-        if self.auto_swing: self.swing_arm()
+        if self.auto_swing:
+            self.swing_arm()
 
     def attack_entity(self, entity):
         self.use_entity(entity, action=ATTACK_ENTITY)
@@ -228,10 +243,13 @@ class InteractPlugin(PluginBase):
     def mount_vehicle(self, entity):
         self.use_entity(entity)
 
-    def steer_vehicle(self, sideways=0.0, forward=0.0, jump=False, unmount=False):
+    def steer_vehicle(self, sideways=0.0, forward=0.0,
+                      jump=False, unmount=False):
         flags = 0
-        if jump: flags += 1
-        if unmount: flags += 2
+        if jump:
+            flags += 1
+        if unmount:
+            flags += 2
         self.net.push_packet('PLAY>Steer Vehicle', {
             'sideways': sideways,
             'forward': forward,
