@@ -113,7 +113,7 @@ class WorldTick(object):
 
 @pl_announce('Timers')
 class TimerPlugin(PluginBase):
-    requires = ('World')
+    requires = 'World'
     events = {
         'event_tick': 'tick',
         'disconnect': 'handle_disconnect',

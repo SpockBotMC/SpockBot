@@ -75,7 +75,7 @@ class ClientInfo(object):
 
 @pl_announce('ClientInfo')
 class ClientInfoPlugin(PluginBase):
-    requires = ('Event')
+    requires = 'Event'
     events = {
         'LOGIN<Login Success': 'handle_login_success',
         'PLAY<Join Game': 'handle_join_game',
