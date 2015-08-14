@@ -50,7 +50,7 @@ Refer to the `example bot <examples/basic>`__ for instructions on how to
 write a bot and a plugin that provides some common functionality.
 
 Also see `Some Useful
-Examples <https://github.com/SpockBotMC/SpockBot-Contrib/tree/master/examples>`__
+Examples <https://github.com/SpockBotMC/SpockBot-Extra/tree/master/examples>`__
 for additional examples contributed by the community.
 
 API Docs
@@ -64,25 +64,28 @@ Support
 | ``#spockbot`` on Freenode
 | gamingrobot or nickelpro in ``#mcdevs`` on Freenode
 
+Contributing
+-------
+
+Instructions for contributing to SpockBot can be found in `CONTRIBUTING <CONTRIBUTING.md>`__
+
 Credits
 -------
 
 Inspired by `remyroy's
 COPS <http://www.reddit.com/r/Civcraft/comments/13kwjm/introducing_the_cops_civcraft_online_player_status/>`__,
-a Minecraft client in Python. Protocol implementation based on
-`barneymc <https://github.com/barneygale/barneymc>`__
+a Minecraft client in Python.
 
-COPS was a service that tracked players on a minecraft server called
-Civcraft. It looked like `this <http://i.imgur.com/SR2qII5.jpg>`__
+COPS was a service that tracked players on a minecraft server called Civcraft. It looked like `this <http://i.imgur.com/SR2qII5.jpg>`__
+
+Protocol implementation based on `barneymc <https://github.com/barneygale/barneymc>`__.
 
 Legal
 -----
 
-License is MIT and can be found in ``LICENSE``
+License is MIT and can be found in `LICENSE <LICENSE>`__
 
-The NBT parser and the original protocol implementation came from other
-projects, relevant legal information and attribution can be found in
-``LEGAL.md``
+The NBT parser and the original protocol implementation came from other projects, relevant legal information and attribution can be found in `LEGAL <LEGAL.md>`__
 
 .. |Build Status| image:: https://travis-ci.org/SpockBotMC/SpockBot.svg
    :target: https://travis-ci.org/SpockBotMC/SpockBot

@@ -23,7 +23,7 @@ from spock import Client
 from spock.plugins import DefaultPlugins
 
 # Import the plugins you have created
-from .example_plugin import ExamplePlugin
+from example_plugin import ExamplePlugin
 
 # Enter your credentials and the server information
 settings = {

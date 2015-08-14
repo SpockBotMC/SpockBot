@@ -7,9 +7,6 @@ python:
 
 env:
   - TOX_ENV=py27
-  - TOX_ENV=py30
-  - TOX_ENV=py31
-  - TOX_ENV=py32
   - TOX_ENV=py33
   - TOX_ENV=py34
   - TOX_ENV=flake8
@@ -22,6 +19,11 @@ script:
 
 after_success:
   - "if [ `echo $TOX_ENV | grep -v flake8` ]; then pip install coveralls; coveralls; fi"
+  
+# whitelist
+branches:
+  only:
+    - master
 
 notifications:
   irc:

@@ -161,9 +161,15 @@ def unpack_metadata(bbuff):
         if 0 <= typ < len(metadata_lookup):
             val = unpack(metadata_lookup[typ], bbuff)
         elif typ == 6:
-            val = [unpack(MC_INT, bbuff)] * 3
+            x = unpack(MC_INT, bbuff)
+            y = unpack(MC_INT, bbuff)
+            z = unpack(MC_INT, bbuff)
+            val = [x, y, z]
         elif typ == 7:
-            val = [unpack(MC_FLOAT, bbuff)] * 3
+            pitch = unpack(MC_FLOAT, bbuff)
+            yaw = unpack(MC_FLOAT, bbuff)
+            roll = unpack(MC_FLOAT, bbuff)
+            val = [pitch, yaw, roll]
         else:
             return None
         metadata.append((key, (typ, val)))
@@ -211,7 +217,7 @@ def unpack(data_type, bbuff):
     elif data_type == MC_POSITION:
         return unpack_position(bbuff)
     elif data_type == MC_STRING:
-        return bbuff.recv(unpack(MC_VARINT, bbuff)).decode('utf-8')
+        return bbuff.recv(unpack(MC_VARINT, bbuff)).decode('utf-8', 'replace')
     elif data_type == MC_CHAT:
         return json.loads(unpack(MC_STRING, bbuff))
     elif data_type == MC_SLOT:
@@ -240,7 +246,7 @@ def pack(data_type, data):
     elif data_type == MC_POSITION:
         return pack_position(data)
     elif data_type == MC_STRING:
-        data = data.encode('utf-8')
+        data = data.encode('utf-8', 'replace')
         return pack(MC_VARINT, len(data)) + data
     elif data_type == MC_CHAT:
         return pack(MC_STRING, json.dumps(data))
