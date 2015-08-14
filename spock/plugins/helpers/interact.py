@@ -12,7 +12,9 @@ By default, the client sends swing and look packets like the vanilla client.
 This can be disabled by setting the auto_swing and auto_look flags.
 """
 import math
-from spock.utils import pl_announce, Vec3
+from spock.plugins.base import PluginBase
+from spock.vector import Vector3
+from spock.utils import pl_announce
 
 PLAYER_HEIGHT = 1.74
 
@@ -44,17 +46,15 @@ DIG_DROP_ITEM = 4
 DIG_DEACTIVATE_ITEM = 5
 
 @pl_announce('Interact')
-class InteractPlugin:
+class InteractPlugin(PluginBase):
+    requires = ('ClientInfo', 'Inventory', 'Net')
+
     def __init__(self, ploader, settings):
-        self.clinfo = ploader.requires('ClientInfo')
-        self.entities = ploader.requires('Entities')
-        self.inventory = ploader.requires('Inventory')
-        self.net = ploader.requires('Net')
+        super().__init__(ploader, settings)
         ploader.provides('Interact', self)
 
         self.sneaking = False
         self.sprinting = False
-
         self.auto_swing = True  # move arm when clicking
         self.auto_look = True  # look at clicked things
 
@@ -64,7 +64,7 @@ class InteractPlugin:
         self.net.push_packet('PLAY>Animation', {})
 
     def _entity_action(self, action, jump_boost=100):
-        entity_id = self.clinfo.eid
+        entity_id = self.clientinfo.eid
         self.net.push_packet('PLAY>Entity Action', {
             'eid': entity_id,
             'action': action,
@@ -103,23 +103,24 @@ class InteractPlugin:
         """
         Turn the head. Both angles are in degrees.
         """
-        self.clinfo.position.pitch = pitch
-        self.clinfo.position.yaw = yaw
+        self.clientinfo.position.pitch = pitch
+        self.clientinfo.position.yaw = yaw
         self.net.push_packet('PLAY>Player Look', {
             'yaw': int(yaw),
             'pitch': int(pitch),
-            'on_ground': self.clinfo.position.on_ground
+            'on_ground': self.clientinfo.position.on_ground
         })
 
     def look_rel(self, d_yaw=0.0, d_pitch=0.0):
-        self.look(self.clinfo.position.yaw + d_yaw,
-                  self.clinfo.position.pitch + d_pitch)
+        self.look(self.clientinfo.position.yaw + d_yaw,
+                  self.clientinfo.position.pitch + d_pitch)
 
     def look_at(self, pos):
-        delta_x = pos.x - self.clinfo.position.x
-        delta_y = pos.y - self.clinfo.position.y + PLAYER_HEIGHT
-        delta_z = pos.z - self.clinfo.position.z
-        self.look_at_rel(Vec3(delta_x, delta_y, delta_z))
+        # TODO use Vector3
+        delta_x = pos.x - self.clientinfo.position.x
+        delta_y = pos.y - self.clientinfo.position.y + PLAYER_HEIGHT
+        delta_z = pos.z - self.clientinfo.position.z
+        self.look_at_rel(Vector3(delta_x, delta_y, delta_z))
 
     def look_at_rel(self, delta):
         ground_distance = math.sqrt(delta.x * delta.x + delta.z * delta.z)
@@ -139,7 +140,8 @@ class InteractPlugin:
     def start_digging(self, pos):
         if self.auto_look: self.look_at(pos)  # TODO look at block center
         self._send_dig_block(DIG_START, pos)
-        if self.auto_swing: self.swing_arm()  # TODO send swing animation until done or stopped
+        if self.auto_swing: self.swing_arm()
+        # TODO send swing animation until done or stopped
 
     def cancel_digging(self):
         self._send_dig_block(DIG_CANCEL)
@@ -154,7 +156,7 @@ class InteractPlugin:
         self.start_digging(pos)
         self.finish_digging()
 
-    def click_block(self, pos, face=1, cursor_pos=Vec3(8,8,8), look_at_block=True):
+    def click_block(self, pos, face=1, cursor_pos=Vector3(8,8,8), look_at_block=True):
         """
         Click on a block, e.g. push button, open window, make redstone ore glow.
         :param face: side of the reference block on which the block is placed on
@@ -171,7 +173,7 @@ class InteractPlugin:
         })
         if self.auto_swing: self.swing_arm()
 
-    def place_block(self, pos, face=1, cursor_pos=Vec3(8,8,8), look_at_block=True, sneak=True):
+    def place_block(self, pos, face=1, cursor_pos=Vector3(8,8,8), look_at_block=True, sneak=True):
         """
         Place a block next to pos. If the block at pos is air, place at pos.
         """
@@ -192,9 +194,9 @@ class InteractPlugin:
         Use (hold right-click) the item in the active slot.
         Examples: pull the bow, start eating once, throw an egg.
         """
-        self.click_block(Vec3(-1, 255, -1),
+        self.click_block(Vector3(-1, 255, -1),
                          face=1,
-                         cursor_pos=Vec3(-1, -1, -1),
+                         cursor_pos=Vector3(-1, -1, -1),
                          look_at_block=False)
 
     def deactivate_item(self):
