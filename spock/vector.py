@@ -9,12 +9,16 @@ class BaseVector(object):
     def __init__(self, *values):
         self.vector = self._internal_vec_type(values)
 
+    def init(self, *args):
+        BaseVector.__init__(self, *args)
+        return self
+
     def __iter__(self):
         return self.vector.__iter__()
 
     def __repr__(self):
-        return "%s(" % self.__class__.__name__ + ", ".join(
-            map(str, self.vector)) + ")"
+        return '%s(%s)' % (self.__class__.__name__,
+                           ', '.join(map(str, self.vector)))
 
     __str__ = __repr__
 
@@ -107,9 +111,20 @@ class CartesianVector(BaseVector):
 
 
 class Vector3(CartesianVector):
-    def __init__(self, *args):
-        assert len(args) == 3, "Wrong length"
-        super(Vector3, self).__init__(*args)
+    def __init__(self, *xyz):
+        l = len(xyz)
+        if l == 1:
+            obj = xyz[0]
+            xyz = obj.x, obj.y, obj.z
+        elif l == 0:
+            xyz = (0, 0, 0)
+        elif l != 3:
+            raise ValueError('Wrong length: expected 3, got %s' % xyz)
+        super(Vector3, self).__init__(*xyz)
+
+    def init(self, *args):
+        Vector3.__init__(self, *args)
+        return self
 
     # Some shortcuts
     @property
@@ -154,15 +169,6 @@ class Vector3(CartesianVector):
             pitch = 0
         return YawPitch(yaw, pitch)
 
-    def set_dict(self, data):
-        if set(("x", "y", "z")) <= set(data):
-            self.vector[0] = data['x']
-            self.vector[1] = data['y']
-            self.vector[2] = data['z']
-
-    def get_dict(self):
-        return {'x': self.vector[0], 'y': self.vector[1], 'z': self.vector[2]}
-
 
 class YawPitch(BaseVector):
     """
@@ -170,8 +176,12 @@ class YawPitch(BaseVector):
     """
 
     def __init__(self, *args):
-        assert len(args) == 2, "Wrong length"
+        assert len(args) == 2, 'Wrong length: expected 2, got %s' % args
         super(YawPitch, self).__init__(*args)
+
+    def init(self, *args):
+        YawPitch.__init__(self, *args)
+        return self
 
     # Some shortcuts
     @property
