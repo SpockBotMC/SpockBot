@@ -90,7 +90,7 @@ class EntityCore(object):
 
 @pl_announce('Entities')
 class EntityPlugin(PluginBase):
-    requires = ('Event')
+    requires = 'Event'
     events = {
         'PLAY<Join Game': 'handle_join_game',
         'PLAY<Spawn Player': 'handle_spawn_player',

@@ -30,7 +30,7 @@ class WorldData(smpmap.Dimension):
 
 @pl_announce('World')
 class WorldPlugin(PluginBase):
-    requires = ('Event')
+    requires = 'Event'
     events = {
         'PLAY<Join Game': 'handle_new_dimension',
         'PLAY<Respawn': 'handle_new_dimension',

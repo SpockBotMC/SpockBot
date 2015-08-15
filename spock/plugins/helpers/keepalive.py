@@ -7,7 +7,7 @@ from spock.plugins.base import PluginBase
 
 
 class KeepalivePlugin(PluginBase):
-    requires = ('Net')
+    requires = 'Net'
     events = {
         'PLAY<Keep Alive': 'handle_keep_alive',
     }
