@@ -22,32 +22,23 @@ class Info(object):
         return self.__dict__
 
     def __repr__(self):
-        return repr(self.__dict__)
+        return repr(self.get_dict()).replace('dict', self.__class__.__name__)
 
     def __str__(self):
-        return str(self.__dict__)
+        return str(self.get_dict())
 
 
-class Position(Info):
-    """Used for things that require encoding position for the protocol,
-    use spock.vector.Vector3 if you want higher level vector functions
+class Position(Vector3, Info):
+    """
+    Used for things that require encoding position for the protocol,
+    but also require higher level vector functions.
     """
 
-    def __init__(self, x=0.0, y=0.0, z=0.0, vec=None):
-        if vec:
-            self.x, self.y, self.z = vec[:3]
-        else:
-            self.x = x
-            self.y = y
-            self.z = z
-
-    def __str__(self):
-        return "({:.2f}, {:.2f}, {:.2f})".format(self.x, self.y, self.z)
-
-    def vec3(self):
-        """Return a Vector3 object from this one
-        """
-        return Vector3(self.x, self.y, self.z)
+    def get_dict(self):
+        d = self.__dict__.copy()
+        del d['vector']
+        d['x'], d['y'], d['z'] = self
+        return d
 
 
 class BoundingBox(object):
