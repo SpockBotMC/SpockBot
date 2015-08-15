@@ -1,6 +1,7 @@
 """
 The Inventory plugin keeps track of the inventory
 and provides simple inventory manipulation.
+Crafting is not done here.
 """
 
 from spock.plugins.base import PluginBase
@@ -25,8 +26,8 @@ INV_SLOTS_PERSISTENT = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR
 
 
 class Slot(object):
-    def __init__(self, window, slot_nr, id=INV_ITEMID_EMPTY, damage=0,
-                 amount=0, enchants=None):
+    def __init__(self, window, slot_nr, id=INV_ITEMID_EMPTY,
+                 damage=0, amount=0, enchants=None):
         self.window = window
         self.slot_nr = slot_nr
         self.item_id = id
@@ -43,14 +44,14 @@ class Slot(object):
         if self.damage != other.damage:
             return False
         # raise NotImplementedError('Stacks might differ by NBT data: %s %s'
-        # % (self, other))
+        #                           % (self, other))
         # if self.nbt != other.nbt: return False
-        # TODO implement this correctly
+        # TODO implement stacking correctly (NBT data comparison)
         return self.max_amount != 1
 
     @property
     def max_amount(self):
-        # TODO add the real values for ALL THE ITEMS! And blocks.
+        # TODO Add the real values for ALL THE ITEMS! And blocks.
         # use some dummy values for now
         items_single = [-1, 256, 257, 258, 259, 261, 282, 326, 327, 333, 335,
                         342, 343, 346, 347, 355, 358, 359, 373, 374, 379, 380,
@@ -63,6 +64,7 @@ class Slot(object):
         for self.item_id in items_single:
             return 1
         # TODO some stack up to 16
+        # do not use these for now, will desynchronize your inventory
         return 64
 
     def get_dict(self):
@@ -84,16 +86,18 @@ class Slot(object):
     def __repr__(self):
         if self.item_id == INV_ITEMID_EMPTY:
             args = 'empty'
-        else:
-            args = str(self.get_dict()).strip('{}').replace("'", '').replace(
-                ': ', '=')
+        else:  # dirty, but good enough for debugging
+            args = str(self.get_dict()) \
+                .strip('{}') \
+                .replace("'", '') \
+                .replace(': ', '=')
         return 'Slot(window=%s, slot_nr=%i, %s)' % (
             self.window, self.slot_nr, args)
 
 
 class SlotCursor(Slot):
     def __init__(self, id=INV_ITEMID_EMPTY, damage=0, amount=0, enchants=None):
-        class CursorWindow(object):
+        class CursorWindow(object):  # TODO is there a cleaner way to do this?
             window_id = INV_WINID_CURSOR
 
             def __repr__(self):
@@ -129,10 +133,10 @@ class InventoryBase(object):
         # hotbar create own slots, ...
         self.slots = [Slot(self, slot_nr) for slot_nr in range(slot_count)]
         # ... append persistent slots, which have to be moved
-        for p_slot_nr, inv_slot in enumerate(
-                persistent_slots[-INV_SLOTS_PERSISTENT:]):
-            inv_slot.move_to_window(self, p_slot_nr + slot_count)
-            self.slots.append(inv_slot)
+        moved_slots = persistent_slots[-INV_SLOTS_PERSISTENT:]
+        for slot_nr, moved_slot in enumerate(moved_slots):
+            moved_slot.move_to_window(self, slot_nr + slot_count)
+            self.slots.append(moved_slot)
 
         # additional info dependent on inventory type, dynamically updated
         # by server
@@ -155,8 +159,10 @@ class InventoryBase(object):
 
     @property
     def window_slots(self):
-        """ All slots except inventory and hotbar.
-         Useful for searching. """
+        """
+        All slots except inventory and hotbar.
+        Useful for searching.
+        """
         return self.slots[:-INV_SLOTS_PERSISTENT]
 
 
@@ -190,7 +196,7 @@ class InventoryPlayer(InventoryBase):
 
 @map_window_type('minecraft:chest')
 class InventoryChest(InventoryBase):
-    """ Small, large, and glitched-out superlarge chests. """
+    """ Single, double, and triple (glitched) chests. """
 
     name = 'Chest'
 
@@ -206,9 +212,6 @@ class InventoryWorkbench(InventoryBase):
     @property
     def craft_grid_slots(self):
         return self.slots[1:10]
-
-        # TODO crafting recipes? might be done in other plugin, as this is very
-        # complex
 
 
 @map_window_type('minecraft:furnace')
@@ -245,6 +248,8 @@ class InventoryDispenser(InventoryBase):
 class InventoryEnchant(InventoryBase):
     name = 'Encantment Table'
 
+    # TODO enchanting (button clicking)
+
     @property
     def enchanted_slot(self):
         return self.slots[0]
@@ -252,8 +257,6 @@ class InventoryEnchant(InventoryBase):
     @property
     def lapis_slot(self):
         return self.slots[1]
-
-        # TODO enchanting
 
 
 @map_window_type('minecraft:brewing_stand')
@@ -279,12 +282,14 @@ class InventoryVillager(InventoryBase):
 
 
 # TODO NPC slot getters
-# TODO trading
+# TODO trading (button clicking)
 
 
 @map_window_type('minecraft:beacon')
 class InventoryBeacon(InventoryBase):
     name = 'Beacon'
+
+    # TODO choosing/applying the effect (button clicking)
 
     @property
     def input_slot(self):
@@ -301,8 +306,6 @@ class InventoryBeacon(InventoryBase):
     @property
     def effect_two(self):
         return self.properties[2]
-
-        # TODO choosing/applying the effect
 
 
 @map_window_type('minecraft:anvil')
@@ -330,11 +333,11 @@ class InventoryDropper(InventoryBase):
 class InventoryHorse(InventoryBase):
     name = 'Horse'
 
+    # TODO horse slot getters
+
     def __init__(self, eid=0, **args):
         super(InventoryHorse, self).__init__(**args)
         self.horse_entity_id = eid
-
-        # TODO horse slot getters
 
 
 class BaseClick(object):
@@ -459,7 +462,7 @@ class DropClick(BaseClick):
             else:
                 self.slot.amount -= 1
             self.cleanup_if_empty(self.slot)
-            # else: can't drop while holding an item
+        # else: cursor not empty, can't drop while holding an item
 
 
 class InventoryCore(object):
@@ -557,8 +560,8 @@ class InventoryPlugin(PluginBase):
         'PLAY<Confirm Transaction': 'handle_confirm_transaction',
         'PLAY<Open Window': 'handle_open_window',
         'PLAY<Close Window': 'handle_close_window',
-        # also register to serverbound, as server does not send Close Window
-        # when we do
+        # also register to serverbound, as server
+        # does not send Close Window when we do
         'PLAY>Close Window': 'handle_close_window',
     }
 
@@ -569,9 +572,13 @@ class InventoryPlugin(PluginBase):
         ploader.provides('Inventory', self.inventory)
 
         # click sending
-        self.action_id = 1  # start at 1 so bool(action_id) is False only
-        # for None, see send_click
-        self.last_click = None  # stores the last click action for confirmation
+
+        # start at 1 so bool(action_id) is
+        # False only for None, see send_click
+        self.action_id = 1
+
+        # stores the last click action for confirmation
+        self.last_click = None
 
     def handle_held_item_change(self, event, packet):
         self.inventory.active_slot_nr = packet.data['slot']
@@ -605,8 +612,8 @@ class InventoryPlugin(PluginBase):
             slot = self.inventory.window.slots[slot_nr] = Slot(
                 self.inventory.window, slot_nr, **slot_data)
         else:
-            raise ValueError('Unexpected window ID (%i) or slot_nr (%i)' % (
-                window_id, slot_nr))
+            raise ValueError('Unexpected window ID (%i) or slot_nr (%i)'
+                             % (window_id, slot_nr))
         self.emit_set_slot(slot)
 
     def emit_set_slot(self, slot):

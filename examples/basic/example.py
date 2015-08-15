@@ -14,16 +14,16 @@ from __future__ import absolute_import
 
 __author__ = 'Cosmo Harrigan'
 
-# Set the following values:
-USERNAME = ''
-PASSWORD = ''
-SERVER = 'localhost'
+# Import the plugins you have created
+from example_plugin import ExamplePlugin
 
 from spock import Client
 from spock.plugins import DefaultPlugins
 
-# Import the plugins you have created
-from example_plugin import ExamplePlugin
+# Set the following values:
+USERNAME = ''
+PASSWORD = ''
+SERVER = 'localhost'
 
 # Enter your credentials and the server information
 settings = {
