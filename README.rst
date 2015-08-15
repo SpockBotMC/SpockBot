@@ -27,7 +27,7 @@ starting to shape up quite nicely, we've got timers, basic physics, and
 the beginnings of a World API.
 
 Spock officially supports Python 3.x on \*nix operating systems and
-requires PyCrypto. It also runs on Windows and under Python 2.7+ but
+requires cryptography_. It also runs on Windows and under Python 2.7+ but
 that's not regularly tested and might break at any given moment. If you
 support one of those use cases and Spock breaks for you, submit an issue
 with a stack trace and we'll try to fix it.
@@ -36,7 +36,7 @@ Dependencies
 ------------
 
 | Python 3.x or Python 2.7.x
-| PyCrypto
+| cryptography_ 0.9+
 
 Installation
 ------------
@@ -91,3 +91,4 @@ The NBT parser and the original protocol implementation came from other projects
    :target: https://travis-ci.org/SpockBotMC/SpockBot
 .. |Coverage Status| image:: https://coveralls.io/repos/SpockBotMC/SpockBot/badge.svg?branch=master&service=github
    :target: https://coveralls.io/github/SpockBotMC/SpockBot?branch=master
+.. _cryptography: https://cryptography.io/
