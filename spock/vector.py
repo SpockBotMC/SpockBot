@@ -92,6 +92,25 @@ class CartesianVector(BaseVector):
     def norm(self):
         return math.sqrt(sum(map(lambda a: a * a, self)))
 
+    # Utilities
+
+    def ifloor(self):
+        self.vector = [int(math.floor(a)) for a in self]
+        return self
+
+    def floor(self):
+        return self.__class__(*self).ifloor()
+
+    def dist_cubic(self, other=None):
+        """ Manhattan distance """
+        v = self.__class__(*other).isub(self) if other else self
+        return sum(map(abs, v.vector))
+
+    def dist_sq(self, other=None):
+        """ For fast length comparison """
+        v = self.__class__(*other).isub(self) if other else self
+        return sum(map(lambda a: a * a, v))
+
     # Comparisons
     # XXX : Maybe return another type of Vector
     def __le__(self, other):
