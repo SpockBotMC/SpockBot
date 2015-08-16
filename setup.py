@@ -12,7 +12,7 @@ setup(
     url='https://github.com/SpockBotMC/SpockBot',
     packages=find_packages(exclude=['tests', 'tests.*']),
     install_requires=[
-        'PyCrypto >= 2.6.1',
+        'cryptography >= 0.9',
         'six',
     ],
     keywords=['minecraft'],
