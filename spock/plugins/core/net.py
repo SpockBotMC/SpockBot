@@ -9,7 +9,9 @@ import select
 import socket
 import time
 
-from Crypto.Cipher import AES
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import ciphers
+from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from spock import utils
 from spock.mcp import mcdata, mcpacket
@@ -17,21 +19,22 @@ from spock.plugins.base import PluginBase
 from spock.utils import pl_announce
 
 logger = logging.getLogger('spock')
+backend = default_backend()
 
 
 class AESCipher(object):
     def __init__(self, shared_secret):
+        cipher = ciphers.Cipher(algorithms.AES(shared_secret),
+                                modes.CFB8(shared_secret), backend)
         # Name courtesy of dx
-        self.encryptifier = AES.new(shared_secret, AES.MODE_CFB,
-                                    IV=shared_secret)
-        self.decryptifier = AES.new(shared_secret, AES.MODE_CFB,
-                                    IV=shared_secret)
+        self.encryptifier = cipher.encryptor()
+        self.decryptifier = cipher.decryptor()
 
     def encrypt(self, data):
-        return self.encryptifier.encrypt(data)
+        return self.encryptifier.update(data)
 
     def decrypt(self, data):
-        return self.decryptifier.decrypt(data)
+        return self.decryptifier.update(data)
 
 
 class SelectSocket(socket.socket):

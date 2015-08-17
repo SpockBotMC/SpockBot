@@ -12,10 +12,11 @@ except ImportError:
     import urllib2 as request
     from urllib2 import URLError
 import logging
+import os
 
-from Crypto import Random
-from Crypto.Cipher import PKCS1_v1_5
-from Crypto.PublicKey import RSA
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import padding
 
 from spock.mcp import yggdrasil
 from spock.plugins.base import PluginBase
@@ -23,6 +24,7 @@ from spock.utils import pl_announce
 
 
 logger = logging.getLogger('spock')
+backend = default_backend()
 
 
 # This function courtesy of barneygale
@@ -67,7 +69,7 @@ class AuthCore(object):
         return rep
 
     def gen_shared_secret(self):
-        self.shared_secret = Random._UserFriendlyRNG.get_random_bytes(16)
+        self.shared_secret = os.urandom(16)
         return self.shared_secret
 
 
@@ -101,12 +103,12 @@ class AuthPlugin(PluginBase):
 
     # Encryption Key Request - Request for client to start encryption
     def handle_encryption_request(self, name, packet):
-        pubkey = packet.data['public_key']
+        pubkey_raw = packet.data['public_key']
         if self.authenticated:
             serverid = java_hex_digest(hashlib.sha1(
                 packet.data['server_id'].encode('ascii')
                 + self.auth.shared_secret
-                + pubkey
+                + pubkey_raw
             ))
             logger.info(
                 "AUTHPLUGIN: Attempting to authenticate session with "
@@ -127,13 +129,13 @@ class AuthPlugin(PluginBase):
                 logger.warning("AUTHPLUGIN: %s", rep)
             logger.info("AUTHPLUGIN: Session authentication successful")
 
-        rsa_cipher = PKCS1_v1_5.new(RSA.importKey(pubkey))
+        pubkey = serialization.load_der_public_key(pubkey_raw, backend)
+        encrypt = lambda data: pubkey.encrypt(data, padding.PKCS1v15())
         self.net.push_packet(
             'LOGIN>Encryption Response',
             {
-                'shared_secret': rsa_cipher.encrypt(self.auth.shared_secret),
-                'verify_token': rsa_cipher.encrypt(
-                    packet.data['verify_token']),
+                'shared_secret': encrypt(self.auth.shared_secret),
+                'verify_token': encrypt(packet.data['verify_token']),
             }
         )
         self.net.enable_crypto(self.auth.shared_secret)

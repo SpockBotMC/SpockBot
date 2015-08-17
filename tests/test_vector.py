@@ -114,3 +114,50 @@ def test_cartesianvector_idiv():
     # py2 and py3 should be the same
     assert v1[0] == 0.5
     assert v1[1] == 2.0
+
+
+def test_cartesianvector_floor():
+    v1 = CartesianVector(1.5, -4.5)
+
+    v2 = v1.floor()
+
+    assert v2 is not v1
+
+    assert len(v2) == 2
+    assert v2[0] == 1
+    assert v2[1] == -5
+
+
+def test_cartesianvector_ifloor():
+    v1 = CartesianVector(1.5, -4.5)
+
+    vbackup = v1
+    v1.ifloor()
+
+    assert v1 is vbackup
+
+    assert len(v1) == 2
+    assert v1[0] == 1
+    assert v1[1] == -5
+
+
+def test_cartesianvector_dist_cubic():
+    v = CartesianVector(1, -4.5)
+
+    d = v.dist_cubic()
+    assert d == 1 + 4.5
+
+    v2 = CartesianVector(1, -3.5)
+    d = v.dist_cubic(v2)
+    assert d == 1
+
+
+def test_cartesianvector_dist_sq():
+    v = CartesianVector(1, -4)
+
+    d = v.dist_sq()
+    assert d == 1 + 4 * 4
+
+    v2 = CartesianVector(0, -2)
+    d = v.dist_sq(v2)
+    assert d == 1 + 2 * 2

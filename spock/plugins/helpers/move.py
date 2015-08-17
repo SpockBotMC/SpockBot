@@ -9,7 +9,8 @@ import logging
 import math
 
 from spock.plugins.base import PluginBase
-from spock.utils import Position, pl_announce
+from spock.utils import pl_announce
+from spock.vector import Vector3
 
 logger = logging.getLogger('spock')
 
@@ -19,7 +20,7 @@ class MovementCore(object):
         self.move_location = None
 
     def move_to(self, x, y, z):
-        self.move_location = Position(x, y, z)
+        self.move_location = Vector3(x, y, z)
 
 
 @pl_announce('Movement')
@@ -53,15 +54,15 @@ class MovementPlugin(PluginBase):
         self.do_pathfinding()
 
     def do_pathfinding(self):
-        if self.movement.move_location is not None:
-            if self.movement.move_location.x == math.floor(
-                    self.clientinfo.position.x) and \
-                    self.movement.move_location.z == math.floor(
-                    self.clientinfo.position.z):
-                self.movement.move_location = None
+        move = self.movement
+        clinfo = self.clientinfo
+        if move.move_location is not None:
+            if move.move_location.x == math.floor(clinfo.position.x) \
+                    and move.move_location.z == math.floor(clinfo.position.z):
+                move.move_location = None
             else:
-                dx = self.movement.move_location.x - self.clientinfo.position.x
-                dz = self.movement.move_location.z - self.clientinfo.position.z
+                dx = move.move_location.x - clinfo.position.x
+                dz = move.move_location.z - clinfo.position.z
                 deg = 0
                 if abs(dx) >= abs(dz):
                     # we should go along x
