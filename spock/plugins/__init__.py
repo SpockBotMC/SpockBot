@@ -2,20 +2,24 @@ from spock.plugins.core import auth, event, net, ticker, timer
 from spock.plugins.helpers import clientinfo, entities, interact, inventory,\
     keepalive, move, physics, respawn, start, world
 
-DefaultPlugins = [
+core_plugins = [
+    ('auth', auth.AuthPlugin),
     ('event', event.EventPlugin),
     ('net', net.NetPlugin),
-    ('auth', auth.AuthPlugin),
     ('ticker', ticker.TickerPlugin),
     ('timers', timer.TimerPlugin),
-    ('start', start.StartPlugin),
-    ('keepalive', keepalive.KeepalivePlugin),
-    ('respawn', respawn.RespawnPlugin),
-    ('move', move.MovementPlugin),
-    ('world', world.WorldPlugin),
+]
+helper_plugins = [
     ('clientinfo', clientinfo.ClientInfoPlugin),
     ('entities', entities.EntityPlugin),
-    ('physics', physics.PhysicsPlugin),
-    ('inventory', inventory.InventoryPlugin),
     ('interact', interact.InteractPlugin),
+    ('inventory', inventory.InventoryPlugin),
+    ('keepalive', keepalive.KeepalivePlugin),
+    ('move', move.MovementPlugin),
+    ('physics', physics.PhysicsPlugin),
+    ('respawn', respawn.RespawnPlugin),
+    ('start', start.StartPlugin),
+    ('world', world.WorldPlugin),
 ]
+default_plugins = core_plugins + helper_plugins
+DefaultPlugins = default_plugins  # for compatibility
