@@ -49,9 +49,10 @@ from spock.vector import Vector3
 logger = logging.getLogger('spock')
 
 class PhysicsCore(object):
-    def __init__(self, vec, pos):
+    def __init__(self, vec, pos, bounding_box):
         self.vec = vec
         self.pos = pos
+        self.bounding_box = bounding_box
 
     def jump(self):
         if self.pos.on_ground:
@@ -76,15 +77,18 @@ class PhysicsPlugin(PluginBase):
     requires = ('Event', 'ClientInfo', 'World')
     events = {
         'physics_tick': 'tick',
+        'cl_position_update': 'clear_velocity',
     }
     unit_vectors = Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)
 
     def __init__(self, ploader, settings):
         super(PhysicsPlugin, self).__init__(ploader, settings)
         self.vec = Vector3(0.0, 0.0, 0.0)
-        self.playerbb = BoundingBox(0.6, 1.8)
+        self.bounding_box = BoundingBox(0.6, 1.8)
         self.pos = self.clientinfo.position
-        ploader.provides('Physics', PhysicsCore(self.vec, self.pos))
+        ploader.provides(
+            'Physics', PhysicsCore(self.vec, self.pos, self.bounding_box)
+        )
 
     def tick(self, _, __):
         self.vec.y -= PLAYER_ENTITY_GAV
@@ -92,6 +96,9 @@ class PhysicsPlugin(PluginBase):
         mtv = self.get_mtv()
         self.pos.on_ground = mtv.y > 0
         self.apply_vector(mtv)
+
+    def clear_velocity(self, _, __):
+        self.vec.__init__(0, 0,0 )
 
     def apply_drag(self):
         self.vec.y -= self.vec.y * PLAYER_ENTITY_DRG
@@ -102,26 +109,19 @@ class PhysicsPlugin(PluginBase):
         self.vec += mtv
         self.pos += self.vec
 
-    def gen_block_position(self, pos):
-        x = math.floor(pos.x)
-        y = math.floor(pos.y)
-        z = math.floor(pos.z)
-        return Position(x, y, z)
-
     def gen_block_set(self, block_pos):
         offsets = ((x,y,z) for x in (-1,0,1) for y in (0,1,2) for z in (-1,0,1))
         return (block_pos - Vector3(*offset) for offset in offsets)
 
     def check_collision(self, pos, vector):
         test_pos = pos + vector
-        center_block_pos = self.gen_block_position(test_pos)
-        return self.block_collision(center_block_pos, test_pos)
+        return self.block_collision(test_pos.floor(), test_pos)
 
     # Breadth-first search for a minimum translation vector
     def get_mtv(self):
         pos = self.pos + self.vec
-        pos.x -= self.playerbb.w/2
-        pos.z -= self.playerbb.d/2
+        pos.x -= self.bounding_box.w/2
+        pos.z -= self.bounding_box.d/2
         current_vector = Vector3()
         transform_vectors = []
         q = collections.deque()
@@ -146,7 +146,7 @@ class PhysicsPlugin(PluginBase):
                 continue
             transform_vectors = []
             for i, axis in enumerate(self.unit_vectors):
-                axis_pen = self.test_axis(axis, pos[i], pos[i] + self.playerbb[i],
+                axis_pen = self.test_axis(axis, pos[i], pos[i] + self.bounding_box[i],
                     block_pos[i], block_pos[i] + block.bounding_box[i])
                 if not axis_pen:
                     break
