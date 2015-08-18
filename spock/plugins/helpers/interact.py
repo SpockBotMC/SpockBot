@@ -50,7 +50,7 @@ class InteractPlugin(PluginBase):
     requires = ('ClientInfo', 'Inventory', 'Net')
 
     def __init__(self, ploader, settings):
-        super().__init__(ploader, settings)
+        super(InteractPlugin, self).__init__(ploader, settings)
         ploader.provides('Interact', self)
 
         self.sneaking = False
