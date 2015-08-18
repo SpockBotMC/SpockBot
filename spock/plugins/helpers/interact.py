@@ -55,10 +55,10 @@ class InteractPlugin(PluginBase):
 
         self.sneaking = False
         self.sprinting = False
+        self.dig_pos_dict = {'x': 0, 'y': 0, 'z': 0}
+
         self.auto_swing = True  # move arm when clicking
         self.auto_look = True  # look at clicked things
-
-        self.dig_pos_dict = {'x': 0, 'y': 0, 'z': 0}
 
     def swing_arm(self):
         self.net.push_packet('PLAY>Animation', {})
