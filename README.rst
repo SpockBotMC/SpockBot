@@ -38,6 +38,11 @@ Dependencies
 | Python 3.x or Python 2.7.x
 | cryptography_ 0.9+
 
+Note
+""""
+cryptography library has some extra dependencies to install, you can find detailed instructions `here <https://cryptography.io/en/latest/installation/>`__.  
+
+
 Installation
 ------------
 
@@ -65,7 +70,7 @@ Support
 | gamingrobot or nickelpro in ``#mcdevs`` on Freenode
 
 Contributing
--------
+------------
 
 Instructions for contributing to SpockBot can be found in `CONTRIBUTING <CONTRIBUTING.md>`__
 
