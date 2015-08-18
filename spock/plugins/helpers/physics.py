@@ -37,9 +37,9 @@ PLAYER_GND_DRG = 0.41
 # Seems about right, not based on anything
 PLAYER_JMP_ACC = 0.45
 
+import collections
 import logging
 import math
-import queue
 
 from spock.mcmap import mapdata
 from spock.plugins.base import PluginBase
@@ -124,15 +124,15 @@ class PhysicsPlugin(PluginBase):
         pos.z -= self.playerbb.d/2
         current_vector = Vector3()
         transform_vectors = []
-        q = queue.Queue()
-        while all(transform_vectors) or q.empty():
-            current_vector = q.get() if not q.empty() else current_vector
+        q = collections.deque()
+        while all(transform_vectors) or not q:
+            current_vector = q.popleft() if q else current_vector
             transform_vectors = self.check_collision(pos, current_vector)
             for vector in transform_vectors:
-                q.put(current_vector + vector)
+                q.append(current_vector + vector)
         possible_mtv = [current_vector]
-        while not q.empty():
-            current_vector = q.get()
+        while q:
+            current_vector = q.popleft()
             transform_vectors = self.check_collision(pos, current_vector)
             if not all(transform_vectors):
                 possible_mtv.append(current_vector)
