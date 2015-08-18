@@ -11,13 +11,11 @@ Interact with the world:
 By default, the client sends swing and look packets like the vanilla client.
 This can be disabled by setting the auto_swing and auto_look flags.
 """
-import math
-
 from spock.plugins.base import PluginBase
 from spock.utils import pl_announce
 from spock.vector import Vector3
 
-PLAYER_HEIGHT = 1.74
+PLAYER_HEIGHT = 1.74  # TODO get from physics or where else it belongs
 
 INTERACT_ENTITY = 0
 ATTACK_ENTITY = 1
@@ -117,18 +115,12 @@ class InteractPlugin(PluginBase):
         self.look(self.clientinfo.position.yaw + d_yaw,
                   self.clientinfo.position.pitch + d_pitch)
 
-    def look_at(self, pos):
-        # TODO use Vector3
-        delta_x = pos.x - self.clientinfo.position.x
-        delta_y = pos.y - self.clientinfo.position.y + PLAYER_HEIGHT
-        delta_z = pos.z - self.clientinfo.position.z
-        self.look_at_rel(Vector3(delta_x, delta_y, delta_z))
-
     def look_at_rel(self, delta):
-        ground_distance = math.sqrt(delta.x * delta.x + delta.z * delta.z)
-        pitch = math.atan2(delta.y, ground_distance) * 180 / math.pi
-        yaw = math.atan2(-delta.x, -delta.z) * 180 / math.pi
-        self.look(yaw, pitch)
+        self.look(*delta.yaw_pitch)
+
+    def look_at(self, pos):
+        delta = pos - self.clientinfo.position - Vector3(0, PLAYER_HEIGHT, 0)
+        self.look_at_rel(delta)
 
     def _send_dig_block(self, status, pos=None, face=FACE_Y_POS):
         if status == DIG_START:
@@ -160,8 +152,18 @@ class InteractPlugin(PluginBase):
         self.start_digging(pos)
         self.finish_digging()
 
+    def _send_click_block(self, pos, face=1, cursor_pos=Vector3(8, 8, 8)):
+        self.net.push_packet('PLAY>Player Block Placement', {
+            'location': pos.get_dict(),
+            'direction': face,
+            'held_item': self.inventory.active_slot.get_dict(),
+            'cur_pos_x': int(cursor_pos.x),
+            'cur_pos_y': int(cursor_pos.y),
+            'cur_pos_z': int(cursor_pos.z),
+        })
+
     def click_block(self, pos, face=1, cursor_pos=Vector3(8, 8, 8),
-                    look_at_block=True):
+                    look_at_block=True, swing=True):
         """
         Click on a block.
         Examples: push button, open window, make redstone ore glow
@@ -171,26 +173,19 @@ class InteractPlugin(PluginBase):
         if look_at_block and self.auto_look:
             # TODO look at cursor_pos
             self.look_at(pos)
-        self.net.push_packet('PLAY>Player Block Placement', {
-            'location': pos.get_dict(),
-            'direction': face,
-            'held_item': self.inventory.active_slot.get_dict(),
-            'cur_pos_x': int(cursor_pos.x),
-            'cur_pos_y': int(cursor_pos.y),
-            'cur_pos_z': int(cursor_pos.z),
-        })
-        if self.auto_swing:
+        self._send_click_block(pos, face, cursor_pos)
+        if swing and self.auto_swing:
             self.swing_arm()
 
     def place_block(self, pos, face=1, cursor_pos=Vector3(8, 8, 8),
-                    look_at_block=True, sneak=True):
+                    sneak=True, look_at_block=True, swing=True):
         """
         Place a block next to pos. If the block at pos is air, place at pos.
         """
         sneaking_before = self.sneaking
         if sneak:
             self.sneak()
-        self.click_block(pos, face, cursor_pos, look_at_block)
+        self.click_block(pos, face, cursor_pos, look_at_block, swing)
         if sneak:
             self.sneak(sneaking_before)
 
@@ -200,17 +195,16 @@ class InteractPlugin(PluginBase):
         See "Special note on using buckets"
         in http://wiki.vg/Protocol#Player_Block_Placement
         """
-        raise NotImplementedError
+        raise NotImplementedError(self.use_bucket.__doc__)
 
     def activate_item(self):
         """
         Use (hold right-click) the item in the active slot.
         Examples: pull the bow, start eating once, throw an egg.
         """
-        self.click_block(Vector3(-1, 255, -1),
-                         face=1,
-                         cursor_pos=Vector3(-1, -1, -1),
-                         look_at_block=False)
+        self._send_click_block(pos=Vector3(-1, 255, -1),
+                               face=-1,
+                               cursor_pos=Vector3(-1, -1, -1))
 
     def deactivate_item(self):
         """
@@ -225,7 +219,7 @@ class InteractPlugin(PluginBase):
         Setting `cursor_pos` sets `action` to "interact at".
         """
         if self.auto_look:
-            self.look_at(entity)  # TODO look at cursor_pos
+            self.look_at(Vector3(entity))  # TODO look at cursor_pos
         if cursor_pos is not None:
             action = INTERACT_ENTITY_AT
         packet = {'target': entity.eid, 'action': action}
