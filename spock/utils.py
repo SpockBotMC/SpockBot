@@ -41,18 +41,34 @@ class Position(Vector3, Info):
         return d
 
 
-class BoundingBox(object):
-    def __init__(self, w, h, d=None, offset=(0, 0, 0)):
-        self.x = offset[0]
-        self.y = offset[1]
-        self.z = offset[2]
-        self.w = w  # x
-        self.h = h  # y
-        if d:
-            self.d = d  # z
-        else:
-            self.d = w
+class BoundingBox(Vector3):
+    def __init__(self, w, h, d=None):
+        d = w if d == None else d
+        super(BoundingBox, self).__init__(w, h, d)
 
+    @property
+    def w(self):
+        return self.vector[0]
+
+    @w.setter
+    def w(self, value):
+        self.vector[0] = value
+
+    @property
+    def h(self):
+        return self.vector[1]
+
+    @h.setter
+    def h(self, value):
+        self.vector[1] = value
+
+    @property
+    def d(self):
+        return self.vector[2]
+
+    @d.setter
+    def d(self, value):
+        self.vector[2] = value
 
 class BufferUnderflowException(Exception):
     pass
