@@ -40,8 +40,6 @@ PLAYER_JMP_ACC = 0.45
 import logging
 import math
 import queue
-import sys
-
 
 from spock.mcmap import mapdata
 from spock.plugins.base import PluginBase
@@ -88,12 +86,10 @@ class PhysicsPlugin(PluginBase):
         self.pos = self.clientinfo.position
         ploader.provides('Physics', PhysicsCore(self.vec, self.pos))
 
-    # ToDo: Handle getting stuck between two positions
     def tick(self, _, __):
         self.vec.y -= PLAYER_ENTITY_GAV
         self.apply_drag()
         mtv = self.get_mtv()
-        print('Chosen MTV:', mtv)
         self.pos.on_ground = mtv.y > 0
         self.apply_vector(mtv)
 
@@ -104,7 +100,6 @@ class PhysicsPlugin(PluginBase):
 
     def apply_vector(self, mtv):
         self.vec += mtv
-        print('After MTV, self.vec:', self.vec)
         self.pos += self.vec
 
     def gen_block_position(self, pos):
@@ -141,7 +136,6 @@ class PhysicsPlugin(PluginBase):
             transform_vectors = self.check_collision(pos, current_vector)
             if not all(transform_vectors):
                 possible_mtv.append(current_vector)
-        print('Possible MTVs:', possible_mtv)
         return min(possible_mtv)
 
     def block_collision(self, center_block_pos, pos):
