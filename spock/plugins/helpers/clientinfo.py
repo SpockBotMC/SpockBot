@@ -41,8 +41,8 @@ class PlayerHealth(Info):
 
 
 class PlayerPosition(Position):
-    def __init__(self):
-        super(PlayerPosition, self).__init__()
+    def __init__(self, *xyz):
+        super(PlayerPosition, self).__init__(*xyz)
         self.yaw = 0.0
         self.pitch = 0.0
         self.on_ground = False

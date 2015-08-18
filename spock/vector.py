@@ -103,12 +103,12 @@ class CartesianVector(BaseVector):
 
     def dist_cubic(self, other=None):
         """ Manhattan distance """
-        v = self.__class__(*other).isub(self) if other else self
+        v = self - other if other else self
         return sum(map(abs, v.vector))
 
     def dist_sq(self, other=None):
         """ For fast length comparison """
-        v = self.__class__(*other).isub(self) if other else self
+        v = self - other if other else self
         return sum(map(lambda a: a * a, v))
 
     # Comparisons
@@ -170,23 +170,32 @@ class Vector3(CartesianVector):
     def z(self, value):
         self.vector[2] = value
 
+    @property
     def yaw_pitch(self):
         """
         Calculate the yaw and pitch of this vector
         """
         try:
-            c = math.sqrt(self.x ** 2 + self.z ** 2)
-            alpha1 = -math.asin(self.x / c) / math.pi * 180
-            alpha2 = math.acos(self.z / c) / math.pi * 180
+            ground_distance = math.sqrt(self.x ** 2 + self.z ** 2)
+            alpha1 = -math.asin(self.x / ground_distance) / math.pi * 180
+            alpha2 = math.acos(self.z / ground_distance) / math.pi * 180
             if alpha2 > 90:
                 yaw = 180 - alpha1
             else:
                 yaw = alpha1
-            pitch = math.asin(-self.y / c) / math.pi * 180
+            pitch = math.atan2(-self.y, ground_distance) / math.pi * 180
         except ZeroDivisionError:
             yaw = 0
             pitch = 0
         return YawPitch(yaw, pitch)
+
+    def set_dict(self, data):
+        self.vector[0] = data['x']
+        self.vector[1] = data['y']
+        self.vector[2] = data['z']
+
+    def get_dict(self):
+        return {'x': self.vector[0], 'y': self.vector[1], 'z': self.vector[2]}
 
 
 class YawPitch(BaseVector):
