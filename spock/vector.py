@@ -112,21 +112,21 @@ class CartesianVector(BaseVector):
         return sum(map(lambda a: a * a, v))
 
     # Comparisons
-    # XXX : Maybe return another type of Vector
-    def __le__(self, other):
-        return self.__class__(*map(lambda a: a[0] <= a[1], zip(self, other)))
 
     def __lt__(self, other):
-        return self.__class__(*map(lambda a: a[0] < a[1], zip(self, other)))
-
-    def __ge__(self, other):
-        return self.__class__(*map(lambda a: a[0] >= a[1], zip(self, other)))
+        return self.dist_sq() < other.dist_sq()
 
     def __gt__(self, other):
-        return self.__class__(*map(lambda a: a[0] > a[1], zip(self, other)))
+        return self.dist_sq() > other.dist_sq()
+
+    def __le__(self, other):
+        return not self.__gt__(other)
+
+    def __ge__(self, other):
+        return not self.__lt__(other)
 
     def __eq__(self, other):
-        return self.__class__(*map(lambda a: a[0] == a[1], zip(self, other)))
+        return all(s == o for s, o in zip(self, other))
 
 
 class Vector3(CartesianVector):
