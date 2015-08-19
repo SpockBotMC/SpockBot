@@ -7,7 +7,20 @@ from mock.mock import MagicMock
 
 from six.moves.urllib.error import HTTPError
 
-from spock.mcp.yggdrasil import YggAuth
+from spock.mcp.yggdrasil import YggdrasilCore
+
+ygg_auth_error = {'error': 'ForbiddenOperationException',
+                  'errorMessage': 'Invalid credentials. Invalid username or '
+                                  'password.'}
+
+ygg_auth_user_pass = {'accessToken': '01234567890123456789012345678901',
+                      'availableProfiles': [
+                          {'id': '01234567890123456789012345678901',
+                           'name': 'username'}],
+                      'clientToken': '01234567890123456789012345678901',
+                      'selectedProfile': {
+                          'id': '01234567890123456789012345678901',
+                          'name': 'username'}}
 
 
 @mock.patch('spock.mcp.yggdrasil.Request')
@@ -16,7 +29,7 @@ class YggAuthRequestTest(unittest.TestCase):
     def test_request_is_done(self, urlopen, request):
         decode = urlopen.return_value.read.return_value.decode
         decode.return_value = '{"test": 1}'
-        ygg = YggAuth()
+        ygg = YggdrasilCore()
         self.assertFalse(urlopen.called)
         self.assertFalse(request.called)
         res = ygg._ygg_req('/test', [{'a': 'b'}, 'c', 'd', 'e'])
@@ -42,7 +55,7 @@ class YggAuthRequestTest(unittest.TestCase):
         exception_data.read.return_value.decode.return_value = '{"error": 1}'
         urlopen.side_effect = HTTPError('', '', '', '', exception_data)
 
-        ygg = YggAuth()
+        ygg = YggdrasilCore()
         self.assertFalse(urlopen.called)
         self.assertFalse(request.called)
         res = ygg._ygg_req('/test', {'a': 'b'})
@@ -54,10 +67,10 @@ class YggAuthRequestTest(unittest.TestCase):
         self.assertEqual(res, {'error': 1})
 
 
-@mock.patch('spock.mcp.yggdrasil.YggAuth._ygg_req')
+@mock.patch('spock.mcp.yggdrasil.YggdrasilCore._ygg_req')
 class YggAuthTest(unittest.TestCase):
     def setUp(self):
-        self.ygg = YggAuth()
+        self.ygg = YggdrasilCore()
         self.assertFalse(self.ygg.username)
         self.assertFalse(self.ygg.password)
         self.assertFalse(self.ygg.client_token)

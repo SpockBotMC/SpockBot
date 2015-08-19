@@ -25,16 +25,16 @@ class StartPlugin(PluginBase):
         setattr(ploader, 'start', self.start)
 
     def start(self, host=None, port=None):
-        if 'error' not in self.auth.start_session(
-                self.settings['username'],
-                self.settings['password']
-        ):
-            host = host if host else self.settings['host']
-            port = port if port else self.settings['port']
-            self.net.connect(host, port)
-            self.handshake()
-            self.login_start()
-            self.event.event_loop()
+        self.auth.username = self.settings['username']
+        self.auth.password = self.settings['password']
+        if not self.auth.start_session():
+            return
+        host = host or self.settings['host']
+        port = port or self.settings['port']
+        self.net.connect(host, port)
+        self.handshake()
+        self.login_start()
+        self.event.event_loop()
 
     def handshake(self):
         self.net.push_packet('HANDSHAKE>Handshake', {
