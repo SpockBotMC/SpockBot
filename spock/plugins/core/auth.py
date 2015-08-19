@@ -78,6 +78,7 @@ class AuthPlugin(PluginBase):
     requires = ('Event', 'Net')
     defaults = {
         'authenticated': True,
+        'auth_quit': True,
         'sess_quit': True,
     }
     events = {
@@ -89,13 +90,15 @@ class AuthPlugin(PluginBase):
     def __init__(self, ploader, settings):
         super(AuthPlugin, self).__init__(ploader, settings)
         self.authenticated = self.settings['authenticated']
+        self.auth_quit = self.settings['auth_quit']
         self.sess_quit = self.settings['sess_quit']
         self.auth = AuthCore(self.authenticated, self.event)
         self.auth.gen_shared_secret()
         ploader.provides('Auth', self.auth)
 
     def handle_auth_error(self, name, data):
-        self.event.kill()
+        if self.auth_quit:
+            self.event.kill()
 
     def handle_session_error(self, name, data):
         if self.sess_quit:
@@ -127,7 +130,9 @@ class AuthPlugin(PluginBase):
                 rep = 'Couldn\'t connect to sessionserver.mojang.com'
             if rep != "":
                 logger.warning("AUTHPLUGIN: %s", rep)
-            logger.info("AUTHPLUGIN: Session authentication successful")
+                self.event.emit('SESS_ERR')
+            else:
+                logger.info("AUTHPLUGIN: Session authentication successful")
 
         pubkey = serialization.load_der_public_key(pubkey_raw, backend)
         encrypt = lambda data: pubkey.encrypt(data, padding.PKCS1v15())
