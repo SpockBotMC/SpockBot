@@ -47,18 +47,15 @@ class Packet(object):
 
     def decode(self, bbuff, proto_comp_state):
         self.data = {}
-        if proto_comp_state == mcdata.PROTO_COMP_ON:
-            packet_length = datautils.unpack(MC_VARINT, bbuff)
-            start = bbuff.tell()
-            data_length = datautils.unpack(MC_VARINT, bbuff)
-            packet_data = bbuff.recv(packet_length - (bbuff.tell() - start))
-            if data_length:
-                packet_data = zlib.decompress(packet_data, zlib.MAX_WBITS)
-        elif proto_comp_state == mcdata.PROTO_COMP_OFF:
-            packet_data = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
-        else:
-            return None
+        packet_length = datautils.unpack(MC_VARINT, bbuff)
+        packet_data = bbuff.recv(packet_length)
         pbuff = utils.BoundBuffer(packet_data)
+        if proto_comp_state == mcdata.PROTO_COMP_ON:
+            body_length = datautils.unpack(MC_VARINT, pbuff)
+            if body_length > 0:
+                body_data = zlib.decompress(pbuff.flush(), zlib.MAX_WBITS)
+                pbuff.write(body_data)
+                pbuff.save()
 
         try:
             # Ident
