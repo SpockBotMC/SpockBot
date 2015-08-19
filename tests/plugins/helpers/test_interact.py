@@ -1,7 +1,10 @@
 from collections import namedtuple
 from unittest import TestCase
+
 from spock.plugins.helpers.clientinfo import PlayerPosition
-from spock.plugins.helpers.interact import *
+from spock.plugins.helpers.interact import \
+    ATTACK_ENTITY, INTERACT_ENTITY, InteractPlugin, PLAYER_HEIGHT
+from spock.vector import Vector3
 
 
 Packet = namedtuple('Packet', 'ident data')
@@ -114,7 +117,8 @@ class InteractPluginTest(TestCase):
 
     def test_activate_item(self):
         self.plug.activate_item()
-        self.assertEqual(NetMock.datas[-1].location, Vector3(-1, 255, -1))
+        self.assertEqual(NetMock.datas[-1].location,
+                         {'x': -1, 'y': 255, 'z': -1})
         self.assertEqual(NetMock.datas[-1].direction, -1)
         for c in 'xyz':
             self.assertEqual(getattr(NetMock.datas[-1], 'cur_pos_%s' % c),
