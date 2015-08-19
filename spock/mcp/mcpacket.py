@@ -71,7 +71,7 @@ class Packet(object):
             # Extension
             if self.ident in hashed_extensions:
                 hashed_extensions[self.ident].decode_extra(self, pbuff)
-            if pbuff.buff:
+            if len(pbuff) > 0:
                 raise PacketDecodeFailure(self, pbuff)
         except utils.BufferUnderflowException:
             raise PacketDecodeFailure(self, pbuff, True)

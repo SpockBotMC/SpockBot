@@ -59,45 +59,44 @@ class BufferUnderflowException(Exception):
 
 
 class BoundBuffer(object):
-    backup = b''
+    buff = b''
+    cursor = 0
 
-    def __init__(self, *args):
-        self.count = 0
-        self.buff = (args[0] if args else b'')
+    def __init__(self, data=b""):
+        self.write(data)
 
-    def recv(self, bytes):
-        if len(self.buff) < bytes:
+    def read(self, length):
+        if length > len(self):
             raise BufferUnderflowException()
-        self.count += bytes
-        o, self.buff = self.buff[:bytes], self.buff[bytes:]
-        return o
 
-    def append(self, bytes):
-        self.buff += bytes
-
-    def flush(self):
-        out = self.buff
-        self.buff = b''
-        self.save()
+        out = self.buff[self.cursor:self.cursor+length]
+        self.cursor += length
         return out
 
+    def write(self, data):
+        self.buff += data
+
+    def flush(self):
+        return self.read(len(self))
+
     def save(self):
-        self.backup = self.buff
+        self.buff = self.buff[self.cursor:]
+        self.cursor = 0
 
     def revert(self):
-        self.buff = self.backup
+        self.cursor = 0
 
     def tell(self):
-        return self.count
+        return self.cursor
 
     def __len__(self):
-        return self.buff.__len__()
+        return len(self.buff) - self.cursor
 
     def __repr__(self):
-        return 'BoundBuffer: ' + str(self.buff)
+        return "<BoundBuffer '%s'>" % repr(self.buff[self.cursor:])
 
-    read = recv
-    write = append
+    recv = read
+    append = write
 
 
 def pl_announce(*args):
