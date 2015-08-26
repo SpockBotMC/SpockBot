@@ -328,21 +328,21 @@ class BaseClick(object):
     def get_packet(self, inv_plugin):
         """Called by send_click() to prepare the sent packet.
         Abstract method.
-        :param inv_plugin: inventory plugin instance, to get slot contents etc.
+        :param inv_plugin: inventory plugin instance
         """
         raise NotImplementedError()
 
     def apply(self, inv_plugin):
         """Called by on_success().
         Abstract method.
-        :param inv_plugin: inventory plugin instance, to set slot contents etc.
+        :param inv_plugin: inventory plugin instance
         """
         raise NotImplementedError()
 
     def on_success(self, inv_plugin, emit_set_slot):
         """Called when the click was successful and should be
         applied to the inventory.
-        :param inv_plugin: inventory plugin instance, to set slot contents etc.
+        :param inv_plugin: inventory plugin instance
         :param emit_set_slot: function to signal a slot change, should be
         InventoryPlugin's emit_set_slot()
         """
@@ -643,15 +643,16 @@ class InventoryPlugin(PluginBase):
         # only send if previous click got confirmed
         if self.last_click:
             return None
-        packet = click.get_packet(self.inventory)
+        inv = self.inventory
+        packet = click.get_packet(inv)
         try:
-            craft_result_slot = self.inventory.window.craft_result_slot.slot_nr
+            craft_result_slot = inv.window.craft_result_slot.slot_nr
             if packet['slot'] == craft_result_slot:
                 # send wrong click to update inventory after crafting
                 packet['clicked_item'] = {'id': -1}
         except AttributeError:
             pass  # not crafting
-        packet['window_id'] = self.inventory.window.window_id
+        packet['window_id'] = inv.window.window_id
         packet['action'] = self.action_id
         self.action_id += 1
         self.last_click = click
