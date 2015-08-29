@@ -11,38 +11,10 @@ Interact with the world:
 By default, the client sends swing and look packets like the vanilla client.
 This can be disabled by setting the auto_swing and auto_look flags.
 """
+from spock.mcdata.constants import *
 from spock.plugins.base import PluginBase
 from spock.utils import pl_announce
 from spock.vector import Vector3
-
-PLAYER_HEIGHT = 1.74  # TODO get from physics or where else it belongs
-
-INTERACT_ENTITY = 0
-ATTACK_ENTITY = 1
-INTERACT_ENTITY_AT = 2
-
-ENTITY_ACTION_SNEAK = 0
-ENTITY_ACTION_UNSNEAK = 1
-ENTITY_ACTION_LEAVE_BED = 2
-ENTITY_ACTION_START_SPRINT = 3
-ENTITY_ACTION_STOP_SPRINT = 4
-ENTITY_ACTION_JUMP_HORSE = 5
-ENTITY_ACTION_OPEN_INVENTORY = 6
-
-# the six faces of a block
-FACE_Y_NEG = 0
-FACE_Y_POS = 1
-FACE_Z_NEG = 2
-FACE_Z_POS = 3
-FACE_X_NEG = 4
-FACE_X_POS = 5
-
-DIG_START = 0
-DIG_CANCEL = 1
-DIG_FINISH = 2
-DIG_DROP_STACK = 3
-DIG_DROP_ITEM = 4
-DIG_DEACTIVATE_ITEM = 5
 
 
 @pl_announce('Interact')

@@ -4,25 +4,9 @@ and provides simple inventory manipulation.
 Crafting is not done here.
 """
 
+from spock.mcdata.constants import *
 from spock.plugins.base import PluginBase
 from spock.utils import pl_announce
-
-# the button codes used in send_click
-INV_BUTTON_LEFT = 0
-INV_BUTTON_RIGHT = 1
-INV_BUTTON_MIDDLE = 2
-
-INV_SLOT_NR_CURSOR = -1
-INV_WINID_CURSOR = -1  # the slot that follows the cursor
-# player inventory window ID/type, not opened but updated by server
-INV_WINID_PLAYER = 0
-INV_ITEMID_EMPTY = -1
-
-INV_SLOTS_PLAYER = 9  # crafting and armor
-INV_SLOTS_INVENTORY = 9 * 3  # above hotbar
-INV_SLOTS_HOTBAR = 9
-# always accessible
-INV_SLOTS_PERSISTENT = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR
 
 
 class Slot(object):
@@ -51,8 +35,8 @@ class Slot(object):
 
     @property
     def max_amount(self):
-        # TODO Add the real values for ALL THE ITEMS! And blocks.
-        # use some dummy values for now
+        # TODO use spock.mcdata.items
+        # at least use some dummy values for now, ignore 16-stacking items
         items_single = [-1, 256, 257, 258, 259, 261, 282, 326, 327, 333, 335,
                         342, 343, 346, 347, 355, 358, 359, 373, 374, 379, 380,
                         386, 387, 398, 403, 407, 408, 422, 417, 418, 419]
@@ -63,8 +47,6 @@ class Slot(object):
         items_single.extend(range(2256, 2268))
         for self.item_id in items_single:
             return 1
-        # TODO some stack up to 16
-        # do not use these for now, will desynchronize your inventory
         return 64
 
     def get_dict(self):

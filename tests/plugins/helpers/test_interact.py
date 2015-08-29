@@ -3,7 +3,10 @@ from unittest import TestCase
 
 from spock.plugins.helpers.clientinfo import PlayerPosition
 from spock.plugins.helpers.interact import \
-    ATTACK_ENTITY, INTERACT_ENTITY, InteractPlugin, PLAYER_HEIGHT
+    ATTACK_ENTITY, INTERACT_ENTITY, InteractPlugin
+from spock.mcdata import INTERACT_ENTITY, ATTACK_ENTITY
+from spock.mcdata.constants import PLAYER_HEIGHT, INTERACT_ENTITY, \
+    ATTACK_ENTITY
 from spock.vector import Vector3
 
 

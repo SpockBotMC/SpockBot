@@ -12,35 +12,11 @@ handful of people (Thank you 0pteron!) to the Minecraft wiki talk page on
 Entities and Transportation. Ideally someone will decompile the client with MCP
 and document the totally correct values and behaviors.
 """
-# Gravitational constants defined in blocks/(client tick)^2
-PLAYER_ENTITY_GAV = 0.08
-THROWN_ENTITY_GAV = 0.03
-RIDING_ENTITY_GAV = 0.04
-BLOCK_ENTITY_GAV = 0.04
-ARROW_ENTITY_GAV = 0.05
-
-# Air drag constants defined in 1/tick
-PLAYER_ENTITY_DRG = 0.02
-THROWN_ENTITY_DRG = 0.01
-RIDING_ENTITY_DRG = 0.05
-BLOCK_ENTITY_DRG = 0.02
-ARROW_ENTITY_DRG = 0.01
-
-# Player ground acceleration isn't actually linear, but we're going to pretend
-# that it is. Max ground velocity for a walking client is 0.215blocks/tick, it
-# takes a dozen or so ticks to get close to max velocity. Sprint is 0.28, just
-# apply more acceleration to reach a higher max ground velocity
-PLAYER_WLK_ACC = 0.15
-PLAYER_SPR_ACC = 0.20
-PLAYER_GND_DRG = 0.41
-
-# Seems about right, not based on anything
-PLAYER_JMP_ACC = 0.45
-
 import logging
 import math
 
 from spock.mcmap import mapdata
+from spock.mcdata.constants import *
 from spock.plugins.base import PluginBase
 from spock.utils import BoundingBox, Position, pl_announce
 from spock.vector import Vector3
