@@ -15,8 +15,8 @@ and document the totally correct values and behaviors.
 import logging
 import math
 
+from spock.mcdata import constants
 from spock.mcmap import mapdata
-from spock.mcdata.constants import *
 from spock.plugins.base import PluginBase
 from spock.utils import BoundingBox, Position, pl_announce
 from spock.vector import Vector3
@@ -32,20 +32,20 @@ class PhysicsCore(object):
     def jump(self):
         if self.pos.on_ground:
             self.pos.on_ground = False
-            self.vec += Vector3(0, PLAYER_JMP_ACC, 0)
+            self.vec += Vector3(0, constants.PLAYER_JMP_ACC, 0)
 
     def walk(self, angle, radians=False):
         if not radians:
             angle = math.radians(angle)
-        z = math.cos(angle) * PLAYER_WLK_ACC
-        x = math.sin(angle) * PLAYER_WLK_ACC
+        z = math.cos(angle) * constants.PLAYER_WLK_ACC
+        x = math.sin(angle) * constants.PLAYER_WLK_ACC
         self.vec += Vector3(x, 0, z)
 
     def sprint(self, angle, radians=False):
         if not radians:
             angle = math.radians(angle)
-        z = math.cos(angle) * PLAYER_SPR_ACC
-        x = math.sin(angle) * PLAYER_SPR_ACC
+        z = math.cos(angle) * constants.PLAYER_SPR_ACC
+        x = math.sin(angle) * constants.PLAYER_SPR_ACC
         self.vec += Vector3(x, 0, z)
 
 
@@ -81,7 +81,7 @@ class PhysicsPlugin(PluginBase):
             self.pos.y = cb.y
         else:
             self.pos.on_ground = False
-            self.vec -= Vector3(0, PLAYER_ENTITY_GAV, 0)
+            self.vec -= Vector3(0, constants.PLAYER_ENTITY_GAV, 0)
             self.apply_vertical_drag()
         # feet or head collide with x
         if self.block_collision(cb, x=1) or \
@@ -128,11 +128,11 @@ class PhysicsPlugin(PluginBase):
         return False
 
     def apply_vertical_drag(self):
-        self.vec.y -= self.vec.y * PLAYER_ENTITY_DRG
+        self.vec.y -= self.vec.y * constants.PLAYER_ENTITY_DRG
 
     def apply_horizontal_drag(self):
-        self.vec.x -= self.vec.x * PLAYER_GND_DRG
-        self.vec.z -= self.vec.z * PLAYER_GND_DRG
+        self.vec.x -= self.vec.x * constants.PLAYER_GND_DRG
+        self.vec.z -= self.vec.z * constants.PLAYER_GND_DRG
 
     def apply_vector(self):
         p = self.pos

@@ -11,7 +11,7 @@ Interact with the world:
 By default, the client sends swing and look packets like the vanilla client.
 This can be disabled by setting the auto_swing and auto_look flags.
 """
-from spock.mcdata.constants import *
+from spock.mcdata import constants
 from spock.plugins.base import PluginBase
 from spock.utils import pl_announce
 from spock.vector import Vector3
@@ -44,26 +44,26 @@ class InteractPlugin(PluginBase):
         })
 
     def leave_bed(self):
-        self._entity_action(ENTITY_ACTION_LEAVE_BED)
+        self._entity_action(constants.ENTITY_ACTION_LEAVE_BED)
 
     def sneak(self, sneak=True):
-        self._entity_action(ENTITY_ACTION_SNEAK
-                            if sneak else ENTITY_ACTION_UNSNEAK)
+        self._entity_action(constants.ENTITY_ACTION_SNEAK
+                            if sneak else constants.ENTITY_ACTION_UNSNEAK)
         self.sneaking = sneak
 
     def unsneak(self):
         self.sneak(False)
 
     def sprint(self, sprint=True):
-        self._entity_action(ENTITY_ACTION_START_SPRINT
-                            if sprint else ENTITY_ACTION_STOP_SPRINT)
+        self._entity_action(constants.ENTITY_ACTION_START_SPRINT if sprint
+                            else constants.ENTITY_ACTION_STOP_SPRINT)
         self.sprinting = sprint
 
     def unsprint(self):
         self.sprint(False)
 
     def jump_horse(self, jump_boost=100):
-        self._entity_action(ENTITY_ACTION_JUMP_HORSE, jump_boost)
+        self._entity_action(constants.ENTITY_ACTION_JUMP_HORSE, jump_boost)
 
     def chat(self, message):
         self.net.push_packet('PLAY>Chat Message', {'message': message})
@@ -91,11 +91,12 @@ class InteractPlugin(PluginBase):
         self.look(*delta.yaw_pitch)
 
     def look_at(self, pos):
-        delta = pos - self.clientinfo.position - Vector3(0, PLAYER_HEIGHT, 0)
+        delta = pos - self.clientinfo.position
+        delta.y -= constants.PLAYER_HEIGHT
         self.look_at_rel(delta)
 
-    def _send_dig_block(self, status, pos=None, face=FACE_Y_POS):
-        if status == DIG_START:
+    def _send_dig_block(self, status, pos=None, face=constants.FACE_Y_POS):
+        if status == constants.DIG_START:
             self.dig_pos_dict = pos.get_dict().copy()
         self.net.push_packet('PLAY>Player Digging', {
             'status': status,
@@ -106,16 +107,16 @@ class InteractPlugin(PluginBase):
     def start_digging(self, pos):
         if self.auto_look:
             self.look_at(pos)  # TODO look at block center
-        self._send_dig_block(DIG_START, pos)
+        self._send_dig_block(constants.DIG_START, pos)
         if self.auto_swing:
             self.swing_arm()
-        # TODO send swing animation until done or stopped
+            # TODO send swing animation until done or stopped
 
     def cancel_digging(self):
-        self._send_dig_block(DIG_CANCEL)
+        self._send_dig_block(constants.DIG_CANCEL)
 
     def finish_digging(self):
-        self._send_dig_block(DIG_FINISH)
+        self._send_dig_block(constants.DIG_FINISH)
 
     def dig_block(self, pos):
         """
@@ -183,9 +184,10 @@ class InteractPlugin(PluginBase):
         Stop using (release right-click) the item in the active slot.
         Examples: shoot the bow, stop eating.
         """
-        self._send_dig_block(DIG_DEACTIVATE_ITEM)
+        self._send_dig_block(constants.DIG_DEACTIVATE_ITEM)
 
-    def use_entity(self, entity, cursor_pos=None, action=INTERACT_ENTITY):
+    def use_entity(self, entity, cursor_pos=None,
+                   action=constants.INTERACT_ENTITY):
         """
         Uses (right-click) an entity to open its window.
         Setting `cursor_pos` sets `action` to "interact at".
@@ -193,9 +195,9 @@ class InteractPlugin(PluginBase):
         if self.auto_look:
             self.look_at(Vector3(entity))  # TODO look at cursor_pos
         if cursor_pos is not None:
-            action = INTERACT_ENTITY_AT
+            action = constants.INTERACT_ENTITY_AT
         packet = {'target': entity.eid, 'action': action}
-        if action == INTERACT_ENTITY_AT:
+        if action == constants.INTERACT_ENTITY_AT:
             packet['target_x'] = cursor_pos.x
             packet['target_y'] = cursor_pos.y
             packet['target_z'] = cursor_pos.z
@@ -204,7 +206,7 @@ class InteractPlugin(PluginBase):
             self.swing_arm()
 
     def attack_entity(self, entity):
-        self.use_entity(entity, action=ATTACK_ENTITY)
+        self.use_entity(entity, action=constants.ATTACK_ENTITY)
 
     def mount_vehicle(self, entity):
         self.use_entity(entity)
