@@ -43,11 +43,12 @@ class Position(Vector3, Info):
 
 class BoundingBox(Vector3):
     def __init__(self, w, h, d=None):
-        d = w if d == None else d
+        d = w if d is None else d
         super(BoundingBox, self).__init__(w, h, d)
         self.w = self.x
         self.h = self.y
         self.d = self.z
+
 
 class BufferUnderflowException(Exception):
     pass
