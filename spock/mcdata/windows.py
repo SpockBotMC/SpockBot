@@ -3,6 +3,7 @@ import sys
 from minecraft_data.v1_8 import windows as windows_data
 
 from spock.mcdata import constants
+from spock.utils import snake_case, upper_camel_case
 
 
 class Slot(object):
@@ -272,9 +273,6 @@ def make_window(window):
     """
     Creates a new class for that window and registers it at this module.
     """
-    upper_camel_case = lambda word: ''.join(map(str.capitalize, word.split()))
-    snake_case = lambda word: '_'.join(map(str.lower, word.split()))
-
     window = window.copy()
     cls_name = 'Inventory%s' % upper_camel_case(window['name'])
     bases = (InventoryBase,)

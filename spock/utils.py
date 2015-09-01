@@ -3,6 +3,7 @@ ALL THE UTILS!
 """
 # silly python2
 import copy
+import re
 
 from spock.vector import Vector3
 
@@ -121,3 +122,11 @@ def mapshort2id(data):
 
 def byte_to_hex(byte_str):
     return ''.join(["%02X " % x for x in byte_str]).strip()
+
+
+def snake_case(word):
+    # from http://stackoverflow.com/a/1176023
+    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', word)
+    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+upper_camel_case = lambda word: ''.join(map(str.capitalize, word.split()))
