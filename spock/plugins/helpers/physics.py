@@ -12,6 +12,18 @@ handful of people (Thank you 0pteron!) to the Minecraft wiki talk page on
 Entities and Transportation. Ideally someone will decompile the client with MCP
 and document the totally correct values and behaviors.
 """
+
+import collections
+import logging
+import math
+
+from spock.mcmap import mapdata
+from spock.plugins.base import PluginBase
+from spock.utils import BoundingBox, pl_announce
+from spock.vector import Vector3
+
+logger = logging.getLogger('spock')
+
 # Gravitational constants defined in blocks/(client tick)^2
 PLAYER_ENTITY_GAV = 0.08
 THROWN_ENTITY_GAV = 0.03
@@ -37,16 +49,6 @@ PLAYER_GND_DRG = 0.41
 # Seems about right, not based on anything
 PLAYER_JMP_ACC = 0.45
 
-import collections
-import logging
-import math
-
-from spock.mcmap import mapdata
-from spock.plugins.base import PluginBase
-from spock.utils import BoundingBox, Position, pl_announce
-from spock.vector import Vector3
-
-logger = logging.getLogger('spock')
 
 class PhysicsCore(object):
     def __init__(self, vec, pos, bounding_box):
@@ -69,6 +71,7 @@ class PhysicsCore(object):
         z = math.cos(angle) * PLAYER_SPR_ACC
         x = math.sin(angle) * PLAYER_SPR_ACC
         self.vec += Vector3(x, 0, z)
+
 
 @pl_announce('Physics')
 class PhysicsPlugin(PluginBase):
@@ -106,7 +109,10 @@ class PhysicsPlugin(PluginBase):
         self.pos += (self.vec + mtv)
 
     def gen_block_set(self, block_pos):
-        offsets = ((x,y,z) for x in (-1,0,1) for y in (0,1,2) for z in (-1,0,1))
+        offsets = (
+            (x, y, z)
+            for x in (-1, 0, 1) for y in (0, 1, 2) for z in (-1, 0, 1)
+        )
         return (block_pos + Vector3(*offset) for offset in offsets)
 
     def check_collision(self, pos, vector):
@@ -136,14 +142,18 @@ class PhysicsPlugin(PluginBase):
 
     def block_collision(self, center_block_pos, pos):
         for block_pos in self.gen_block_set(center_block_pos):
-            block_id, meta = self.world.get_block(block_pos.x, block_pos.y, block_pos.z)
+            block_id, meta = self.world.get_block(
+                block_pos.x, block_pos.y, block_pos.z
+            )
             block = mapdata.get_block(block_id, meta)
             if not block.bounding_box:
                 continue
             transform_vectors = []
             for i, axis in enumerate(self.unit_vectors):
-                axis_pen = self.check_axis(axis, pos[i], pos[i] + self.bounding_box[i],
-                    block_pos[i], block_pos[i] + block.bounding_box[i])
+                axis_pen = self.check_axis(
+                    axis, pos[i], pos[i] + self.bounding_box[i],
+                    block_pos[i], block_pos[i] + block.bounding_box[i]
+                )
                 if not axis_pen:
                     break
                 transform_vectors.append(axis_pen)
