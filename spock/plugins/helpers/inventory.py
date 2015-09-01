@@ -3,7 +3,7 @@ The Inventory plugin keeps track of the inventory
 and provides simple inventory manipulation.
 Crafting is not done here.
 """
-from spock.mcdata import constants
+from spock.mcdata import constants, windows
 from spock.plugins.base import PluginBase
 from spock.utils import pl_announce
 
@@ -16,8 +16,8 @@ class InventoryCore(object):
         self.send_click = send_click
         self.active_slot_nr = 0
         # the slot that moves with the mouse when clicking a slot
-        self.cursor_slot = SlotCursor()
-        self.window = InventoryPlayer()
+        self.cursor_slot = windows.SlotCursor()
+        self.window = windows.InventoryPlayer()
 
     def total_stored(self, item_id, meta=-1, slots=None):
         """
@@ -65,12 +65,12 @@ class InventoryCore(object):
     def click_slot(self, slot, right=False):
         button = constants.INV_BUTTON_RIGHT \
             if right else constants.INV_BUTTON_LEFT
-        return self.send_click(SingleClick(slot, button))
+        return self.send_click(windows.SingleClick(slot, button))
 
     def drop_slot(self, slot=None, drop_stack=False):
         if slot is None:  # drop held item
             slot = self.active_slot
-        return self.send_click(DropClick(slot, drop_stack))
+        return self.send_click(windows.DropClick(slot, drop_stack))
 
     def close_window(self):
         # TODO does the server send a close window, or should we close the
@@ -130,14 +130,14 @@ class InventoryPlugin(PluginBase):
         self.event.emit('inv_held_item_change', packet.data)
 
     def handle_open_window(self, event, packet):
-        inv_type = inv_types[packet.data['inv_type']]
+        inv_type = windows.inv_types[packet.data['inv_type']]
         self.inventory.window = inv_type(
             persistent_slots=self.inventory.window.slots, **packet.data)
         self.event.emit('inv_open_window', {'window': self.inventory.window})
 
     def handle_close_window(self, event, packet):
         closed_window = self.inventory.window
-        self.inventory.window = InventoryPlayer(
+        self.inventory.window = windows.InventoryPlayer(
             persistent_slots=closed_window.slots)
         self.event.emit('inv_close_window', {'window': closed_window})
 
@@ -151,12 +151,13 @@ class InventoryPlugin(PluginBase):
             self.set_slot(window_id, slot_nr, slot_data)
 
     def set_slot(self, window_id, slot_nr, slot_data):
+        inv = self.inventory
         if window_id == constants.INV_WINID_CURSOR \
                 and slot_nr == constants.INV_SLOT_NR_CURSOR:
-            slot = self.inventory.cursor_slot = SlotCursor(**slot_data)
-        elif window_id == self.inventory.window.window_id:
-            slot = self.inventory.window.slots[slot_nr] = Slot(
-                self.inventory.window, slot_nr, **slot_data)
+            slot = inv.cursor_slot = windows.SlotCursor(**slot_data)
+        elif window_id == inv.window.window_id:
+            slot = inv.window.slots[slot_nr] = windows.Slot(
+                inv.window, slot_nr, **slot_data)
         else:
             raise ValueError('Unexpected window ID (%i) or slot_nr (%i)'
                              % (window_id, slot_nr))
