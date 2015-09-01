@@ -56,21 +56,19 @@ class PhysicsCore(object):
 
     def jump(self):
         if self.pos.on_ground:
-            self.vec.y += PLAYER_JMP_ACC
+            self.vec += Vector3(0, PLAYER_JMP_ACC, 0)
 
     def walk(self, angle, radians=False):
         angle = angle if radians else math.radians(angle)
         z = math.cos(angle) * PLAYER_WLK_ACC
         x = math.sin(angle) * PLAYER_WLK_ACC
-        self.vec.z += z
-        self.vec.x += x
+        self.vec += Vector3(x, 0, z)
 
     def sprint(self, angle, radians=False):
         angle = angle if radians else math.radians(angle)
         z = math.cos(angle) * PLAYER_SPR_ACC
         x = math.sin(angle) * PLAYER_SPR_ACC
-        self.vec.z += z
-        self.vec.x += x
+        self.vec += Vector3(x, 0, z)
 
 @pl_announce('Physics')
 class PhysicsPlugin(PluginBase):
@@ -98,20 +96,18 @@ class PhysicsPlugin(PluginBase):
         self.apply_vector(mtv)
 
     def clear_velocity(self, _, __):
-        self.vec.__init__(0, 0,0 )
+        self.vec.__init__(0, 0, 0)
 
     def apply_drag(self):
-        self.vec.y -= self.vec.y * PLAYER_ENTITY_DRG
-        self.vec.x -= self.vec.x * PLAYER_GND_DRG
-        self.vec.z -= self.vec.z * PLAYER_GND_DRG
+        self.vec -= Vector3(0, self.vec.y, 0) * PLAYER_ENTITY_DRG
+        self.vec -= Vector3(self.vec.x, 0, self.vec.z)*PLAYER_GND_DRG
 
     def apply_vector(self, mtv):
-        self.vec += mtv
-        self.pos += self.vec
+        self.pos += (self.vec + mtv)
 
     def gen_block_set(self, block_pos):
         offsets = ((x,y,z) for x in (-1,0,1) for y in (0,1,2) for z in (-1,0,1))
-        return (block_pos - Vector3(*offset) for offset in offsets)
+        return (block_pos + Vector3(*offset) for offset in offsets)
 
     def check_collision(self, pos, vector):
         test_pos = pos + vector
@@ -146,7 +142,7 @@ class PhysicsPlugin(PluginBase):
                 continue
             transform_vectors = []
             for i, axis in enumerate(self.unit_vectors):
-                axis_pen = self.test_axis(axis, pos[i], pos[i] + self.bounding_box[i],
+                axis_pen = self.check_axis(axis, pos[i], pos[i] + self.bounding_box[i],
                     block_pos[i], block_pos[i] + block.bounding_box[i])
                 if not axis_pen:
                     break
@@ -158,7 +154,7 @@ class PhysicsPlugin(PluginBase):
         return transform_vectors
 
     # Axis must be a normalized/unit vector
-    def test_axis(self, axis, min_a, max_a, min_b, max_b):
+    def check_axis(self, axis, min_a, max_a, min_b, max_b):
         l_dif = (max_b - min_a)
         r_dif = (max_a - min_b)
         if l_dif < 0 or r_dif < 0:
