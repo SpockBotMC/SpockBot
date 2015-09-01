@@ -1,9 +1,10 @@
 from collections import namedtuple
 from unittest import TestCase
 
+from spock.mcdata.constants import \
+    ATTACK_ENTITY, INTERACT_ENTITY, PLAYER_HEIGHT
 from spock.plugins.helpers.clientinfo import PlayerPosition
-from spock.plugins.helpers.interact import \
-    ATTACK_ENTITY, INTERACT_ENTITY, InteractPlugin, PLAYER_HEIGHT
+from spock.plugins.helpers.interact import InteractPlugin
 from spock.vector import Vector3
 
 

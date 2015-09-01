@@ -17,37 +17,13 @@ import collections
 import logging
 import math
 
+from spock.mcdata import constants
 from spock.mcmap import mapdata
 from spock.plugins.base import PluginBase
 from spock.utils import BoundingBox, pl_announce
 from spock.vector import Vector3
 
 logger = logging.getLogger('spock')
-
-# Gravitational constants defined in blocks/(client tick)^2
-PLAYER_ENTITY_GAV = 0.08
-THROWN_ENTITY_GAV = 0.03
-RIDING_ENTITY_GAV = 0.04
-BLOCK_ENTITY_GAV = 0.04
-ARROW_ENTITY_GAV = 0.05
-
-# Air drag constants defined in 1/tick
-PLAYER_ENTITY_DRG = 0.02
-THROWN_ENTITY_DRG = 0.01
-RIDING_ENTITY_DRG = 0.05
-BLOCK_ENTITY_DRG = 0.02
-ARROW_ENTITY_DRG = 0.01
-
-# Player ground acceleration isn't actually linear, but we're going to pretend
-# that it is. Max ground velocity for a walking client is 0.215blocks/tick, it
-# takes a dozen or so ticks to get close to max velocity. Sprint is 0.28, just
-# apply more acceleration to reach a higher max ground velocity
-PLAYER_WLK_ACC = 0.15
-PLAYER_SPR_ACC = 0.20
-PLAYER_GND_DRG = 0.41
-
-# Seems about right, not based on anything
-PLAYER_JMP_ACC = 0.45
 
 
 class PhysicsCore(object):
@@ -58,18 +34,18 @@ class PhysicsCore(object):
 
     def jump(self):
         if self.pos.on_ground:
-            self.vec += Vector3(0, PLAYER_JMP_ACC, 0)
+            self.vec += Vector3(0, constants.PLAYER_JMP_ACC, 0)
 
     def walk(self, angle, radians=False):
         angle = angle if radians else math.radians(angle)
-        z = math.cos(angle) * PLAYER_WLK_ACC
-        x = math.sin(angle) * PLAYER_WLK_ACC
+        z = math.cos(angle) * constants.PLAYER_WLK_ACC
+        x = math.sin(angle) * constants.PLAYER_WLK_ACC
         self.vec += Vector3(x, 0, z)
 
     def sprint(self, angle, radians=False):
         angle = angle if radians else math.radians(angle)
-        z = math.cos(angle) * PLAYER_SPR_ACC
-        x = math.sin(angle) * PLAYER_SPR_ACC
+        z = math.cos(angle) * constants.PLAYER_SPR_ACC
+        x = math.sin(angle) * constants.PLAYER_SPR_ACC
         self.vec += Vector3(x, 0, z)
 
 
@@ -92,7 +68,7 @@ class PhysicsPlugin(PluginBase):
         )
 
     def tick(self, _, __):
-        self.vec.y -= PLAYER_ENTITY_GAV
+        self.vec.y -= constants.PLAYER_ENTITY_GAV
         self.apply_drag()
         mtv = self.get_mtv()
         self.pos.on_ground = mtv.y > 0
@@ -102,8 +78,8 @@ class PhysicsPlugin(PluginBase):
         self.vec.__init__(0, 0, 0)
 
     def apply_drag(self):
-        self.vec -= Vector3(0, self.vec.y, 0) * PLAYER_ENTITY_DRG
-        self.vec -= Vector3(self.vec.x, 0, self.vec.z)*PLAYER_GND_DRG
+        self.vec -= Vector3(0, self.vec.y, 0) * constants.PLAYER_ENTITY_DRG
+        self.vec -= Vector3(self.vec.x, 0, self.vec.z)*constants.PLAYER_GND_DRG
 
     def apply_vector(self, mtv):
         self.pos += (self.vec + mtv)
