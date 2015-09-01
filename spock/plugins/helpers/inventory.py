@@ -3,30 +3,13 @@ The Inventory plugin keeps track of the inventory
 and provides simple inventory manipulation.
 Crafting is not done here.
 """
-
+from spock.mcdata import constants
 from spock.plugins.base import PluginBase
 from spock.utils import pl_announce
 
-# the button codes used in send_click
-INV_BUTTON_LEFT = 0
-INV_BUTTON_RIGHT = 1
-INV_BUTTON_MIDDLE = 2
-
-INV_SLOT_NR_CURSOR = -1
-INV_WINID_CURSOR = -1  # the slot that follows the cursor
-# player inventory window ID/type, not opened but updated by server
-INV_WINID_PLAYER = 0
-INV_ITEMID_EMPTY = -1
-
-INV_SLOTS_PLAYER = 9  # crafting and armor
-INV_SLOTS_INVENTORY = 9 * 3  # above hotbar
-INV_SLOTS_HOTBAR = 9
-# always accessible
-INV_SLOTS_PERSISTENT = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR
-
 
 class Slot(object):
-    def __init__(self, window, slot_nr, id=INV_ITEMID_EMPTY,
+    def __init__(self, window, slot_nr, id=constants.INV_ITEMID_EMPTY,
                  damage=0, amount=0, enchants=None):
         self.window = window
         self.slot_nr = slot_nr
@@ -51,8 +34,8 @@ class Slot(object):
 
     @property
     def max_amount(self):
-        # TODO Add the real values for ALL THE ITEMS! And blocks.
-        # use some dummy values for now
+        # TODO use spock.mcdata.items
+        # at least use some dummy values for now, ignore 16-stacking items
         items_single = [-1, 256, 257, 258, 259, 261, 282, 326, 327, 333, 335,
                         342, 343, 346, 347, 355, 358, 359, 373, 374, 379, 380,
                         386, 387, 398, 403, 407, 408, 422, 417, 418, 419]
@@ -63,14 +46,12 @@ class Slot(object):
         items_single.extend(range(2256, 2268))
         for self.item_id in items_single:
             return 1
-        # TODO some stack up to 16
-        # do not use these for now, will desynchronize your inventory
         return 64
 
     def get_dict(self):
         """ Formats the slot for network packing. """
         data = {'id': self.item_id}
-        if self.item_id != INV_ITEMID_EMPTY:
+        if self.item_id != constants.INV_ITEMID_EMPTY:
             data['damage'] = self.damage
             data['amount'] = self.amount
             if self.nbt is not None:
@@ -84,7 +65,7 @@ class Slot(object):
         return not self.is_empty()
 
     def __repr__(self):
-        if self.item_id == INV_ITEMID_EMPTY:
+        if self.item_id == constants.INV_ITEMID_EMPTY:
             args = 'empty'
         else:  # dirty, but good enough for debugging
             args = str(self.get_dict()) \
@@ -96,15 +77,17 @@ class Slot(object):
 
 
 class SlotCursor(Slot):
-    def __init__(self, id=INV_ITEMID_EMPTY, damage=0, amount=0, enchants=None):
+    def __init__(self, id=constants.INV_ITEMID_EMPTY, damage=0, amount=0,
+                 enchants=None):
         class CursorWindow(object):  # TODO is there a cleaner way to do this?
-            window_id = INV_WINID_CURSOR
+            window_id = constants.INV_WINID_CURSOR
 
             def __repr__(self):
                 return 'CursorWindow()'
 
-        super(SlotCursor, self).__init__(CursorWindow(), INV_SLOT_NR_CURSOR,
-                                         id, damage, amount, enchants)
+        super(SlotCursor, self).__init__(
+            CursorWindow(), constants.INV_SLOT_NR_CURSOR,
+            id, damage, amount, enchants)
 
 # look up a class by window type ID when opening windows
 inv_types = {}
@@ -133,7 +116,7 @@ class InventoryBase(object):
         # hotbar create own slots, ...
         self.slots = [Slot(self, slot_nr) for slot_nr in range(slot_count)]
         # ... append persistent slots, which have to be moved
-        moved_slots = persistent_slots[-INV_SLOTS_PERSISTENT:]
+        moved_slots = persistent_slots[-constants.INV_SLOTS_PERSISTENT:]
         for slot_nr, moved_slot in enumerate(moved_slots):
             moved_slot.move_to_window(self, slot_nr + slot_count)
             self.slots.append(moved_slot)
@@ -147,15 +130,16 @@ class InventoryBase(object):
 
     @property
     def persistent_slots(self):
-        return self.slots[-INV_SLOTS_PERSISTENT:]
+        return self.slots[-constants.INV_SLOTS_PERSISTENT:]
 
     @property
     def inventory_slots(self):
-        return self.slots[-INV_SLOTS_PERSISTENT:-INV_SLOTS_HOTBAR]
+        return self.slots[
+            -constants.INV_SLOTS_PERSISTENT:-constants.INV_SLOTS_HOTBAR]
 
     @property
     def hotbar_slots(self):
-        return self.slots[-INV_SLOTS_HOTBAR:]
+        return self.slots[-constants.INV_SLOTS_HOTBAR:]
 
     @property
     def window_slots(self):
@@ -163,7 +147,7 @@ class InventoryBase(object):
         All slots except inventory and hotbar.
         Useful for searching.
         """
-        return self.slots[:-INV_SLOTS_PERSISTENT]
+        return self.slots[:-constants.INV_SLOTS_PERSISTENT]
 
 
 # no @map_window_type(), because not opened by server
@@ -175,11 +159,11 @@ class InventoryPlayer(InventoryBase):
     def __init__(self, persistent_slots=None):
         if persistent_slots is None:
             persistent_slots = [Slot(self, slot_nr) for slot_nr in
-                                range(INV_SLOTS_PERSISTENT)]
+                                range(constants.INV_SLOTS_PERSISTENT)]
         # TODO title should be in chat format
-        super(InventoryPlayer, self).__init__('player', INV_WINID_PLAYER,
-                                              self.name, INV_SLOTS_PLAYER,
-                                              persistent_slots)
+        super(InventoryPlayer, self).__init__(
+            'player', constants.INV_WINID_PLAYER, self.name,
+            constants.INV_SLOTS_PLAYER, persistent_slots)
 
     @property
     def craft_result_slot(self):
@@ -404,10 +388,11 @@ class BaseClick(object):
 
 
 class SingleClick(BaseClick):
-    def __init__(self, slot, button=INV_BUTTON_LEFT):
+    def __init__(self, slot, button=constants.INV_BUTTON_LEFT):
         self.slot = slot
         self.button = button
-        if button not in (INV_BUTTON_LEFT, INV_BUTTON_RIGHT):
+        if button not in (constants.INV_BUTTON_LEFT,
+                          constants.INV_BUTTON_RIGHT):
             raise NotImplementedError(
                 'Clicking with button %s not implemented' % button)
 
@@ -422,13 +407,13 @@ class SingleClick(BaseClick):
     def apply(self, inv_plugin):
         clicked = self.slot
         cursor = inv_plugin.cursor_slot
-        if self.button == INV_BUTTON_LEFT:
+        if self.button == constants.INV_BUTTON_LEFT:
             if clicked.stacks_with(cursor):
                 self.transfer(cursor, clicked, cursor.amount)
             else:
                 self.swap_slots(cursor, clicked)
-        elif self.button == INV_BUTTON_RIGHT:
-            if cursor.item_id == INV_ITEMID_EMPTY:
+        elif self.button == constants.INV_BUTTON_RIGHT:
+            if cursor.item_id == constants.INV_ITEMID_EMPTY:
                 # transfer half, round up
                 self.transfer(clicked, cursor, (clicked.amount + 1) // 2)
             elif clicked.is_empty() or clicked.stacks_with(cursor):
@@ -446,7 +431,7 @@ class DropClick(BaseClick):
         self.drop_stack = drop_stack
 
     def get_packet(self, inv_plugin):
-        if inv_plugin.cursor_slot.item_id != INV_ITEMID_EMPTY:
+        if inv_plugin.cursor_slot.item_id != constants.INV_ITEMID_EMPTY:
             return None  # can't drop while holding an item
         return {
             'slot': self.slot.slot_nr,
@@ -462,7 +447,7 @@ class DropClick(BaseClick):
             else:
                 self.slot.amount -= 1
             self.cleanup_if_empty(self.slot)
-        # else: cursor not empty, can't drop while holding an item
+            # else: cursor not empty, can't drop while holding an item
 
 
 class InventoryCore(object):
@@ -512,14 +497,16 @@ class InventoryCore(object):
         return None
 
     def select_active_slot(self, hotbar_index):
-        assert 0 <= hotbar_index < INV_SLOTS_HOTBAR, 'Invalid hotbar index'
+        assert 0 <= hotbar_index < constants.INV_SLOTS_HOTBAR, \
+            'Invalid hotbar index'
         if hotbar_index != self.active_slot_nr:
             self.active_slot_nr = hotbar_index
             self._net.push_packet('PLAY>Held Item Change',
                                   {'slot': hotbar_index})
 
     def click_slot(self, slot, right=False):
-        button = INV_BUTTON_RIGHT if right else INV_BUTTON_LEFT
+        button = constants.INV_BUTTON_RIGHT \
+            if right else constants.INV_BUTTON_LEFT
         return self.send_click(SingleClick(slot, button))
 
     def drop_slot(self, slot=None, drop_stack=False):
@@ -606,7 +593,8 @@ class InventoryPlugin(PluginBase):
             self.set_slot(window_id, slot_nr, slot_data)
 
     def set_slot(self, window_id, slot_nr, slot_data):
-        if window_id == INV_WINID_CURSOR and slot_nr == INV_SLOT_NR_CURSOR:
+        if window_id == constants.INV_WINID_CURSOR \
+                and slot_nr == constants.INV_SLOT_NR_CURSOR:
             slot = self.inventory.cursor_slot = SlotCursor(**slot_data)
         elif window_id == self.inventory.window.window_id:
             slot = self.inventory.window.slots[slot_nr] = Slot(

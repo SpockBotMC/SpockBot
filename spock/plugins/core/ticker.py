@@ -1,10 +1,8 @@
 """
 Registers timers to provide the necessary tick rates expected by MC servers
 """
-
+from spock.mcdata.constants import CLIENT_TICK_RATE
 from spock.plugins.base import PluginBase
-
-CLIENT_TICK_RATE = 0.05
 
 
 class TickerPlugin(PluginBase):
