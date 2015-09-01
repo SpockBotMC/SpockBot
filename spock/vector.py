@@ -111,6 +111,11 @@ class CartesianVector(BaseVector):
         v = self - other if other else self
         return sum(map(lambda a: a * a, v))
 
+    # Truthy evaluation
+    def __bool__(self):
+        return any(self)
+    __nonzero__ = __bool__
+
     # Comparisons
 
     def __lt__(self, other):

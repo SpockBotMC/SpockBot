@@ -12,6 +12,18 @@ handful of people (Thank you 0pteron!) to the Minecraft wiki talk page on
 Entities and Transportation. Ideally someone will decompile the client with MCP
 and document the totally correct values and behaviors.
 """
+
+import collections
+import logging
+import math
+
+from spock.mcmap import mapdata
+from spock.plugins.base import PluginBase
+from spock.utils import BoundingBox, pl_announce
+from spock.vector import Vector3
+
+logger = logging.getLogger('spock')
+
 # Gravitational constants defined in blocks/(client tick)^2
 PLAYER_ENTITY_GAV = 0.08
 THROWN_ENTITY_GAV = 0.03
@@ -37,37 +49,25 @@ PLAYER_GND_DRG = 0.41
 # Seems about right, not based on anything
 PLAYER_JMP_ACC = 0.45
 
-import logging
-import math
-
-from spock.mcmap import mapdata
-from spock.plugins.base import PluginBase
-from spock.utils import BoundingBox, Position, pl_announce
-from spock.vector import Vector3
-
-logger = logging.getLogger('spock')
-
 
 class PhysicsCore(object):
-    def __init__(self, vec, pos):
+    def __init__(self, vec, pos, bounding_box):
         self.vec = vec
         self.pos = pos
+        self.bounding_box = bounding_box
 
     def jump(self):
         if self.pos.on_ground:
-            self.pos.on_ground = False
             self.vec += Vector3(0, PLAYER_JMP_ACC, 0)
 
     def walk(self, angle, radians=False):
-        if not radians:
-            angle = math.radians(angle)
+        angle = angle if radians else math.radians(angle)
         z = math.cos(angle) * PLAYER_WLK_ACC
         x = math.sin(angle) * PLAYER_WLK_ACC
         self.vec += Vector3(x, 0, z)
 
     def sprint(self, angle, radians=False):
-        if not radians:
-            angle = math.radians(angle)
+        angle = angle if radians else math.radians(angle)
         z = math.cos(angle) * PLAYER_SPR_ACC
         x = math.sin(angle) * PLAYER_SPR_ACC
         self.vec += Vector3(x, 0, z)
@@ -78,88 +78,96 @@ class PhysicsPlugin(PluginBase):
     requires = ('Event', 'ClientInfo', 'World')
     events = {
         'physics_tick': 'tick',
+        'cl_position_update': 'clear_velocity',
     }
+    unit_vectors = Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)
 
     def __init__(self, ploader, settings):
         super(PhysicsPlugin, self).__init__(ploader, settings)
-
         self.vec = Vector3(0.0, 0.0, 0.0)
-        # wiki says 0.6 but I made it 0.8 to give a little wiggle room
-        self.playerbb = BoundingBox(0.8, 1.8)
+        self.bounding_box = BoundingBox(0.6, 1.8)
         self.pos = self.clientinfo.position
-        ploader.provides('Physics', PhysicsCore(self.vec, self.pos))
+        ploader.provides(
+            'Physics', PhysicsCore(self.vec, self.pos, self.bounding_box)
+        )
 
     def tick(self, _, __):
-        self.check_collision()
-        self.apply_horizontal_drag()
-        self.apply_vector()
+        self.vec.y -= PLAYER_ENTITY_GAV
+        self.apply_drag()
+        mtv = self.get_mtv()
+        self.pos.on_ground = mtv.y > 0
+        self.apply_vector(mtv)
 
-    def check_collision(self):
-        cb = Position(math.floor(self.pos.x), math.floor(self.pos.y),
-                      math.floor(self.pos.z))
-        if self.block_collision(cb, y=2):  # we check +2 because above my head
-            self.vec.y = 0
-        if self.block_collision(cb, y=-1):  # we check below feet
-            self.pos.on_ground = True
-            self.vec.y = 0
-            self.pos.y = cb.y
+    def clear_velocity(self, _, __):
+        self.vec.__init__(0, 0, 0)
+
+    def apply_drag(self):
+        self.vec -= Vector3(0, self.vec.y, 0) * PLAYER_ENTITY_DRG
+        self.vec -= Vector3(self.vec.x, 0, self.vec.z)*PLAYER_GND_DRG
+
+    def apply_vector(self, mtv):
+        self.pos += (self.vec + mtv)
+
+    def gen_block_set(self, block_pos):
+        offsets = (
+            (x, y, z)
+            for x in (-1, 0, 1) for y in (0, 1, 2) for z in (-1, 0, 1)
+        )
+        return (block_pos + Vector3(*offset) for offset in offsets)
+
+    def check_collision(self, pos, vector):
+        test_pos = pos + vector
+        return self.block_collision(test_pos.floor(), test_pos)
+
+    # Breadth-first search for a minimum translation vector
+    def get_mtv(self):
+        pos = self.pos + self.vec
+        pos.x -= self.bounding_box.w/2
+        pos.z -= self.bounding_box.d/2
+        current_vector = Vector3()
+        transform_vectors = []
+        q = collections.deque()
+        while all(transform_vectors) or not q:
+            current_vector = q.popleft() if q else current_vector
+            transform_vectors = self.check_collision(pos, current_vector)
+            for vector in transform_vectors:
+                q.append(current_vector + vector)
+        possible_mtv = [current_vector]
+        while q:
+            current_vector = q.popleft()
+            transform_vectors = self.check_collision(pos, current_vector)
+            if not all(transform_vectors):
+                possible_mtv.append(current_vector)
+        return min(possible_mtv)
+
+    def block_collision(self, center_block_pos, pos):
+        for block_pos in self.gen_block_set(center_block_pos):
+            block_id, meta = self.world.get_block(
+                block_pos.x, block_pos.y, block_pos.z
+            )
+            block = mapdata.get_block(block_id, meta)
+            if not block.bounding_box:
+                continue
+            transform_vectors = []
+            for i, axis in enumerate(self.unit_vectors):
+                axis_pen = self.check_axis(
+                    axis, pos[i], pos[i] + self.bounding_box[i],
+                    block_pos[i], block_pos[i] + block.bounding_box[i]
+                )
+                if not axis_pen:
+                    break
+                transform_vectors.append(axis_pen)
+            else:
+                break
         else:
-            self.pos.on_ground = False
-            self.vec -= Vector3(0, PLAYER_ENTITY_GAV, 0)
-            self.apply_vertical_drag()
-        # feet or head collide with x
-        if self.block_collision(cb, x=1) or \
-                self.block_collision(cb, x=-1) or \
-                self.block_collision(cb, y=1, x=1) or \
-                self.block_collision(cb, y=1, x=-1):
-            self.vec.x = 0
-            # replace with real info in event
-            self.event.emit("phy_collision", "x")
-        # feet or head collide with z
-        if self.block_collision(cb, z=1) or \
-                self.block_collision(cb, z=-1) or \
-                self.block_collision(cb, y=1, z=1) or \
-                self.block_collision(cb, y=1, z=-1):
-            self.vec.z = 0
-            # replace with real info in event
-            self.event.emit("phy_collision", "z")
+            return [Vector3()]*3
+        return transform_vectors
 
-    def block_collision(self, cb, x=0, y=0, z=0):
-        block_id, meta = self.world.get_block(cb.x + x, cb.y + y, cb.z + z)
-        block = mapdata.get_block(block_id, meta)
-        if block is None:
-            return False
-        # possibly we want to use the centers of blocks as the starting
-        # points for bounding boxes instead of 0,0,0 this might make thinks
-        # easier when we get to more complex shapes that are in the center
-        # of a block aka fences but more complicated for the player uncenter
-        # the player position and bump it up a little down to prevent
-        # colliding in the floor
-        pos1 = Position(self.pos.x - self.playerbb.w / 2, self.pos.y - 0.2,
-                        self.pos.z - self.playerbb.d / 2)
-        bb1 = self.playerbb
-        bb2 = block.bounding_box
-        if bb2 is not None:
-            pos2 = Position(cb.x + x + bb2.x, cb.y + y + bb2.y,
-                            cb.z + z + bb2.z)
-            if ((pos1.x + bb1.w) >= (pos2.x) and (pos1.x) <= (
-                    pos2.x + bb2.w)) and (
-                (pos1.y + bb1.h) >= (pos2.y) and (pos1.y) <= (
-                    pos2.y + bb2.h)) and (
-                (pos1.z + bb1.d) >= (pos2.z) and (pos1.z) <= (
-                    pos2.z + bb2.d)):
-                return True
-        return False
-
-    def apply_vertical_drag(self):
-        self.vec.y -= self.vec.y * PLAYER_ENTITY_DRG
-
-    def apply_horizontal_drag(self):
-        self.vec.x -= self.vec.x * PLAYER_GND_DRG
-        self.vec.z -= self.vec.z * PLAYER_GND_DRG
-
-    def apply_vector(self):
-        p = self.pos
-        p.x = p.x + self.vec.x
-        p.y = p.y + self.vec.y
-        p.z = p.z + self.vec.z
+    # Axis must be a normalized/unit vector
+    def check_axis(self, axis, min_a, max_a, min_b, max_b):
+        l_dif = (max_b - min_a)
+        r_dif = (max_a - min_b)
+        if l_dif < 0 or r_dif < 0:
+            return None
+        overlap = l_dif if l_dif <= r_dif else -r_dif
+        return axis*overlap
