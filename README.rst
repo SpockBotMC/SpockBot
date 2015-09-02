@@ -37,8 +37,8 @@ Dependencies
 
 | Python 3.x or Python 2.7.x
 | cryptography_ 0.9+
-| six
 | minecraft_data_
+| six
 
 Note
 """"
