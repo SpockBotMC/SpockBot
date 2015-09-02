@@ -1,6 +1,6 @@
 import sys
 
-from minecraft_data.v1_8 import windowsArray
+from minecraft_data.v1_8 import windows_list
 
 from spock.mcdata import constants
 from spock.utils import camel_case, snake_case
@@ -326,7 +326,7 @@ def _make_window(window_dict):
 
 
 def _create_windows():
-    for window in windowsArray:
+    for window in windows_list:
         cls = _make_window(window)
         inv_types[cls.inv_type] = cls
 
