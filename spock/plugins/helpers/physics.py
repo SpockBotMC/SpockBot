@@ -83,6 +83,9 @@ class PhysicsPlugin(PluginBase):
 
     def apply_vector(self, mtv):
         self.pos += (self.vec + mtv)
+        self.vec.x = 0 if mtv.x else self.vec.x
+        self.vec.y = 0 if mtv.y else self.vec.y
+        self.vec.z = 0 if mtv.z else self.vec.z
 
     def gen_block_set(self, block_pos):
         offsets = (
