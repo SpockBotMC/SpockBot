@@ -17,7 +17,7 @@ class InventoryCore(object):
         self.active_slot_nr = 0
         # the slot that moves with the mouse when clicking a slot
         self.cursor_slot = windows.SlotCursor()
-        self.window = windows.InventoryPlayer()
+        self.window = windows.PlayerWindow()
 
     def total_stored(self, item_id, meta=-1, slots=None):
         """
@@ -137,7 +137,7 @@ class InventoryPlugin(PluginBase):
 
     def handle_close_window(self, event, packet):
         closed_window = self.inventory.window
-        self.inventory.window = windows.InventoryPlayer(
+        self.inventory.window = windows.PlayerWindow(
             persistent_slots=closed_window.slots)
         self.event.emit('inv_close_window', {'window': closed_window})
 

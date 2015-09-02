@@ -1,9 +1,13 @@
 import sys
 
-from minecraft_data.v1_8 import windows as windows_data
+from minecraft_data.v1_8 import windowsArray
 
 from spock.mcdata import constants
-from spock.utils import snake_case, upper_camel_case
+from spock.utils import camel_case, snake_case
+
+
+# look up a class by window type ID, e.g. when opening windows
+inv_types = {}
 
 
 class Slot(object):
@@ -64,14 +68,11 @@ class Slot(object):
 
     def __repr__(self):
         if self.item_id == constants.INV_ITEMID_EMPTY:
-            args = 'empty'
-        else:  # dirty, but good enough for debugging
-            args = str(self.get_dict()) \
-                .strip('{}') \
-                .replace("'", '') \
-                .replace(': ', '=')
-        return 'Slot(window=%s, slot_nr=%i, %s)' % (
-            self.window, self.slot_nr, args)
+            return '<empty slot at %i in %s>' % (
+                self.slot_nr, self.window)
+        else:
+            return '<Slot: %(amount)ix %(item_id)i:%(damage)i' \
+                   ' at %(slot_nr)i in %(window)s>' % self.__dict__
 
 
 class SlotCursor(Slot):
@@ -221,7 +222,7 @@ class DropClick(BaseClick):
         # else: cursor not empty, can't drop while holding an item
 
 
-class InventoryBase(object):
+class BaseWindow(object):
     """ Base class for all inventory types. """
 
     # the arguments must have the same names as the keys in the packet dict
@@ -252,7 +253,9 @@ class InventoryBase(object):
         self.properties = {}
 
     def __repr__(self):
-        return 'Inventory(id=%i, title=%s)' % (self.window_id, self.title)
+        return '%s(window_id=%i, title=%s, slot_count=%i)' % (
+            self.__class__.__name__,
+            self.window_id, self.title, len(self.slots))
 
     @property
     def persistent_slots(self):
@@ -276,48 +279,44 @@ class InventoryBase(object):
         return self.slots[:-constants.INV_SLOTS_PERSISTENT]
 
 
-def make_window(window):
+# Helpers for creating the window classes
+
+def _make_window(window_dict):
     """
     Creates a new class for that window and registers it at this module.
     """
-    window = window.copy()
-    cls_name = 'Inventory%s' % upper_camel_case(window['name'])
-    bases = (InventoryBase,)
+    window_dict = window_dict.copy()
+    cls_name = '%sWindow' % camel_case(window_dict['name'])
+    bases = (BaseWindow,)
     attrs = {
         '__module__': sys.modules[__name__],
-        'name': window['name'],
-        'inv_type': window['id'],
+        'name': window_dict['name'],
+        'inv_type': window_dict['id'],
     }
 
-    for slots in window.get('slots', []):
-        attr_name = snake_case(slots['name'])
-        index = slots['index']
-        size = index + slots.get('size', 1)
+    # creates function-local index and size variables
+    def make_slot_method(index, size=1):
         if size == 1:
-            def slots_method(self):
-                return self.slots[index]
-            attr_name += '_slot'
+            return lambda self: self.slots[index]
         else:
-            def slots_method(self):
-                return self.slots[index:index + size]
-            attr_name += '_slots'
+            return lambda self: self.slots[index:(index + size)]
+
+    for slots in window_dict.get('slots', []):
+        index = slots['index']
+        size = slots.get('size', 1)
+        attr_name = snake_case(slots['name'])
+        attr_name += '_slot' if size == 1 else '_slots'
+        slots_method = make_slot_method(index, size)
         slots_method.__name__ = attr_name
         attrs[attr_name] = property(slots_method)
 
-    for i, prop_name in enumerate(window.get('properties', [])):
-        def prop_method(self):
-            return self.properties[i]
+    for i, prop_name in enumerate(window_dict.get('properties', [])):
+        def make_prop_method(i):
+            return lambda self: self.properties[i]
+        prop_method = make_prop_method(i)
         prop_name = snake_case(prop_name)
         prop_method.__name__ = prop_name
         attrs[prop_name] = property(prop_method)
-
-    for i, button_name in enumerate(window.get('buttons', [])):
-        def button_method(self):
-            raise NotImplementedError(
-                'Button %s is not implemented' % button_name)
-        button_name = snake_case(button_name)
-        button_method.__name__ = button_name
-        attrs[button_name] = button_method  # note: no property method
 
     cls = type(cls_name, bases, attrs)
     assert not hasattr(sys.modules[__name__], cls_name), \
@@ -326,15 +325,22 @@ def make_window(window):
     return cls
 
 
-# look up a class by window type ID, e.g. when opening windows
-inv_types = {}
-
-
-def create_windows():
-    for window in windows_data:
-        cls = make_window(window)
-        inv_types[window['id']] = cls
-
+def _create_windows():
+    for window in windowsArray:
+        cls = _make_window(window)
+        inv_types[cls.inv_type] = cls
 
 # Create all window classes from minecraft_data
-create_windows()
+_create_windows()
+
+# get the PlayerWindow, which was just generated during runtime
+_player_window = sys.modules[__name__].PlayerWindow
+
+
+# override constructor of PlayerWindow
+def _player_init(self, *args, **kwargs):
+    super(_player_window, self).__init__(
+        constants.INV_WINID_PLAYER, self.name, constants.INV_SLOTS_PLAYER,
+        *args, **kwargs)
+
+setattr(_player_window, '__init__', _player_init)
