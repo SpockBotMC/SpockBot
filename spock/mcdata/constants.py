@@ -75,6 +75,7 @@ INV_BUTTON_LEFT = 0
 INV_BUTTON_RIGHT = 1
 INV_BUTTON_MIDDLE = 2
 
+INV_OUTSIDE_WINDOW = -999
 INV_SLOT_NR_CURSOR = -1
 INV_WINID_CURSOR = -1  # the slot that follows the cursor
 # player inventory window ID/type, not opened but updated by server
