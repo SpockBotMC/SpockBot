@@ -225,27 +225,30 @@ class InventoryBase(object):
     """ Base class for all inventory types. """
 
     # the arguments must have the same names as the keys in the packet dict
-    def __init__(self, inv_type, window_id, title, slot_count,
-                 persistent_slots):
-        self.inv_type = inv_type
+    def __init__(self, window_id, title, slot_count,
+                 inv_type=None, persistent_slots=None, eid=None):
+        assert slot_count > 0, 'Received wrong slot_count: %s' % slot_count
+        assert not inv_type or inv_type == self.inv_type, \
+            'inv_type differs: %s instead of %s' % (inv_type, self.inv_type)
         self.window_id = window_id
         self.title = title
+        self.eid = eid  # used for horses
 
-        # slots vary by inventory type, but always contain main inventory and
-        # hotbar create own slots, ...
+        # window slots vary, but always end with main inventory and hotbar
+        # create own slots, ...
         self.slots = [Slot(self, slot_nr) for slot_nr in range(slot_count)]
-        # ... append persistent slots
+        # ... append persistent slots (main inventory and hotbar)
         if persistent_slots is None:
             for slot_nr in range(constants.INV_SLOTS_PERSISTENT):
-                self.slots.append(Slot(self, slot_nr))
+                self.slots.append(Slot(self, slot_nr + slot_count))
         else:  # persistent slots have to be moved from other inventory
             moved_slots = persistent_slots[-constants.INV_SLOTS_PERSISTENT:]
             for slot_nr, moved_slot in enumerate(moved_slots):
                 moved_slot.move_to_window(self, slot_nr + slot_count)
                 self.slots.append(moved_slot)
 
-        # additional info dependent on inventory type, dynamically updated
-        # by server
+        # additional info dependent on inventory type,
+        # dynamically updated by server
         self.properties = {}
 
     def __repr__(self):
