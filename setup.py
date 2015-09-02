@@ -13,7 +13,7 @@ setup(
     packages=find_packages(exclude=['tests', 'tests.*']),
     install_requires=[
         'cryptography >= 0.9',
-        'minecraft_data == 0.2.0',
+        'minecraft_data == 0.3.0',
         'six',
     ],
     keywords=['minecraft'],
