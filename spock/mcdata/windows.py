@@ -198,10 +198,14 @@ class DropClick(BaseClick):
         self.drop_stack = drop_stack
 
     def get_packet(self, inv_plugin):
-        if inv_plugin.cursor_slot.item_id != constants.INV_ITEMID_EMPTY:
+        if self.slot == inv_plugin.active_slot:
+            slot_nr = constants.INV_OUTSIDE_WINDOW  # drop cursor slot
+        elif inv_plugin.cursor_slot.item_id != constants.INV_ITEMID_EMPTY:
             return None  # can't drop while holding an item
+        else:  # default case
+            slot_nr = self.slot.slot_nr
         return {
-            'slot': self.slot.slot_nr,
+            'slot': slot_nr,
             'button': 1 if self.drop_stack else 0,
             'mode': 4,
             'clicked_item': inv_plugin.cursor_slot.get_dict(),
