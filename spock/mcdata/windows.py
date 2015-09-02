@@ -286,12 +286,12 @@ def _make_window(window_dict):
     Creates a new class for that window and registers it at this module.
     """
     window_dict = window_dict.copy()
-    cls_name = '%sWindow' % camel_case(window_dict['name'])
+    cls_name = '%sWindow' % camel_case(str(window_dict['name']))
     bases = (BaseWindow,)
     attrs = {
         '__module__': sys.modules[__name__],
-        'name': window_dict['name'],
-        'inv_type': window_dict['id'],
+        'name': str(window_dict['name']),
+        'inv_type': str(window_dict['id']),
     }
 
     # creates function-local index and size variables
@@ -304,7 +304,7 @@ def _make_window(window_dict):
     for slots in window_dict.get('slots', []):
         index = slots['index']
         size = slots.get('size', 1)
-        attr_name = snake_case(slots['name'])
+        attr_name = snake_case(str(slots['name']))
         attr_name += '_slot' if size == 1 else '_slots'
         slots_method = make_slot_method(index, size)
         slots_method.__name__ = attr_name
@@ -314,7 +314,7 @@ def _make_window(window_dict):
         def make_prop_method(i):
             return lambda self: self.properties[i]
         prop_method = make_prop_method(i)
-        prop_name = snake_case(prop_name)
+        prop_name = snake_case(str(prop_name))
         prop_method.__name__ = prop_name
         attrs[prop_name] = property(prop_method)
 
