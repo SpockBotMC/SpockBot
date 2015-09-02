@@ -124,9 +124,16 @@ def byte_to_hex(byte_str):
     return ''.join(["%02X " % x for x in byte_str]).strip()
 
 
-def snake_case(word):
-    # from http://stackoverflow.com/a/1176023
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', word)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+# from http://stackoverflow.com/a/12867228
+re_spaced_caps = re.compile(r'((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')
 
-upper_camel_case = lambda word: ''.join(map(str.capitalize, word.split()))
+
+def split_words(text):  # TODO lacking a better name
+    if '_' in text:
+        return [w.lower() for w in text.split('_')]
+    if ' ' not in text:
+        text = re_spaced_caps.sub(r' \1', text)
+    return [w.lower() for w in text.split(' ')]
+
+snake_case = lambda text: '_'.join(split_words(text))
+camel_case = lambda text: ''.join(map(str.capitalize, split_words(text)))
