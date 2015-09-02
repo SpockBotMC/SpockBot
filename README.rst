@@ -23,8 +23,8 @@ difference.
 Currently writing Spock plugins requires a fairly intricate
 understanding of the MC protocol, since there aren't many plugins that
 provide higher abstractions than MC packets. That said the API is
-starting to shape up quite nicely, we've got timers, basic physics, and
-the beginnings of a World API.
+starting to shape up quite nicely, we've got timers, physics, world,
+interaction, and inventory.
 
 Spock officially supports Python 3.x on \*nix operating systems and
 requires cryptography_. It also runs on Windows and under Python 2.7+ but
@@ -37,6 +37,8 @@ Dependencies
 
 | Python 3.x or Python 2.7.x
 | cryptography_ 0.9+
+| six
+| minecraft_data_
 
 Note
 """"
@@ -97,3 +99,4 @@ The NBT parser and the original protocol implementation came from other projects
 .. |Coverage Status| image:: https://coveralls.io/repos/SpockBotMC/SpockBot/badge.svg?branch=master&service=github
    :target: https://coveralls.io/github/SpockBotMC/SpockBot?branch=master
 .. _cryptography: https://cryptography.io/
+.. _minecraft_data: https://pypi.python.org/pypi/minecraft_data
