@@ -211,9 +211,9 @@ class InventoryPlugin(PluginBase):
                 packet['clicked_item'] = {'id': -1}
         except AttributeError:
             pass  # not crafting
+        self.action_id += 1
         packet['window_id'] = inv.window.window_id
         packet['action'] = self.action_id
-        self.action_id += 1
         self.last_click = click
         self.net.push_packet('PLAY>Click Window', packet)
         return self.action_id
