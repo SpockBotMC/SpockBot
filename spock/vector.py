@@ -101,6 +101,9 @@ class CartesianVector(BaseVector):
     def floor(self):
         return self.__class__(*self).ifloor()
 
+    def dot_product(self, other):
+        return sum(map(lambda a: a[0] * a[1], zip(self, other)))
+
     def dist_cubic(self, other=None):
         """ Manhattan distance """
         v = self - other if other else self
