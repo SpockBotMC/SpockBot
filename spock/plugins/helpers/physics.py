@@ -17,7 +17,7 @@ import collections
 import logging
 import math
 
-from spock.mcdata import constants
+from spock.mcdata import constants as const
 from spock.mcmap import mapdata
 from spock.plugins.base import PluginBase
 from spock.utils import BoundingBox, pl_announce
@@ -36,18 +36,18 @@ class PhysicsCore(object):
 
     def jump(self):
         if self.pos.on_ground:
-            self.vec += Vector3(0, constants.PLAYER_JMP_ACC, 0)
+            self.vec += Vector3(0, const.PLAYER_JMP_ACC, 0)
 
     def walk(self, angle, radians=False):
         angle = angle if radians else math.radians(angle)
-        z = math.cos(angle) * constants.PLAYER_WLK_ACC
-        x = math.sin(angle) * constants.PLAYER_WLK_ACC
+        z = math.cos(angle) * const.PLAYER_WLK_ACC
+        x = math.sin(angle) * const.PLAYER_WLK_ACC
         self.vec += Vector3(x, 0, z)
 
     def sprint(self, angle, radians=False):
         angle = angle if radians else math.radians(angle)
-        z = math.cos(angle) * constants.PLAYER_SPR_ACC
-        x = math.sin(angle) * constants.PLAYER_SPR_ACC
+        z = math.cos(angle) * const.PLAYER_SPR_ACC
+        x = math.sin(angle) * const.PLAYER_SPR_ACC
         self.vec += Vector3(x, 0, z)
 
 
@@ -70,18 +70,19 @@ class PhysicsPlugin(PluginBase):
         )
 
     def tick(self, _, __):
-        self.vec.y -= constants.PLAYER_ENTITY_GAV
-        self.apply_drag()
+        self.vec -= Vector3(0, const.PLAYER_ENTITY_GAV, 0)
+        self.vec -= self.get_drag(self.vec)
         mtv = self.get_mtv()
         self.pos.on_ground = mtv.y > 0
         self.apply_vector(mtv)
 
-    def clear_velocity(self, _, __):
+    def clear_velocity(self, _ = None, __ = None):
         self.vec.__init__(0, 0, 0)
 
-    def apply_drag(self):
-        self.vec -= Vector3(0, self.vec.y, 0) * constants.PLAYER_ENTITY_DRG
-        self.vec -= Vector3(self.vec.x, 0, self.vec.z)*constants.PLAYER_GND_DRG
+    def get_drag(self, vec):
+        vert = Vector3(0, vec.y, 0) * const.PLAYER_ENTITY_DRG
+        horz = Vector3(vec.x, 0, vec.z) * const.PLAYER_GND_DRG
+        return vert + horz
 
     def apply_vector(self, mtv):
         self.pos += (self.vec + mtv)
@@ -108,19 +109,19 @@ class PhysicsPlugin(PluginBase):
         current_vector = Vector3()
         transform_vectors = []
         q = collections.deque()
-        bail = False
-        while all(transform_vectors) or not q:
-            if not q and bail:
-                logger.warn('Physics has failed to find an MTV, bailing out')
-                self.clear_velocity()
-                return Vector3()
+        while q or not transform_vectors:
             current_vector = q.popleft() if q else current_vector
-            if current_vector.dist_sq() > self.vec.dist_sq() + FP_MAGIC:
-                continue
             transform_vectors = self.check_collision(pos, current_vector)
+            if not all(transform_vectors):
+                break
             for vector in transform_vectors:
-                q.append(current_vector + vector)
-            bail = True
+                test_vec = self.vec + current_vector + vector
+                if test_vec.dist_sq() <= self.vec.dist_sq() + FP_MAGIC:
+                    q.append(current_vector + vector)
+        else:
+            logger.warn('Physics failed to generate an MTV, bailing out')
+            self.clear_velocity()
+            return Vector3()
         possible_mtv = [current_vector]
         while q:
             current_vector = q.popleft()
