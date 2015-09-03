@@ -27,6 +27,7 @@ logger = logging.getLogger('spock')
 
 FP_MAGIC = 1e-4
 
+
 class PhysicsCore(object):
     def __init__(self, vec, pos, bounding_box):
         self.vec = vec
@@ -112,7 +113,7 @@ class PhysicsPlugin(PluginBase):
             if not q and bail:
                 logger.warn('Physics has failed to find an MTV, bailing out')
                 self.clear_velocity()
-                return Vector()
+                return Vector3()
             current_vector = q.popleft() if q else current_vector
             if current_vector.dist_sq() > self.vec.dist_sq() + FP_MAGIC:
                 continue
