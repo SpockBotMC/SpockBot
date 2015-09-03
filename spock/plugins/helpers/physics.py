@@ -25,6 +25,8 @@ from spock.vector import Vector3
 
 logger = logging.getLogger('spock')
 
+FP_MAGIC = 1e-4
+
 
 class PhysicsCore(object):
     def __init__(self, vec, pos, bounding_box):
@@ -106,11 +108,19 @@ class PhysicsPlugin(PluginBase):
         current_vector = Vector3()
         transform_vectors = []
         q = collections.deque()
+        bail = False
         while all(transform_vectors) or not q:
+            if not q and bail:
+                logger.warn('Physics has failed to find an MTV, bailing out')
+                self.clear_velocity()
+                return Vector3()
             current_vector = q.popleft() if q else current_vector
+            if current_vector.dist_sq() > self.vec.dist_sq() + FP_MAGIC:
+                continue
             transform_vectors = self.check_collision(pos, current_vector)
             for vector in transform_vectors:
                 q.append(current_vector + vector)
+            bail = True
         possible_mtv = [current_vector]
         while q:
             current_vector = q.popleft()
