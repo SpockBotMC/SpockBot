@@ -76,7 +76,7 @@ class PhysicsPlugin(PluginBase):
         self.pos.on_ground = mtv.y > 0
         self.apply_vector(mtv)
 
-    def clear_velocity(self, _ = None, __ = None):
+    def clear_velocity(self, _=None, __=None):
         self.vec.__init__(0, 0, 0)
 
     def get_drag(self, vec):
