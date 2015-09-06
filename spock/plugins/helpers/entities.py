@@ -134,6 +134,7 @@ class EntityPlugin(PluginBase):
         self.ec.entities[packet.data['eid']] = entity
         self.ec.players[packet.data['eid']] = entity
         self.event.emit('entity_spawn', {'entity': entity})
+        self.event.emit('player_spawn', entity)
 
     def handle_spawn_object(self, event, packet):
         entity = ObjectEntity()
@@ -148,6 +149,7 @@ class EntityPlugin(PluginBase):
         self.ec.entities[packet.data['eid']] = entity
         self.ec.mobs[packet.data['eid']] = entity
         self.event.emit('entity_spawn', {'entity': entity})
+        self.event.emit('mob_spawn', entity)
 
     def handle_spawn_painting(self, event, packet):
         entity = PaintingEntity()
