@@ -1,7 +1,7 @@
 import sys
 import types
 
-from minecraft_data.v1_8 import find_item_or_block, windows_list
+from minecraft_data.v1_8 import windows_list
 from minecraft_data.v1_8 import windows as windows_by_id
 
 from spock.mcdata import constants
@@ -26,31 +26,6 @@ def make_slot_check(wanted):
         item, meta = wanted
 
     return lambda slot: item == slot.item_id and meta in (None, slot.damage)
-
-
-# TODO move to mcdata.items
-
-def apply_variation(item_dict, metadata):
-    if item_dict and metadata is not None and 'variations' in item_dict:
-        for variation in item_dict['variations']:
-            if variation['metadata'] == metadata:
-                # variants provide replacements for some fields
-                item_dict = item_dict.copy()
-                item_dict.update(variation)
-                return item_dict
-    # TODO no matching metadata was found, make it 0? None? leave blank?
-    return item_dict
-
-
-def find_item_dict(item, metadata=None):
-    if metadata is None:  # check for complex types
-        if isinstance(item, Slot):
-            item, metadata = item.item_id, item.damage
-        elif not isinstance(item, (int, str)):
-            # name_or_id is tuple of (item_id, metadata)
-            item, metadata = item
-
-    return apply_variation(find_item_or_block(item), metadata)
 
 
 class Slot(object):
