@@ -1,13 +1,56 @@
 import sys
+import types
 
-from minecraft_data.v1_8 import windows_list
+from minecraft_data.v1_8 import find_item_or_block, windows_list
+from minecraft_data.v1_8 import windows as windows_by_id
 
 from spock.mcdata import constants
 from spock.utils import camel_case, snake_case
 
 
-# look up a class by window type ID, e.g. when opening windows
-inv_types = {}
+def make_slot_check(wanted):
+    """
+    Creates and returns a function that takes a slot and checks
+    if it matches the wanted item.
+    :param wanted: function(Slot) or Slot or itemID or (itemID, metadata)
+    """
+    if isinstance(wanted, types.FunctionType):
+        return wanted  # just forward the slot check function
+
+    if isinstance(wanted, int):
+        item, meta = wanted, None
+    elif isinstance(wanted, Slot):
+        item, meta = wanted.item_id, wanted.damage
+        # TODO compare NBT
+    else:  # wanted is list of (id, meta)
+        item, meta = wanted
+
+    return lambda slot: item == slot.item_id and meta in (None, slot.damage)
+
+
+# TODO move to mcdata.items
+
+def apply_variation(item_dict, metadata):
+    if item_dict and metadata is not None and 'variations' in item_dict:
+        for variation in item_dict['variations']:
+            if variation['metadata'] == metadata:
+                # variants provide replacements for some fields
+                item_dict = item_dict.copy()
+                item_dict.update(variation)
+                return item_dict
+    # TODO no matching metadata was found, make it 0? None? leave blank?
+    return item_dict
+
+
+def find_item_dict(item, metadata=None):
+    if metadata is None:  # check for complex types
+        if isinstance(item, Slot):
+            item, metadata = item.item_id, item.damage
+        elif not isinstance(item, (int, str)):
+            # name_or_id is tuple of (item_id, metadata)
+            item, metadata = item
+
+    return apply_variation(find_item_or_block(item), metadata)
 
 
 class Slot(object):
@@ -233,9 +276,14 @@ class BaseWindow(object):
     # the arguments must have the same names as the keys in the packet dict
     def __init__(self, window_id, title, slot_count,
                  inv_type=None, persistent_slots=None, eid=None):
-        assert slot_count > 0, 'Received wrong slot_count: %s' % slot_count
         assert not inv_type or inv_type == self.inv_type, \
             'inv_type differs: %s instead of %s' % (inv_type, self.inv_type)
+        self.is_storage = slot_count > 0  # same after re-opening window
+        if not self.is_storage:  # get number of temporary slots
+            window_dict = windows_by_id[inv_type]
+            if 'slots' in window_dict:
+                slot_count = max(slot['index'] + slot.get('size', 1)
+                                 for slot in window_dict['slots'])
         self.window_id = window_id
         self.title = title
         self.eid = eid  # used for horses
@@ -328,6 +376,10 @@ def _make_window(window_dict):
         'Window "%s" already registered at %s' % (cls_name, __name__)
     setattr(sys.modules[__name__], cls_name, cls)
     return cls
+
+
+# look up a class by window type ID, e.g. when opening windows
+inv_types = {}
 
 
 def _create_windows():
