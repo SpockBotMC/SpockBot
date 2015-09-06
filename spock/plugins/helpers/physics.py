@@ -6,9 +6,8 @@ also eventually provide functions to track other entities affected by SMP
 physics
 
 Minecraft client/player physics is unfortunately very poorly documented.
-Most of
-these values are based of experimental results and the contributions of a
-handful of people (Thank you 0pteron!) to the Minecraft wiki talk page on
+Most of these values are based of experimental results and the contributions of
+a handful of people (Thank you 0pteron!) to the Minecraft wiki talk page on
 Entities and Transportation. Ideally someone will decompile the client with MCP
 and document the totally correct values and behaviors.
 """
@@ -106,11 +105,10 @@ class PhysicsPlugin(PluginBase):
         pos = self.pos + self.vec
         pos.x -= self.bounding_box.w/2
         pos.z -= self.bounding_box.d/2
-        current_vector = Vector3()
         transform_vectors = []
         q = collections.deque()
         while q or not transform_vectors:
-            current_vector = q.popleft() if q else current_vector
+            current_vector = q.popleft() if q else Vector3()
             transform_vectors = self.check_collision(pos, current_vector)
             if not all(transform_vectors):
                 break
@@ -148,10 +146,8 @@ class PhysicsPlugin(PluginBase):
                     break
                 transform_vectors.append(axis_pen)
             else:
-                break
-        else:
-            return [Vector3()]*3
-        return transform_vectors
+                return transform_vectors
+        return [Vector3()]*3
 
     # Axis must be a normalized/unit vector
     def check_axis(self, axis, min_a, max_a, min_b, max_b):
