@@ -4,6 +4,7 @@ and provides simple inventory manipulation.
 Crafting is not done here.
 """
 from spock.mcdata import constants, windows
+from spock.mcdata.windows import make_slot_check
 from spock.plugins.base import PluginBase
 from spock.utils import pl_announce
 
@@ -19,40 +20,42 @@ class InventoryCore(object):
         self.cursor_slot = windows.SlotCursor()
         self.window = windows.PlayerWindow()
 
-    def total_stored(self, item_id, meta=-1, slots=None):
+    def total_stored(self, wanted, slots=None):
         """
         Calculates the total number of items of that type
         in the current window or given slot range.
+        :param wanted: function(Slot) or Slot or itemID or (itemID, metadata)
         """
-        wanted = lambda s: item_id == s.item_id and meta in (-1, s.damage)
-        amount = 0
-        for slot in slots or self.window.slots:
-            if wanted(slot):
-                amount += slot.amount
-        return amount
+        if slots is None:
+            slots = self.window.slots
+        wanted = make_slot_check(wanted)
+        return sum(slot.amount for slot in slots if wanted(slot))
 
-    def find_slot(self, item_id, meta=-1, start=0):
+    def find_slot(self, wanted, slots=None):
         """
         Returns the first slot containing the item or None if not found.
-        Searches active hotbar slot, hotbar, inventory, open window in this
-        order.
-        Skips the first `start` slots of the current window.
+        Searches the given slots or, if not given,
+        active hotbar slot, hotbar, inventory, open window in this order.
+        :param wanted: function(Slot) or Slot or itemID or (itemID, metadata)
         """
-
-        wanted = lambda s: s.slot_nr >= start \
-            and item_id == s.item_id \
-            and meta in (-1, s.damage)
-
-        if wanted(self.active_slot):
-            return self.active_slot
-
-        for slots in (self.window.hotbar_slots,
-                      self.window.inventory_slots,
-                      self.window.window_slots):
-            for slot in slots:
-                if wanted(slot):
-                    return slot
+        for slot in self.find_slots(wanted, slots):
+            return slot
         return None
+
+    def find_slots(self, wanted, slots=None):
+        """
+        Yields all slots containing the item.
+        Searches the given slots or, if not given,
+        active hotbar slot, hotbar, inventory, open window in this order.
+        :param wanted: function(Slot) or Slot or itemID or (itemID, metadata)
+        """
+        if slots is None:
+            slots = self.inv_slots_preferred + self.window.window_slots
+        wanted = make_slot_check(wanted)
+
+        for slot in slots:
+            if wanted(slot):
+                yield slot
 
     def select_active_slot(self, hotbar_index):
         assert 0 <= hotbar_index < constants.INV_SLOTS_HOTBAR, \
@@ -95,6 +98,17 @@ class InventoryCore(object):
     @property
     def hotbar_start(self):
         return self.window.hotbar_slots[0].slot_nr
+
+    @property
+    def inv_slots_preferred(self):
+        """
+        The preferred order to search for items or empty slots.
+        """
+        slots = [self.active_slot]
+        slots.extend(slot for slot in self.window.hotbar_slots
+                     if slot != self.active_slot)
+        slots.extend(self.window.inventory_slots)
+        return slots
 
 
 @pl_announce('Inventory')
