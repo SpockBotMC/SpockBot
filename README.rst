@@ -63,6 +63,8 @@ for additional examples contributed by the community.
 API Docs
 --------
 
+NOTE: These docs are ridiculously out of date
+
 Current API docs live here https://spockbotmc.github.io/docs/spock/
 
 Support
