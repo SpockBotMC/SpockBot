@@ -63,6 +63,8 @@ class InventoryCore(object):
                                   {'slot': hotbar_index})
 
     def click_slot(self, slot, right=False):
+        if isinstance(slot, int):  # also allow slot nr
+            slot = self.window.slots[slot]
         button = constants.INV_BUTTON_RIGHT \
             if right else constants.INV_BUTTON_LEFT
         return self.send_click(windows.SingleClick(slot, button))
@@ -70,6 +72,8 @@ class InventoryCore(object):
     def drop_slot(self, slot=None, drop_stack=False):
         if slot is None:  # drop held item
             slot = self.active_slot
+        elif isinstance(slot, int):  # also allow slot nr
+            slot = self.window.slots[slot]
         return self.send_click(windows.DropClick(slot, drop_stack))
 
     def close_window(self):
