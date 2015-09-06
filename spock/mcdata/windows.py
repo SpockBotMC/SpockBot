@@ -66,6 +66,20 @@ class Slot(object):
     def move_to_window(self, window, slot_nr):
         self.window, self.slot_nr = window, slot_nr
 
+    @property
+    def item_dict(self):
+        # TODO cache find_item_dict?
+        return find_item_dict(self.item_id, self.damage) \
+            or {'name': 'unknown',
+                'id': self.item_id,
+                'metadata': self.damage,
+                'stackSize': 0,
+                }
+
+    @property
+    def max_amount(self):
+        return self.item_dict['stackSize']
+
     def stacks_with(self, other):
         if self.item_id != other.item_id:
             return False
@@ -76,22 +90,6 @@ class Slot(object):
         # if self.nbt != other.nbt: return False
         # TODO implement stacking correctly (NBT data comparison)
         return self.max_amount != 1
-
-    @property
-    def max_amount(self):
-        # TODO use spock.mcdata.items
-        # at least use some dummy values for now, ignore 16-stacking items
-        items_single = [-1, 256, 257, 258, 259, 261, 282, 326, 327, 333, 335,
-                        342, 343, 346, 347, 355, 358, 359, 373, 374, 379, 380,
-                        386, 387, 398, 403, 407, 408, 422, 417, 418, 419]
-        items_single.extend(range(267, 280))
-        items_single.extend(range(283, 287))
-        items_single.extend(range(290, 295))
-        items_single.extend(range(298, 318))
-        items_single.extend(range(2256, 2268))
-        for self.item_id in items_single:
-            return 1
-        return 64
 
     def get_dict(self):
         """ Formats the slot for network packing. """
