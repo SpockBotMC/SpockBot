@@ -69,7 +69,9 @@ class InteractPlugin(PluginBase):
         self._entity_action(constants.ENTITY_ACTION_OPEN_INVENTORY)
 
     def chat(self, message):
-        self.net.push_packet('PLAY>Chat Message', {'message': message})
+        while message:
+            msg_part, message = message[:100], message[100:]
+            self.net.push_packet('PLAY>Chat Message', {'message': msg_part})
 
     def whisper(self, player, message):
         self.chat('/tell %s %s' % (player, message))
