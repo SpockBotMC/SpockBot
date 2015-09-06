@@ -89,9 +89,6 @@ class CartesianVector(BaseVector):
     def __trunc__(self):
         return self.__class__(*map(math.trunc, self))
 
-    def norm(self):
-        return math.sqrt(sum(map(lambda a: a * a, self)))
-
     # Utilities
 
     def ifloor(self):
@@ -113,6 +110,12 @@ class CartesianVector(BaseVector):
         """ For fast length comparison """
         v = self - other if other else self
         return sum(map(lambda a: a * a, v))
+
+    def dist(self, other=None):
+        return math.sqrt(self.dist_sq(other))
+
+    def norm(self):
+        return self / self.dist()
 
     # Truthy evaluation
     def __bool__(self):
