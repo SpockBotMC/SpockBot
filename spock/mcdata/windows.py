@@ -60,6 +60,10 @@ class Slot(object):
                 data['enchants'] = self.nbt
         return data
 
+    def copy(self):
+        return Slot(self.window, self.slot_nr, self.item_id,
+                    self.damage, self.amount, self.nbt)
+
     def is_empty(self):
         return self.amount <= 0
 
