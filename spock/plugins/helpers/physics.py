@@ -37,13 +37,21 @@ class PhysicsCore(object):
         if self.pos.on_ground:
             self.vec += Vector3(0, const.PLAYER_JMP_ACC, 0)
 
-    def walk(self, angle, radians=False):
+    def walk_vector(self, vector):
+        vector.y = 0
+        self.vec += vector.norm() * const.PLAYER_WLK_ACC
+
+    def sprint_vector(self, vector):
+        vector.y = 0
+        self.vec += vector.norm() * PLAYER_SPR_ACC
+
+    def walk_angle(self, angle, radians=False):
         angle = angle if radians else math.radians(angle)
         z = math.cos(angle) * const.PLAYER_WLK_ACC
         x = math.sin(angle) * const.PLAYER_WLK_ACC
         self.vec += Vector3(x, 0, z)
 
-    def sprint(self, angle, radians=False):
+    def sprint_angle(self, angle, radians=False):
         angle = angle if radians else math.radians(angle)
         z = math.cos(angle) * const.PLAYER_SPR_ACC
         x = math.sin(angle) * const.PLAYER_SPR_ACC
