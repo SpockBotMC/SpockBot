@@ -1,11 +1,11 @@
 """
 The Inventory plugin keeps track of the inventory
-and provides simple inventory manipulation.
-Crafting is not done here.
+and provides simple inventory analysis and manipulation.
 """
 from spock.mcdata import constants, windows
 from spock.mcdata.windows import make_slot_check
 from spock.plugins.base import PluginBase
+from spock.plugins.tools.inventory_async import InventoryAsync
 from spock.utils import pl_announce
 
 
@@ -19,6 +19,7 @@ class InventoryCore(object):
         # the slot that moves with the mouse when clicking a slot
         self.cursor_slot = windows.SlotCursor()
         self.window = windows.PlayerWindow()
+        self.async = InventoryAsync(self)
 
     def total_stored(self, wanted, slots=None):
         """
