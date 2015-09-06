@@ -77,8 +77,7 @@ class InventoryCore(object):
         return self.send_click(windows.DropClick(slot, drop_stack))
 
     def close_window(self):
-        # TODO does the server send a close window, or should we close the
-        # window now?
+        # TODO does server send close window, or should we close window now?
         self._net.push_packet('PLAY>Close Window',
                               {'window_id': self.window.window_id})
 
@@ -156,6 +155,15 @@ class InventoryPlugin(PluginBase):
 
     def set_slot(self, window_id, slot_nr, slot_data):
         inv = self.inventory
+        if window_id != inv.window.window_id \
+                and window_id == constants.INV_WINID_PLAYER:
+            # server did not close the open window
+            # before adressing the player inventory
+            self.handle_close_window(None, None)
+        elif window_id > inv.window.window_id:
+            # server did not send the Open Window packet yet
+            return  # assume window will be empty TODO defer the set_slot?
+
         if window_id == constants.INV_WINID_CURSOR \
                 and slot_nr == constants.INV_SLOT_NR_CURSOR:
             slot = inv.cursor_slot = windows.SlotCursor(**slot_data)
@@ -163,8 +171,9 @@ class InventoryPlugin(PluginBase):
             slot = inv.window.slots[slot_nr] = windows.Slot(
                 inv.window, slot_nr, **slot_data)
         else:
-            raise ValueError('Unexpected window ID (%i) or slot_nr (%i)'
-                             % (window_id, slot_nr))
+            raise ValueError(
+                'Unexpected slot_nr (%i) or window ID (%i instead of %i)'
+                % (slot_nr, window_id, inv.window.window_id))
         self.emit_set_slot(slot)
 
     def emit_set_slot(self, slot):
@@ -198,7 +207,7 @@ class InventoryPlugin(PluginBase):
             packet.new_ident('PLAY>Confirm Transaction')
             self.net.push(packet)
             # 1.8 server will re-send all slots now
-            # TODO are 2 ticks always enough?
+            # TODO are 2 ticks always enough? should wait for expected packets
             self.timers.reg_tick_timer(2, emit_response_event, runs=1)
 
     def send_click(self, click):
