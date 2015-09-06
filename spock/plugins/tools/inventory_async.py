@@ -9,6 +9,12 @@ def check_action_id(action_id):
     return lambda event, data: data['action_id'] == action_id
 
 
+def unpack_slots_list(slots):
+    if len(slots) > 1 or isinstance(slots, int) or hasattr(slots, 'slot_nr'):
+        return slots
+    return slots[0]
+
+
 class InventoryAsync(object):
     def __init__(self, inventory):
         self.inventory = inventory
@@ -25,10 +31,16 @@ class InventoryAsync(object):
         yield 'inv_click_response', check_action_id(action_id)
         # TODO make sure window is not closed while clicking
 
+        empty_cursor = old_cursor.is_empty
+        if old_slot.amount == old_slot.max_amount and not empty_cursor \
+                or old_slot.is_empty and empty_cursor:
+            return  # no need to check
+
         new_slot = self.inventory.window.slots[old_slot.slot_nr]
         new_cursor = self.inventory.cursor_slot
         if new_slot.matches(old_slot) and new_cursor.matches(old_cursor):
-            raise TaskFailed('Click slot failed: slot did not change')
+            raise TaskFailed('Click slot failed: slot %i did not change (%s)'
+                             % (old_slot.slot_nr, old_slot))
 
     def drop_slot(self, slot=None, *args, **kwargs):
         # TODO drop_slot is untested
@@ -41,7 +53,7 @@ class InventoryAsync(object):
 
         new_slot = self.inventory.window.slots[old_slot]
         if old_slot is not None and new_slot.amount > 0:
-            raise TaskFailed('Drop slot failed: not dropped')
+            raise TaskFailed('Drop slot failed: slot %i not empty' % old_slot)
 
     def creative_set_slot(self, slot_nr=None, slot_dict=None, slot=None):
         self.inventory.creative_set_slot(slot_nr, slot_dict, slot)
@@ -52,11 +64,19 @@ class InventoryAsync(object):
             raise TaskFailed('Creative set slot failed: not set')
 
     def store_or_drop(self):
+        """
+        Stores the cursor item or drops it if the inventory is full.
+        Returns the slot used to store it, or None if dropped.
+        Tip: look up or down before calling this, so you can
+        pick up the dropped item when the inventory frees up again.
+        """
         inv = self.inventory
+        if inv.cursor_slot.is_empty:  # nothing to drop
+            raise StopIteration(None)
+
+        storage = inv.inv_slots_preferred
         if inv.window.is_storage:
-            storage = inv.inv_slots_preferred + inv.window.window_slots
-        else:
-            storage = inv.window.persistent_slots
+            storage += inv.window.window_slots
         first_empty_slot = inv.find_slot(constants.INV_ITEMID_EMPTY, storage)
         if first_empty_slot is not None:
             yield self.click_slot(first_empty_slot)
@@ -66,10 +86,10 @@ class InventoryAsync(object):
         if inv.cursor_slot.amount > 0:
             raise TaskFailed('Store or Drop failed: cursor is not empty')
 
+        raise StopIteration(first_empty_slot)
+
     def click_slots(self, *slots):
-        if len(slots) == 1 and not isinstance(slots, int) \
-                and not hasattr(slots, 'slot_nr'):
-            slots = slots[0]  # allow iterable as single argument
+        slots = unpack_slots_list(slots)
         for i, slot in enumerate(slots):
             try:
                 yield self.click_slot(slot)
@@ -97,21 +117,23 @@ class InventoryAsync(object):
         if not slot(a).matches(b_old) or not slot(b).matches(a_old):
             raise TaskFailed('Failed to swap slots %i and %i' % (a, b))
 
-    def move_to_inventory(self, slot):
-        target = self.inventory.find_slot(constants.INV_ITEMID_EMPTY,
-                                          self.inventory.inv_slots_preferred)
-        if target is not None:
+    def transfer_slots(self, source_slots, target_slots):
+        for slot in source_slots:
+            if slot.is_empty:
+                continue
+            item_id_empty = constants.INV_ITEMID_EMPTY
+            target = self.inventory.find_slot(item_id_empty, target_slots)
+            if target is None:
+                raise TaskFailed('Transfer slots failed: target slots full')
             yield self.swap_slots(slot, target)
-        else:
-            raise TaskFailed('Move to inventory failed: inventory full')
 
-    def move_to_window(self, slot):
-        target = self.inventory.find_slot(constants.INV_ITEMID_EMPTY,
-                                          self.inventory.window.window_slots)
-        if target is not None:
-            yield self.swap_slots(slot, target)
-        else:
-            raise TaskFailed('Move to window failed: window full')
+    def move_to_inventory(self, *slots):
+        slots = unpack_slots_list(slots)
+        return self.transfer_slots(slots, self.inventory.inv_slots_preferred)
+
+    def move_to_window(self, *slots):
+        slots = unpack_slots_list(slots)
+        return self.transfer_slots(slots, self.inventory.window.window_slots)
 
     def hold_item(self, wanted):
         found = self.inventory.find_slot(wanted)
