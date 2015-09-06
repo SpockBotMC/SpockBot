@@ -65,8 +65,13 @@ class InteractPlugin(PluginBase):
     def jump_horse(self, jump_boost=100):
         self._entity_action(constants.ENTITY_ACTION_JUMP_HORSE, jump_boost)
 
+    def open_inventory(self):
+        self._entity_action(constants.ENTITY_ACTION_OPEN_INVENTORY)
+
     def chat(self, message):
-        self.net.push_packet('PLAY>Chat Message', {'message': message})
+        while message:
+            msg_part, message = message[:100], message[100:]
+            self.net.push_packet('PLAY>Chat Message', {'message': msg_part})
 
     def whisper(self, player, message):
         self.chat('/tell %s %s' % (player, message))

@@ -1,13 +1,56 @@
 import sys
+import types
 
-from minecraft_data.v1_8 import windows_list
+from minecraft_data.v1_8 import find_item_or_block, windows_list
+from minecraft_data.v1_8 import windows as windows_by_id
 
 from spock.mcdata import constants
 from spock.utils import camel_case, snake_case
 
 
-# look up a class by window type ID, e.g. when opening windows
-inv_types = {}
+def make_slot_check(wanted):
+    """
+    Creates and returns a function that takes a slot and checks
+    if it matches the wanted item.
+    :param wanted: function(Slot) or Slot or itemID or (itemID, metadata)
+    """
+    if isinstance(wanted, types.FunctionType):
+        return wanted  # just forward the slot check function
+
+    if isinstance(wanted, int):
+        item, meta = wanted, None
+    elif isinstance(wanted, Slot):
+        item, meta = wanted.item_id, wanted.damage
+        # TODO compare NBT
+    else:  # wanted is list of (id, meta)
+        item, meta = wanted
+
+    return lambda slot: item == slot.item_id and meta in (None, slot.damage)
+
+
+# TODO move to mcdata.items
+
+def apply_variation(item_dict, metadata):
+    if item_dict and metadata is not None and 'variations' in item_dict:
+        for variation in item_dict['variations']:
+            if variation['metadata'] == metadata:
+                # variants provide replacements for some fields
+                item_dict = item_dict.copy()
+                item_dict.update(variation)
+                return item_dict
+    # TODO no matching metadata was found, make it 0? None? leave blank?
+    return item_dict
+
+
+def find_item_dict(item, metadata=None):
+    if metadata is None:  # check for complex types
+        if isinstance(item, Slot):
+            item, metadata = item.item_id, item.damage
+        elif not isinstance(item, (int, str)):
+            # name_or_id is tuple of (item_id, metadata)
+            item, metadata = item
+
+    return apply_variation(find_item_or_block(item), metadata)
 
 
 class Slot(object):
@@ -23,6 +66,32 @@ class Slot(object):
     def move_to_window(self, window, slot_nr):
         self.window, self.slot_nr = window, slot_nr
 
+    @property
+    def item_dict(self):
+        # TODO cache find_item_dict?
+        return find_item_dict(self.item_id, self.damage) \
+            or {'name': 'unknown',
+                'id': self.item_id,
+                'metadata': self.damage,
+                'stackSize': 0,
+                }
+
+    @property
+    def max_amount(self):
+        return self.item_dict['stackSize']
+
+    @property
+    def name(self):
+        return self.item_dict['name']
+
+    @property
+    def is_empty(self):
+        # could also check self.item_id == constants.INV_ITEMID_EMPTY
+        return self.amount <= 0
+
+    def matches(self, other):
+        return make_slot_check(other)(self)
+
     def stacks_with(self, other):
         if self.item_id != other.item_id:
             return False
@@ -34,22 +103,6 @@ class Slot(object):
         # TODO implement stacking correctly (NBT data comparison)
         return self.max_amount != 1
 
-    @property
-    def max_amount(self):
-        # TODO use spock.mcdata.items
-        # at least use some dummy values for now, ignore 16-stacking items
-        items_single = [-1, 256, 257, 258, 259, 261, 282, 326, 327, 333, 335,
-                        342, 343, 346, 347, 355, 358, 359, 373, 374, 379, 380,
-                        386, 387, 398, 403, 407, 408, 422, 417, 418, 419]
-        items_single.extend(range(267, 280))
-        items_single.extend(range(283, 287))
-        items_single.extend(range(290, 295))
-        items_single.extend(range(298, 318))
-        items_single.extend(range(2256, 2268))
-        for self.item_id in items_single:
-            return 1
-        return 64
-
     def get_dict(self):
         """ Formats the slot for network packing. """
         data = {'id': self.item_id}
@@ -60,19 +113,23 @@ class Slot(object):
                 data['enchants'] = self.nbt
         return data
 
-    def is_empty(self):
-        return self.amount <= 0
+    def copy(self):
+        return Slot(self.window, self.slot_nr, self.item_id,
+                    self.damage, self.amount, self.nbt)
 
     def __bool__(self):
-        return not self.is_empty()
+        return not self.is_empty
 
     def __repr__(self):
-        if self.item_id == constants.INV_ITEMID_EMPTY:
+        if self.is_empty:
             return '<empty slot at %i in %s>' % (
                 self.slot_nr, self.window)
         else:
+            attrs_with_name = {'name': self.name}
+            attrs_with_name.update(self.__dict__)
             return '<Slot: %(amount)ix %(item_id)i:%(damage)i' \
-                   ' at %(slot_nr)i in %(window)s>' % self.__dict__
+                   ' %(name)s at %(slot_nr)i in %(window)s>' \
+                   % attrs_with_name
 
 
 class SlotCursor(Slot):
@@ -146,7 +203,7 @@ class BaseClick(object):
         self.cleanup_if_empty(from_slot)
 
     def cleanup_if_empty(self, slot):
-        if slot.is_empty():
+        if slot.is_empty:
             empty_slot_at_same_position = Slot(slot.window, slot.slot_nr)
             self.copy_slot_type(empty_slot_at_same_position, slot)
         self.mark_dirty(slot)
@@ -184,7 +241,7 @@ class SingleClick(BaseClick):
             if cursor.item_id == constants.INV_ITEMID_EMPTY:
                 # transfer half, round up
                 self.transfer(clicked, cursor, (clicked.amount + 1) // 2)
-            elif clicked.is_empty() or clicked.stacks_with(cursor):
+            elif clicked.is_empty or clicked.stacks_with(cursor):
                 self.transfer(cursor, clicked, 1)
             else:  # slot items do not stack
                 self.swap_slots(cursor, clicked)
@@ -213,7 +270,7 @@ class DropClick(BaseClick):
         }
 
     def apply(self, inv_plugin):
-        if inv_plugin.cursor_slot.is_empty():
+        if inv_plugin.cursor_slot.is_empty:
             if self.drop_stack:
                 self.slot.amount = 0
             else:
@@ -228,9 +285,14 @@ class BaseWindow(object):
     # the arguments must have the same names as the keys in the packet dict
     def __init__(self, window_id, title, slot_count,
                  inv_type=None, persistent_slots=None, eid=None):
-        assert slot_count > 0, 'Received wrong slot_count: %s' % slot_count
         assert not inv_type or inv_type == self.inv_type, \
             'inv_type differs: %s instead of %s' % (inv_type, self.inv_type)
+        self.is_storage = slot_count > 0  # same after re-opening window
+        if not self.is_storage:  # get number of temporary slots
+            window_dict = windows_by_id[inv_type]
+            if 'slots' in window_dict:
+                slot_count = max(slot['index'] + slot.get('size', 1)
+                                 for slot in window_dict['slots'])
         self.window_id = window_id
         self.title = title
         self.eid = eid  # used for horses
@@ -323,6 +385,10 @@ def _make_window(window_dict):
         'Window "%s" already registered at %s' % (cls_name, __name__)
     setattr(sys.modules[__name__], cls_name, cls)
     return cls
+
+
+# look up a class by window type ID, e.g. when opening windows
+inv_types = {}
 
 
 def _create_windows():
