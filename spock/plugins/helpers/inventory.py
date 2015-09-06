@@ -57,13 +57,18 @@ class InventoryCore(object):
             if wanted(slot):
                 yield slot
 
-    def select_active_slot(self, hotbar_index):
-        assert 0 <= hotbar_index < constants.INV_SLOTS_HOTBAR, \
-            'Invalid hotbar index'
-        if hotbar_index != self.active_slot_nr:
-            self.active_slot_nr = hotbar_index
+    def select_active_slot(self, slot_or_hotbar_index):
+        if hasattr(slot_or_hotbar_index, 'slot_nr'):
+            hotbar_start = self.window.hotbar_slots[0].slot_nr
+            slot_or_hotbar_index = slot_or_hotbar_index.slot_nr - hotbar_start
+
+        assert 0 <= slot_or_hotbar_index < constants.INV_SLOTS_HOTBAR, \
+            'Invalid hotbar index %i' % slot_or_hotbar_index
+
+        if self.active_slot_nr != slot_or_hotbar_index:
+            self.active_slot_nr = slot_or_hotbar_index
             self._net.push_packet('PLAY>Held Item Change',
-                                  {'slot': hotbar_index})
+                                  {'slot': slot_or_hotbar_index})
 
     def click_slot(self, slot, right=False):
         if isinstance(slot, int):  # also allow slot nr
@@ -94,10 +99,6 @@ class InventoryCore(object):
     @property
     def active_slot(self):
         return self.window.hotbar_slots[self.active_slot_nr]
-
-    @property
-    def hotbar_start(self):
-        return self.window.hotbar_slots[0].slot_nr
 
     @property
     def inv_slots_preferred(self):
