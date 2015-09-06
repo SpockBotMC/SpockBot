@@ -64,11 +64,12 @@ class Slot(object):
         return Slot(self.window, self.slot_nr, self.item_id,
                     self.damage, self.amount, self.nbt)
 
+    @property
     def is_empty(self):
         return self.amount <= 0
 
     def __bool__(self):
-        return not self.is_empty()
+        return not self.is_empty
 
     def __repr__(self):
         if self.item_id == constants.INV_ITEMID_EMPTY:
@@ -150,7 +151,7 @@ class BaseClick(object):
         self.cleanup_if_empty(from_slot)
 
     def cleanup_if_empty(self, slot):
-        if slot.is_empty():
+        if slot.is_empty:
             empty_slot_at_same_position = Slot(slot.window, slot.slot_nr)
             self.copy_slot_type(empty_slot_at_same_position, slot)
         self.mark_dirty(slot)
@@ -188,7 +189,7 @@ class SingleClick(BaseClick):
             if cursor.item_id == constants.INV_ITEMID_EMPTY:
                 # transfer half, round up
                 self.transfer(clicked, cursor, (clicked.amount + 1) // 2)
-            elif clicked.is_empty() or clicked.stacks_with(cursor):
+            elif clicked.is_empty or clicked.stacks_with(cursor):
                 self.transfer(cursor, clicked, 1)
             else:  # slot items do not stack
                 self.swap_slots(cursor, clicked)
@@ -217,7 +218,7 @@ class DropClick(BaseClick):
         }
 
     def apply(self, inv_plugin):
-        if inv_plugin.cursor_slot.is_empty():
+        if inv_plugin.cursor_slot.is_empty:
             if self.drop_stack:
                 self.slot.amount = 0
             else:
