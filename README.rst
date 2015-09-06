@@ -20,11 +20,11 @@ back end and replace it with your framework or paradigm of choice. As
 long as you provide the same simple APIs, other plugins won't know the
 difference.
 
-Currently writing Spock plugins requires a fairly intricate
-understanding of the MC protocol, since there aren't many plugins that
-provide higher abstractions than MC packets. That said the API is
-starting to shape up quite nicely, we've got timers, physics, world,
-interaction, and inventory.
+Spock provides high-level APIs for inventory management, crafting, and
+world interaction. Pathfinding is currently under development. Absolutely
+none of this is documented so if you're uncomfortable reading source code
+this might not be the framework for you. Or, better yet, hop on IRC and 
+help us write some docs!
 
 Spock officially supports Python 3.x on \*nix operating systems and
 requires cryptography_. It also runs on Windows and under Python 2.7+ but
