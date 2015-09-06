@@ -78,11 +78,11 @@ class InventoryCore(object):
         self._net.push_packet('PLAY>Close Window',
                               {'window_id': self.window.window_id})
 
-    def creative_set_slot(self, slot):
+    def creative_set_slot(self, slot_nr=None, slot_dict=None, slot=None):
         # TODO test
         self._net.push_packet('PLAY>Creative Inventory Action', {
-            'slot': slot.slot_nr,
-            'clicked_item': slot.get_dict(),
+            'slot': slot_nr or slot.slot_nr,
+            'clicked_item': slot_dict or slot.get_dict(),
         })
 
     @property
