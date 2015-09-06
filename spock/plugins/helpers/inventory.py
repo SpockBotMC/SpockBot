@@ -177,8 +177,11 @@ class InventoryPlugin(PluginBase):
         accepted = packet.data['accepted']
 
         def emit_response_event():
-            self.event.emit('inv_click_response_%s' % action_id,
-                            {'accepted': accepted, 'click': click})
+            self.event.emit('inv_click_response', {
+                'action_id': action_id,
+                'accepted': accepted,
+                'click': click,
+            })
 
         if accepted:
             # TODO check if the wrong window/action ID was confirmed,
