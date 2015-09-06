@@ -135,5 +135,10 @@ def split_words(text):  # TODO lacking a better name
         text = re_spaced_caps.sub(r' \1', text)
     return [w.lower() for w in text.split(' ')]
 
-snake_case = lambda text: '_'.join(split_words(text))
-camel_case = lambda text: ''.join(map(str.capitalize, split_words(text)))
+
+def snake_case(text):
+    return '_'.join(split_words(text))
+
+
+def camel_case(text):
+    return ''.join(map(str.capitalize, split_words(text)))

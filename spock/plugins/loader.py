@@ -32,11 +32,7 @@ class PluginLoader(object):
         self.reg_event_handler = event.reg_event_handler if event else None
         while self.plugins:
             plugin = self.plugins.pop()
-            try:
-                plugin(self, self.fetch.get_plugin_settings(plugin))
-            except Exception:
-                logger.exception('LOADER: Plugin %s failed to load',
-                                 plugin.__name__)
+            plugin(self, self.fetch.get_plugin_settings(plugin))
 
     def requires(self, ident, soft=False, warning=None):
         if ident not in self.extensions:

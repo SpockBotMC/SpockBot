@@ -1,15 +1,7 @@
 """
-PhysicsPlugin is planned to provide vectors and tracking necessary to implement
-SMP-compliant client-side physics for entities. Primarirly this will be used to
-keep update client position for gravity/knockback/water-flow etc. But it should
-also eventually provide functions to track other entities affected by SMP
-physics
-
-Minecraft client/player physics is unfortunately very poorly documented.
-Most of these values are based of experimental results and the contributions of
-a handful of people (Thank you 0pteron!) to the Minecraft wiki talk page on
-Entities and Transportation. Ideally someone will decompile the client with MCP
-and document the totally correct values and behaviors.
+PhysicsPlugin provides a Separating Axis Theorem implementation for concave
+shapes decomposed into Axis-Aligned Bounding Boxes
+AKA it does Minecraft physics
 """
 
 import collections

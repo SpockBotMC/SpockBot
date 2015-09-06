@@ -109,9 +109,9 @@ class AuthPlugin(PluginBase):
         pubkey_raw = packet.data['public_key']
         if self.authenticated:
             serverid = java_hex_digest(hashlib.sha1(
-                packet.data['server_id'].encode('ascii')
-                + self.auth.shared_secret
-                + pubkey_raw
+                packet.data['server_id'].encode('ascii') +
+                self.auth.shared_secret +
+                pubkey_raw
             ))
             logger.info(
                 "AUTHPLUGIN: Attempting to authenticate session with "
@@ -133,9 +133,9 @@ class AuthPlugin(PluginBase):
                 self.event.emit('SESS_ERR')
             else:
                 logger.info("AUTHPLUGIN: Session authentication successful")
-
         pubkey = serialization.load_der_public_key(pubkey_raw, backend)
-        encrypt = lambda data: pubkey.encrypt(data, padding.PKCS1v15())
+
+        def encrypt(data): return pubkey.encrypt(data, padding.PKCS1v15())
         self.net.push_packet(
             'LOGIN>Encryption Response',
             {

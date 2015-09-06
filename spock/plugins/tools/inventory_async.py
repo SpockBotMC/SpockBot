@@ -80,7 +80,8 @@ class InventoryAsync(object):
     def swap_slots(self, a, b):
         a = getattr(a, 'slot_nr', a)
         b = getattr(b, 'slot_nr', b)
-        slot = lambda i: self.inventory.window.slots[i]
+
+        def slot(i): return self.inventory.window.slots[i]
         a_old, b_old = slot(a).copy(), slot(b).copy()
 
         if not slot(a).is_empty or not self.inventory.cursor_slot.is_empty:
