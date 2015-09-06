@@ -43,7 +43,7 @@ class PhysicsCore(object):
 
     def sprint_vector(self, vector):
         vector.y = 0
-        self.vec += vector.norm() * PLAYER_SPR_ACC
+        self.vec += vector.norm() * const.PLAYER_SPR_ACC
 
     def walk_angle(self, angle, radians=False):
         angle = angle if radians else math.radians(angle)
