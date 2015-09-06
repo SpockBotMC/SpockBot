@@ -80,6 +80,18 @@ class Slot(object):
     def max_amount(self):
         return self.item_dict['stackSize']
 
+    @property
+    def name(self):
+        return self.item_dict['name']
+
+    @property
+    def is_empty(self):
+        # could also check self.item_id == constants.INV_ITEMID_EMPTY
+        return self.amount <= 0
+
+    def matches(self, other):
+        return make_slot_check(other)(self)
+
     def stacks_with(self, other):
         if self.item_id != other.item_id:
             return False
@@ -105,20 +117,19 @@ class Slot(object):
         return Slot(self.window, self.slot_nr, self.item_id,
                     self.damage, self.amount, self.nbt)
 
-    @property
-    def is_empty(self):
-        return self.amount <= 0
-
     def __bool__(self):
         return not self.is_empty
 
     def __repr__(self):
-        if self.item_id == constants.INV_ITEMID_EMPTY:
+        if self.is_empty:
             return '<empty slot at %i in %s>' % (
                 self.slot_nr, self.window)
         else:
+            attrs_with_name = {'name': self.name}
+            attrs_with_name.update(self.__dict__)
             return '<Slot: %(amount)ix %(item_id)i:%(damage)i' \
-                   ' at %(slot_nr)i in %(window)s>' % self.__dict__
+                   ' %(name)s at %(slot_nr)i in %(window)s>' \
+                   % attrs_with_name
 
 
 class SlotCursor(Slot):
