@@ -135,7 +135,9 @@ class AuthPlugin(PluginBase):
                 logger.info("AUTHPLUGIN: Session authentication successful")
         pubkey = serialization.load_der_public_key(pubkey_raw, backend)
 
-        def encrypt(data): return pubkey.encrypt(data, padding.PKCS1v15())
+        def encrypt(data):
+            return pubkey.encrypt(data, padding.PKCS1v15())
+
         self.net.push_packet(
             'LOGIN>Encryption Response',
             {
