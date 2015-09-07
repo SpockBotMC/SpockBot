@@ -83,7 +83,7 @@ class InventoryAsync(object):
         else:
             yield self.drop_slot(drop_stack=True)
 
-        if inv.cursor_slot.amount > 0:
+        if not inv.cursor_slot.is_empty:
             raise TaskFailed('Store or Drop failed: cursor is not empty')
 
         raise StopIteration(first_empty_slot)
