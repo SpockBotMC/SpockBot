@@ -5,6 +5,7 @@ from minecraft_data.v1_8 import recipes as raw_recipes
 
 RecipeItem = namedtuple('RecipeItem', 'id meta amount')
 Recipe = namedtuple('Recipe', 'result ingredients in_shape out_shape')
+# TODO make Recipe a class, make the helpers its methods
 
 
 def to_recipe(raw):
@@ -62,3 +63,14 @@ def total_ingredient_amounts(recipe):
     for id, meta, amount in recipe.ingredients:
         totals[(id, meta)] += amount
     return totals
+
+
+def ingredient_positions(recipe):
+    """
+    returns dict{ (item_id, metadata) -> [ (x, y, amount), ... ] }
+    """
+    positions = defaultdict(list)
+    for y, row in enumerate(recipe.in_shape):
+        for x, (item_id, metadata, amount) in enumerate(row):
+            positions[(item_id, metadata)].append((x, y, amount))
+    return positions
