@@ -101,7 +101,6 @@ class CraftPlugin(PluginBase):
         prev_cursor_amt = inv.cursor_slot.amount
         crafted_amt = 0
         while amount > crafted_amt + inv.cursor_slot.amount:
-            if inv.cursor_slot.is_empty:
             yield inv.async.click_slot(result_slot)
             # TODO check that cursor is non-empty, otherwise we did not craft
             result_stack_size = inv.cursor_slot.max_amount
