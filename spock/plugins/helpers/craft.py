@@ -1,9 +1,10 @@
 """
-Look up recipes and craft items.
+Craft items.
 """
 from math import ceil
 
-from spock.mcdata.recipes import find_recipe, total_ingredient_amounts
+from spock.mcdata.recipes import find_recipe, total_ingredient_amounts, \
+    ingredient_positions
 from spock.plugins.base import PluginBase
 from spock.task import RunTask, TaskFailed
 from spock.utils import pl_announce
@@ -51,72 +52,69 @@ class CraftPlugin(PluginBase):
         except AttributeError:
             raise TaskFailed('[Craft] %s is no crafting window'
                              % inv.window.__class__.__name__)
-        # TODO is there a better way to get the grid width?
-        grid_width = 3 if len(grid_slots) == 9 else 2
-        # TODO check recipe size against grid size
+
+        num_grid_slots = len(grid_slots)
+        try:
+            grid_width = {4: 2, 9: 3}[num_grid_slots]
+        except KeyError:
+            raise TaskFailed('Crafting grid has unsupported size of'
+                             ' %i instead of 4 or 9' % num_grid_slots)
+
+        grid_height = num_grid_slots / grid_width
+        row1 = recipe.in_shape[0]
+        if len(recipe.in_shape) > grid_height or len(row1) > grid_width:
+            raise TaskFailed('Recipe for %s does not fit in a %ix%i grid'
+                             % (recipe.result, grid_width, grid_height))
+
         storage_slots = inv.window.persistent_slots
 
-        # check materials for recipe
+        # check ingredients for recipe
         total_amounts_needed = total_ingredient_amounts(recipe)
-        for (mat_id, mat_meta), needed in total_amounts_needed.items():
+        for ingredient, needed in total_amounts_needed.items():
             needed *= craft_times
-            stored = inv.total_stored((mat_id, mat_meta), storage_slots)
+            stored = inv.total_stored(ingredient, storage_slots)
             if needed > stored:
-                raise TaskFailed('Missing %s:%s not stored, have %i of %i'
-                                 % (mat_id, mat_meta, stored, needed))
+                raise TaskFailed('Missing %i:%i not stored, have %i of %i'
+                                 % ingredient + (stored, needed))
 
-        # TODO do not put back slot if still used
-        # TODO check after each action if it succeeded
-        # TODO use new helpers
-
-        # iterates over a recipe's shape or ingredients
-        def iter_shape():
-            if recipe.in_shape:
-                for y, row in enumerate(recipe.in_shape):
-                    for x, (m_id, m_meta, m_amount) in enumerate(row):
-                        slot = grid_slots[x + y * grid_width]
-                        yield (slot, m_id, m_meta, m_amount)
-            else:
-                for slot, (m_id, m_meta, m_amount) \
-                        in zip(grid_slots, recipe.ingredients):
-                    yield (slot, m_id, m_meta, m_amount)
-
-        # put materials into crafting grid
-        for slot, mat_id, mat_meta, mat_amount in iter_shape():
-            for i in range(mat_amount * craft_times):
-                if inv.cursor_slot.amount < 1:
-                    mat_slot = inv.find_slot((mat_id, mat_meta),
-                                             storage_slots)
-                    if not mat_slot:
-                        raise TaskFailed('Craft: No %s:%s found in inventory'
-                                         % (mat_id, mat_meta))
-                    yield inv.async.click_slot(mat_slot)
-                yield inv.async.click_slot(slot, right=True)
+        # put ingredients into crafting grid
+        for ingredient, p in ingredient_positions(recipe).items():
+            for (x, y, ingredient_amount) in p:
+                slot = grid_slots[x + y * grid_width]
+                for i in range(ingredient_amount * craft_times):
+                    if inv.cursor_slot.is_empty:
+                        ingr_slot = inv.find_slot(ingredient, storage_slots)
+                        if not ingr_slot:  # should not occur, as we checked
+                            raise TaskFailed('Craft: No %s:%s found'
+                                             ' in inventory' % ingredient)
+                        yield inv.async.click_slot(ingr_slot)
+                    # TODO speed up mass crafting with left+right clicking
+                    yield inv.async.click_slot(slot, right=True)
             # done putting in that item, put away
-            if inv.cursor_slot.amount > 0:
+            if not inv.cursor_slot.is_empty:
                 yield inv.async.store_or_drop()
+
+        # TODO check if all items are in place
+        # otherwise we will get the wrong crafting result
 
         # take crafted items
-        cursor_amt = inv.cursor_slot.amount
+        prev_cursor_amt = inv.cursor_slot.amount
         crafted_amt = 0
-        while crafted_amt + cursor_amt < amount:
+        while amount > crafted_amt + inv.cursor_slot.amount:
+            if inv.cursor_slot.is_empty:
             yield inv.async.click_slot(result_slot)
             # TODO check that cursor is non-empty, otherwise we did not craft
-            if cursor_amt == inv.cursor_slot.amount:
+            result_stack_size = inv.cursor_slot.max_amount
+            if inv.cursor_slot.amount in (prev_cursor_amt, result_stack_size):
                 # cursor full, put away
-                crafted_amt += cursor_amt
+                crafted_amt += inv.cursor_slot.amount
                 yield inv.async.store_or_drop()
-            cursor_amt = inv.cursor_slot.amount
-        if inv.cursor_slot.amount > 0:
+            prev_cursor_amt = inv.cursor_slot.amount
+        if not inv.cursor_slot.is_empty:
             # cursor still has items left from crafting, put away
             yield inv.async.store_or_drop()
 
-        # put materials left from crafting back into inventory
-        # TODO use inv.async.move_to_inventory
-        for grid_slot in grid_slots:
-            if grid_slot.amount > 0:
-                yield inv.async.click_slot(grid_slot)
-                if inv.cursor_slot.amount > 0:
-                    yield inv.async.store_or_drop()
+        # put ingredients left from crafting back into inventory
+        yield inv.async.move_to_inventory(grid_slots)
 
-        # TODO return anything?
+        # TODO return anything? maybe the slots with the crafting results?
