@@ -3,8 +3,8 @@ Craft items.
 """
 from math import ceil
 
-from spock.mcdata.recipes import find_recipe, total_ingredient_amounts, \
-    ingredient_positions
+from spock.mcdata.recipes import find_recipe, ingredient_positions, \
+    total_ingredient_amounts
 from spock.plugins.base import PluginBase
 from spock.task import RunTask, TaskFailed
 from spock.utils import pl_announce
