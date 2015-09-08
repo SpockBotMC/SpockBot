@@ -74,8 +74,8 @@ class CraftPlugin(PluginBase):
             needed *= craft_times
             stored = inv.total_stored(ingredient, storage_slots)
             if needed > stored:
-                raise TaskFailed('Missing %i:%i not stored, have %i of %i'
-                                 % ingredient + (stored, needed))
+                raise TaskFailed('Missing %s not stored, have %s of %i'
+                                 % ('%s:%s' % ingredient, stored, needed))
 
         # put ingredients into crafting grid
         for ingredient, p in ingredient_positions(recipe).items():
