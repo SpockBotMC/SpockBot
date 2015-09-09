@@ -93,14 +93,13 @@ class PhysicsPlugin(PluginBase):
     def tick(self, _, __):
         if self.pause_physics:
             return self.pause_physics
-        self.vec.x *= const.PHY_BASE_DRG
-        self.vec.z *= const.PHY_BASE_DRG
+        self.vec *= const.PHY_BASE_DRG
         self.apply_accel()
         mtv = self.get_mtv()
         self.apply_vector(mtv)
         self.pos.on_ground = mtv.y > 0
         self.vec -= Vector3(0, const.PHY_GAV_ACC, 0)
-        self.apply_drag()
+        self.apply_friction()
         self.pc.direction = Vector3()
 
     def get_block_slip(self):
@@ -129,11 +128,10 @@ class PhysicsPlugin(PluginBase):
         self.vec.y = 0 if mtv.y else self.vec.y
         self.vec.z = 0 if mtv.z else self.vec.z
 
-    def apply_drag(self):
-        self.vec.y *= const.PHY_BASE_DRG
-        hoz_drag = self.get_block_slip() * const.PHY_DRG_MUL
-        self.vec.x *= hoz_drag
-        self.vec.z *= hoz_drag
+    def apply_friction(self):
+        friction = self.get_block_slip() * const.PHY_DRG_MUL
+        self.vec.x *= friction
+        self.vec.z *= friction
 
     # Breadth-first search for a minimum translation vector
     def get_mtv(self):
