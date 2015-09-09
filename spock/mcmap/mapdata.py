@@ -76,6 +76,7 @@ class MapBlock(object):
     display_name = 'Map Block'
     name = 'map_block'
     hardness = 0
+    slipperiness = 0.6
     stack_size = 64
     diggable = True
     material = None

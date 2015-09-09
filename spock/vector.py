@@ -91,6 +91,9 @@ class CartesianVector(BaseVector):
 
     # Utilities
 
+    def zero(self):
+        self.vector = [0 for a in self]
+
     def ifloor(self):
         self.vector = [int(math.floor(a)) for a in self]
         return self
@@ -123,6 +126,9 @@ class CartesianVector(BaseVector):
     __nonzero__ = __bool__
 
     # Comparisons
+
+    def __hash__(self):
+        return hash(tuple(self.vector))
 
     def __lt__(self, other):
         return self.dist_sq() < other.dist_sq()
@@ -186,7 +192,10 @@ class Vector3(CartesianVector):
         """
         Calculate the yaw and pitch of this vector
         """
-        try:
+        if not self:
+            return YawPitch(0, 0)
+        ground_distance = math.sqrt(self.x ** 2 + self.z ** 2)
+        if ground_distance:
             ground_distance = math.sqrt(self.x ** 2 + self.z ** 2)
             alpha1 = -math.asin(self.x / ground_distance) / math.pi * 180
             alpha2 = math.acos(self.z / ground_distance) / math.pi * 180
@@ -195,9 +204,15 @@ class Vector3(CartesianVector):
             else:
                 yaw = alpha1
             pitch = math.atan2(-self.y, ground_distance) / math.pi * 180
-        except ZeroDivisionError:
+        else:
             yaw = 0
-            pitch = 0
+            y = round(self.y)
+            if y > 0:
+                pitch = -90
+            elif y < 0:
+                pitch = 90
+            else:
+                pitch = 0
         return YawPitch(yaw, pitch)
 
     def set_dict(self, data):

@@ -100,7 +100,7 @@ class EntityPlugin(PluginBase):
         'PLAY<Spawn Experience Orb': 'handle_spawn_experience_orb',
         'PLAY<Destroy Entities': 'handle_destroy_entities',
         'PLAY<Entity Equipment': 'handle_unhandled',
-        'PLAY<Entity Velocity': 'handle_set_dict',
+        'PLAY<Entity Velocity': 'handle_velocity',
         'PLAY<Entity Relative Move': 'handle_relative_move',
         'PLAY<Entity Look': 'handle_set_dict',
         'PLAY<Entity Look and Relative Move': 'handle_relative_move',
@@ -201,6 +201,12 @@ class EntityPlugin(PluginBase):
             entity.z = entity.z + packet.data['dz']
             self.event.emit('entity_move',
                             {'entity': entity, 'old_pos': old_pos})
+
+    def handle_velocity(self, event, packet):
+        if packet.data['eid'] in self.ec.entities:
+            self.ec.entities[packet.data['eid']].set_dict(packet.data)
+        if packet.data['eid'] == self.ec.client_player.eid:
+            self.event.emit('player_velocity', packet.data)
 
     def handle_set_dict(self, event, packet):
         if packet.data['eid'] in self.ec.entities:
