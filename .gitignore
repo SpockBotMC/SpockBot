@@ -17,3 +17,5 @@ xunit-*.xml
 /tags
 packetlog
 /htmlcov/
+_build
+_templates

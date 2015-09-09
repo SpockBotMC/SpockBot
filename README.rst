@@ -60,12 +60,10 @@ Also see `Some Useful
 Examples <https://github.com/SpockBotMC/SpockBot-Extra/tree/master/examples>`__
 for additional examples contributed by the community.
 
-API Docs
---------
+Documentation
+-------------
 
-NOTE: These docs are ridiculously out of date
-
-Current API docs live here https://spockbotmc.github.io/docs/spock/
+Current docs live here https://spockbot.readthedocs.org
 
 Support
 -------
@@ -76,7 +74,7 @@ Support
 Contributing
 ------------
 
-Instructions for contributing to SpockBot can be found in `CONTRIBUTING <CONTRIBUTING.md>`__
+Instructions for contributing to SpockBot can be found in `CONTRIBUTING <CONTRIBUTING.rst>`__
 
 Credits
 -------
