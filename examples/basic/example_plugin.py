@@ -91,10 +91,8 @@ class ExamplePlugin(PluginBase):
             self.clientinfo.position.yaw))
 
         # Place a block in front of the player
-        newpos = self.clientinfo.position
-        newpos.x -= 1
-        newpos.y -= 1
-        self.interact.place_block(newpos)
+        self.interact.place_block(self.clientinfo.position
+                                  + Vector3(-1, -1, 0))
 
         # Read a block under the player
         block_pos = self.clientinfo.position
