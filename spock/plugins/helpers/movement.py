@@ -25,7 +25,7 @@ class MovementCore(object):
 
 @pl_announce('Movement')
 class MovementPlugin(PluginBase):
-    requires = ('Net', 'Physics', 'ClientInfo')
+    requires = ('Net', 'Physics', 'ClientInfo', 'Event')
     events = {
         'client_tick': 'client_tick',
         'action_tick': 'action_tick',
@@ -36,15 +36,19 @@ class MovementPlugin(PluginBase):
     def __init__(self, ploader, settings):
         super(MovementPlugin, self).__init__(ploader, settings)
 
+        self.flag_pos_reset = False
         self.movement = MovementCore()
         ploader.provides('Movement', self.movement)
 
     def client_tick(self, name, data):
-        self.net.push_packet('PLAY>Player Position',
+        self.net.push_packet('PLAY>Player Position and Look',
                              self.clientinfo.position.get_dict())
+        if self.flag_pos_reset:
+            self.event.emit('position_reset')
+            self.flag_pos_reset = False
 
     def handle_position_update(self, name, data):
-        self.net.push_packet('PLAY>Player Position and Look', data.get_dict())
+        self.flag_pos_reset = True
 
     def handle_collision(self, name, data):
         if self.movement.move_location is not None:

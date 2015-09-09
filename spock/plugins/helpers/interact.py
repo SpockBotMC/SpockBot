@@ -82,11 +82,6 @@ class InteractPlugin(PluginBase):
         """
         self.clientinfo.position.pitch = pitch
         self.clientinfo.position.yaw = yaw
-        self.net.push_packet('PLAY>Player Look', {
-            'yaw': int(yaw),
-            'pitch': int(pitch),
-            'on_ground': self.clientinfo.position.on_ground
-        })
 
     def look_rel(self, d_yaw=0.0, d_pitch=0.0):
         self.look(self.clientinfo.position.yaw + d_yaw,
@@ -99,6 +94,16 @@ class InteractPlugin(PluginBase):
         delta = pos - self.clientinfo.position
         delta.y -= constants.PLAYER_HEIGHT
         self.look_at_rel(delta)
+
+    def smart_look_at(self, pos):
+        delta = pos - self.clientinfo.position
+        delta.y -= constants.PLAYER_HEIGHT
+        yaw_pitch = delta.yaw_pitch
+        if yaw_pitch.pitch in (-90, 0, 90) and yaw_pitch.yaw == 0:
+            yaw = self.clientinfo.position.yaw
+        else:
+            yaw = yaw_pitch.yaw
+        self.look(yaw, yaw_pitch.pitch)
 
     def _send_dig_block(self, status, pos=None, face=constants.FACE_Y_POS):
         if status == constants.DIG_START:

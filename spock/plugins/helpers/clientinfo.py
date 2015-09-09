@@ -5,6 +5,7 @@ Plugins subscribing to ClientInfo's events don't have to independently
 track this information on their own.
 """
 
+from spock.mcdata import constants
 from spock.mcp import mcdata
 from spock.mcp.mcdata import (
     FLG_XPOS_REL, FLG_XROT_REL, FLG_YPOS_REL, FLG_YROT_REL, FLG_ZPOS_REL,
@@ -29,8 +30,8 @@ class Abilities(Info):
         self.fly = False
         self.flying = False
         self.creative = False
-        self.flying_speed = 0
-        self.walking_speed = 0
+        self.flying_speed = constants.PHY_FLY_ACC
+        self.walking_speed = constants.PHY_WLK_ACC
 
 
 class PlayerHealth(Info):
@@ -177,7 +178,6 @@ class ClientInfoPlugin(PluginBase):
 
     # Player Abilities
     def handle_player_abilities(self, name, packet):
-        # TODO: flag stuff here
         self.client_info.abilities.flying_speed = packet.data['flying_speed']
         self.client_info.abilities.walking_speed = packet.data['walking_speed']
 

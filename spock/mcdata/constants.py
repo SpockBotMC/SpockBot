@@ -8,32 +8,30 @@ Some of them can later be extracted from minecraft-data
 ###########
 
 CLIENT_TICK_RATE = 0.05
-PLAYER_HEIGHT = 1.74
+PLAYER_HEIGHT = 1.80
+PLAYER_WIDTH = 0.6
 
-# Gravitational constants defined in blocks/(client tick)^2
-PLAYER_ENTITY_GAV = 0.08
-THROWN_ENTITY_GAV = 0.03
-RIDING_ENTITY_GAV = 0.04
-BLOCK_ENTITY_GAV = 0.04
-ARROW_ENTITY_GAV = 0.05
+# These values are strictly for player and maybe mob physics, different types
+# of entities have different drag coefficients and gravitational accelerations
+# Someone who isn't nickelpro can go do all the other possible values if they
+# want
 
-# Air drag constants defined in 1/tick
-PLAYER_ENTITY_DRG = 0.02
-THROWN_ENTITY_DRG = 0.01
-RIDING_ENTITY_DRG = 0.05
-BLOCK_ENTITY_DRG = 0.02
-ARROW_ENTITY_DRG = 0.01
+PHY_GAV_ACC = 0.08
+PHY_WLK_ACC = 0.10
+PHY_FLY_ACC = 0.05
+PHY_JMP_ACC = 0.02
 
-# Player ground acceleration isn't actually linear, but we're going to pretend
-# that it is. Max ground velocity for a walking client is 0.215blocks/tick, it
-# takes a dozen or so ticks to get close to max velocity. Sprint is 0.28, just
-# apply more acceleration to reach a higher max ground velocity
-PLAYER_WLK_ACC = 0.15
-PLAYER_SPR_ACC = 0.20
-PLAYER_GND_DRG = 0.41
+PHY_JMP_ABS = 0.42
 
-# Seems about right, not based on anything
-PLAYER_JMP_ACC = 0.45
+PHY_SOULSAND = 0.40
+PHY_BASE_DRG = 0.98
+
+PHY_DRG_MUL = 0.91
+PHY_SPR_MUL = 1.30
+PHY_JMP_MUL = 0.2
+
+# Slipperiness value for normal materials
+BASE_GND_SLIP = 0.6
 
 ############
 # INTERACT #

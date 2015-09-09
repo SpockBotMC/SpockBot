@@ -964,7 +964,7 @@ packet_structs = {
             0x46: (
                 (MC_VARINT, 'threshold'),
             ),
-            # Play List Header/Footer
+            # Player List Header/Footer
             0x47: (
                 (MC_CHAT, 'header'),
                 (MC_CHAT, 'footer'),
