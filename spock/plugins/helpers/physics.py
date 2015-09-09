@@ -28,20 +28,26 @@ FP_MAGIC = 1e-4
 class PhysicsCore(object):
     def __init__(self, pos, vec, abilities):
         self.pos = pos
-        self.direction = Vector3()
+        self.vec = vec
+        self.sprinting = False
         self.move_accel = abilities.walking_speed
         self.abilities = abilities
+        self.direction = Vector3()
 
     def jump(self):
         if self.pos.on_ground:
-            hoz_norm = Vector3(self.vec.x, 0, self.vec.z).norm()
-            self.vec += hoz_norm * const.PHY_JMP_MUL
+            if self.sprinting:
+                ground_speed = Vector3(self.vec.x, 0, self.vec.z)
+                if ground_speed:
+                    self.vec += ground_speed.norm() * const.PHY_JMP_MUL
             self.vec.y = const.PHY_JMP_ABS
 
     def walk(self):
+        self.sprinting = False
         self.move_accel = self.abilities.walking_speed
 
     def sprint(self):
+        self.sprinting = True
         self.move_accel = self.abilities.walking_speed * const.PHY_SPR_MUL
 
     def move_target(self, vector):
@@ -87,7 +93,8 @@ class PhysicsPlugin(PluginBase):
     def tick(self, _, __):
         if self.pause_physics:
             return self.pause_physics
-        self.vec *= const.PHY_BASE_DRG
+        self.vec.x *= const.PHY_BASE_DRG
+        self.vec.z *= const.PHY_BASE_DRG
         self.apply_accel()
         mtv = self.get_mtv()
         self.apply_vector(mtv)
