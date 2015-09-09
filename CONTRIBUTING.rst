@@ -1,4 +1,4 @@
-Fork, Clone, Setup
+Fork, Clone
 ------------------
 
 Fork the SpockBot repository, then clone your fork locally.
@@ -19,7 +19,7 @@ Install development dependencies
 
 ::
 
-    $ pip install -r dev-requirements.txt
+    $ pip3 install -r dev-requirements.txt
 
 Install extra test interpreters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -29,7 +29,7 @@ versions of python.
 
 ::
 
-    $ sudo apt-get install python27 python33 python34
+    $ sudo apt-get install python2.7 python3.3 python3.4
 
 Development
 -----------
