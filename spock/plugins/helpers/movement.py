@@ -65,25 +65,5 @@ class MovementPlugin(PluginBase):
                     and move.move_location.z == math.floor(clinfo.position.z):
                 move.move_location = None
             else:
-                dx = move.move_location.x - clinfo.position.x
-                dz = move.move_location.z - clinfo.position.z
-                deg = 0
-                if abs(dx) >= abs(dz):
-                    # we should go along x
-                    if dx > 0:
-                        # go positive x
-                        deg = 90
-                    else:
-                        # go neg x
-                        deg = 270
-
-                elif abs(dx) < abs(dz):
-                    # we should go along z
-                    if dz > 0:
-                        # go positive z
-                        deg = 0
-                    else:
-                        # go neg z
-                        deg = 180
-
-                self.physics.walk(deg)
+                self.physics.move_target(move.move_location)
+                self.physics.walk()
