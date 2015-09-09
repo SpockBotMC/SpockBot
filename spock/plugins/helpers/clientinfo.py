@@ -5,8 +5,8 @@ Plugins subscribing to ClientInfo's events don't have to independently
 track this information on their own.
 """
 
-from spock.mcp import mcdata
 from spock.mcdata import constants
+from spock.mcp import mcdata
 from spock.mcp.mcdata import (
     FLG_XPOS_REL, FLG_XROT_REL, FLG_YPOS_REL, FLG_YROT_REL, FLG_ZPOS_REL,
     GS_GAMEMODE

@@ -4,7 +4,7 @@ A Physics module built from clean-rooming the Notchian Minecraft client
 Collision detection and resolution is done by a Separating Axis Theorem
 implementation for concave shapes decomposed into Axis-Aligned Bounding Boxes.
 This isn't totally equivalent to vanilla behavior, but it's faster and
-Close Enough™
+Close Enough^TM
 
 AKA this file does Minecraft physics
 """
@@ -14,8 +14,8 @@ import logging
 import math
 
 from spock.mcdata import constants as const
-from spock.plugins.tools import physics_tools
 from spock.mcmap import mapdata
+from spock.plugins.tools import physics_tools
 from spock.plugins.base import PluginBase
 from spock.utils import BoundingBox, pl_announce
 from spock.vector import Vector3
@@ -55,6 +55,7 @@ class PhysicsCore(object):
     def move_angle(self, angle, radians=False):
         angle = angle if radians else math.radians(angle)
         self.direction = Vector3(math.sin(angle), 0, math.cos(angle))
+
 
 @pl_announce('Physics')
 class PhysicsPlugin(PluginBase):

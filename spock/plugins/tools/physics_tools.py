@@ -1,10 +1,10 @@
 from spock.mcmap import mapdata
 from spock.vector import Vector3
-from spock.mcdata import constants as const
 
 UNIT_VECTORS = Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)
 
-def gen_block_set(block_pos, xr=(-1, 2), yr=(0, 3), zr=(-1,2)):
+
+def gen_block_set(block_pos, xr=(-1, 2), yr=(0, 3), zr=(-1, 2)):
     offsets = (
         (x, y, z)
         for x in range(*xr) for y in range(*yr) for z in range(*zr)
