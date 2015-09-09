@@ -16,6 +16,8 @@ check-manifest
 
 # Build documentation
 sphinx
+sphinx_rtd_theme
+sphinxcontrib-spelling
 
 # To make wheel packages
 wheel
