@@ -18,7 +18,7 @@ __author__ = 'Cosmo Harrigan'
 from example_plugin import ExamplePlugin
 
 from spock import Client
-from spock.plugins import DefaultPlugins
+from spock.plugins import default_plugins
 
 # Set the following values:
 USERNAME = ''
@@ -37,7 +37,7 @@ settings = {
 # from a plugin. You can define new plugins that listen for arbitrary events
 # from the game. Furthermore, events can even be periodic timers that trigger a
 # method.
-plugins = DefaultPlugins
+plugins = default_plugins
 plugins.append(('example', ExamplePlugin))
 
 # Instantiate and start the client, which will then run and wait for events to

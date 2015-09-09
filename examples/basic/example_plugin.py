@@ -4,100 +4,103 @@ An example plugin for Spock
 Demonstrates the following functionality:
 - Receiving chat messages
 - Sending chat commands
+- Using inventory
+- Moving to location
 - Triggering a periodic event using a timer
 - Registering for an event upon startup
-- Changing bot position and orientation
 - Placing blocks
 - Reading blocks
 """
 
-__author__ = 'Cosmo Harrigan'
+__author__ = 'Cosmo Harrigan, Morgan Creekmore'
 
-# The bot will teleport to this starting position. Set it to a sensible
-# location for your world file. The format is: (x, y, z, y-rot, x-rot)
-START_COORDINATES = (10, 2, 10, 0, 0)
 
-import random
+import logging
 
 # Import any modules that you need in your plugin
 from spock.mcmap import mapdata
-from spock.mcp.mcpacket import Packet
+from spock.plugins.base import PluginBase
+from spock.utils import pl_announce
+from spock.vector import Vector3
 
 # Required import
-from spock.utils import pl_announce
+
+logger = logging.getLogger('spock')
+
+# The bot will walk to this starting position. Set it to a sensible
+# location for your world file. The format is: (x, y, z)
+TARGET_COORDINATES = Vector3(10, 2, 10)
 
 
 # Required class decorator
 @pl_announce('ExamplePlugin')
-class ExamplePlugin:
-    def __init__(self, ploader, settings):
-        # Load anything that you will use later in the plugin
-        # Here are some examples of what you can load:
-        self.entities = ploader.requires('Entities')
-        self.movement = ploader.requires('Movement')
-        self.timers = ploader.requires('Timers')
-        self.world = ploader.requires('World')
-        self.net = ploader.requires('Net')
-        self.clinfo = ploader.requires('ClientInfo')
-
-        # Example of registering an event handler
-        # Event types are enumerated here:
-        #  https://github.com/SpockBotMC/SpockBot/blob/master/spock/mcp
-        # /mcdata.py#L213
-        ploader.reg_event_handler('PLAY<Chat Message', self.chat_event_handler)
-
+class ExamplePlugin(PluginBase):
+    # Require other plugins that you want use later in the plugin
+    requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',
+                'Interact')
+    # Example of registering an event handler
+    # Event types are enumerated here:
+    #  https://github.com/SpockBotMC/SpockBot/blob/master/spock/mcp
+    # /mcdata.py#L213
+    events = {
+        # This event will be triggered when a chat message is received
+        # from the server
+        'PLAY<Chat Message': 'chat_event_handler',
         # This event will be triggered after authentication when the bot
         # joins the game
-        ploader.reg_event_handler("cl_join_game", self.perform_initial_actions)
+        'cl_join_game': 'perform_initial_actions',
+    }
+
+    def __init__(self, ploader, settings):
+        # Used to init the PluginBase
+        super(ExamplePlugin, self).__init__(ploader, settings)
 
         # Example of registering a timer that triggers a method periodically
         frequency = 5  # Number of seconds between triggers
         self.timers.reg_event_timer(frequency, self.periodic_event_handler)
 
     def perform_initial_actions(self, name, data):
-        """Teleports the bot to a particular position to start and places a
-        block and sends a chat message."""
-        # Set position and orientation
-        (self.clinfo.position.x,
-         self.clinfo.position.y,
-         self.clinfo.position.z,
-         self.clinfo.position.pitch,
-         self.clinfo.position.yaw) = START_COORDINATES
+        """Sends a chat message, then moves to target coordinates."""
 
         # Send a chat message
-        self.emit_chat_message(msg='Bot active.')
+        self.interact.chat('Bot active')
+
+        # Walk to target coordinates
+        self.movement.move_location = TARGET_COORDINATES
 
     def chat_event_handler(self, name, data):
         """Called when a chat message occurs in the game"""
-        print('Chat message received: {0}'.format(data))
+        logger.info('Chat message received: {0}'.format(data))
 
     def periodic_event_handler(self):
         """Triggered every 5 seconds by a timer"""
-        print('My position: {0} pitch: {1} yaw: {2}'.format(
-            self.clinfo.position,
-            self.clinfo.position.pitch,
-            self.clinfo.position.yaw))
 
-        # Rotates the bot by 1 degree
-        self.clinfo.position.yaw = (self.clinfo.position.yaw + 1) % 360
+        # Search the hotbar for cobblestone
+        slot = self.inventory.find_slot(4, self.inventory.window.hotbar_slots)
+        logger.info(slot)
+        # Switch to slot with cobblestone
+        if slot is not None:
+            self.inventory.select_active_slot(slot)
+        # Switch to first slot because there is no cobblestone in hotbar
+        else:
+            self.inventory.select_active_slot(0)
 
-        # Read a block
-        x, y, z = 5, 5, 5
-        block_id, meta = self.world.get_block(x, y, z)
-        block_placed = mapdata.get_block(block_id, meta)
-        print('Before changing the block, the type had id %d and name %s.' %
-              (block_id, block_placed.name))
+        logger.info('My position: {0} pitch: {1} yaw: {2}'.format(
+            self.clientinfo.position,
+            self.clientinfo.position.pitch,
+            self.clientinfo.position.yaw))
 
-        # Place a block (choosing the type randomly from a list of types)
-        self.place_block(x, y, z, random.choice(
-            ['waterlily', 'red_mushroom', 'brown_mushroom']))
+        # Place a block in front of the player
+        newpos = self.clientinfo.position
+        newpos.x -= 1
+        newpos.y -= 1
+        self.interact.place_block(newpos)
 
-    def emit_chat_message(self, msg):
-        """Helper method that sends chat messages or chat commands"""
-        self.net.push(Packet(ident='PLAY>Chat Message', data={'message': msg}))
-
-    def place_block(self, x, y, z, block_type):
-        """Helper method that places a block by using the 'setblock' chat
-        command"""
-        self.emit_chat_message(
-            '/setblock {0} {1} {2} {3}'.format(x, y, z, block_type))
+        # Read a block under the player
+        block_pos = self.clientinfo.position
+        block_id, meta = self.world.get_block(block_pos.x,
+                                              block_pos.y,
+                                              block_pos.z)
+        block_at = mapdata.get_block(block_id, meta)
+        self.interact.chat('Found block %s at %s' % (block_at.display_name,
+                                                     block_pos))
