@@ -97,14 +97,10 @@ class InteractPluginTest(TestCase):
         self.plug.look(123.4, -42.2)
         self.assertEqual(ClientInfoMock.position.yaw, 123.4)
         self.assertEqual(ClientInfoMock.position.pitch, -42.2)
-        self.assertEqual(NetMock.datas[-1].yaw, 123)
-        self.assertEqual(NetMock.datas[-1].pitch, -42)
 
         self.plug.look_rel(1.4, 2.1)
         self.assertAlmostEqual(ClientInfoMock.position.yaw, 124.8)
         self.assertAlmostEqual(ClientInfoMock.position.pitch, -40.1)
-        self.assertEqual(NetMock.datas[-1].yaw, 124)
-        self.assertEqual(NetMock.datas[-1].pitch, -40)
 
         self.plug.look_at_rel(Vector3(1, 0, 0))
         self.assertAlmostEqual(ClientInfoMock.position.yaw, -90)
