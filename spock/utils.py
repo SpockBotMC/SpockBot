@@ -7,11 +7,6 @@ import re
 
 from spock.vector import Vector3
 
-try:
-    string_types = unicode
-except NameError:
-    string_types = str
-
 
 class Info(object):
     def set_dict(self, data):
