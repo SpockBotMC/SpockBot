@@ -1,5 +1,5 @@
 Fork, Clone
-------------------
+-----------
 
 Fork the SpockBot repository, then clone your fork locally.
 
