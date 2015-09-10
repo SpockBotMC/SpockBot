@@ -18,7 +18,7 @@ helper_plugins = [
     ('interact', interact.InteractPlugin),
     ('inventory', inventory.InventoryPlugin),
     ('keepalive', keepalive.KeepalivePlugin),
-    ('move', movement.MovementPlugin),
+    ('movement', movement.MovementPlugin),
     ('physics', physics.PhysicsPlugin),
     ('respawn', respawn.RespawnPlugin),
     ('start', start.StartPlugin),
