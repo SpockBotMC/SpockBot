@@ -1,8 +1,6 @@
 from __future__ import unicode_literals
+
 import logging
-import operator
-import os
-import six
 
 try:
     import simplejson as json
@@ -114,6 +112,7 @@ class YggdrasilCore(object):
         self.access_token = ''
         self.available_profiles = []
         self.selected_profile = {}
+        return True
 
     def invalidate(self):
         """

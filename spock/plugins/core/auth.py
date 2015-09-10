@@ -4,8 +4,17 @@ Provides authorization functions for Mojang's login and session servers
 
 import hashlib
 import json
-# This is for python2 compatibility
-from spock.mcp.yggdrasil import SessionCore, YggdrasilCore
+import logging
+import os
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+
+from cryptography.hazmat.primitives.asymmetric import padding
+
+from spock.mcp.yggdrasil import YggdrasilCore
+from spock.plugins.base import PluginBase
+from spock.utils import pl_announce
 
 try:
     import urllib.request as request
@@ -13,14 +22,6 @@ try:
 except ImportError:
     import urllib2 as request
     from urllib2 import URLError
-import logging
-
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import padding
-
-from spock.plugins.base import PluginBase
-from spock.utils import pl_announce
 
 logger = logging.getLogger('spock')
 backend = default_backend()
@@ -98,7 +99,7 @@ class AuthPlugin(PluginBase):
     def handle_encryption_request(self, name, packet):
         pubkey_raw = packet.data['public_key']
         if self.online_mode:
-            self.send_request_online()
+            self.send_request_online(packet)
         logger.warning("Server in offline mode can't request encryption")
         pubkey = serialization.load_der_public_key(pubkey_raw, backend)
         encrypt = lambda data: pubkey.encrypt(data, padding.PKCS1v15())
@@ -111,7 +112,8 @@ class AuthPlugin(PluginBase):
         )
         self.net.enable_crypto(self.shared_secret)
 
-    def send_request_online(self):
+    def send_request_online(self, packet):
+        pubkey_raw = packet.data['public_key']
         server_id = java_hex_digest(hashlib.sha1(
             packet.data['server_id'].encode('ascii')
             + self.shared_secret
