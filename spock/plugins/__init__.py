@@ -25,4 +25,3 @@ helper_plugins = [
     ('world', world.WorldPlugin),
 ]
 default_plugins = core_plugins + helper_plugins
-DefaultPlugins = default_plugins  # for compatibility

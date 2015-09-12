@@ -1,4 +1,4 @@
-from spock.plugins import DefaultPlugins
+from spock.plugins import default_plugins
 from spock.utils import get_settings, pl_announce
 
 
@@ -18,7 +18,7 @@ class PloaderFetch(object):
 class SettingsPlugin(object):
     def __init__(self, ploader, kwargs):
         settings = get_settings(kwargs.get('settings', {}), kwargs)
-        plugin_list = settings.get('plugins', DefaultPlugins)
+        plugin_list = settings.get('plugins', default_plugins)
         plugins = []
         plugin_settings = {}
         for plugin in plugin_list:
