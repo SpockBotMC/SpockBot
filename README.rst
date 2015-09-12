@@ -25,7 +25,7 @@ Absolutely none of this is documented so if you're uncomfortable reading
 source code this might not be the framework for you. Or, better yet, hop
 on IRC and help us write some docs!
 
-Spock officially supports Python 3.x and Python 2.7.x on \*nix operating
+SpockBot officially supports Python 3.x and Python 2.7.x on \*nix operating
 systems and requires cryptography_. It also runs on Windows and under
 PyPy 2.6.x but that's not regularly tested and might break at any given
 moment. If you support one of those use cases and SpockBot breaks for you,
