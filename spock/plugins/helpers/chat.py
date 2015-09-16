@@ -1,4 +1,5 @@
 import logging
+
 from six import string_types
 
 from spock.plugins.base import PluginBase
@@ -15,8 +16,8 @@ try:
                 # cut off newline, split some.translation.id=format %s string
                 translation_id, format_str = line[:-1].split('=', 1)
                 translations[translation_id] = format_str
-except FileNotFoundError:  # TODO other py versions use different errors here
-    logger.warn('No en_US.lang found, cannot render chat messages')
+except:
+    logger.warn('en_US.lang not loaded, cannot translate chat messages')
 
 
 class ChatParseError(Exception):
