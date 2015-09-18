@@ -115,6 +115,6 @@ The NBT parser and the original protocol implementation came from other projects
 .. |Coverage Status| image:: https://coveralls.io/repos/SpockBotMC/SpockBot/badge.svg?branch=master&service=github
    :target: https://coveralls.io/github/SpockBotMC/SpockBot?branch=master
 .. |Docs Status| image:: https://readthedocs.org/projects/spockbot/badge/?version=latest
-   :target: https://readthedocs.org/projects/spockbot/?badge=latest
+   :target: http://spockbot.readthedocs.org/en/latest/?badge=latest
 .. _cryptography: https://cryptography.io/
 .. _minecraft_data: https://pypi.python.org/pypi/minecraft_data
