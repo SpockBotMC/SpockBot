@@ -30,6 +30,19 @@ def parse_with_1_extra(json_data):
     return str(''.join(json_data['with'][1]['extra']))
 
 
+class ChatCore(object):
+    def __init__(self, net):
+        self.net = net
+
+    def chat(self, message):
+        while message:
+            msg_part, message = message[:100], message[100:]
+            self.net.push_packet('PLAY>Chat Message', {'message': msg_part})
+
+    def whisper(self, player, message):
+        self.chat('/tell %s %s' % (player, message))
+
+
 @pl_announce('Chat')
 class ChatPlugin(PluginBase):
     """
@@ -44,8 +57,13 @@ class ChatPlugin(PluginBase):
     `uuid` contains dashes and is Null if not present.
     """
 
-    requires = 'Event'
+    requires = ('Event', 'Net')
     events = {'PLAY<Chat Message': 'handle_chat'}
+
+    def __init__(self, ploader, settings):
+        super(ChatPlugin, self).__init__(ploader, settings)
+        self.chatcore = ChatCore(self.net)
+        ploader.provides('Chat', self.chatcore)
 
     def handle_chat(self, evt, packet):
         position = packet.data['position']  # where is the text displayed?
