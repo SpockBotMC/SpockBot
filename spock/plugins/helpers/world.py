@@ -53,9 +53,9 @@ class WorldPlugin(PluginBase):
         self.event.emit('world_time_update', packet.data)
 
     # Join Game/Respawn - New Dimension
-    def handle_neworld_dimension(self, name, packet):
-        self.world.neworld_dimension(packet.data['dimension'])
-        self.event.emit('world_neworld_dimension', packet.data['dimension'])
+    def handle_new_dimension(self, name, packet):
+        self.world.new_dimension(packet.data['dimension'])
+        self.event.emit('world_new_dimension', packet.data['dimension'])
 
     # Chunk Data - Update World state
     def handle_chunk_data(self, name, packet):
