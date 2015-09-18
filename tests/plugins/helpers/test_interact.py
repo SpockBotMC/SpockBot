@@ -87,12 +87,6 @@ class InteractPluginTest(TestCase):
         self.plug.sprint(sprint=False)
         self.assertEqual(self.plug.sprinting, False)
 
-    def test_chat(self):
-        self.plug.chat('Hello')
-        self.assertEqual(NetMock.datas[-1].message, 'Hello')
-        self.plug.whisper('Guy', 'Hello')
-        self.assertEqual(NetMock.datas[-1].message, '/tell Guy Hello')
-
     def test_look(self):
         self.plug.look(123.4, -42.2)
         self.assertEqual(ClientInfoMock.position.yaw, 123.4)

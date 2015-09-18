@@ -1,7 +1,6 @@
 """
 Interact with the world:
 - swing the arm, sneak, sprint, jump with a horse, leave the bed
-- chat, whisper (private message)
 - look around
 - dig/place/use blocks
 - use the held (active) item
@@ -67,14 +66,6 @@ class InteractPlugin(PluginBase):
 
     def open_inventory(self):
         self._entity_action(constants.ENTITY_ACTION_OPEN_INVENTORY)
-
-    def chat(self, message):
-        while message:
-            msg_part, message = message[:100], message[100:]
-            self.net.push_packet('PLAY>Chat Message', {'message': msg_part})
-
-    def whisper(self, player, message):
-        self.chat('/tell %s %s' % (player, message))
 
     def look(self, yaw=0.0, pitch=0.0):
         """

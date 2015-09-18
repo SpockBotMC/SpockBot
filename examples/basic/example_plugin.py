@@ -37,7 +37,7 @@ TARGET_COORDINATES = Vector3(10, 2, 10)
 class ExamplePlugin(PluginBase):
     # Require other plugins that you want use later in the plugin
     requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',
-                'Interact')
+                'Interact', 'Chat')
     # Example of registering an event handler
     # Event types are enumerated here:
     #  https://github.com/SpockBotMC/SpockBot/blob/master/spock/mcp
@@ -63,7 +63,7 @@ class ExamplePlugin(PluginBase):
         """Sends a chat message, then moves to target coordinates."""
 
         # Send a chat message
-        self.interact.chat('Bot active')
+        self.chat.chat('Bot active')
 
         # Walk to target coordinates
         self.movement.move_location = TARGET_COORDINATES
