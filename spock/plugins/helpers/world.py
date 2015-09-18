@@ -21,7 +21,7 @@ class WorldData(smpmap.Dimension):
         self.age = data['world_age']
         self.time_of_day = data['time_of_day']
 
-    def neworld_dimension(self, dimension):
+    def new_dimension(self, dimension):
         super(WorldData, self).__init__(dimension)
 
     def reset(self):
