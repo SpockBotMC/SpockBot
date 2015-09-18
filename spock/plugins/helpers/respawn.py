@@ -13,7 +13,7 @@ logger = logging.getLogger('spock')
 class RespawnPlugin(PluginBase):
     requires = ('Net', 'ClientInfo')
     events = {
-        'cl_death': 'handle_death'
+        'client_death': 'handle_death'
     }
 
     # You be dead

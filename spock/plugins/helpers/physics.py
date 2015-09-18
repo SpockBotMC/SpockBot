@@ -68,7 +68,7 @@ class PhysicsPlugin(PluginBase):
     requires = ('Event', 'ClientInfo', 'World')
     events = {
         'physics_tick': 'tick',
-        'cl_position_update': 'stop_physics',
+        'client_position_update': 'stop_physics',
         'position_reset': 'start_physics',
     }
 

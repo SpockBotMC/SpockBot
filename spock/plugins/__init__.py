@@ -1,6 +1,6 @@
 from spock.plugins.core import auth, event, net, ticker, timer
-from spock.plugins.helpers import chat, clientinfo, entities, interact, \
-    inventory, keepalive, movement, physics, respawn, start, world
+from spock.plugins.helpers import clientinfo, entities, interact, inventory,\
+    keepalive, movement, physics, respawn, start, world
 
 from spock.plugins.base import PluginBase  # noqa
 
@@ -13,9 +13,8 @@ core_plugins = [
     ('timers', timer.TimerPlugin),
 ]
 helper_plugins = [
-    ('chat', chat.ChatPlugin),
     ('clientinfo', clientinfo.ClientInfoPlugin),
-    ('entities', entities.EntityPlugin),
+    ('entities', entities.EntitiesPlugin),
     ('interact', interact.InteractPlugin),
     ('inventory', inventory.InventoryPlugin),
     ('keepalive', keepalive.KeepalivePlugin),

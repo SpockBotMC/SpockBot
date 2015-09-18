@@ -29,9 +29,9 @@ class MovementPlugin(PluginBase):
     events = {
         'client_tick': 'client_tick',
         'action_tick': 'action_tick',
-        'cl_position_update': 'handle_position_update',
-        'phy_collision': 'handle_collision',
-        'cl_join_game': 'handle_join_game',
+        'client_position_update': 'handle_position_update',
+        'physics_collision': 'handle_collision',
+        'client_join_game': 'handle_join_game',
     }
 
     def __init__(self, ploader, settings):
@@ -48,7 +48,7 @@ class MovementPlugin(PluginBase):
         self.net.push_packet('PLAY>Player Position and Look',
                              self.clientinfo.position.get_dict())
         if self.flag_pos_reset:
-            self.event.emit('position_reset')
+            self.event.emit('movement_position_reset')
             self.flag_pos_reset = False
 
     def handle_join_game(self, name, data):

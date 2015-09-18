@@ -21,7 +21,7 @@ class WorldData(smpmap.Dimension):
         self.age = data['world_age']
         self.time_of_day = data['time_of_day']
 
-    def new_dimension(self, dimension):
+    def neworld_dimension(self, dimension):
         super(WorldData, self).__init__(dimension)
 
     def reset(self):
@@ -32,8 +32,8 @@ class WorldData(smpmap.Dimension):
 class WorldPlugin(PluginBase):
     requires = 'Event'
     events = {
-        'PLAY<Join Game': 'handle_new_dimension',
-        'PLAY<Respawn': 'handle_new_dimension',
+        'PLAY<Join Game': 'handle_neworld_dimension',
+        'PLAY<Respawn': 'handle_neworld_dimension',
         'PLAY<Time Update': 'handle_time_update',
         'PLAY<Chunk Data': 'handle_chunk_data',
         'PLAY<Multi Block Change': 'handle_multi_block_change',
@@ -50,12 +50,12 @@ class WorldPlugin(PluginBase):
     # Time Update - Update World Time
     def handle_time_update(self, name, packet):
         self.world.update_time(packet.data)
-        self.event.emit('w_time_update', packet.data)
+        self.event.emit('world_time_update', packet.data)
 
     # Join Game/Respawn - New Dimension
-    def handle_new_dimension(self, name, packet):
-        self.world.new_dimension(packet.data['dimension'])
-        self.event.emit('w_new_dimension', packet.data['dimension'])
+    def handle_neworld_dimension(self, name, packet):
+        self.world.neworld_dimension(packet.data['dimension'])
+        self.event.emit('world_neworld_dimension', packet.data['dimension'])
 
     # Chunk Data - Update World state
     def handle_chunk_data(self, name, packet):
@@ -70,7 +70,7 @@ class WorldPlugin(PluginBase):
             z = block['z'] + chunk_z
             y = block['y']
             self.world.set_block(x, y, z, data=block['block_data'])
-            self.event.emit('w_block_update', {
+            self.event.emit('world_block_update', {
                 'location': {
                     'x': x,
                     'y': y,
@@ -84,7 +84,7 @@ class WorldPlugin(PluginBase):
         p = packet.data['location']
         block_data = packet.data['block_data']
         self.world.set_block(p['x'], p['y'], p['z'], data=block_data)
-        self.event.emit('w_block_update', packet.data)
+        self.event.emit('world_block_update', packet.data)
 
     # Map Chunk Bulk - Update World state
     def handle_map_chunk_bulk(self, name, packet):
@@ -92,4 +92,4 @@ class WorldPlugin(PluginBase):
 
     def handle_disconnect(self, name, data):
         self.world.reset()
-        self.event.emit('w_world_reset')
+        self.event.emit('world_world_reset')

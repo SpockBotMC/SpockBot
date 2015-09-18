@@ -101,25 +101,25 @@ class ClientInfoPlugin(PluginBase):
     def handle_login_success(self, name, packet):
         self.client_info.uuid = packet.data['uuid']
         self.client_info.name = packet.data['username']
-        self.event.emit('cl_login_success')
+        self.event.emit('client_login_success')
 
     # Join Game - Update client state info
     def handle_join_game(self, name, packet):
         self.client_info.eid = packet.data['eid']
         self.client_info.game_info.set_dict(packet.data)
-        self.event.emit('cl_join_game', self.client_info.game_info)
+        self.event.emit('client_join_game', self.client_info.game_info)
 
     # Spawn Position - Update client Spawn Position state
     def handle_spawn_position(self, name, packet):
         self.client_info.spawn_position.set_dict(packet.data['location'])
-        self.event.emit('cl_spawn_update', self.client_info.spawn_position)
+        self.event.emit('client_spawn_update', self.client_info.spawn_position)
 
     # Update Health - Update client Health state
     def handle_update_health(self, name, packet):
         self.client_info.health.set_dict(packet.data)
-        self.event.emit('cl_health_update', self.client_info.health)
+        self.event.emit('client_health_update', self.client_info.health)
         if packet.data['health'] <= 0.0:
-            self.event.emit('cl_death', self.client_info.health)
+            self.event.emit('client_death', self.client_info.health)
 
     # Player Position and Look - Update client Position state
     def handle_position_update(self, name, packet):
@@ -131,7 +131,7 @@ class ClientInfoPlugin(PluginBase):
         p.z = p.z + d['z'] if f & FLG_ZPOS_REL else d['z']
         p.yaw = p.yaw + d['yaw'] if f & FLG_YROT_REL else d['yaw']
         p.pitch = p.pitch + d['pitch'] if f & FLG_XROT_REL else d['pitch']
-        self.event.emit('cl_position_update', self.client_info.position)
+        self.event.emit('client_position_update', self.client_info.position)
 
     # Player List Item - Update player list
     def handle_player_list(self, name, packet):
@@ -146,14 +146,14 @@ class ClientInfoPlugin(PluginBase):
                     del self.defered_pl[pl['uuid']]
                 self.client_info.player_list[pl['uuid']] = item
                 self.uuids[pl['uuid']] = item
-                self.event.emit('cl_add_player', item)
+                self.event.emit('client_add_player', item)
             elif act in [mcdata.PL_UPDATE_GAMEMODE,
                          mcdata.PL_UPDATE_LATENCY,
                          mcdata.PL_UPDATE_DISPLAY]:
                 if pl['uuid'] in self.uuids:
                     item = self.uuids[pl['uuid']]
                     item.set_dict(pl)
-                    self.event.emit('cl_update_player', item)
+                    self.event.emit('client_update_player', item)
                 # Sometime the server sends updates before it gives us the
                 # player. We store those in a list and apply them when
                 # ADD_PLAYER is sent
@@ -165,7 +165,7 @@ class ClientInfoPlugin(PluginBase):
                 item = self.uuids[pl['uuid']]
                 del self.client_info.player_list[pl['uuid']]
                 del self.uuids[pl['uuid']]
-                self.event.emit('cl_remove_player', item)
+                self.event.emit('client_remove_player', item)
 
     # Change Game State
     def handle_game_state(self, name, packet):
