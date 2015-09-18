@@ -32,8 +32,8 @@ class WorldData(smpmap.Dimension):
 class WorldPlugin(PluginBase):
     requires = 'Event'
     events = {
-        'PLAY<Join Game': 'handle_neworld_dimension',
-        'PLAY<Respawn': 'handle_neworld_dimension',
+        'PLAY<Join Game': 'handle_new_dimension',
+        'PLAY<Respawn': 'handle_new_dimension',
         'PLAY<Time Update': 'handle_time_update',
         'PLAY<Chunk Data': 'handle_chunk_data',
         'PLAY<Multi Block Change': 'handle_multi_block_change',
@@ -92,4 +92,4 @@ class WorldPlugin(PluginBase):
 
     def handle_disconnect(self, name, data):
         self.world.reset()
-        self.event.emit('world_world_reset')
+        self.event.emit('world_reset')
