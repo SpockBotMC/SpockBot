@@ -28,7 +28,7 @@ class InventoryAsync(object):
         action_id = self.inventory.click_slot(slot, *args, **kwargs)
         if not action_id:
             raise TaskFailed('Click slot failed: not clicked')
-        yield 'inv_click_response', check_action_id(action_id)
+        yield 'inventory_click_response', check_action_id(action_id)
         # TODO make sure window is not closed while clicking
 
         empty_cursor = old_cursor.is_empty
@@ -49,7 +49,7 @@ class InventoryAsync(object):
         action_id = self.inventory.drop_slot(slot, *args, **kwargs)
         if not action_id:
             raise TaskFailed('Drop slot failed: not clicked')
-        yield 'inv_click_response', check_action_id(action_id)
+        yield 'inventory_click_response', check_action_id(action_id)
 
         new_slot = self.inventory.window.slots[old_slot]
         if old_slot is not None and new_slot.amount > 0:
@@ -58,7 +58,7 @@ class InventoryAsync(object):
     def creative_set_slot(self, slot_nr=None, slot_dict=None, slot=None):
         self.inventory.creative_set_slot(slot_nr, slot_dict, slot)
         slot_nr = slot_nr if slot is None else slot.slot_nr
-        e, data = yield ('inv_set_slot',
+        e, data = yield ('inventory_set_slot',
                          lambda e, data: data['slot'].slot_nr == slot_nr)
         if False:  # TODO implement check, for now just assume it worked
             raise TaskFailed('Creative set slot failed: not set')

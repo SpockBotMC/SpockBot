@@ -149,28 +149,29 @@ class InventoryPlugin(PluginBase):
         self.is_synchronized = False
 
         # emit inv_open_window when the inventory is loaded
-        self.event.reg_event_handler('inv_ready', self.emit_open_window)
+        self.event.reg_event_handler('inventory_ready', self.emit_open_window)
 
     def emit_open_window(self, *_):
-        self.event.emit('inv_open_window', {'window': self.inventory.window})
+        self.event.emit('inventory_open_window',
+                        {'window': self.inventory.window})
         return True  # unregister this handler
 
     def handle_held_item_change(self, event, packet):
         self.inventory.active_slot_nr = packet.data['slot']
-        self.event.emit('inv_held_item_change', packet.data)
+        self.event.emit('inventory_held_item_change', packet.data)
 
     def handle_open_window(self, event, packet):
         inv_type = windows.inv_types[packet.data['inv_type']]
         self.inventory.window = inv_type(
             persistent_slots=self.inventory.window.slots, **packet.data)
         self.is_synchronized = False
-        self.event.reg_event_handler('inv_ready', self.emit_open_window)
+        self.event.reg_event_handler('inventory_ready', self.emit_open_window)
 
     def handle_close_window(self, event, packet):
         closed_window = self.inventory.window
         self.inventory.window = windows.PlayerWindow(
             persistent_slots=closed_window.slots)
-        self.event.emit('inv_close_window', {'window': closed_window})
+        self.event.emit('inventory_close_window', {'window': closed_window})
 
     def handle_set_slot(self, event, packet):
         data = packet.data
@@ -181,7 +182,7 @@ class InventoryPlugin(PluginBase):
                 and data['window_id'] == constants.INV_WINID_CURSOR:
             # all slots received, inventory state synchronized with server
             self.is_synchronized = True
-            self.event.emit('inv_ready', {})
+            self.event.emit('inventory_ready', {})
 
     def handle_window_items(self, event, packet):
         window_id = packet.data['window_id']
@@ -213,12 +214,12 @@ class InventoryPlugin(PluginBase):
         self.emit_set_slot(slot)
 
     def emit_set_slot(self, slot):
-        self.event.emit('inv_set_slot', {'slot': slot})
+        self.event.emit('inventory_set_slot', {'slot': slot})
 
     def handle_window_prop(self, event, packet):
         self.inventory.window.properties[packet.data['property']] = \
             packet.data['value']
-        self.event.emit('inv_win_prop', packet.data)
+        self.event.emit('inventory_win_prop', packet.data)
 
     def handle_confirm_transaction(self, event, packet):
         click = self.last_click
@@ -226,8 +227,8 @@ class InventoryPlugin(PluginBase):
         action_id = packet.data['action']
         accepted = packet.data['accepted']
 
-        def emit_response_event(*_):
-            self.event.emit('inv_click_response', {
+        def emit_click_response(*_):
+            self.event.emit('inventory_click_response', {
                 'action_id': action_id,
                 'accepted': accepted,
                 'click': click,
@@ -239,14 +240,15 @@ class InventoryPlugin(PluginBase):
             # never occured during testing update inventory, because 1.8
             # server does not send slot updates after successful clicks
             click.on_success(self.inventory, self.emit_set_slot)
-            emit_response_event()
+            emit_click_response()
         else:  # click not accepted
             self.is_synchronized = False
             # confirm that we received this packet
             packet.new_ident('PLAY>Confirm Transaction')
             self.net.push(packet)
             # 1.8 server will re-send all slots now
-            self.event.reg_event_handler('inv_ready', emit_response_event)
+            self.event.reg_event_handler('inventory_ready',
+                                         emit_click_response)
 
     def send_click(self, click):
         """
