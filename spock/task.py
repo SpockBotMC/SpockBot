@@ -10,6 +10,10 @@ def accept(evt, data):
     return True
 
 
+def check_key(key, value):
+    return lambda event, data: data[key] == value
+
+
 class RunTask(object):
     def __init__(self, task, reg_event_handler, parent=None):
         self.task = task
