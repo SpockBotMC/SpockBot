@@ -32,7 +32,7 @@ class RunTask(object):
             self.register(response)
 
     def on_success(self, data):
-        self.run(lambda: self.task.send(data))
+        self.run(lambda: self.task.send((None, data)))
 
     def on_error(self, exception):
         self.run(lambda: self.task.throw(exception))
