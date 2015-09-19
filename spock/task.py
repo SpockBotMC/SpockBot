@@ -44,34 +44,38 @@ class RunTask(object):
         return True  # remove this handler
 
     def register(self, response):
-        self.expected.clear()
         self.parse_response(response)
         for event, check in self.expected.items():
             self.reg_event_handler(event, self.handler)
 
     def parse_response(self, response):
+        # TODO what format do we want to use? also documentation
         # recursive check what the response is
         # generator: subtask
         # str: evt name
-        # iterable: check 1st elm
-        # - str: evt name + test func
-        # - other: recursive register
+        # iterable: check 2. element
+        # - str/generator: list of events, register recursively
+        # - other (func): evt name + test func
 
+        self.expected.clear()
         if isinstance(response, types.GeneratorType):  # subtask
             RunTask(response, self.reg_event_handler, parent=self)
         elif isinstance(response, str):  # event name
             self.expected[response] = accept
         elif hasattr(response, '__getitem__'):
-            if isinstance(response[0], str):  # event name + check function
+            if isinstance(response[1], (str, types.GeneratorType)) \
+                    or hasattr(response[1], '__getitem__'):
+                # recursive check
+                for sub_response in response:
+                    self.parse_response(sub_response)
+            else:  # event name + check function
                 # we should not split these tuples recursively, so catch them
                 event, check = response
                 self.expected[event] = check
-            else:  # recursive check
-                for sub_response in response:
-                    self.parse_response(sub_response)
         else:  # unexpected
-            raise ValueError(
-                'Illegal yield argument of type %s' % type(response))
+            self.expected.clear()
+            raise ValueError('Illegal task yield argument of type %s: %s'
+                             % type(response), response)
 
 
 class TaskCallback(object):
