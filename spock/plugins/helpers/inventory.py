@@ -87,6 +87,7 @@ class InventoryCore(object):
 
     def close_window(self):
         # TODO does server send close window, or should we close window now?
+        # for now, we just call handle_close_window() on 'PLAY>Close Window'
         self._net.push_packet('PLAY>Close Window',
                               {'window_id': self.window.window_id})
 
@@ -144,6 +145,16 @@ class InventoryPlugin(PluginBase):
         # stores the last click action for confirmation
         self.last_click = None
 
+        # to know when the inventory got synced with server
+        self.is_synchronized = False
+
+        # emit inv_open_window when the inventory is loaded
+        self.event.reg_event_handler('inv_ready', self.emit_open_window)
+
+    def emit_open_window(self, *_):
+        self.event.emit('inv_open_window', {'window': self.inventory.window})
+        return True  # unregister this handler
+
     def handle_held_item_change(self, event, packet):
         self.inventory.active_slot_nr = packet.data['slot']
         self.event.emit('inv_held_item_change', packet.data)
@@ -152,7 +163,8 @@ class InventoryPlugin(PluginBase):
         inv_type = windows.inv_types[packet.data['inv_type']]
         self.inventory.window = inv_type(
             persistent_slots=self.inventory.window.slots, **packet.data)
-        self.event.emit('inv_open_window', {'window': self.inventory.window})
+        self.is_synchronized = False
+        self.event.reg_event_handler('inv_ready', self.emit_open_window)
 
     def handle_close_window(self, event, packet):
         closed_window = self.inventory.window
@@ -161,8 +173,15 @@ class InventoryPlugin(PluginBase):
         self.event.emit('inv_close_window', {'window': closed_window})
 
     def handle_set_slot(self, event, packet):
-        self.set_slot(packet.data['window_id'], packet.data['slot'],
-                      packet.data['slot_data'])
+        data = packet.data
+        self.set_slot(data['window_id'], data['slot'], data['slot_data'])
+
+        if not self.is_synchronized \
+                and data['slot'] == constants.INV_SLOT_NR_CURSOR \
+                and data['window_id'] == constants.INV_WINID_CURSOR:
+            # all slots received, inventory state synchronized with server
+            self.is_synchronized = True
+            self.event.emit('inv_ready', {})
 
     def handle_window_items(self, event, packet):
         window_id = packet.data['window_id']
@@ -190,6 +209,7 @@ class InventoryPlugin(PluginBase):
             raise ValueError(
                 'Unexpected slot_nr (%i) or window ID (%i instead of %i)'
                 % (slot_nr, window_id, inv.window.window_id))
+
         self.emit_set_slot(slot)
 
     def emit_set_slot(self, slot):
@@ -201,16 +221,18 @@ class InventoryPlugin(PluginBase):
         self.event.emit('inv_win_prop', packet.data)
 
     def handle_confirm_transaction(self, event, packet):
-        click, self.last_click = self.last_click, None
+        click = self.last_click
+        self.last_click = None
         action_id = packet.data['action']
         accepted = packet.data['accepted']
 
-        def emit_response_event():
+        def emit_response_event(*_):
             self.event.emit('inv_click_response', {
                 'action_id': action_id,
                 'accepted': accepted,
                 'click': click,
             })
+            return True  # unregister this handler
 
         if accepted:
             # TODO check if the wrong window/action ID was confirmed,
@@ -219,12 +241,12 @@ class InventoryPlugin(PluginBase):
             click.on_success(self.inventory, self.emit_set_slot)
             emit_response_event()
         else:  # click not accepted
+            self.is_synchronized = False
             # confirm that we received this packet
             packet.new_ident('PLAY>Confirm Transaction')
             self.net.push(packet)
             # 1.8 server will re-send all slots now
-            # TODO are 2 ticks always enough? should wait for expected packets
-            self.timers.reg_tick_timer(2, emit_response_event, runs=1)
+            self.event.reg_event_handler('inv_ready', emit_response_event)
 
     def send_click(self, click):
         """
