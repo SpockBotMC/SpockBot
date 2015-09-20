@@ -2,11 +2,7 @@
 Asynchronous task wrappers for inventory
 """
 from spock.mcdata import constants
-from spock.task import TaskFailed
-
-
-def check_action_id(action_id):
-    return lambda event, data: data['action_id'] == action_id
+from spock.task import TaskFailed, check_key
 
 
 def unpack_slots_list(slots):
@@ -28,7 +24,7 @@ class InventoryAsync(object):
         action_id = self.inventory.click_slot(slot, *args, **kwargs)
         if not action_id:
             raise TaskFailed('Click slot failed: not clicked')
-        yield 'inventory_click_response', check_action_id(action_id)
+        yield 'inventory_click_response', check_key('action_id', action_id)
         # TODO make sure window is not closed while clicking
 
         empty_cursor = old_cursor.is_empty
@@ -49,7 +45,7 @@ class InventoryAsync(object):
         action_id = self.inventory.drop_slot(slot, *args, **kwargs)
         if not action_id:
             raise TaskFailed('Drop slot failed: not clicked')
-        yield 'inventory_click_response', check_action_id(action_id)
+        yield 'inventory_click_response', check_key('action_id', action_id)
 
         new_slot = self.inventory.window.slots[old_slot]
         if old_slot is not None and new_slot.amount > 0:
