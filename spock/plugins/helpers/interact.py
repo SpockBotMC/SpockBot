@@ -72,7 +72,10 @@ class InteractPlugin(PluginBase):
         Turn the head. Both angles are in degrees.
         """
         self.clientinfo.position.pitch = pitch
-        self.clientinfo.position.yaw = yaw
+        # do not turn the head if looking straight up/down
+        # TODO maybe this: if pitch not in (-90, 90) or (yaw, pitch) != (0, 0):
+        if pitch not in (-90, 90):
+            self.clientinfo.position.yaw = yaw
 
     def look_rel(self, d_yaw=0.0, d_pitch=0.0):
         self.look(self.clientinfo.position.yaw + d_yaw,
@@ -85,16 +88,6 @@ class InteractPlugin(PluginBase):
         delta = pos - self.clientinfo.position
         delta.y -= constants.PLAYER_HEIGHT
         self.look_at_rel(delta)
-
-    def smart_look_at(self, pos):
-        delta = pos - self.clientinfo.position
-        delta.y -= constants.PLAYER_HEIGHT
-        yaw_pitch = delta.yaw_pitch
-        if yaw_pitch.pitch in (-90, 0, 90) and yaw_pitch.yaw == 0:
-            yaw = self.clientinfo.position.yaw
-        else:
-            yaw = yaw_pitch.yaw
-        self.look(yaw, yaw_pitch.pitch)
 
     def _send_dig_block(self, status, pos=None, face=constants.FACE_Y_POS):
         if status == constants.DIG_START:
