@@ -89,7 +89,7 @@ class EntityCore(object):
 
 
 @pl_announce('Entities')
-class EntityPlugin(PluginBase):
+class EntitiesPlugin(PluginBase):
     requires = 'Event'
     events = {
         'PLAY<Join Game': 'handle_join_game',
@@ -116,7 +116,7 @@ class EntityPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(EntityPlugin, self).__init__(ploader, settings)
+        super(EntitiesPlugin, self).__init__(ploader, settings)
         self.ec = EntityCore()
         ploader.provides('Entities', self.ec)
 
@@ -134,7 +134,7 @@ class EntityPlugin(PluginBase):
         self.ec.entities[packet.data['eid']] = entity
         self.ec.players[packet.data['eid']] = entity
         self.event.emit('entity_spawn', {'entity': entity})
-        self.event.emit('player_spawn', entity)
+        self.event.emit('entity_player_spawn', entity)
 
     def handle_spawn_object(self, event, packet):
         entity = ObjectEntity()
@@ -149,7 +149,7 @@ class EntityPlugin(PluginBase):
         self.ec.entities[packet.data['eid']] = entity
         self.ec.mobs[packet.data['eid']] = entity
         self.event.emit('entity_spawn', {'entity': entity})
-        self.event.emit('mob_spawn', entity)
+        self.event.emit('entity_mob_spawn', entity)
 
     def handle_spawn_painting(self, event, packet):
         entity = PaintingEntity()
@@ -206,7 +206,7 @@ class EntityPlugin(PluginBase):
         if packet.data['eid'] in self.ec.entities:
             self.ec.entities[packet.data['eid']].set_dict(packet.data)
         if packet.data['eid'] == self.ec.client_player.eid:
-            self.event.emit('player_velocity', packet.data)
+            self.event.emit('entity_player_velocity', packet.data)
 
     def handle_set_dict(self, event, packet):
         if packet.data['eid'] in self.ec.entities:

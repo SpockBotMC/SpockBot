@@ -48,7 +48,7 @@ class ExamplePlugin(PluginBase):
         'PLAY<Chat Message': 'chat_event_handler',
         # This event will be triggered after authentication when the bot
         # joins the game
-        'cl_join_game': 'perform_initial_actions',
+        'client_join_game': 'perform_initial_actions',
     }
 
     def __init__(self, ploader, settings):

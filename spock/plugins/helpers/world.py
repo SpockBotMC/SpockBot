@@ -50,12 +50,12 @@ class WorldPlugin(PluginBase):
     # Time Update - Update World Time
     def handle_time_update(self, name, packet):
         self.world.update_time(packet.data)
-        self.event.emit('w_time_update', packet.data)
+        self.event.emit('world_time_update', packet.data)
 
     # Join Game/Respawn - New Dimension
     def handle_new_dimension(self, name, packet):
         self.world.new_dimension(packet.data['dimension'])
-        self.event.emit('w_new_dimension', packet.data['dimension'])
+        self.event.emit('world_new_dimension', packet.data['dimension'])
 
     # Chunk Data - Update World state
     def handle_chunk_data(self, name, packet):
@@ -70,7 +70,7 @@ class WorldPlugin(PluginBase):
             z = block['z'] + chunk_z
             y = block['y']
             self.world.set_block(x, y, z, data=block['block_data'])
-            self.event.emit('w_block_update', {
+            self.event.emit('world_block_update', {
                 'location': {
                     'x': x,
                     'y': y,
@@ -84,7 +84,7 @@ class WorldPlugin(PluginBase):
         p = packet.data['location']
         block_data = packet.data['block_data']
         self.world.set_block(p['x'], p['y'], p['z'], data=block_data)
-        self.event.emit('w_block_update', packet.data)
+        self.event.emit('world_block_update', packet.data)
 
     # Map Chunk Bulk - Update World state
     def handle_map_chunk_bulk(self, name, packet):
@@ -92,4 +92,4 @@ class WorldPlugin(PluginBase):
 
     def handle_disconnect(self, name, data):
         self.world.reset()
-        self.event.emit('w_world_reset')
+        self.event.emit('world_reset')
