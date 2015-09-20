@@ -10,12 +10,16 @@ logger = logging.getLogger('spock')
 
 translations = {}
 try:
-    with open('en_US.lang', 'r') as trf:
-        for line in trf:
+    with open('en_US.lang', 'r') as lang_file:
+        # the chat data comes in as strings, so we need to
+        # replace all %d, %i, %3$d etc. with %s
+        import re
+        pcts_only = re.compile('%([0-9]\$)?[a-z]')
+        for line in lang_file:
             if '=' in line:
                 # cut off newline, split some.translation.id=format %s string
                 translation_id, format_str = line[:-1].split('=', 1)
-                translations[translation_id] = format_str
+                translations[translation_id] = pcts_only.sub('%s', format_str)
 except:
     logger.warn('en_US.lang not loaded, cannot translate chat messages')
 
