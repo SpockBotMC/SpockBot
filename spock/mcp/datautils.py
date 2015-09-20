@@ -153,11 +153,12 @@ metadata_lookup = MC_BYTE, MC_SHORT, MC_INT, MC_FLOAT, MC_STRING, MC_SLOT
 
 
 def unpack_metadata(bbuff):
-    metadata = []
+    metadata = {}
     head = unpack(MC_UBYTE, bbuff)
     while head != 0x7F:
         key = head & 0x1F  # Lower 5 bits
         typ = head >> 5  # Upper 3 bits
+        assert key not in metadata, 'k=%s t=%s' % (key, typ)
         if 0 <= typ < len(metadata_lookup):
             val = unpack(metadata_lookup[typ], bbuff)
         elif typ == 6:
@@ -172,15 +173,14 @@ def unpack_metadata(bbuff):
             val = [pitch, yaw, roll]
         else:
             return None
-        metadata.append((key, (typ, val)))
+        metadata[key] = (typ, val)
         head = unpack(MC_UBYTE, bbuff)
     return metadata
 
 
 def pack_metadata(data):
     o = b''
-    for key, tmp in data:
-        typ, val = tmp
+    for key, (typ, val) in data.items():
         o += pack(MC_UBYTE, (typ << 5) | key)
         if 0 <= typ < len(metadata_lookup):
             o += pack(metadata_lookup[typ], val)

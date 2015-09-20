@@ -1,21 +1,14 @@
 """
 An entity tracker
 """
-import logging
-
 from spock.plugins.base import PluginBase
 from spock.utils import Info, pl_announce
-
-logger = logging.getLogger('spock')
 
 
 class MCEntity(Info):
     eid = 0
     status = 0
     nbt = None
-
-
-class ClientPlayerEntity(MCEntity):
     metadata = None
 
 
@@ -78,7 +71,7 @@ class GlobalEntity(MCEntity):
 
 class EntityCore(object):
     def __init__(self):
-        self.client_player = ClientPlayerEntity()
+        self.client_player = MCEntity()
         self.entities = {}
         self.players = {}
         self.mobs = {}
