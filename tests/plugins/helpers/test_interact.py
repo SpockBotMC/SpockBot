@@ -1,4 +1,3 @@
-from collections import namedtuple
 from unittest import TestCase
 
 from spock.mcdata.constants import \
@@ -6,9 +5,6 @@ from spock.mcdata.constants import \
 from spock.plugins.helpers.clientinfo import PlayerPosition
 from spock.plugins.helpers.interact import InteractPlugin
 from spock.vector import Vector3
-
-
-Packet = namedtuple('Packet', 'ident data')
 
 
 class DataDict(dict):
@@ -41,7 +37,6 @@ class NetMock(object):
         data_dict = DataDict(**data)
         self.idents.append(ident)
         self.datas.append(data_dict)
-        print(ident, data)
 
 
 class SlotMock(object):
