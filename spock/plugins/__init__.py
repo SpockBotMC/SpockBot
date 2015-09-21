@@ -1,6 +1,6 @@
 from spock.plugins.core import auth, event, net, ticker, timer
 from spock.plugins.helpers import chat, clientinfo, entities, interact, \
-    inventory, keepalive, movement, physics, respawn, start, world
+    inventory, keepalive, movement, physics, respawn, start, taskmanager, world
 from spock.plugins.base import PluginBase  # noqa
 
 
@@ -22,6 +22,7 @@ helper_plugins = [
     ('physics', physics.PhysicsPlugin),
     ('respawn', respawn.RespawnPlugin),
     ('start', start.StartPlugin),
+    ('taskmanager', taskmanager.TaskManager),
     ('world', world.WorldPlugin),
 ]
 default_plugins = core_plugins + helper_plugins
