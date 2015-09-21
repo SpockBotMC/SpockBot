@@ -60,5 +60,7 @@ class ChatPluginTest(TestCase):
     def test_chat(self):
         self.plug.chatcore.chat('Hello')
         self.assertEqual(NetMock.datas[-1].message, 'Hello')
+
+    def test_whisper(self):
         self.plug.chatcore.whisper('Guy', 'Hello')
         self.assertEqual(NetMock.datas[-1].message, '/tell Guy Hello')
