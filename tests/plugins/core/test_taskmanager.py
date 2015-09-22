@@ -1,7 +1,7 @@
 from collections import defaultdict
 from unittest import TestCase
 
-from spock.plugins.helpers.taskmanager import TaskManager
+from spock.plugins.core.taskmanager import TaskManager
 from spock.plugins.tools.task import Task
 
 
