@@ -6,13 +6,13 @@ from math import ceil
 from spock.mcdata.recipes import find_recipe, ingredient_positions, \
     total_ingredient_amounts
 from spock.plugins.base import PluginBase
-from spock.task import RunTask, TaskFailed
+from spock.plugins.tools.task import TaskFailed
 from spock.utils import pl_announce
 
 
 @pl_announce('Craft')
 class CraftPlugin(PluginBase):
-    requires = ('Event', 'Inventory')
+    requires = ('Inventory', 'TaskManager')
 
     def __init__(self, ploader, settings):
         super(CraftPlugin, self).__init__(ploader, settings)
@@ -28,8 +28,7 @@ class CraftPlugin(PluginBase):
         else:
             recipe = find_recipe(item, meta)
         if recipe:
-            RunTask(self.craft_task(recipe, amount),
-                    self.event.reg_event_handler, parent)
+            self.taskmanager.run_task(self.craft_task(recipe, amount), parent)
         return recipe
 
     def craft_task(self, recipe, amount=1):

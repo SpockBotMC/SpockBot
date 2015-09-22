@@ -2,7 +2,7 @@
 Asynchronous task wrappers for inventory
 """
 from spock.mcdata import constants
-from spock.task import TaskFailed, check_key
+from spock.plugins.tools.task import TaskFailed, check_key
 
 
 def unpack_slots_list(slots):
