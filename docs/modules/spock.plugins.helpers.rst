@@ -4,6 +4,14 @@ spock.plugins.helpers package
 Submodules
 ----------
 
+spock.plugins.helpers.chat module
+---------------------------------
+
+.. automodule:: spock.plugins.helpers.chat
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 spock.plugins.helpers.clientinfo module
 ---------------------------------------
 
@@ -52,10 +60,10 @@ spock.plugins.helpers.keepalive module
     :undoc-members:
     :show-inheritance:
 
-spock.plugins.helpers.move module
----------------------------------
+spock.plugins.helpers.movement module
+-------------------------------------
 
-.. automodule:: spock.plugins.helpers.move
+.. automodule:: spock.plugins.helpers.movement
     :members:
     :undoc-members:
     :show-inheritance:

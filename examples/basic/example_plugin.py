@@ -39,9 +39,10 @@ class ExamplePlugin(PluginBase):
     requires = ('Movement', 'Timers', 'World', 'ClientInfo', 'Inventory',
                 'Interact', 'Chat')
     # Example of registering an event handler
-    # Event types are enumerated here:
+    # Packet event types are enumerated here:
     #  https://github.com/SpockBotMC/SpockBot/blob/master/spock/mcp
     # /mcdata.py#L213
+    # There are other events that can be used that are emitted by other plugins
     events = {
         # This event will be triggered when a chat message is received
         # from the server
@@ -49,6 +50,9 @@ class ExamplePlugin(PluginBase):
         # This event will be triggered after authentication when the bot
         # joins the game
         'client_join_game': 'perform_initial_actions',
+        # This event is triggered once the inventory plugin has the
+        # full inventory
+        'inventory_synced': 'hold_block',
     }
 
     def __init__(self, ploader, settings):
@@ -72,9 +76,7 @@ class ExamplePlugin(PluginBase):
         """Called when a chat message occurs in the game"""
         logger.info('Chat message received: {0}'.format(data))
 
-    def periodic_event_handler(self):
-        """Triggered every 5 seconds by a timer"""
-
+    def hold_block(self, name, data):
         # Search the hotbar for cobblestone
         slot = self.inventory.find_slot(4, self.inventory.window.hotbar_slots)
         logger.info(slot)
@@ -84,6 +86,11 @@ class ExamplePlugin(PluginBase):
         # Switch to first slot because there is no cobblestone in hotbar
         else:
             self.inventory.select_active_slot(0)
+        # Return True to unregister the event handler
+        return True
+
+    def periodic_event_handler(self):
+        """Triggered every 5 seconds by a timer"""
 
         logger.info('My position: {0} pitch: {1} yaw: {2}'.format(
             self.clientinfo.position,

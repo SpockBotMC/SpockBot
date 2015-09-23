@@ -36,6 +36,14 @@ spock.plugins.core.settings module
     :undoc-members:
     :show-inheritance:
 
+spock.plugins.core.taskmanager module
+-------------------------------------
+
+.. automodule:: spock.plugins.core.taskmanager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 spock.plugins.core.ticker module
 --------------------------------
 
