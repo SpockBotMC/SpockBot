@@ -1,10 +1,6 @@
-from collections import namedtuple
 from unittest import TestCase
 
 from spock.plugins.helpers.chat import ChatCore, ChatPlugin
-
-
-Packet = namedtuple('Packet', 'ident data')
 
 
 class DataDict(dict):
@@ -42,7 +38,6 @@ class NetMock(object):
         data_dict = DataDict(**data)
         self.idents.append(ident)
         self.datas.append(data_dict)
-        print(ident, data)
 
 
 class EventMock(object):
@@ -60,5 +55,7 @@ class ChatPluginTest(TestCase):
     def test_chat(self):
         self.plug.chatcore.chat('Hello')
         self.assertEqual(NetMock.datas[-1].message, 'Hello')
+
+    def test_whisper(self):
         self.plug.chatcore.whisper('Guy', 'Hello')
         self.assertEqual(NetMock.datas[-1].message, '/tell Guy Hello')

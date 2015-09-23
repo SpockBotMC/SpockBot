@@ -1,4 +1,4 @@
-from spock.plugins.core import auth, event, net, ticker, timer
+from spock.plugins.core import auth, event, net, taskmanager, ticker, timer
 from spock.plugins.helpers import chat, clientinfo, entities, interact, \
     inventory, keepalive, movement, physics, respawn, start, world
 from spock.plugins.base import PluginBase  # noqa
@@ -8,6 +8,7 @@ core_plugins = [
     ('auth', auth.AuthPlugin),
     ('event', event.EventPlugin),
     ('net', net.NetPlugin),
+    ('taskmanager', taskmanager.TaskManager),
     ('ticker', ticker.TickerPlugin),
     ('timers', timer.TimerPlugin),
 ]
