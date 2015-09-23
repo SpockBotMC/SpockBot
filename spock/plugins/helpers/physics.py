@@ -16,7 +16,7 @@ import math
 from spock.mcdata import constants as const
 from spock.mcmap import mapdata
 from spock.plugins.base import PluginBase
-from spock.plugins.tools import physics_tools
+from spock.plugins.tools import collision
 from spock.utils import BoundingBox, pl_announce
 from spock.vector import Vector3
 
@@ -76,7 +76,7 @@ class PhysicsPlugin(PluginBase):
         super(PhysicsPlugin, self).__init__(ploader, settings)
         self.vec = Vector3(0.0, 0.0, 0.0)
         bounding_box = BoundingBox(const.PLAYER_WIDTH, const.PLAYER_HEIGHT)
-        self.col = physics_tools.MTVTest(self.world, bounding_box)
+        self.col = collision.MTVTest(self.world, bounding_box)
         self.pos = self.clientinfo.position
         self.pause_physics = False
         self.pc = PhysicsCore(self.pos, self.vec, self.clientinfo.abilities)
