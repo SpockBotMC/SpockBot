@@ -14,14 +14,6 @@ Subpackages
 Submodules
 ----------
 
-spock.task module
------------------
-
-.. automodule:: spock.task
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 spock.utils module
 ------------------
 

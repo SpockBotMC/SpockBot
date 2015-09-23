@@ -5,8 +5,6 @@ SpockBot
 Welcome to SpockBot's documentation!
 ====================================
 
-Contents:
-
 .. toctree::
    :caption: Usage
    :maxdepth: 1
