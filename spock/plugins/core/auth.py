@@ -56,6 +56,7 @@ class AuthPlugin(PluginBase):
         self.sess_quit = self.settings['sess_quit']
         self.ygg = YggdrasilCore()
         self._shared_secret = None
+        self._username = None
         ploader.provides('Auth', self)
 
     def get_username(self):
