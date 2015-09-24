@@ -70,7 +70,9 @@ class ExamplePlugin(PluginBase):
         self.chat.chat('Bot active')
 
         # Walk to target coordinates
-        self.movement.move_location = TARGET_COORDINATES
+        self.movement.move_to(TARGET_COORDINATES.x,
+                              TARGET_COORDINATES.y,
+                              TARGET_COORDINATES.z)
 
     def chat_event_handler(self, name, data):
         """Called when a chat message occurs in the game"""
@@ -79,7 +81,6 @@ class ExamplePlugin(PluginBase):
     def hold_block(self, name, data):
         # Search the hotbar for cobblestone
         slot = self.inventory.find_slot(4, self.inventory.window.hotbar_slots)
-        logger.info(slot)
         # Switch to slot with cobblestone
         if slot is not None:
             self.inventory.select_active_slot(slot)
