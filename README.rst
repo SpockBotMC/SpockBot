@@ -13,7 +13,7 @@ Minecraft bot framework written in Python, currently under heavy development.
 - Core client stuff lives in `spock/plugins/core <spock/plugins/core>`__
 - Helpful client stuff lives in `spock/plugins/helpers <spock/plugins/helpers>`__
 
-Client could loosely be called "event-driven", by default plugins
+Client could loosely be called "event-driven". By default plugins
 register handler functions to handle events that may or may not be
 emitted by other plugins. Everything is a plugin in SpockBot, including
 the event loop/framework itself, so you can feel free to rip out the
@@ -21,13 +21,13 @@ entire back end and replace it with your framework or paradigm of choice.
 As long as you provide the same simple APIs, other plugins won't know the
 difference.
 
-Absolutely none of this is documented so if you're uncomfortable reading
+Some of this is documented so if you're uncomfortable reading
 source code this might not be the framework for you. Or, better yet, hop
 on IRC and help us write some docs!
 
 SpockBot officially supports Python 3.x and Python 2.7.x on \*nix operating
 systems and requires cryptography_. It also runs on Windows and under
-PyPy 2.6.x but that's not regularly tested and might break at any given
+PyPy 2.6.x but that's not regularly tested and could be broken at any given
 moment. If you support one of those use cases and SpockBot breaks for you,
 submit an issue with a stack trace and we'll try to fix it.
 
@@ -42,8 +42,8 @@ Features
 - Entities
 
 
-Roadmap
--------
+Planned Features
+----------------
 
 - Pathfinding
 - Vehicle Physics
@@ -57,15 +57,14 @@ Dependencies
 - minecraft_data_
 - six
 
-Note
-""""
-cryptography library has some extra dependencies to install, you can find detailed instructions `here <https://cryptography.io/en/latest/installation/>`__.
-
 
 Installation
 ------------
 
 ``python3 setup.py install``
+
+**Note:**
+The cryptography library has some extra dependencies to install, you can find detailed instructions `here <https://cryptography.io/en/latest/installation/>`__.
 
 Examples
 --------
