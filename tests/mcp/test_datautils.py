@@ -21,7 +21,6 @@ def test_unpack_varlong():
     smallbuff = BoundBuffer(b'\x14')
     assert datautils.unpack_varlong(smallbuff) == 20
     assert datautils.unpack_varlong(largebuff) == 10000000000
-pass
 
 
 def test_pack_varlong():
