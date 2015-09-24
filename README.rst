@@ -105,7 +105,7 @@ Protocol implementation based on `barneymc <https://github.com/barneygale/barney
 Legal
 -----
 
-License is MIT and can be found in `LICENSE <LICENSE>`__
+This project is licensed under the MIT License which can be found in `LICENSE <LICENSE>`__
 
 The NBT parser and the original protocol implementation came from other projects, relevant legal information and attribution can be found in `LEGAL <LEGAL.md>`__
 
