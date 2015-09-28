@@ -196,7 +196,6 @@ class Vector3(CartesianVector):
             return YawPitch(0, 0)
         ground_distance = math.sqrt(self.x ** 2 + self.z ** 2)
         if ground_distance:
-            ground_distance = math.sqrt(self.x ** 2 + self.z ** 2)
             alpha1 = -math.asin(self.x / ground_distance) / math.pi * 180
             alpha2 = math.acos(self.z / ground_distance) / math.pi * 180
             if alpha2 > 90:
