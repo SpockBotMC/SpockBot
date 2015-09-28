@@ -52,7 +52,11 @@ class PhysicsCore(object):
 
     def move_target(self, vector):
         vector.y = self.pos.y
-        self.direction = vector - self.pos
+        if vector - self.pos < self.vec:
+            self.pos.init(vector)
+            self.vec.zero()
+        else:
+            self.direction = vector - self.pos
 
     def move_vector(self, vector):
         vector.y = 0
@@ -69,7 +73,7 @@ class PhysicsPlugin(PluginBase):
     events = {
         'physics_tick': 'tick',
         'client_position_update': 'stop_physics',
-        'position_reset': 'start_physics',
+        'movement_position_reset': 'start_physics',
     }
 
     def __init__(self, ploader, settings):
@@ -93,13 +97,12 @@ class PhysicsPlugin(PluginBase):
     def tick(self, _, __):
         if self.pause_physics:
             return self.pause_physics
-        self.vec *= const.PHY_BASE_DRG
         self.apply_accel()
         mtv = self.get_mtv()
         self.apply_vector(mtv)
         self.pos.on_ground = mtv.y > 0
         self.vec -= Vector3(0, const.PHY_GAV_ACC, 0)
-        self.apply_friction()
+        self.apply_drag()
         self.pc.direction = Vector3()
 
     def get_block_slip(self):
@@ -117,7 +120,7 @@ class PhysicsPlugin(PluginBase):
         if self.pos.on_ground:
             block_slip = self.get_block_slip()
             accel_mod = const.BASE_GND_SLIP**3 / block_slip**3
-            accel = self.pc.move_accel * accel_mod
+            accel = self.pc.move_accel * accel_mod * const.PHY_BASE_DRG
         else:
             accel = const.PHY_JMP_ACC
         self.vec += self.pc.direction.norm() * accel
@@ -128,10 +131,11 @@ class PhysicsPlugin(PluginBase):
         self.vec.y = 0 if mtv.y else self.vec.y
         self.vec.z = 0 if mtv.z else self.vec.z
 
-    def apply_friction(self):
-        friction = self.get_block_slip() * const.PHY_DRG_MUL
-        self.vec.x *= friction
-        self.vec.z *= friction
+    def apply_drag(self):
+        drag = self.get_block_slip() * const.PHY_DRG_MUL
+        self.vec.x *= drag
+        self.vec.z *= drag
+        self.vec.y *= const.PHY_BASE_DRG
 
     # Breadth-first search for a minimum translation vector
     def get_mtv(self):
