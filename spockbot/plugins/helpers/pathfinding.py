@@ -1,15 +1,16 @@
 import collections
 
 from spock.plugins.base import PluginBase
-from spock.plugins.tools import physics_tools
+from spock.plugins.tools import collision
 from spock.mcmap import mapdata
 from spock.utils import pl_announce, BoundingBox
 from spock.vector import Vector3
 
 """
-Cross-product directional vector with bounding box to get increment length
-increment and test for check_collision
-repeat until end-node is reached
+I wrote a lot of comments explaining whats broken and whats not but
+they got lost somewhere in git. So just assume everything is pretty
+crappy. Example plugin at:
+https://gist.github.com/nickelpro/098e7158019365f67de6
 """
 
 
@@ -48,7 +49,7 @@ class PathPlugin(PluginBase):
 
         self.bounding_box = BoundingBox(w=0.6, h=1.8)
         self.path = PathCore(self)
-        self.col = physics_tools.MTVTest(self.world, self.bounding_box)
+        self.col = collision.MTVTest(self.world, self.bounding_box)
         ploader.provides('Path', self.path)
 
     def pathfind(self, start_node, end_node):
