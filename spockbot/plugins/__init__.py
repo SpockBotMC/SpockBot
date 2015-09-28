@@ -1,6 +1,6 @@
 from spockbot.plugins.core import auth, event, net, taskmanager, ticker, timer
 from spockbot.plugins.helpers import chat, clientinfo, entities, interact, \
-    inventory, keepalive, movement, physics, respawn, start, world
+    inventory, keepalive, movement, pathfinding, physics, respawn, start, world
 
 
 core_plugins = [
@@ -19,6 +19,7 @@ helper_plugins = [
     ('inventory', inventory.InventoryPlugin),
     ('keepalive', keepalive.KeepalivePlugin),
     ('movement', movement.MovementPlugin),
+    ('path', pathfinding.PathPlugin),
     ('physics', physics.PhysicsPlugin),
     ('respawn', respawn.RespawnPlugin),
     ('start', start.StartPlugin),
