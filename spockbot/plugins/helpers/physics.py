@@ -54,6 +54,7 @@ class PhysicsCore(object):
         if vector - self.pos < self.vec:
             self.pos.init(vector)
             self.vec.zero()
+            return True
         else:
             self.direction = vector - self.pos
 
