@@ -1,7 +1,7 @@
 """
-ClientInfo is a central plugin for recording data about the client,
+Client Info is a central plugin for recording data about the client,
 e.g. Health, position, and some auxillary information like the player list.
-Plugins subscribing to ClientInfo's events don't have to independently
+Plugins subscribing to Client Info's events don't have to independently
 track this information on their own.
 """
 
@@ -59,6 +59,19 @@ class PlayerListItem(Info):
 
 
 class ClientInfo(object):
+    """
+    Attributes:
+        eid (int): Entity ID of the player
+        name (str): Player's Username
+        uuid (str): Player's UUID
+        abilities (Abilities): Player's current movement state and speed
+        game_info (GameInfo): Information about the current world/server
+        spawn_position (Position): Players initial position
+        health (PlayerHealth): Player's health, food and saturation
+        position (PlayerPosition): Player's Current position
+        player_list (dict): List of all players in the server
+
+    """
     def __init__(self):
         self.eid = 0
         self.name = ""
@@ -71,6 +84,7 @@ class ClientInfo(object):
         self.player_list = {}
 
     def reset(self):
+        """Resets the information in ClientInfo"""
         self.__init__()
 
 

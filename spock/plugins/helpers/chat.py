@@ -1,3 +1,5 @@
+"""Processes chat into easy to use events"""
+
 import logging
 
 from six import string_types
