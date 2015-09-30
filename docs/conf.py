@@ -43,6 +43,7 @@ sys.path.insert(0, os.path.abspath('../spock'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
+    'sphinx.ext.napoleon',
 ]
 
 if spelling is not None:
