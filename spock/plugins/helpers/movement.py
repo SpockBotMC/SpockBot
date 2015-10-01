@@ -6,7 +6,6 @@ Also provides very basic pathfinding
 """
 
 import logging
-import math
 
 from spock.plugins.base import PluginBase
 from spock.utils import pl_announce
@@ -27,6 +26,7 @@ class MovementCore(object):
 
     def is_moving(self):
         return self.move_location is not None
+
 
 @pl_announce('Movement')
 class MovementPlugin(PluginBase):
@@ -74,7 +74,8 @@ class MovementPlugin(PluginBase):
         clinfo = self.clientinfo
         if move.move_location is not None:
             if round(move.move_location.x, 2) == round(clinfo.position.x, 2) \
-                    and round(move.move_location.z, 2) == round(clinfo.position.z, 2):
+                    and round(move.move_location.z, 2) == \
+                    round(clinfo.position.z, 2):
                 move.stop()
             else:
                 self.physics.move_target(move.move_location)
