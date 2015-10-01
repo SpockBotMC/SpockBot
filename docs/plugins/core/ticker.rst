@@ -17,7 +17,7 @@ Events
     should schedule those movements by hooking into `action_tick` and calling
     the appropriate pathfinding or movement methods.
 
-    **Playload** ::
+    **Payload** ::
 
         None
 
@@ -28,7 +28,7 @@ Events
     the movement actions as well as world forces to resolve a position for
     the client. The default PhysicsPlugin depends on this event.
 
-    **Playload** ::
+    **Payload** ::
 
         None
 
@@ -38,6 +38,6 @@ Events
     position has been resolved for the client and is ready to be sent to the
     server. The default MovementPlugin depends on this event.
 
-    **Playload** ::
+    **Payload** ::
 
         None

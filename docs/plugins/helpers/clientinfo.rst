@@ -18,7 +18,7 @@ Events
 
     Client Info is done processing the Join Game packet
 
-    **Playload** ::
+    **Payload** ::
 
         GameInfo()
 
@@ -26,7 +26,7 @@ Events
 
     Client Info is done processing the Spawn Position packet
 
-    **Playload** ::
+    **Payload** ::
 
         Position()
 
@@ -34,7 +34,7 @@ Events
 
     When the players health changes
 
-    **Playload** ::
+    **Payload** ::
 
         PlayerHealth()
 
@@ -42,7 +42,7 @@ Events
 
     When the player health becomes 0.0
 
-    **Playload** ::
+    **Payload** ::
 
         PlayerHealth()
 
@@ -50,7 +50,7 @@ Events
 
     When the player is moved by the server
 
-    **Playload** ::
+    **Payload** ::
 
         PlayerPosition()
 
@@ -58,7 +58,7 @@ Events
 
     Player added to the player list
 
-    **Playload** ::
+    **Payload** ::
 
         PlayerListItem()
 
@@ -66,7 +66,7 @@ Events
 
     Player info is updated on the player list
 
-    **Playload** ::
+    **Payload** ::
 
         PlayerListItem()
 
@@ -74,7 +74,7 @@ Events
 
     Player removed from the player list
 
-    **Playload** ::
+    **Payload** ::
 
         PlayerListItem()
 
@@ -83,5 +83,3 @@ Methods and Attributes
 .. autoclass:: ClientInfo
     :members:
     :undoc-members:
-
-
