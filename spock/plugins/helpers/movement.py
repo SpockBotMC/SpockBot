@@ -22,6 +22,11 @@ class MovementCore(object):
     def move_to(self, x, y, z):
         self.move_location = Vector3(x, y, z)
 
+    def stop(self):
+        self.move_location = None
+
+    def is_moving(self):
+        return self.move_location is not None
 
 @pl_announce('Movement')
 class MovementPlugin(PluginBase):
