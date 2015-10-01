@@ -17,10 +17,6 @@ Events
     should schedule those movements by hooking into `action_tick` and calling
     the appropriate pathfinding or movement methods.
 
-    **Payload** ::
-
-        None
-
 .. object:: physics_tick
 
     This tick fires immediately after `action_tick` and signals that all
@@ -28,16 +24,8 @@ Events
     the movement actions as well as world forces to resolve a position for
     the client. The default PhysicsPlugin depends on this event.
 
-    **Payload** ::
-
-        None
-
 .. object:: client_tick
 
     This tick fires immediately after `physics_tick` and signals that a new
     position has been resolved for the client and is ready to be sent to the
     server. The default MovementPlugin depends on this event.
-
-    **Payload** ::
-
-        None
