@@ -21,9 +21,9 @@ entire back end and replace it with your framework or paradigm of choice.
 As long as you provide the same simple APIs, other plugins won't know the
 difference.
 
-Some of this is documented so if you're uncomfortable reading
-source code this might not be the framework for you. Or, better yet, hop
-on IRC and help us write some docs!
+We're only just getting started with documentation so if you're uncomfortable
+reading source code this might not be the framework for you. Or, better yet,
+hop on IRC and help us write some docs!
 
 SpockBot officially supports Python 3.x and Python 2.7.x on \*nix operating
 systems and requires cryptography_. It also runs on Windows and under
