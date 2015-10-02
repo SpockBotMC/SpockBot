@@ -427,7 +427,7 @@ class ExtensionPSTC38:
                 o += datautils.pack(MC_VARINT, item['gamemode'])
             if act in [mcdata.PL_ADD_PLAYER, mcdata.PL_UPDATE_LATENCY]:
                 o += datautils.pack(MC_VARINT, item['ping'])
-            if act in [mcdata.PL_ADD_PLAYER,mcdata.PL_UPDATE_DISPLAY]:
+            if act in [mcdata.PL_ADD_PLAYER, mcdata.PL_UPDATE_DISPLAY]:
                 o += datautils.pack(MC_BOOL, item['has_display'])
                 if item['has_display']:
                     o += datautils.pack(MC_CHAT, item['display_name'])
