@@ -6,7 +6,7 @@ World
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.world
+.. automodule:: spockbot.plugins.helpers.world
 
 Events
 ======

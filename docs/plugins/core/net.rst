@@ -6,7 +6,7 @@ Net
 
 Description
 ===========
-.. automodule:: spock.plugins.core.net
+.. automodule:: spockbot.plugins.core.net
 
 Events
 ======

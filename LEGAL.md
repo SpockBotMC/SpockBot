@@ -4,7 +4,7 @@ NBT
 ===
 
 We use a slightly modified version of Thomas Woolford's NBT parser in
-spock/mcp/nbt.py, original can be found here:
+spockbot/mcp/nbt.py, original can be found here:
 https://github.com/twoolie/NBT
 
 Copyright (c) 2010 Thomas Woolford
@@ -31,7 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 BarneyMC
 ========
 
-The Minecraft protocol implementation found in spock/mcp is largely
+The Minecraft protocol implementation found in spockbot/mcp is largely
 modeled after Barney Gale's implementation from barneymc and retains
 many of its naming conventions. However, much of the code has been
 rewritten following the massive Minecraft 1.7 networking update.

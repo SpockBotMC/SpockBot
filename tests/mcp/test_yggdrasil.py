@@ -7,11 +7,11 @@ from mock.mock import MagicMock
 
 from six.moves.urllib.error import HTTPError
 
-from spock.mcp.yggdrasil import YggAuth
+from spockbot.mcp.yggdrasil import YggAuth
 
 
-@mock.patch('spock.mcp.yggdrasil.Request')
-@mock.patch('spock.mcp.yggdrasil.urlopen')
+@mock.patch('spockbot.mcp.yggdrasil.Request')
+@mock.patch('spockbot.mcp.yggdrasil.urlopen')
 class YggAuthRequestTest(unittest.TestCase):
     def test_request_is_done(self, urlopen, request):
         decode = urlopen.return_value.read.return_value.decode
@@ -54,7 +54,7 @@ class YggAuthRequestTest(unittest.TestCase):
         self.assertEqual(res, {'error': 1})
 
 
-@mock.patch('spock.mcp.yggdrasil.YggAuth._ygg_req')
+@mock.patch('spockbot.mcp.yggdrasil.YggAuth._ygg_req')
 class YggAuthTest(unittest.TestCase):
     def setUp(self):
         self.ygg = YggAuth()

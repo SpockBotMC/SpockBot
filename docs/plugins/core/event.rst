@@ -6,7 +6,7 @@ Event
 
 Description
 ===========
-.. automodule:: spock.plugins.core.event
+.. automodule:: spockbot.plugins.core.event
 
 Events
 ======

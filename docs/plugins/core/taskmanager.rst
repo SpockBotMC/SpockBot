@@ -6,7 +6,7 @@ Task Manager
 
 Description
 ===========
-.. automodule:: spock.plugins.core.taskmanager
+.. automodule:: spockbot.plugins.core.taskmanager
 
 Events
 ======

@@ -6,7 +6,7 @@ Keep Alive
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.keepalive
+.. automodule:: spockbot.plugins.helpers.keepalive
 
 Events
 ======

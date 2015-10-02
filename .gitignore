@@ -1,6 +1,7 @@
 *.py[doc]
 *.log
 *.swp
+.cache
 *~
 config.yaml
 login.py

@@ -6,7 +6,7 @@ Chat
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.chat
+.. automodule:: spockbot.plugins.helpers.chat
 
 Events
 ======

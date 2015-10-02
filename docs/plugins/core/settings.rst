@@ -6,7 +6,7 @@ Settings
 
 Description
 ===========
-.. automodule:: spock.plugins.core.settings
+.. automodule:: spockbot.plugins.core.settings
 
 Events
 ======

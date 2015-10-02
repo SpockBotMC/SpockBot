@@ -6,7 +6,7 @@ Entities
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.entities
+.. automodule:: spockbot.plugins.helpers.entities
 
 Events
 ======

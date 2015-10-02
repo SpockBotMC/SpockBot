@@ -1,5 +1,5 @@
 """
-An example plugin for Spock
+An example plugin for spockbot
 
 Demonstrates the following functionality:
 - Receiving chat messages
@@ -18,14 +18,14 @@ __author__ = 'Cosmo Harrigan, Morgan Creekmore'
 import logging
 
 # Import any modules that you need in your plugin
-from spock.mcmap import mapdata
-from spock.plugins.base import PluginBase
-from spock.utils import pl_announce
-from spock.vector import Vector3
+from spockbot.mcmap import mapdata
+from spockbot.plugins.base import PluginBase
+from spockbot.utils import pl_announce
+from spockbot.vector import Vector3
 
 # Required import
 
-logger = logging.getLogger('spock')
+logger = logging.getLogger('spockbot')
 
 # The bot will walk to this starting position. Set it to a sensible
 # location for your world file. The format is: (x, y, z)
@@ -40,7 +40,7 @@ class ExamplePlugin(PluginBase):
                 'Interact', 'Chat')
     # Example of registering an event handler
     # Packet event types are enumerated here:
-    #  https://github.com/SpockBotMC/SpockBot/blob/master/spock/mcp
+    #  https://github.com/SpockBotMC/SpockBot/blob/master/spockbot/mcp
     # /mcdata.py#L213
     # There are other events that can be used that are emitted by other plugins
     events = {

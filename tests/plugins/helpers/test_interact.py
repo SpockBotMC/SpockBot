@@ -1,10 +1,10 @@
 from unittest import TestCase
 
-from spock.mcdata.constants import \
+from spockbot.mcdata.constants import \
     ATTACK_ENTITY, INTERACT_ENTITY, PLAYER_HEIGHT
-from spock.plugins.helpers.clientinfo import PlayerPosition
-from spock.plugins.helpers.interact import InteractPlugin
-from spock.vector import Vector3
+from spockbot.plugins.helpers.clientinfo import PlayerPosition
+from spockbot.plugins.helpers.interact import InteractPlugin
+from spockbot.vector import Vector3
 
 
 class DataDict(dict):

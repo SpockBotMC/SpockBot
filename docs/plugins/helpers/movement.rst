@@ -6,7 +6,7 @@ Movement
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.movement
+.. automodule:: spockbot.plugins.helpers.movement
 
 Events
 ======

@@ -1,5 +1,5 @@
-from spock.mcp import datautils
-from spock.utils import BoundBuffer
+from spockbot.mcp import datautils
+from spockbot.utils import BoundBuffer
 
 
 def test_unpack_varint():
