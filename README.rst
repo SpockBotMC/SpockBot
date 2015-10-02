@@ -7,11 +7,11 @@ SpockBot currently supports Minecraft 1.8.8
 
 Minecraft bot framework written in Python, currently under heavy development.
 
-- Protocol stuff lives in `spock/mcp <spock/mcp>`__
-- Map stuff lives in `spock/mcmap <spock/mcmap>`__
-- Data stuff lives in `spock/mcdata <spock/mcdata>`__
-- Core client stuff lives in `spock/plugins/core <spock/plugins/core>`__
-- Helpful client stuff lives in `spock/plugins/helpers <spock/plugins/helpers>`__
+- Protocol stuff lives in `spockbot/mcp <spockbot/mcp>`__
+- Map stuff lives in `spockbot/mcmap <spockbot/mcmap>`__
+- Data stuff lives in `spockbot/mcdata <spockbot/mcdata>`__
+- Core client stuff lives in `spockbot/plugins/core <spockbot/plugins/core>`__
+- Helpful client stuff lives in `spockbot/plugins/helpers <spockbot/plugins/helpers>`__
 
 Client could loosely be called "event-driven". By default plugins
 register handler functions to handle events that may or may not be

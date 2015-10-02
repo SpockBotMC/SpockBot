@@ -6,7 +6,7 @@ Start
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.start
+.. automodule:: spockbot.plugins.helpers.start
 
 Events
 ======

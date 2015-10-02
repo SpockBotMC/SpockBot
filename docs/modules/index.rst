@@ -1,8 +1,7 @@
-************
-Module Index
-************
+spockbot
+========
 
 .. toctree::
    :maxdepth: 4
 
-   spock
+   spockbot

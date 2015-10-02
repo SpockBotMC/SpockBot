@@ -6,7 +6,7 @@ Inventory
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.inventory
+.. automodule:: spockbot.plugins.helpers.inventory
 
 Events
 ======

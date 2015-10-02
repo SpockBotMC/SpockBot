@@ -6,7 +6,7 @@ Client Info
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.clientinfo
+.. automodule:: spockbot.plugins.helpers.clientinfo
 
 Events
 ======

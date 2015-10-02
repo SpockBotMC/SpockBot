@@ -30,7 +30,7 @@ VERSION = '0.1.2'
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../spock'))
+sys.path.insert(0, os.path.abspath('../spockbot'))
 
 # -- General configuration ------------------------------------------------
 
@@ -111,7 +111,7 @@ exclude_patterns = ['_build']
 pygments_style = 'sphinx'
 
 # A list of ignored prefixes for module index sorting.
-modindex_common_prefix = ['spock.']
+modindex_common_prefix = ['spockbot.']
 
 # If true, keep warnings as "system message" paragraphs in the built documents.
 #keep_warnings = False

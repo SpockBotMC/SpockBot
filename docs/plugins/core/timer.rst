@@ -6,7 +6,7 @@ Timer
 
 Description
 ===========
-.. automodule:: spock.plugins.core.timer
+.. automodule:: spockbot.plugins.core.timer
 
 Events
 ======

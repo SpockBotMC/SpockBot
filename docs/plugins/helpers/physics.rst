@@ -6,7 +6,7 @@ Physics
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.physics
+.. automodule:: spockbot.plugins.helpers.physics
 
 Events
 ======

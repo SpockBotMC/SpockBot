@@ -6,7 +6,7 @@ Interact
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.interact
+.. automodule:: spockbot.plugins.helpers.interact
 
 Events
 ======

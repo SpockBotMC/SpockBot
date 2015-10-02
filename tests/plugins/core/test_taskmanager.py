@@ -1,8 +1,8 @@
 from collections import defaultdict
 from unittest import TestCase
 
-from spock.plugins.core.taskmanager import TaskManager
-from spock.plugins.tools.task import Task
+from spockbot.plugins.core.taskmanager import TaskManager
+from spockbot.plugins.tools.task import Task
 
 
 class EventMock(object):

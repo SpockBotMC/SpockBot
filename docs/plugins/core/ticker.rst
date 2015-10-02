@@ -6,7 +6,7 @@ Ticker
 
 Description
 ===========
-.. automodule:: spock.plugins.core.ticker
+.. automodule:: spockbot.plugins.core.ticker
 
 Events
 ======

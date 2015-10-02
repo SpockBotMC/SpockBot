@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from spock.plugins.helpers.chat import ChatCore, ChatPlugin
+from spockbot.plugins.helpers.chat import ChatCore, ChatPlugin
 
 
 class DataDict(dict):

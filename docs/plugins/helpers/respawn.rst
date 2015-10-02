@@ -6,7 +6,7 @@ Respawn
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.respawn
+.. automodule:: spockbot.plugins.helpers.respawn
 
 Events
 ======

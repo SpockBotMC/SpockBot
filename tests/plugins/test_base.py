@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from spock.plugins.base import PluginBase
+from spockbot.plugins.base import PluginBase
 
 
 class PluginLoaderMock(object):
@@ -40,7 +40,7 @@ class PluginBaseTest(TestCase):
     def test_default_settings_applied(self):
         # Only assert that settings are set. Checking whether settings and
         # defaults merge correctly should be tested in
-        # spock.utils.get_settings.
+        # spockbot.utils.get_settings.
         self.assertEqual(self.plug.settings['foo'], 'bar')
 
     def test_event_listeners_registration_succeeds(self):

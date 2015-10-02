@@ -1,5 +1,5 @@
 """
-Basic example of how to use Spock
+Basic example of how to use spockbot
 
 Instructions:
 - Enter the e-mail for your Minecraft account in the USERNAME field below
@@ -17,8 +17,8 @@ __author__ = 'Cosmo Harrigan'
 # Import the plugins you have created
 from example_plugin import ExamplePlugin
 
-from spock import Client
-from spock.plugins import default_plugins
+from spockbot import Client
+from spockbot.plugins import default_plugins
 
 # Set the following values:
 USERNAME = ''

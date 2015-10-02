@@ -6,7 +6,7 @@ Craft
 
 Description
 ===========
-.. automodule:: spock.plugins.helpers.craft
+.. automodule:: spockbot.plugins.helpers.craft
 
 Events
 ======

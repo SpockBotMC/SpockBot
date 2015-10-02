@@ -1,4 +1,4 @@
-from spock.vector import CartesianVector
+from spockbot.vector import CartesianVector
 
 
 def test_cartesianvector_add():

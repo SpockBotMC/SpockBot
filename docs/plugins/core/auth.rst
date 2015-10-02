@@ -6,7 +6,7 @@ Auth
 
 Description
 ===========
-.. automodule:: spock.plugins.core.auth
+.. automodule:: spockbot.plugins.core.auth
 
 Events
 ======
