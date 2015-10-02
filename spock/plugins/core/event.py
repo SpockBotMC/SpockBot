@@ -19,9 +19,12 @@ class EventCore(object):
         signal.signal(signal.SIGTERM, self.kill)
 
     def event_loop(self):
+        self.emit('event_start')
         while not self.kill_event:
             self.emit('event_tick')
         logger.info('EVENTCORE: Kill called, shutting down')
+        self.emit('event_kill')
+        # For backwards compatibility, will remove soon
         self.emit('kill')
 
     def reg_event_handler(self, event, handler):

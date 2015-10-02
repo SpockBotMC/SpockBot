@@ -13,6 +13,11 @@ from spock.plugins.base import PluginBase
 
 class StartPlugin(PluginBase):
     requires = ('Event', 'Net', 'Auth')
+    events = {
+        'event_start': 'start_session',
+        'connect': 'handshake_and_login_start',
+
+    }
     defaults = {
         'username': 'Bot',
         'password': None,
@@ -25,24 +30,22 @@ class StartPlugin(PluginBase):
         setattr(ploader, 'start', self.start)
 
     def start(self, host=None, port=None):
+        self.host = host if host else self.settings['host']
+        self.port = port if port else self.settings['port']
+        self.event.event_loop()
+
+    def start_session(self, _, __):
         if 'error' not in self.auth.start_session(
                 self.settings['username'],
                 self.settings['password']
         ):
-            host = host if host else self.settings['host']
-            port = port if port else self.settings['port']
-            self.net.connect(host, port)
-            self.handshake()
-            self.login_start()
-            self.event.event_loop()
+            self.net.connect(self.host, self.port)
 
-    def handshake(self):
+    def handshake_and_login_start(self, _, __):
         self.net.push_packet('HANDSHAKE>Handshake', {
             'protocol_version': mcdata.MC_PROTOCOL_VERSION,
             'host': self.net.host,
             'port': self.net.port,
             'next_state': mcdata.LOGIN_STATE
         })
-
-    def login_start(self):
         self.net.push_packet('LOGIN>Login Start', {'name': self.auth.username})
