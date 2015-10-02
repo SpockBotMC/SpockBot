@@ -4,6 +4,14 @@ from spock.vector import Vector3
 UNIT_VECTORS = Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)
 
 
+def center_position(pos, bbox):
+    return Vector3(pos.x + bbox.w/2, pos.y, pos.z + bbox.d/2)
+
+
+def uncenter_position(pos, bbox):
+    return Vector3(pos.x - bbox.w/2, pos.y, pos.z - bbox.d/2)
+
+
 def gen_block_set(block_pos, xr=(-1, 2), yr=(0, 3), zr=(-1, 2)):
     offsets = (
         (x, y, z)

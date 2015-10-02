@@ -140,12 +140,10 @@ class PhysicsPlugin(PluginBase):
     # Breadth-first search for a minimum translation vector
     def get_mtv(self):
         pos = self.pos + self.vec
-        pos.x -= self.col.bounding_box.w/2
-        pos.z -= self.col.bounding_box.d/2
-        transform_vectors = []
-        q = collections.deque()
-        while q or not transform_vectors:
-            current_vector = q.popleft() if q else Vector3()
+        pos = collision.uncenter_position(pos, self.col.bounding_box)
+        q = collections.deque((Vector3(),))
+        while q:
+            current_vector = q.popleft()
             transform_vectors = self.col.check_collision(pos, current_vector)
             if not all(transform_vectors):
                 break

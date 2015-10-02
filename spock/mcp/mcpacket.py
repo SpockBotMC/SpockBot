@@ -89,7 +89,7 @@ class Packet(object):
             if uncompressed_len < proto_comp_threshold:
                 header = datautils.pack(MC_VARINT, uncompressed_len + 1)
                 header += datautils.pack(MC_VARINT, 0)
-            elif uncompressed_len >= proto_comp_threshold:
+            else:
                 o = zlib.compress(o, comp_level)
                 ulen_varint = datautils.pack(MC_VARINT, uncompressed_len)
                 header = datautils.pack(MC_VARINT,

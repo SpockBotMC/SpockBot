@@ -99,7 +99,7 @@ class NetCore(object):
             self.event.emit('connect', (self.host, self.port))
             logger.info("NETCORE: Connected to host: %s port: %s", host, port)
         except socket.error as error:
-            logger.error("NETCORE: Error on Connect: %s", str(error))
+            logger.error("NETCORE: Error on Connect")
             self.event.emit('SOCKET_ERR', error)
 
     def set_proto_state(self, state):
@@ -220,7 +220,6 @@ class NetPlugin(PluginBase):
                 if self.net.sbuff:
                     self.sock.sending = True
             except socket.error as error:
-                logger.error(str(error))
                 self.event.emit('SOCKET_ERR', error)
 
     # SOCKET_ERR - Socket Error has occured

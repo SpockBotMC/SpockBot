@@ -398,11 +398,11 @@ class ExtensionPSTC38:
                     if prop['signed']:
                         prop['signature'] = datautils.unpack(MC_STRING, bbuff)
                     item['properties'].append(prop)
-            if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_GAMEMODE:
+            if act in [mcdata.PL_ADD_PLAYER, mcdata.PL_UPDATE_GAMEMODE]:
                 item['gamemode'] = datautils.unpack(MC_VARINT, bbuff)
-            if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_LATENCY:
+            if act in [mcdata.PL_ADD_PLAYER, mcdata.PL_UPDATE_LATENCY]:
                 item['ping'] = datautils.unpack(MC_VARINT, bbuff)
-            if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_DISPLAY:
+            if act in [mcdata.PL_ADD_PLAYER, mcdata.PL_UPDATE_DISPLAY]:
                 item['has_display'] = datautils.unpack(MC_BOOL, bbuff)
                 if item['has_display']:
                     item['display_name'] = datautils.unpack(MC_CHAT, bbuff)
@@ -423,11 +423,11 @@ class ExtensionPSTC38:
                     o += datautils.pack(MC_BOOL, prop['signed'])
                     if prop['signed']:
                         o += datautils.pack(MC_STRING, prop['signature'])
-            if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_GAMEMODE:
+            if act in [mcdata.PL_ADD_PLAYER, mcdata.PL_UPDATE_GAMEMODE]:
                 o += datautils.pack(MC_VARINT, item['gamemode'])
-            if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_LATENCY:
+            if act in [mcdata.PL_ADD_PLAYER, mcdata.PL_UPDATE_LATENCY]:
                 o += datautils.pack(MC_VARINT, item['ping'])
-            if act == mcdata.PL_ADD_PLAYER or act == mcdata.PL_UPDATE_DISPLAY:
+            if act in [mcdata.PL_ADD_PLAYER,mcdata.PL_UPDATE_DISPLAY]:
                 o += datautils.pack(MC_BOOL, item['has_display'])
                 if item['has_display']:
                     o += datautils.pack(MC_CHAT, item['display_name'])
@@ -458,7 +458,7 @@ class ExtensionPSTC3B:
     @staticmethod
     def decode_extra(packet, bbuff):
         act = packet.data['action']
-        if act == mcdata.SO_CREATE_BOARD or act == mcdata.SO_UPDATE_BOARD:
+        if act in [mcdata.SO_CREATE_BOARD, mcdata.SO_UPDATE_BOARD]:
             packet.data['obj_val'] = datautils.unpack(MC_STRING, bbuff)
             packet.data['type'] = datautils.unpack(MC_STRING, bbuff)
         return packet
@@ -467,7 +467,7 @@ class ExtensionPSTC3B:
     def encode_extra(packet):
         o = b''
         act = packet.data['action']
-        if act == mcdata.SO_CREATE_BOARD or act == mcdata.SO_UPDATE_BOARD:
+        if act in [mcdata.SO_CREATE_BOARD, mcdata.SO_UPDATE_BOARD]:
             o += datautils.pack(MC_STRING, packet.data['obj_val'])
             o += datautils.pack(MC_STRING, packet.data['type'])
         return o

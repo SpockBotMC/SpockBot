@@ -35,7 +35,7 @@ class PluginLoader(object):
             plugin(self, self.fetch.get_plugin_settings(plugin))
             logger.info("PLUGINLOADER: Loaded %s", plugin.__name__)
 
-    def requires(self, ident, soft=False, warning=None):
+    def requires(self, ident, hard=True, warning=None):
         if ident not in self.extensions:
             if ident in self.announce:
                 plugin = self.announce[ident]
@@ -45,11 +45,11 @@ class PluginLoader(object):
             elif ident in self.events:
                 return True
             else:
-                softness = "soft" if soft else "hard"
+                hardness = "hard" if hard else "soft"
                 if warning:
-                    logger.warn(pl_warn, softness, ident, warning)
+                    logger.warn(pl_warn, hardness, ident, warning)
                 else:
-                    logger.warn(base_warn, softness, ident)
+                    logger.warn(base_warn, hardness, ident)
                 return None
         return self.extensions[ident]
 

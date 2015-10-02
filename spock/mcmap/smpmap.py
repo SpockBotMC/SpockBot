@@ -79,10 +79,7 @@ class ChunkDataNibble(ChunkData):
         self.fill()
         x, r = divmod(x, 2)
         i = x + ((y * 16) + z) * 16
-        if r:
-            return self.data[i] & 0x0F
-        else:
-            return self.data[i] >> 4
+        return self.data[i] & 0x0F if r else self.data[i] >> 4
 
     def set(self, x, y, z, data):
         self.fill()
@@ -109,33 +106,18 @@ class ChunkColumn(object):
     def unpack(self, buff, mask, skylight=True, continuous=True):
         # In the protocol, each section is packed sequentially (i.e. attributes
         # pertaining to the same chunk are *not* grouped)
-        self.unpack_block_data(buff, mask)
-        self.unpack_light_block(buff, mask)
+        chunk_idx = [i for i in range(16) if mask & (1 << i)]
+        for i in chunk_idx:
+            if self.chunks[i] is None:
+                self.chunks[i] = Chunk()
+            self.chunks[i].block_data.unpack(buff)
+        for i in chunk_idx:
+            self.chunks[i].light_block.unpack(buff)
         if skylight:
-            self.unpack_light_sky(buff, mask)
+            for i in chunk_idx:
+                self.chunks[i].light_sky.unpack(buff)
         if continuous:
             self.biome.unpack(buff)
-
-    def unpack_block_data(self, buff, mask):
-        for i in range(16):
-            if mask & (1 << i):
-                if self.chunks[i] is None:
-                    self.chunks[i] = Chunk()
-                self.chunks[i].block_data.unpack(buff)
-
-    def unpack_light_block(self, buff, mask):
-        for i in range(16):
-            if mask & (1 << i):
-                if self.chunks[i] is None:
-                    self.chunks[i] = Chunk()
-                self.chunks[i].light_block.unpack(buff)
-
-    def unpack_light_sky(self, buff, mask):
-        for i in range(16):
-            if mask & (1 << i):
-                if self.chunks[i] is None:
-                    self.chunks[i] = Chunk()
-                self.chunks[i].light_sky.unpack(buff)
 
 
 class Dimension(object):
@@ -146,38 +128,23 @@ class Dimension(object):
         self.columns = {}  # chunk columns are address by a tuple (x, z)
 
     def unpack_bulk(self, data):
-        skylight = data['sky_light']
         bbuff = utils.BoundBuffer(data['data'])
+        skylight = data['sky_light']
         for meta in data['metadata']:
-            # Read chunk metadata
-            x_chunk = meta['chunk_x']
-            z_chunk = meta['chunk_z']
-            mask = meta['primary_bitmap']
-
-            # Grab the relevant column
-            key = (x_chunk, z_chunk)
+            key = meta['chunk_x'], meta['chunk_z']
             if key not in self.columns:
                 self.columns[key] = ChunkColumn()
-
-            # Unpack the chunk column data
-            self.columns[key].unpack(bbuff, mask, skylight)
+            self.columns[key].unpack(bbuff, meta['primary_bitmap'], skylight)
 
     def unpack_column(self, data):
-        x_chunk = data['chunk_x']
-        z_chunk = data['chunk_z']
-        mask = data['primary_bitmap']
-        continuous = data['continuous']
         bbuff = utils.BoundBuffer(data['data'])
-        if self.dimension == DIMENSION_OVERWOLD:
-            skylight = True
-        else:
-            skylight = False
-
-        key = (x_chunk, z_chunk)
+        skylight = True if self.dimension == DIMENSION_OVERWOLD else False
+        key = data['chunk_x'], data['chunk_z']
         if key not in self.columns:
             self.columns[key] = ChunkColumn()
-
-        self.columns[key].unpack(bbuff, mask, skylight, continuous)
+        self.columns[key].unpack(
+            bbuff, data['primary_bitmap'], skylight, data['continuous']
+        )
 
     def get_block(self, x, y, z):
         x, y, z = int(x), int(y), int(z)  # Damn you python2
@@ -187,11 +154,9 @@ class Dimension(object):
 
         if (x, z) not in self.columns or y > 0x0F:
             return 0, 0
-        column = self.columns[(x, z)]
-        chunk = column.chunks[y]
+        chunk = self.columns[(x, z)].chunks[y]
         if chunk is None:
             return 0, 0
-
         data = chunk.block_data.get(rx, ry, rz)
         return data >> 4, data & 0x0F
 
@@ -223,11 +188,9 @@ class Dimension(object):
 
         if (x, z) not in self.columns or y > 0x0F:
             return 0, 0
-        column = self.columns[(x, z)]
-        chunk = column.chunks[y]
+        chunk = self.columns[(x, z)].chunks[y]
         if chunk is None:
             return 0, 0
-
         return chunk.light_block.get(rx, ry, rz), chunk.light_sky.get(rx, ry,
                                                                       rz)
 
