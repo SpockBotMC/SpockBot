@@ -16,7 +16,6 @@ class StartPlugin(PluginBase):
     events = {
         'event_start': 'start_session',
         'connect': 'handshake_and_login_start',
-
     }
     defaults = {
         'username': 'Bot',
