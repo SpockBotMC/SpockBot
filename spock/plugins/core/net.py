@@ -100,6 +100,7 @@ class NetCore(object):
             logger.info("NETCORE: Connected to host: %s port: %s", host, port)
         except socket.error as error:
             logger.error("NETCORE: Error on Connect: %s", str(error))
+            self.event.emit('SOCKET_ERR', error)
 
     def set_proto_state(self, state):
         self.proto_state = state
@@ -174,7 +175,7 @@ class NetPlugin(PluginBase):
         'LOGIN<Login Success': 'handle_login_success',
         'LOGIN<Set Compression': 'handle_comp',
         'PLAY<Set Compression': 'handle_comp',
-        'kill': 'handle_kill',
+        'event_kill': 'handle_kill',
     }
 
     def __init__(self, ploader, settings):
