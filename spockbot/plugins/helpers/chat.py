@@ -4,8 +4,7 @@ import logging
 
 from six import string_types
 
-from spockbot.plugins.base import PluginBase
-from spockbot.utils import pl_announce
+from spockbot.plugins.base import PluginBase, pl_announce
 
 logger = logging.getLogger('spockbot')
 

@@ -6,8 +6,7 @@ makes them, server tick-timers are based on time updates from the server
 
 import time
 
-from spockbot.plugins.base import PluginBase
-from spockbot.utils import pl_announce
+from spockbot.plugins.base import PluginBase, pl_announce
 
 
 class BaseTimer(object):

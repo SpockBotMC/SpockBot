@@ -7,8 +7,7 @@ Also provides very basic pathfinding
 
 import logging
 
-from spockbot.plugins.base import PluginBase
-from spockbot.utils import pl_announce
+from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.vector import Vector3
 
 logger = logging.getLogger('spockbot')

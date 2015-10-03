@@ -1,9 +1,26 @@
-from spockbot.utils import get_settings
+import copy
 
-try:
-    basestring
-except NameError:
-    basestring = str
+from six import string_types
+
+
+def get_settings(defaults, settings):
+    return dict(copy.deepcopy(defaults), **settings)
+
+
+def pl_announce(*args):
+    def inner(cl):
+        cl.pl_announce = args
+        return cl
+
+    return inner
+
+
+def pl_event(*args):
+    def inner(cl):
+        cl.pl_event = args
+        return cl
+
+    return inner
 
 
 class PluginBase(object):
@@ -22,7 +39,7 @@ class PluginBase(object):
         self.settings = get_settings(self.defaults, settings)
 
         # Load all the plugin's dependencies.
-        if isinstance(self.requires, basestring):
+        if isinstance(self.requires, string_types):
             setattr(self, self.requires.lower(),
                     ploader.requires(self.requires))
         else:

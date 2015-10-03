@@ -19,8 +19,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
 from spockbot.mcp import yggdrasil
-from spockbot.plugins.base import PluginBase
-from spockbot.utils import pl_announce
+from spockbot.plugins.base import PluginBase, pl_announce
 
 
 logger = logging.getLogger('spockbot')

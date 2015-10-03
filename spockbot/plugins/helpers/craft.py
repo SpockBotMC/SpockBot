@@ -5,9 +5,8 @@ from math import ceil
 
 from spockbot.mcdata.recipes import find_recipe, ingredient_positions, \
     total_ingredient_amounts
-from spockbot.plugins.base import PluginBase
+from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools.task import TaskFailed
-from spockbot.utils import pl_announce
 
 
 @pl_announce('Craft')

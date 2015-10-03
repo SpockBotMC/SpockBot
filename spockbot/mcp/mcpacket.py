@@ -8,7 +8,6 @@ import logging
 import zlib
 from time import gmtime, strftime
 
-from spockbot import utils
 from spockbot.mcp import datautils, mcdata
 from spockbot.mcp.mcdata import MC_VARINT
 from spockbot.mcp.mcpacket_extensions import hashed_extensions
@@ -49,7 +48,7 @@ class Packet(object):
         self.data = {}
         packet_length = datautils.unpack(MC_VARINT, bbuff)
         packet_data = bbuff.recv(packet_length)
-        pbuff = utils.BoundBuffer(packet_data)
+        pbuff = datautils.BoundBuffer(packet_data)
         if proto_comp_state == mcdata.PROTO_COMP_ON:
             body_length = datautils.unpack(MC_VARINT, pbuff)
             if body_length > 0:
@@ -70,7 +69,7 @@ class Packet(object):
                 hashed_extensions[self.ident].decode_extra(self, pbuff)
             if len(pbuff) > 0:
                 raise PacketDecodeFailure(self, pbuff)
-        except utils.BufferUnderflowException:
+        except datautils.BufferUnderflowException:
             raise PacketDecodeFailure(self, pbuff, True)
         return self
 

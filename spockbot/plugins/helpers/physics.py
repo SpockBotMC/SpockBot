@@ -13,11 +13,10 @@ import collections
 import logging
 import math
 
-from spockbot.mcdata import constants as const
-from spockbot.mcmap import mapdata
-from spockbot.plugins.base import PluginBase
+from spockbot.mcdata import blocks, constants as const
+from spockbot.mcdata.utils import BoundingBox
+from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools import collision
-from spockbot.utils import BoundingBox, pl_announce
 from spockbot.vector import Vector3
 
 logger = logging.getLogger('spockbot')
@@ -111,7 +110,7 @@ class PhysicsPlugin(PluginBase):
             block_id, meta = self.world.get_block(
                 block_pos.x, block_pos.y - 1, block_pos.z
             )
-            return mapdata.get_block(block_id, meta).slipperiness
+            return blocks.get_block(block_id, meta).slipperiness
         return 1
 
     def apply_accel(self):

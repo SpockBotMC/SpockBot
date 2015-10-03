@@ -1,4 +1,4 @@
-from spockbot.mcmap import mapdata
+from spockbot.mcdata import blocks
 from spockbot.vector import Vector3
 
 UNIT_VECTORS = Vector3(1, 0, 0), Vector3(0, 1, 0), Vector3(0, 0, 1)
@@ -45,7 +45,7 @@ class MTVTest(object):
             block_id, meta = self.world.get_block(
                 block_pos.x, block_pos.y, block_pos.z
             )
-            block = mapdata.get_block(block_id, meta)
+            block = blocks.get_block(block_id, meta)
             if not block.bounding_box:
                 continue
             transform_vectors = []

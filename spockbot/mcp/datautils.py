@@ -1,13 +1,61 @@
 import json
 import struct
 
-from spockbot import utils
 from spockbot.mcp import mcdata, nbt
 from spockbot.mcp.mcdata import (MC_BYTE, MC_CHAT, MC_FLOAT, MC_FP_BYTE,
                                  MC_FP_INT, MC_INT, MC_LONG, MC_META,
                                  MC_POSITION, MC_SHORT, MC_SLOT, MC_STRING,
                                  MC_UBYTE, MC_ULONG, MC_UUID, MC_VARINT,
                                  MC_VARLONG)
+
+
+class BufferUnderflowException(Exception):
+    pass
+
+
+class BoundBuffer(object):
+    buff = b''
+    cursor = 0
+
+    def __init__(self, data=b""):
+        self.write(data)
+
+    def read(self, length):
+        if length > len(self):
+            raise BufferUnderflowException()
+
+        out = self.buff[self.cursor:self.cursor+length]
+        self.cursor += length
+        return out
+
+    def write(self, data):
+        self.buff += data
+
+    def flush(self):
+        return self.read(len(self))
+
+    def save(self):
+        self.buff = self.buff[self.cursor:]
+        self.cursor = 0
+
+    def revert(self):
+        self.cursor = 0
+
+    def tell(self):
+        return self.cursor
+
+    def __len__(self):
+        return len(self.buff) - self.cursor
+
+    def __repr__(self):
+        return "<BoundBuffer '%s'>" % repr(self.buff[self.cursor:])
+
+    recv = read
+    append = write
+
+
+def byte_to_hex(byte_str):
+    return ''.join(["%02X " % x for x in byte_str]).strip()
 
 
 # Unpack/Pack functions return None on error
@@ -137,7 +185,7 @@ def pack_slot(slot):
         o += pack(MC_SHORT, slot['damage'])
         if 'enchants' in slot:
             ench = slot['enchants']
-            bbuff = utils.BoundBuffer()
+            bbuff = BoundBuffer()
             nbt.TagByte(ench.id)._render_buffer(bbuff)
             nbt.TagString(ench.name)._render_buffer(bbuff)
             ench._render_buffer(bbuff)

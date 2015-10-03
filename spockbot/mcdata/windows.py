@@ -5,7 +5,7 @@ from minecraft_data.v1_8 import find_item_or_block, windows_list
 from minecraft_data.v1_8 import windows as windows_by_id
 
 from spockbot.mcdata import constants
-from spockbot.utils import camel_case, snake_case
+from spockbot.mcdata.utils import camel_case, snake_case
 
 
 def make_slot_check(wanted):
