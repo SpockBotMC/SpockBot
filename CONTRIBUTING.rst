@@ -55,7 +55,7 @@ Have fun!
 Docstrings
 ~~~~~~~~~~
 
-We use Google Style Python Docstrings, an example can be found `here<https://sphinxcontrib-napoleon.readthedocs.org/en/latest/example_google.html>`__
+We use Google Style Python Docstrings, an example can be found `here <https://sphinxcontrib-napoleon.readthedocs.org/en/latest/example_google.html>`__
 
 Test your changes
 ~~~~~~~~~~~~~~~~~
