@@ -1,10 +1,10 @@
 import collections
 
-from spock.plugins.base import PluginBase
-from spock.plugins.tools import collision
-from spock.mcmap import mapdata
-from spock.utils import pl_announce, BoundingBox
-from spock.vector import Vector3
+from spockbot.plugins.base import PluginBase, pl_announce
+from spockbot.plugins.tools.collision import MTVTest, uncenter_position, center_position
+from spockbot.mcdata import blocks
+from spockbot.mcdata.utils import BoundingBox
+from spockbot.vector import Vector3
 
 """
 I wrote a lot of comments explaining whats broken and whats not but
@@ -20,9 +20,9 @@ class PathCore(object):
         self.find_valid_nodes = plug.find_valid_nodes
 
     def pathfind(self, pos, target):
-        pos = PathNode(pos).floor() + Vector3(0.5, 0, 0.5)
-        target = PathNode(target).floor() + Vector3(0.5, 0, 0.5)
-        return self.plug.pathfind(pos, target)
+        pos = center_position(pos.floor(), BoundingBox(1, 1))
+        target = center_position(target.floor(), BoundingBox(1, 1))
+        return self.plug.pathfind(PathNode(pos), PathNode(target))
 
     def build_list_from_node(self, node):
         ret = collections.deque()
@@ -49,7 +49,7 @@ class PathPlugin(PluginBase):
 
         self.bounding_box = BoundingBox(w=0.6, h=1.8)
         self.path = PathCore(self)
-        self.col = collision.MTVTest(self.world, self.bounding_box)
+        self.col = MTVTest(self.world, self.bounding_box)
         ploader.provides('Path', self.path)
 
     def pathfind(self, start_node, end_node):
@@ -89,7 +89,7 @@ class PathPlugin(PluginBase):
             block_id, meta = self.world.get_block(
                 block_pos.x, block_pos.y-1, block_pos.z
             )
-            block = mapdata.get_block(block_id, meta)
+            block = blocks.get_block(block_id, meta)
             if not block.bounding_box:
                 return False
             t = self.col.block_collision(pos)
@@ -97,38 +97,95 @@ class PathPlugin(PluginBase):
                 return False
         return True
 
+    def get_block(self, pos):
+        block_id, meta = self.world.get_block(*pos.vector)
+        return blocks.get_block(block_id, meta)
+
+    def check_for_bbox(self, pos):
+        pos = pos.floor()
+        block = self.get_block(pos)
+        if block.bounding_box:
+            return True
+        block = self.get_block(pos + Vector3(0, 1, 0))
+        if block.bounding_box:
+            return True
+        return False
+
+    def single_query(self, node, offset, walk_nodes, fall_nodes, jump_nodes):
+        walk_node = node + offset
+        if not self.check_for_bbox(walk_node):
+            fall_node = node - Vector3(0, 1, 0)
+            if not self.check_for_bbox(fall_node):
+                fall_node.parent = node
+                fall_node.node_dist = node.node_dist + fall_node.dist(node)
+                fall_nodes.append(fall_node)
+                walk_bool = False
+                fall_bool = True
+            else:
+                walk_node.parent = node
+                walk_node.node_dist = node.node_dist + walk_node.dist(node)
+                walk_nodes.append(walk_node)
+                walk_bool = True
+                fall_bool = False
+        else:
+            walk_bool = False
+            fall_bool = False
+        jump_node = walk_node + Vector3(0, 1, 0)
+        if not self.check_for_bbox(jump_node):
+            jump_node.parent = node
+            jump_node.node_dist = node.node_dist + jump_node.dist(node)
+            jump_nodes.append(jump_node)
+            jump_bool = True
+        else:
+            jump_bool = False
+        return walk_bool, fall_bool, jump_bool
+
     def find_valid_nodes(self, node):
-        if not isinstance(node, PathNode):
-            node = PathNode(node)
-        block_node = PathNode(node.floor())
-        walk_nodes = []
-        jump_nodes = []
-        fall_nodes = []
-        test_positions = [block_node + Vector3(x, 0, 0) for x in (-1, 1)]
-        test_positions.extend([block_node + Vector3(0, 0, z) for z in (-1, 1)])
-        for block_pos in test_positions:
-            player_pos = block_pos + Vector3(0.5, 0, 0.5)
-            test = Vector3(player_pos)
-            test.x -= self.col.bounding_box.w/2
-            test.z -= self.col.bounding_box.d/2
-            t = self.col.block_collision(test)
-            if not any(t):
-                fall_pos = player_pos - Vector3(0, 1, 0)
-                test -= Vector3(0,1,0)
-                t = self.col.block_collision(test - Vector3(0, 1, 0))
-                if any(t):
-                    player_pos.parent = node
-                    player_pos.node_dist = node.node_dist + player_pos.dist(node)
-                    walk_nodes.append(player_pos)
-                else:
-                    fall_pos.parent = node
-                    fall_pos.node_dist = node.node_dist + fall_pos.dist(node)
-                    fall_nodes.append(fall_pos)
-                continue
-            jump_pos = player_pos + Vector3(0, 1, 0)
-            t = self.col.block_collision(test + Vector3(0, 1, 0))
-            if not any(t):
-                jump_pos.parent = node
-                jump_pos.node_dist = node.node_dist + jump_pos.dist(node)
-                jump_nodes.append(jump_pos)
+        root_node = node
+        walk_nodes, fall_nodes, jump_nodes = [], [], []
+        pos_walk_x, pos_fall_x, pos_jump_x = self.single_query(root_node, Vector3(1, 0, 0), walk_nodes, fall_nodes, jump_nodes)
+        pos_walk_z, pos_fall_z, pos_jump_z = self.single_query(root_node, Vector3(0, 0, 1), walk_nodes, fall_nodes, jump_nodes)
+        neg_walk_x, neg_fall_x, neg_jump_x = self.single_query(root_node, Vector3(-1, 0, 0), walk_nodes, fall_nodes, jump_nodes)
+        neg_walk_z, neg_fall_z, neg_jump_z = self.single_query(root_node, Vector3(0, 0, -1), walk_nodes, fall_nodes, jump_nodes)
+
+        diag_nodes = []
+        diag_nodes.append(walk_nodes if pos_walk_x and pos_walk_z else [])
+        if (pos_walk_x or pos_fall_x) and (pos_walk_z or pos_fall_z):
+            diag_nodes.append(fall_nodes)
+        else:
+            diag_nodes.append([])
+        diag_nodes.append(jump_nodes if pos_jump_x and pos_jump_z else [])
+        if any(diag_nodes):
+            self.single_query(root_node, Vector3(1, 0, 1), *diag_nodes)
+
+        diag_nodes = []
+        diag_nodes.append(walk_nodes if neg_walk_x and neg_walk_z else [])
+        if (neg_walk_x or neg_fall_x) and (neg_walk_z or neg_fall_z):
+            diag_nodes.append(fall_nodes)
+        else:
+            diag_nodes.append([])
+        diag_nodes.append(jump_nodes if neg_jump_x and neg_jump_z else [])
+        if any(diag_nodes):
+            self.single_query(root_node, Vector3(-1, 0, -1), *diag_nodes)
+
+        diag_nodes = []
+        diag_nodes.append(walk_nodes if pos_walk_x and neg_walk_z else [])
+        if (pos_walk_x or pos_fall_x) and (neg_walk_z or neg_fall_z):
+            diag_nodes.append(fall_nodes)
+        else:
+            diag_nodes.append([])
+        diag_nodes.append(jump_nodes if pos_jump_x and neg_jump_z else [])
+        if any(diag_nodes):
+            self.single_query(root_node, Vector3(1, 0, -1), *diag_nodes)
+
+        diag_nodes = []
+        diag_nodes.append(walk_nodes if neg_walk_x and pos_walk_z else [])
+        if (neg_walk_x or neg_fall_x) and (pos_walk_z or pos_fall_z):
+            diag_nodes.append(fall_nodes)
+        else:
+            diag_nodes.append([])
+        diag_nodes.append(jump_nodes if neg_jump_x and pos_jump_z else [])
+        if any(diag_nodes):
+            self.single_query(root_node, Vector3(-1, 0, 1), *diag_nodes)
+
         return walk_nodes, jump_nodes, fall_nodes
