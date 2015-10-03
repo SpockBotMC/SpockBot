@@ -24,8 +24,6 @@ class EventCore(object):
             self.emit('event_tick')
         logger.info('EVENTCORE: Kill called, shutting down')
         self.emit('event_kill')
-        # For backwards compatibility, will remove soon
-        self.emit('kill')
 
     def reg_event_handler(self, event, handler):
         self.event_handlers[event].append(handler)
