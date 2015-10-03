@@ -262,7 +262,8 @@ class NetPlugin(PluginBase):
 
     # Kill event - Try to shutdown the socket politely
     def handle_kill(self, name, data):
-        logger.info("NETPLUGIN: Kill event recieved, shutting down socket")
-        if not self.sock_dead:
-            self.sock.shutdown(socket.SHUT_WR)
-        self.sock.close()
+        if self.connected:
+            logger.info("NETPLUGIN: Kill event recieved, shutting down socket")
+            if not self.sock_dead:
+                self.sock.shutdown(socket.SHUT_WR)
+            self.sock.close()
