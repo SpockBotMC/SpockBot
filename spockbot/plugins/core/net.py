@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
 from spockbot.mcp import mcdata, mcpacket
-from spockbot.mcp.datautils import BoundBuffer, BufferUnderflowException
+from spockbot.mcp.bbuff import BoundBuffer, BufferUnderflowException
 from spockbot.plugins.base import PluginBase, pl_announce
 
 logger = logging.getLogger('spockbot')
