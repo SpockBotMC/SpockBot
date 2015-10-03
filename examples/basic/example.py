@@ -14,11 +14,17 @@ from __future__ import absolute_import
 
 __author__ = 'Cosmo Harrigan'
 
+import logging
+
 # Import the plugins you have created
 from example_plugin import ExamplePlugin
 
 from spockbot import Client
 from spockbot.plugins import default_plugins
+
+# Change default log level to DEBUG so we can see extra messages
+logger = logging.getLogger('spockbot')
+logger.setLevel(logging.DEBUG)
 
 # Set the following values:
 USERNAME = ''
