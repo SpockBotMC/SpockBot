@@ -1,7 +1,7 @@
-spockbot.mcmap.smpmap module
+spockbot.mcdata.utils module
 ============================
 
-.. automodule:: spockbot.mcmap.smpmap
+.. automodule:: spockbot.mcdata.utils
     :members:
     :undoc-members:
     :show-inheritance:

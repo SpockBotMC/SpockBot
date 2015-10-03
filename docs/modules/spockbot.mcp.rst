@@ -6,6 +6,7 @@ Submodules
 
 .. toctree::
 
+   spockbot.mcp.bbuff
    spockbot.mcp.datautils
    spockbot.mcp.mcdata
    spockbot.mcp.mcpacket

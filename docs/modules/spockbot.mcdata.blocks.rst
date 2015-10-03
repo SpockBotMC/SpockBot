@@ -1,7 +1,7 @@
-spockbot.mcmap.mapdata module
+spockbot.mcdata.blocks module
 =============================
 
-.. automodule:: spockbot.mcmap.mapdata
+.. automodule:: spockbot.mcdata.blocks
     :members:
     :undoc-members:
     :show-inheritance:
