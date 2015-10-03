@@ -38,7 +38,7 @@ class WorldPlugin(PluginBase):
         'PLAY<Multi Block Change': 'handle_multi_block_change',
         'PLAY<Block Change': 'handle_block_change',
         'PLAY<Map Chunk Bulk': 'handle_map_chunk_bulk',
-        'disconnect': 'handle_disconnect',
+        'net_disconnect': 'handle_disconnect',
     }
 
     def __init__(self, ploader, settings):

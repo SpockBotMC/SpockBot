@@ -115,7 +115,7 @@ class ClientInfoPlugin(PluginBase):
         'PLAY<Change Game State': 'handle_game_state',
         'PLAY<Server Difficulty': 'handle_server_difficulty',
         'PLAY<Player Abilities': 'handle_player_abilities',
-        'disconnect': 'handle_disconnect',
+        'net_disconnect': 'handle_disconnect',
     }
 
     def __init__(self, ploader, settings):

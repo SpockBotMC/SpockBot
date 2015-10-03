@@ -15,7 +15,7 @@ class StartPlugin(PluginBase):
     requires = ('Event', 'Net', 'Auth')
     events = {
         'event_start': 'start_session',
-        'connect': 'handshake_and_login_start',
+        'net_connect': 'handshake_and_login_start',
     }
     defaults = {
         'username': 'Bot',
