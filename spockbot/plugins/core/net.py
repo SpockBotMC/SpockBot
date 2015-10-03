@@ -95,7 +95,7 @@ class NetCore(object):
             self.sock.connect((self.host, self.port))
             self.sock.setblocking(False)
             self.connected = True
-            self.event.emit('connect', (self.host, self.port))
+            self.event.emit('net_connect', (self.host, self.port))
             logger.info("NETCORE: Connected to host: %s port: %s", host, port)
         except socket.error as error:
             logger.error("NETCORE: Error on Connect")
@@ -227,7 +227,7 @@ class NetPlugin(PluginBase):
         self.sock = SelectSocket(self.timers)
         self.net.reset(self.sock)
         logger.error("NETPLUGIN: Socket Error: %s", data)
-        self.event.emit('disconnect', data)
+        self.event.emit('net_disconnect', data)
         if self.sock_quit and not self.event.kill_event:
             self.sock_dead = True
             self.event.kill()
@@ -238,7 +238,7 @@ class NetPlugin(PluginBase):
         self.sock = SelectSocket(self.timers)
         self.net.reset(self.sock)
         logger.error("NETPLUGIN: Socket has hung up")
-        self.event.emit('disconnect', "Socket Hung Up")
+        self.event.emit('net_disconnect', "Socket Hung Up")
         if self.sock_quit and not self.event.kill_event:
             self.sock_dead = True
             self.event.kill()
@@ -257,7 +257,7 @@ class NetPlugin(PluginBase):
 
     def handle_disconnect(self, name, packet):
         logger.info("NETPLUGIN: Disconnected: %s", packet.data['reason'])
-        self.event.emit('disconnect', packet.data['reason'])
+        self.event.emit('net_disconnect', packet.data['reason'])
 
     # Kill event - Try to shutdown the socket politely
     def handle_kill(self, name, data):

@@ -115,7 +115,7 @@ class TimerPlugin(PluginBase):
     requires = 'World'
     events = {
         'event_tick': 'tick',
-        'disconnect': 'handle_disconnect',
+        'net_disconnect': 'handle_disconnect',
     }
 
     def __init__(self, ploader, settings):
