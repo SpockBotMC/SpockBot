@@ -5,6 +5,7 @@ and provides simple inventory analysis and manipulation.
 from spockbot.mcdata import constants, windows
 from spockbot.mcdata.windows import make_slot_check
 from spockbot.plugins.base import PluginBase, pl_announce
+from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.plugins.tools.inventory_async import InventoryAsync
 
 
@@ -159,7 +160,7 @@ class InventoryPlugin(PluginBase):
     def emit_open_window(self, *_):
         self.event.emit('inventory_open_window',
                         {'window': self.inventory.window})
-        return True  # unregister this handler
+        return EVENT_UNREGISTER  # unregister this handler
 
     def handle_held_item_change(self, event, packet):
         self.inventory.active_slot_nr = packet.data['slot']
@@ -238,7 +239,7 @@ class InventoryPlugin(PluginBase):
                 'accepted': accepted,
                 'click': click,
             })
-            return True  # unregister this handler
+            return EVENT_UNREGISTER  # unregister this handler
 
         if accepted:
             # TODO check if the wrong window/action ID was confirmed,

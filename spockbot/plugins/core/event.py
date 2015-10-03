@@ -7,6 +7,7 @@ import signal
 from collections import defaultdict
 
 from spockbot.plugins.base import pl_announce
+from spockbot.plugins.tools.event import EVENT_UNREGISTER
 
 logger = logging.getLogger('spockbot')
 
@@ -36,7 +37,7 @@ class EventCore(object):
         # and immediately run, so an infinite loop can be created
         for handler in reversed(self.event_handlers[event]):
             d = data.clone() if hasattr(data, 'clone') else copy.deepcopy(data)
-            if handler(event, d):
+            if handler(event, d) == EVENT_UNREGISTER:
                 to_remove.append(handler)
         for handler in to_remove:
             self.event_handlers[event].remove(handler)

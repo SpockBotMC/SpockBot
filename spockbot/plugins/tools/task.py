@@ -1,5 +1,7 @@
 import types
 
+from spockbot.plugins.tools.event import EVENT_UNREGISTER
+
 
 def accept(evt, data):
     return True
@@ -67,7 +69,7 @@ class Task(object):
         check = self.expected.get(event, lambda *_: False)
         if check(event, data):  # TODO does check really need event?
             self.continue_with(lambda: self.task.send((event, data)))
-        return True  # remove this handler
+        return EVENT_UNREGISTER  # remove this handler
 
     def parse_response(self, response):
         # TODO what format do we want to use? also documentation
