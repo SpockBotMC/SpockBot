@@ -1,4 +1,3 @@
-from spockbot import utils
 from spockbot.mcp import datautils
 from spockbot.mcp import mcdata
 from spockbot.mcp import nbt
@@ -346,7 +345,7 @@ class ExtensionUpdateNBT:
 
     @staticmethod
     def encode_extra(packet):
-        bbuff = utils.BoundBuffer()
+        bbuff = datautils.BoundBuffer()
         if packet.data['nbt'] is None:
             packet.data['nbt'] = nbt._TagEnd()
         nbt.TagByte(packet.data['nbt'].id)._render_buffer(bbuff)

@@ -18,9 +18,8 @@ __author__ = 'Cosmo Harrigan, Morgan Creekmore'
 import logging
 
 # Import any modules that you need in your plugin
-from spockbot.mcmap import mapdata
-from spockbot.plugins.base import PluginBase
-from spockbot.utils import pl_announce
+from spockbot.mcdata import blocks
+from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.vector import Vector3
 
 # Required import
@@ -107,6 +106,6 @@ class ExamplePlugin(PluginBase):
         block_id, meta = self.world.get_block(block_pos.x,
                                               block_pos.y,
                                               block_pos.z)
-        block_at = mapdata.get_block(block_id, meta)
-        self.interact.chat('Found block %s at %s' % (block_at.display_name,
-                                                     block_pos))
+        block_at = blocks.get_block(block_id, meta)
+        self.chat.chat('Found block %s at %s' % (block_at.display_name,
+                                                 block_pos))

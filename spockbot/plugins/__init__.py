@@ -1,7 +1,6 @@
 from spockbot.plugins.core import auth, event, net, taskmanager, ticker, timer
 from spockbot.plugins.helpers import chat, clientinfo, entities, interact, \
     inventory, keepalive, movement, physics, respawn, start, world
-from spockbot.plugins.base import PluginBase  # noqa
 
 
 core_plugins = [

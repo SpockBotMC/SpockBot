@@ -6,13 +6,27 @@ track this information on their own.
 """
 
 from spockbot.mcdata import constants
+from spockbot.mcdata.utils import Info
 from spockbot.mcp import mcdata
 from spockbot.mcp.mcdata import (
     FLG_XPOS_REL, FLG_XROT_REL, FLG_YPOS_REL, FLG_YROT_REL, FLG_ZPOS_REL,
     GS_GAMEMODE
 )
-from spockbot.plugins.base import PluginBase
-from spockbot.utils import Info, Position, pl_announce
+from spockbot.plugins.base import PluginBase, pl_announce
+from spockbot.vector import Vector3
+
+
+class Position(Vector3, Info):
+    """
+    Used for things that require encoding position for the protocol,
+    but also require higher level vector functions.
+    """
+
+    def get_dict(self):
+        d = self.__dict__.copy()
+        del d['vector']
+        d['x'], d['y'], d['z'] = self
+        return d
 
 
 class GameInfo(Info):

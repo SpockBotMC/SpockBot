@@ -1,6 +1,5 @@
-from spockbot.plugins.base import PluginBase
+from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools.task import Task
-from spockbot.utils import pl_announce
 
 
 @pl_announce('TaskManager')

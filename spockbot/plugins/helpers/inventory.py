@@ -4,9 +4,8 @@ and provides simple inventory analysis and manipulation.
 """
 from spockbot.mcdata import constants, windows
 from spockbot.mcdata.windows import make_slot_check
-from spockbot.plugins.base import PluginBase
+from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools.inventory_async import InventoryAsync
-from spockbot.utils import pl_announce
 
 
 class InventoryCore(object):

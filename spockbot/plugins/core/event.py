@@ -6,7 +6,7 @@ import logging
 import signal
 from collections import defaultdict
 
-from spockbot.utils import pl_announce
+from spockbot.plugins.base import pl_announce
 
 logger = logging.getLogger('spockbot')
 

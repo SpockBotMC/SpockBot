@@ -13,10 +13,9 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
-from spockbot import utils
 from spockbot.mcp import mcdata, mcpacket
-from spockbot.plugins.base import PluginBase
-from spockbot.utils import pl_announce
+from spockbot.mcp.datautils import BoundBuffer, BufferUnderflowException
+from spockbot.plugins.base import PluginBase, pl_announce
 
 logger = logging.getLogger('spockbot')
 backend = default_backend()
@@ -83,7 +82,7 @@ class NetCore(object):
         self.comp_state = mcdata.PROTO_COMP_OFF
         self.comp_threshold = -1
         self.sbuff = b''
-        self.rbuff = utils.BoundBuffer()
+        self.rbuff = BoundBuffer()
 
     def connect(self, host='localhost', port=25565):
         self.host = host
@@ -131,7 +130,7 @@ class NetCore(object):
                     self.proto_state,
                     mcdata.SERVER_TO_CLIENT
                 )).decode(self.rbuff, self.comp_state)
-            except utils.BufferUnderflowException:
+            except BufferUnderflowException:
                 self.rbuff.revert()
                 break
             except mcpacket.PacketDecodeFailure as err:

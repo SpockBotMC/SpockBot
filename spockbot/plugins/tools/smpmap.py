@@ -18,11 +18,15 @@ and so on
 
 import array
 
-from spockbot import utils
+from spockbot.mcp.datautils import BoundBuffer
 
 DIMENSION_NETHER = -0x01
 DIMENSION_OVERWOLD = 0x00
 DIMENSION_END = 0x01
+
+
+def mapshort2id(data):
+    return data >> 4, data & 0x0F
 
 
 class ChunkData(object):
@@ -128,7 +132,7 @@ class Dimension(object):
         self.columns = {}  # chunk columns are address by a tuple (x, z)
 
     def unpack_bulk(self, data):
-        bbuff = utils.BoundBuffer(data['data'])
+        bbuff = BoundBuffer(data['data'])
         skylight = data['sky_light']
         for meta in data['metadata']:
             key = meta['chunk_x'], meta['chunk_z']
@@ -137,7 +141,7 @@ class Dimension(object):
             self.columns[key].unpack(bbuff, meta['primary_bitmap'], skylight)
 
     def unpack_column(self, data):
-        bbuff = utils.BoundBuffer(data['data'])
+        bbuff = BoundBuffer(data['data'])
         skylight = True if self.dimension == DIMENSION_OVERWOLD else False
         key = data['chunk_x'], data['chunk_z']
         if key not in self.columns:

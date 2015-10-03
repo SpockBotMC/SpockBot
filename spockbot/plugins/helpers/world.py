@@ -5,10 +5,9 @@ interpret blocks and their metadata more comprehensively. Planned to provide
 light level interpretation based on sky light and time of day
 """
 
-from spockbot.mcmap import smpmap
 from spockbot.mcp import mcdata
-from spockbot.plugins.base import PluginBase
-from spockbot.utils import pl_announce
+from spockbot.plugins.base import PluginBase, pl_announce
+from spockbot.plugins.tools import smpmap
 
 
 class WorldData(smpmap.Dimension):

@@ -1,8 +1,8 @@
 """
 An entity tracker
 """
-from spockbot.plugins.base import PluginBase
-from spockbot.utils import Info, pl_announce
+from spockbot.mcdata.utils import Info
+from spockbot.plugins.base import PluginBase, pl_announce
 
 
 class MCEntity(Info):
