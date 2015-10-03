@@ -23,7 +23,7 @@ class EventCore(object):
         self.emit('event_start')
         while not self.kill_event:
             self.emit('event_tick')
-        logger.info('EVENTCORE: Kill called, shutting down')
+        logger.debug('EVENTCORE: Kill called, shutting down')
         self.emit('event_kill')
 
     def reg_event_handler(self, event, handler):

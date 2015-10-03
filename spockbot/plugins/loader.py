@@ -33,7 +33,7 @@ class PluginLoader(object):
         while self.plugins:
             plugin = self.plugins.pop()
             plugin(self, self.fetch.get_plugin_settings(plugin))
-            logger.info("PLUGINLOADER: Loaded %s", plugin.__name__)
+            logger.debug("PLUGINLOADER: Loaded %s", plugin.__name__)
 
     def requires(self, ident, hard=True, warning=None):
         if ident not in self.extensions:
@@ -41,7 +41,7 @@ class PluginLoader(object):
                 plugin = self.announce[ident]
                 self.plugins.remove(plugin)
                 plugin(self, self.fetch.get_plugin_settings(plugin))
-                logger.info("PLUGINLOADER: Loaded %s", plugin.__name__)
+                logger.debug("PLUGINLOADER: Loaded %s", plugin.__name__)
             elif ident in self.events:
                 return True
             else:

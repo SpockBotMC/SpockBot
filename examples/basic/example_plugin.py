@@ -20,6 +20,7 @@ import logging
 # Import any modules that you need in your plugin
 from spockbot.mcdata import blocks
 from spockbot.plugins.base import PluginBase, pl_announce
+from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
 
 # Required import
@@ -86,8 +87,8 @@ class ExamplePlugin(PluginBase):
         # Switch to first slot because there is no cobblestone in hotbar
         else:
             self.inventory.select_active_slot(0)
-        # Return True to unregister the event handler
-        return True
+        # Return EVENT_UNREGISTER to unregister the event handler
+        return EVENT_UNREGISTER
 
     def periodic_event_handler(self):
         """Triggered every 5 seconds by a timer"""

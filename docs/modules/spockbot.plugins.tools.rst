@@ -7,6 +7,7 @@ Submodules
 .. toctree::
 
    spockbot.plugins.tools.collision
+   spockbot.plugins.tools.event
    spockbot.plugins.tools.inventory_async
    spockbot.plugins.tools.smpmap
    spockbot.plugins.tools.task
