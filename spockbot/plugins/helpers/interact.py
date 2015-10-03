@@ -133,8 +133,11 @@ class InteractPlugin(PluginBase):
         """
         Click on a block.
         Examples: push button, open window, make redstone ore glow
-        :param face: side of the block on which the block is placed on
-        :param cursor_pos: where to click inside the block, each dimension 0-15
+
+        Args:
+            face (int): side of the block on which the block is placed on
+            cursor_pos (Vector3): where to click inside the block,
+                each dimension 0-15
         """
         if look_at_block and self.auto_look:
             # TODO look at cursor_pos

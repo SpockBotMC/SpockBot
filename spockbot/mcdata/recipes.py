@@ -67,7 +67,8 @@ def total_ingredient_amounts(recipe):
 
 def ingredient_positions(recipe):
     """
-    returns dict{ (item_id, metadata) -> [ (x, y, amount), ... ] }
+    Returns:
+        dict: In the form { (item_id, metadata) -> [ (x, y, amount), ... ] }
     """
     positions = defaultdict(list)
     for y, row in enumerate(recipe.in_shape):
