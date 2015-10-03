@@ -7,7 +7,6 @@ Subpackages
 .. toctree::
 
     spockbot.mcdata
-    spockbot.mcmap
     spockbot.mcp
     spockbot.plugins
 
@@ -16,7 +15,6 @@ Submodules
 
 .. toctree::
 
-   spockbot.utils
    spockbot.vector
 
 Module contents

@@ -8,6 +8,7 @@ Submodules
 
    spockbot.plugins.tools.collision
    spockbot.plugins.tools.inventory_async
+   spockbot.plugins.tools.smpmap
    spockbot.plugins.tools.task
 
 Module contents
