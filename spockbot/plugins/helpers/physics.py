@@ -50,13 +50,10 @@ class PhysicsCore(object):
         self.move_accel = self.abilities.walking_speed * const.PHY_SPR_MUL
 
     def move_target(self, vector):
-        vector.y = self.pos.y
-        if vector - self.pos < self.vec:
-            self.pos.init(vector)
-            self.vec.zero()
+        self.direction = vector - self.pos
+        self.direction.y = 0
+        if self.direction <= Vector3(self.vec.x, 0, self.vec.z):
             return True
-        else:
-            self.direction = vector - self.pos
 
     def move_vector(self, vector):
         vector.y = 0

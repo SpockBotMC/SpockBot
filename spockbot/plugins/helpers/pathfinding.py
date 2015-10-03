@@ -52,7 +52,8 @@ class PathPlugin(PluginBase):
         self.col = MTVTest(self.world, self.bounding_box)
         ploader.provides('Path', self.path)
 
-    def pathfind(self, start_node, end_node):
+    def pathfind(self, start_node, end_node, timeout = 2.5):
+        start_time = time.time()
         def calc_f_val(node):
             return node.node_dist + end_node.dist(node)
         open_list = []
@@ -63,7 +64,7 @@ class PathPlugin(PluginBase):
             p = current_node.parent
             if p is not None and not (p.is_fall or p.is_jump):
                 p = current_node.parent.parent
-                if p is not None and self.raycast_bbox(p, current_node):
+                if p is not None and not (p.is_fall or p.is_jump) and self.raycast_bbox(p, current_node):
                     current_node.parent = p
                     current_node.node_dist = p.node_dist + current_node.dist(p)
             if current_node == end_node:
@@ -73,6 +74,8 @@ class PathPlugin(PluginBase):
                 if valid_node not in (open_list + closed_list):
                     open_list.append(valid_node)
             open_list.sort(key=calc_f_val)
+            if time.time() - start_time > timeout:
+                return current_node
             closed_list.append(current_node)
         return None
 
@@ -116,7 +119,7 @@ class PathPlugin(PluginBase):
     def single_query(self, node, offset, walk_nodes, fall_nodes, jump_nodes):
         walk_node = node + offset
         if not self.check_for_bbox(walk_node):
-            fall_node = node - Vector3(0, 1, 0)
+            fall_node = walk_node - Vector3(0, 1, 0)
             if not self.check_for_bbox(fall_node):
                 fall_node.parent = node
                 fall_node.node_dist = node.node_dist + fall_node.dist(node)
