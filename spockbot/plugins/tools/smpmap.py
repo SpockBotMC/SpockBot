@@ -18,7 +18,7 @@ and so on
 
 import array
 
-from spockbot.mcp.datautils import BoundBuffer
+from spockbot.mcp.bbuff import BoundBuffer
 
 DIMENSION_NETHER = -0x01
 DIMENSION_OVERWOLD = 0x00
