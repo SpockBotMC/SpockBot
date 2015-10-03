@@ -32,7 +32,8 @@ class YggAuth(object):
         Generate an access token using an username and password. Any existing
         client token is invalidated if not provided.
 
-        :rtype: :class:`dict` Response or error dict
+        Returns:
+            dict: Response or error dict
         """
         endpoint = '/authenticate'
         self.username = username or self.username
@@ -59,7 +60,8 @@ class YggAuth(object):
         Generate an access token with a client/access token pair. Used
         access token is invalidated.
 
-        :rtype: :class:`dict` Response or error dict
+        Returns:
+            dict: Response or error dict
         """
         endpoint = '/refresh'
         self.access_token = access_token or self.access_token
@@ -79,7 +81,8 @@ class YggAuth(object):
         """
         Invalidate access tokens with a username and password.
 
-        :rtype: :class:`dict` Empty or error dict
+        Returns:
+            dict: Empty or error dict
         """
         endpoint = '/signout'
         self.username = username or self.username
@@ -95,7 +98,8 @@ class YggAuth(object):
         """
         Invalidate access tokens with a client/access token pair
 
-        :rtype: :class:`dict` Empty or error dict
+        Returns:
+            dict: Empty or error dict
         """
         endpoint = '/invalidate'
         self.access_token = access_token or self.access_token
@@ -111,7 +115,8 @@ class YggAuth(object):
         """
         Check if an access token is valid
 
-        :rtype: :class:`dict` Empty or error dict
+        Returns:
+            dict: Empty or error dict
         """
         endpoint = '/validate'
         self.access_token = access_token or self.access_token

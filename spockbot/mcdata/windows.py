@@ -12,7 +12,9 @@ def make_slot_check(wanted):
     """
     Creates and returns a function that takes a slot and checks
     if it matches the wanted item.
-    :param wanted: function(Slot) or Slot or itemID or (itemID, metadata)
+
+    Args:
+        wanted: function(Slot) or Slot or itemID or (itemID, metadata)
     """
     if isinstance(wanted, types.FunctionType):
         return wanted  # just forward the slot check function
@@ -151,7 +153,9 @@ class BaseClick(object):
         """
         Called by send_click() to prepare the sent packet.
         Abstract method.
-        :param inv_plugin: inventory plugin instance
+
+        Args:
+            inv_plugin (InventoryPlugin): inventory plugin instance
         """
         raise NotImplementedError()
 
@@ -159,7 +163,9 @@ class BaseClick(object):
         """
         Called by on_success().
         Abstract method.
-        :param inv_plugin: inventory plugin instance
+
+        Args:
+            inv_plugin (InventoryPlugin): inventory plugin instance
         """
         raise NotImplementedError()
 
@@ -167,9 +173,11 @@ class BaseClick(object):
         """
         Called when the click was successful
         and should be applied to the inventory.
-        :param inv_plugin: inventory plugin instance
-        :param emit_set_slot: function to signal a slot change,
-                              should be InventoryPlugin().emit_set_slot
+
+        Args:
+            inv_plugin (InventoryPlugin): inventory plugin instance
+            emit_set_slot (func): function to signal a slot change,
+                should be InventoryPlugin().emit_set_slot
         """
         self.dirty = set()
         self.apply(inv_plugin)

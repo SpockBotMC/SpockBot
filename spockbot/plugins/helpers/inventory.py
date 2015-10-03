@@ -24,7 +24,9 @@ class InventoryCore(object):
         """
         Calculates the total number of items of that type
         in the current window or given slot range.
-        :param wanted: function(Slot) or Slot or itemID or (itemID, metadata)
+
+        Args:
+            wanted: function(Slot) or Slot or itemID or (itemID, metadata)
         """
         if slots is None:
             slots = self.window.slots
@@ -36,7 +38,9 @@ class InventoryCore(object):
         Returns the first slot containing the item or None if not found.
         Searches the given slots or, if not given,
         active hotbar slot, hotbar, inventory, open window in this order.
-        :param wanted: function(Slot) or Slot or itemID or (itemID, metadata)
+
+        Args:
+            wanted: function(Slot) or Slot or itemID or (itemID, metadata)
         """
         for slot in self.find_slots(wanted, slots):
             return slot
@@ -47,7 +51,9 @@ class InventoryCore(object):
         Yields all slots containing the item.
         Searches the given slots or, if not given,
         active hotbar slot, hotbar, inventory, open window in this order.
-        :param wanted: function(Slot) or Slot or itemID or (itemID, metadata)
+
+        Args:
+            wanted: function(Slot) or Slot or itemID or (itemID, metadata)
         """
         if slots is None:
             slots = self.inv_slots_preferred + self.window.window_slots
