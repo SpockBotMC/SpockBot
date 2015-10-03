@@ -48,8 +48,8 @@ class AuthCore(object):
     def start_session(self, username, password=''):
         rep = {}
         if self.authenticated:
-            logger.info("AUTHCORE: Attempting login with username: %s",
-                        username)
+            logger.debug("AUTHCORE: Attempting login with username: %s",
+                         username)
             rep = self.ygg.authenticate(username, password)
             if rep is None or 'error' in rep:
                 logger.error('AUTHCORE: Login Unsuccessful, Response: %s', rep)
@@ -58,9 +58,9 @@ class AuthCore(object):
             if 'selectedProfile' in rep:
                 self.selected_profile = rep['selectedProfile']
                 self.username = rep['selectedProfile']['name']
-                logger.info("AUTHCORE: Logged in as: %s", self.username)
-                logger.info("AUTHCORE: Selected Profile: %s",
-                            self.selected_profile)
+                logger.debug("AUTHCORE: Logged in as: %s", self.username)
+                logger.debug("AUTHCORE: Selected Profile: %s",
+                             self.selected_profile)
             else:
                 self.username = username
         else:
@@ -112,7 +112,7 @@ class AuthPlugin(PluginBase):
                 self.auth.shared_secret +
                 pubkey_raw
             ))
-            logger.info(
+            logger.debug(
                 "AUTHPLUGIN: Attempting to authenticate session with "
                 "sessionserver.mojang.com")
             url = "https://sessionserver.mojang.com/session/minecraft/join"
@@ -131,7 +131,7 @@ class AuthPlugin(PluginBase):
                 logger.warning("AUTHPLUGIN: %s", rep)
                 self.event.emit('SESS_ERR')
             else:
-                logger.info("AUTHPLUGIN: Session authentication successful")
+                logger.debug("AUTHPLUGIN: Session authentication successful")
         pubkey = serialization.load_der_public_key(pubkey_raw, backend)
 
         def encrypt(data):

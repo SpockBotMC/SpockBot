@@ -88,15 +88,15 @@ class NetCore(object):
         self.host = host
         self.port = port
         try:
-            logger.info("NETCORE: Attempting to connect to host: %s port: %s",
-                        host, port)
+            logger.debug("NETCORE: Attempting to connect to host: %s port: %s",
+                         host, port)
             # Set the connect to be a blocking operation
             self.sock.setblocking(True)
             self.sock.connect((self.host, self.port))
             self.sock.setblocking(False)
             self.connected = True
             self.event.emit('net_connect', (self.host, self.port))
-            logger.info("NETCORE: Connected to host: %s port: %s", host, port)
+            logger.debug("NETCORE: Connected to host: %s port: %s", host, port)
         except socket.error as error:
             logger.error("NETCORE: Error on Connect")
             self.event.emit('SOCKET_ERR', error)
@@ -256,13 +256,13 @@ class NetPlugin(PluginBase):
         self.net.set_comp_state(packet.data['threshold'])
 
     def handle_disconnect(self, name, packet):
-        logger.info("NETPLUGIN: Disconnected: %s", packet.data['reason'])
+        logger.debug("NETPLUGIN: Disconnected: %s", packet.data['reason'])
         self.event.emit('net_disconnect', packet.data['reason'])
 
     # Kill event - Try to shutdown the socket politely
     def handle_kill(self, name, data):
         if self.net.connected:
-            logger.info("NETPLUGIN: Kill event recieved, shutting down socket")
+            logger.debug("NETPLUGIN: Kill event received, closing socket")
             if not self.sock_dead:
                 self.sock.shutdown(socket.SHUT_WR)
             self.sock.close()
