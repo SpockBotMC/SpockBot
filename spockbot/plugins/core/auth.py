@@ -53,7 +53,7 @@ class AuthCore(object):
             rep = self.ygg.authenticate(username, password)
             if rep is None or 'error' in rep:
                 logger.error('AUTHCORE: Login Unsuccessful, Response: %s', rep)
-                self.event.emit('AUTH_ERR')
+                self.event.emit('auth_login_error')
                 return rep
             if 'selectedProfile' in rep:
                 self.selected_profile = rep['selectedProfile']
@@ -81,8 +81,8 @@ class AuthPlugin(PluginBase):
         'sess_quit': True,
     }
     events = {
-        'AUTH_ERR': 'handle_auth_error',
-        'SESS_ERR': 'handle_session_error',
+        'auth_login_error': 'handle_auth_error',
+        'auth_session_error': 'handle_session_error',
         'LOGIN<Encryption Request': 'handle_encryption_request',
     }
 
@@ -129,7 +129,7 @@ class AuthPlugin(PluginBase):
                 rep = 'Couldn\'t connect to sessionserver.mojang.com'
             if rep != "":
                 logger.warning("AUTHPLUGIN: %s", rep)
-                self.event.emit('SESS_ERR')
+                self.event.emit('auth_session_error')
             else:
                 logger.debug("AUTHPLUGIN: Session authentication successful")
         pubkey = serialization.load_der_public_key(pubkey_raw, backend)
