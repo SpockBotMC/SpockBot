@@ -26,7 +26,6 @@ class MovementCore(object):
         self.move_location = None
         self.plug.teardown_pathfinding()
 
-
     def is_moving(self):
         return self.move_location is not None
 
@@ -77,9 +76,12 @@ class MovementPlugin(PluginBase):
         self.move_nodes = None
 
     def setup_pathfinding(self):
-        nodes = self.path.pathfind(self.clientinfo.position, self.movement.move_location)
+        nodes = self.path.pathfind(self.clientinfo.position,
+                                   self.movement.move_location)
         if nodes is None:
-            logger.warn("Unable to find path from %s to %s, move command aborted" % (self.clientinfo.position, self.movement.move_location))
+            logger.warn("No path from %s to %s, move command aborted" %
+                        (self.clientinfo.position,
+                         self.movement.move_location))
         else:
             self.path_nodes = self.path.build_list_from_node(nodes)
 
@@ -88,7 +90,7 @@ class MovementPlugin(PluginBase):
             self.movement.stop()
             return
         if self.physics.move_target(self.path_nodes[0]):
-            arrived = self.path_nodes.popleft()
+            self.path_nodes.popleft()
             self.path_to()
 
     def do_pathfinding(self):
