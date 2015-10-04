@@ -14,14 +14,18 @@ logger = logging.getLogger('spockbot')
 
 
 class MovementCore(object):
-    def __init__(self):
+    def __init__(self, plug):
         self.move_location = None
+        self.plug = plug
 
     def move_to(self, x, y, z):
         self.move_location = Vector3(x, y, z)
+        self.plug.setup_pathfinding()
 
     def stop(self):
         self.move_location = None
+        self.plug.teardown_pathfinding()
+
 
     def is_moving(self):
         return self.move_location is not None
@@ -29,7 +33,7 @@ class MovementCore(object):
 
 @pl_announce('Movement')
 class MovementPlugin(PluginBase):
-    requires = ('Net', 'Physics', 'ClientInfo', 'Event')
+    requires = ('Net', 'Physics', 'ClientInfo', 'Event', 'Path')
     events = {
         'client_tick': 'client_tick',
         'action_tick': 'action_tick',
@@ -42,9 +46,10 @@ class MovementPlugin(PluginBase):
         super(MovementPlugin, self).__init__(ploader, settings)
 
         self.flag_pos_reset = False
-        self.movement = MovementCore()
+        self.movement = MovementCore(self)
         self.connected_to_server = False
         ploader.provides('Movement', self.movement)
+        self.path_nodes = None
 
     def client_tick(self, name, data):
         if not self.connected_to_server:
@@ -68,14 +73,24 @@ class MovementPlugin(PluginBase):
     def action_tick(self, name, data):
         self.do_pathfinding()
 
+    def teardown_pathfinding(self):
+        self.move_nodes = None
+
+    def setup_pathfinding(self):
+        nodes = self.path.pathfind(self.clientinfo.position, self.movement.move_location)
+        if nodes is None:
+            logger.warn("Unable to find path from %s to %s, move command aborted" % (self.clientinfo.position, self.movement.move_location))
+        else:
+            self.path_nodes = self.path.build_list_from_node(nodes)
+
+    def path_to(self):
+        if not self.path_nodes:
+            self.movement.stop()
+            return
+        if self.physics.move_target(self.path_nodes[0]):
+            arrived = self.path_nodes.popleft()
+            self.path_to()
+
     def do_pathfinding(self):
-        move = self.movement
-        clinfo = self.clientinfo
-        if move.move_location is not None:
-            if round(move.move_location.x, 2) == round(clinfo.position.x, 2) \
-                    and round(move.move_location.z, 2) == \
-                    round(clinfo.position.z, 2):
-                move.stop()
-            else:
-                self.physics.move_target(move.move_location)
-                self.physics.walk()
+        if self.movement.move_location is not None:
+            self.path_to()
