@@ -25,6 +25,8 @@ class PluginLoaderMock(object):
             return InventoryMock()
         elif requirement == 'Net':
             return NetMock()
+        elif requirement == 'Channels':
+            return True
         else:
             raise AssertionError('Unexpected requirement %s' % requirement)
 
