@@ -11,13 +11,15 @@ By default, the client sends swing and look packets like the vanilla client.
 This can be disabled by setting the auto_swing and auto_look flags.
 """
 from spockbot.mcdata import constants
+from spockbot.mcp import nbt
+from spockbot.mcp.mcdata import MC_SLOT
 from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.vector import Vector3
 
 
 @pl_announce('Interact')
 class InteractPlugin(PluginBase):
-    requires = ('ClientInfo', 'Inventory', 'Net')
+    requires = ('ClientInfo', 'Inventory', 'Net', 'Channels')
 
     def __init__(self, ploader, settings):
         super(InteractPlugin, self).__init__(ploader, settings)
@@ -225,3 +227,33 @@ class InteractPlugin(PluginBase):
 
     def jump_vehicle(self):
         self.steer_vehicle(jump=True)
+
+    def edit_book(self, pages):
+        book = self.inventory.active_slot
+        # TODO: don't use hard coded id
+        if book.item_id != 386:  # book and quill
+            return False
+        if book.nbt is None:
+            book.nbt = nbt.TagCompound()
+        nbtpages = nbt.TagList(nbt.TagString)
+        for i, page in enumerate(pages):
+            nbtpages.insert(i, nbt.TagString(page))
+        book.nbt["pages"] = nbtpages
+        data = self.channels.encode(((MC_SLOT, "slot"),),
+                                    {"slot": book.get_dict()})
+        self.channels.send("MC|BEdit", data)
+
+    def sign_book(self, author, title):
+        book = self.inventory.active_slot
+        # TODO: don't use hard coded id
+        if book.item_id != 386:  # book and quill
+            return False
+        if book.nbt is None:
+            book.nbt = nbt.TagCompound()
+        book.nbt["author"] = nbt.TagString(author)
+        book.nbt["title"] = nbt.TagString(title)
+        # TODO: don't use hard coded id
+        book.item_id = 387  # written book
+        data = self.channels.encode(((MC_SLOT, "slot"),),
+                                    {"slot": book.get_dict()})
+        self.channels.send("MC|BSign", data)
