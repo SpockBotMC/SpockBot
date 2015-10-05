@@ -5,30 +5,36 @@ directions.
 Also provides very basic pathfinding
 """
 
-import logging
-
 from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
 
-logger = logging.getLogger('spockbot')
-
 
 class MovementCore(object):
     def __init__(self, plug):
-        self.move_location = None
-        self.plug = plug
-
-    def move_to(self, x, y, z):
-        self.move_location = Vector3(x, y, z)
-        self.plug.setup_pathfinding()
+        self.__plug = plug
+        self.move_to = plug.new_path
 
     def stop(self):
-        self.move_location = None
-        self.plug.teardown_pathfinding()
+        self.__plug.path_nodes = None
 
+    @property
     def is_moving(self):
-        return self.move_location is not None
+        return self.__plug.path_nodes is not None
+
+    @property
+    def current_path(self):
+        return self.__plug.path_nodes
+
+    @property
+    def current_target(self):
+        p = self.current_path
+        return p[0] if p else None
+
+    @property
+    def final_target(self):
+        p = self.current_path
+        return p[len(p)-1] if p else None
 
 
 @pl_announce('Movement')
@@ -36,9 +42,7 @@ class MovementPlugin(PluginBase):
     requires = ('Net', 'Physics', 'ClientInfo', 'Event', 'Path')
     events = {
         'client_tick': 'client_tick',
-        'action_tick': 'action_tick',
         'client_position_update': 'handle_position_update',
-        'physics_collision': 'handle_collision',
         'client_join_game': 'handle_join_game',
     }
 
@@ -66,27 +70,16 @@ class MovementPlugin(PluginBase):
     def handle_position_update(self, name, data):
         self.flag_pos_reset = True
 
-    def handle_collision(self, name, data):
-        if self.movement.move_location is not None:
-            self.physics.jump()
+    def new_path(self, *xyz):
+        target = Vector3(*xyz)
+        self.path.pathfind(self.clientinfo.position, target, self.path_cb)
 
-    def action_tick(self, name, data):
-        self.do_pathfinding()
+    def path_cb(self, result):
+        self.path_nodes = result
+        self.event.emit('movement_path_done')
+        self.event.reg_event_handler('action_tick', self.follow_path)
 
-    def teardown_pathfinding(self):
-        self.move_nodes = None
-
-    def setup_pathfinding(self):
-        nodes = self.path.pathfind(self.clientinfo.position,
-                                   self.movement.move_location)
-        if nodes is None:
-            logger.warn("No path from %s to %s, move command aborted" %
-                        (self.clientinfo.position,
-                         self.movement.move_location))
-        else:
-            self.path_nodes = self.path.build_list_from_node(nodes)
-
-    def do_work(self):
+    def follow_path(self, _, __):
         if not self.path_nodes:
             self.movement.stop()
             return EVENT_UNREGISTER
@@ -97,15 +90,5 @@ class MovementPlugin(PluginBase):
             jumped = True
         if self.physics.move_target(target) or jumped:
             self.path_nodes.popleft()
-
-    def path_to(self):
-        if not self.path_nodes:
-            self.movement.stop()
-            return
-        if self.physics.move_target(self.path_nodes[0]):
-            self.path_nodes.popleft()
-            self.path_to()
-
-    def do_pathfinding(self):
-        if self.movement.move_location is not None:
-            self.path_to()
+            if not self.path_nodes:
+                self.movement.stop()
