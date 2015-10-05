@@ -1,8 +1,7 @@
 """
-MovementPlugin provides a centralized plugin for controlling all outgoing
-position packets so the client doesn't try to pull itself in a dozen
+MovementPlugin provides a centralized plugin for controlling client
+movement so the client doesn't try to pull itself in a dozen
 directions.
-Also provides very basic pathfinding
 """
 
 from spockbot.plugins.base import PluginBase, pl_announce
