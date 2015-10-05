@@ -1,3 +1,8 @@
+"""
+Very rough asychronous pathfinding plugin
+Implements the Lazy Theta* pathfinding algorithm
+"""
+
 import collections
 
 from spockbot.mcdata import blocks, constants as const
@@ -9,10 +14,6 @@ from spockbot.plugins.tools.collision import(
 from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
 
-"""
-Very rough asychronous pathfinding plugin
-Implements the Lazy Theta* pathfinding algorithm
-"""
 
 FOUND_VALID_PATH = 0x01
 TIMEOUT_REACHED = 0x02
