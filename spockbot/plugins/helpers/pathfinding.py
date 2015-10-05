@@ -4,7 +4,7 @@ from spockbot.mcdata import blocks, constants as const
 from spockbot.mcdata.utils import BoundingBox
 from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools.collision import(
-    center_position, MTVTest, uncenter_position
+    MTVTest, center_position, uncenter_position  # noqa
 )
 from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
