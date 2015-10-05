@@ -37,16 +37,10 @@ Features
 
 - World Interaction (finding, placing, breaking)
 - Vanilla Physics
+- Pathfinding
 - Inventory (player, chests, etc)
 - Crafting
-- Entities
-
-
-Planned Features
-----------------
-
-- Pathfinding
-- Vehicle Physics
+- Entity Tracking
 
 
 Dependencies
