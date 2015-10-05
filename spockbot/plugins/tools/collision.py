@@ -32,9 +32,9 @@ def check_axis(axis, min_a, max_a, min_b, max_b):
 
 
 class MTVTest(object):
-    def __init__(self, world, bounding_box):
+    def __init__(self, world, bbox):
         self.world = world
-        self.bounding_box = bounding_box
+        self.bbox = bbox
 
     def check_collision(self, pos, vector):
         test_pos = pos + vector
@@ -51,7 +51,7 @@ class MTVTest(object):
             transform_vectors = []
             for i, axis in enumerate(UNIT_VECTORS):
                 axis_pen = check_axis(
-                    axis, pos[i], pos[i] + self.bounding_box[i],
+                    axis, pos[i], pos[i] + self.bbox[i],
                     block_pos[i], block_pos[i] + block.bounding_box[i]
                 )
                 if not axis_pen:

@@ -50,12 +50,10 @@ class PhysicsCore(object):
         self.move_accel = self.abilities.walking_speed * const.PHY_SPR_MUL
 
     def move_target(self, vector):
-        vector.y = self.pos.y
-        if vector - self.pos < self.vec:
-            self.pos.init(vector)
-            self.vec.zero()
-        else:
-            self.direction = vector - self.pos
+        self.direction = vector - self.pos
+        self.direction.y = 0
+        if self.direction <= Vector3(self.vec.x, 0, self.vec.z):
+            return True
 
     def move_vector(self, vector):
         vector.y = 0
@@ -78,8 +76,9 @@ class PhysicsPlugin(PluginBase):
     def __init__(self, ploader, settings):
         super(PhysicsPlugin, self).__init__(ploader, settings)
         self.vec = Vector3(0.0, 0.0, 0.0)
-        bounding_box = BoundingBox(const.PLAYER_WIDTH, const.PLAYER_HEIGHT)
-        self.col = collision.MTVTest(self.world, bounding_box)
+        self.col = collision.MTVTest(
+            self.world, BoundingBox(const.PLAYER_WIDTH, const.PLAYER_HEIGHT)
+        )
         self.pos = self.clientinfo.position
         self.pause_physics = False
         self.pc = PhysicsCore(self.pos, self.vec, self.clientinfo.abilities)
@@ -139,7 +138,7 @@ class PhysicsPlugin(PluginBase):
     # Breadth-first search for a minimum translation vector
     def get_mtv(self):
         pos = self.pos + self.vec
-        pos = collision.uncenter_position(pos, self.col.bounding_box)
+        pos = collision.uncenter_position(pos, self.col.bbox)
         q = collections.deque((Vector3(),))
         while q:
             current_vector = q.popleft()
