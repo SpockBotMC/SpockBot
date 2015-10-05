@@ -1,12 +1,12 @@
 import collections
 
-from spockbot.plugins.tools.event import EVENT_UNREGISTER
-from spockbot.plugins.base import PluginBase, pl_announce
-from spockbot.plugins.tools.collision import(
-    MTVTest, uncenter_position, center_position
-)
 from spockbot.mcdata import blocks, constants as const
 from spockbot.mcdata.utils import BoundingBox
+from spockbot.plugins.base import PluginBase, pl_announce
+from spockbot.plugins.tools.collision import(
+    center_position, MTVTest, uncenter_position
+)
+from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
 
 """
@@ -20,7 +20,7 @@ PATH_LIMIT_REACHED = 0x03
 NO_VALID_PATH = 0x04
 
 
-class PathCore(object):
+class PathfindingCore(object):
     def __init__(self, start_path):
         self.pathfind = start_path
 
@@ -55,20 +55,19 @@ class PathNode(Vector3):
         return self
 
 
-@pl_announce('Path')
-class PathPlugin(PluginBase):
+@pl_announce('Pathfinding')
+class PathfindingPlugin(PluginBase):
     requires = ('Event', 'World', 'Physics', 'ClientInfo', 'Timers')
 
     def __init__(self, ploader, settings):
-        super(PathPlugin, self).__init__(ploader, settings)
+        super(PathfindingPlugin, self).__init__(ploader, settings)
 
         self.bounding_box = BoundingBox(w=0.6, h=1.8)
-        self.path = PathCore(self.start_path)
         self.path_job = None
         self.col = MTVTest(
             self.world, BoundingBox(const.PLAYER_WIDTH, const.PLAYER_HEIGHT)
         )
-        ploader.provides('Path', self.path)
+        ploader.provides('Pathfinding', PathfindingCore(self.start_path))
 
     def build_list_from_node(self, node):
         ret = collections.deque()

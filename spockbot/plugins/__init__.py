@@ -19,7 +19,7 @@ helper_plugins = [
     ('inventory', inventory.InventoryPlugin),
     ('keepalive', keepalive.KeepalivePlugin),
     ('movement', movement.MovementPlugin),
-    ('path', pathfinding.PathPlugin),
+    ('path', pathfinding.PathfindingPlugin),
     ('physics', physics.PhysicsPlugin),
     ('respawn', respawn.RespawnPlugin),
     ('start', start.StartPlugin),

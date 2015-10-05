@@ -39,7 +39,7 @@ class MovementCore(object):
 
 @pl_announce('Movement')
 class MovementPlugin(PluginBase):
-    requires = ('Net', 'Physics', 'ClientInfo', 'Event', 'Path')
+    requires = ('ClientInfo', 'Event', 'Net', 'Pathfinding', 'Physics')
     events = {
         'client_tick': 'client_tick',
         'client_position_update': 'handle_position_update',
@@ -72,7 +72,9 @@ class MovementPlugin(PluginBase):
 
     def new_path(self, *xyz):
         target = Vector3(*xyz)
-        self.path.pathfind(self.clientinfo.position, target, self.path_cb)
+        self.pathfinding.pathfind(
+            self.clientinfo.position, target, self.path_cb
+        )
 
     def path_cb(self, result):
         self.path_nodes = result
