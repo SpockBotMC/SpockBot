@@ -4,6 +4,7 @@ Helper Plugins
 .. toctree::
     :hidden:
 
+    channels
     chat
     clientinfo
     craft
@@ -12,12 +13,13 @@ Helper Plugins
     inventory
     keepalive
     movement
+    pathfinding
     physics
     respawn
     start
     world
 
-
+- :ref:`plugin-channels` - Process Plugin Channels
 - :ref:`plugin-chat` - Process chat into simple events
 - :ref:`plugin-clientinfo` - Keep track of information about the client/player
 - :ref:`plugin-craft` - Craft items
@@ -26,6 +28,7 @@ Helper Plugins
 - :ref:`plugin-inventory` - Interact with inventories in Minecraft
 - :ref:`plugin-keepalive` - Keep sending the keep alive packet
 - :ref:`plugin-movement` - Basic movement around the world
+- :ref:`plugin-pathfinding` - Pathfinding
 - :ref:`plugin-physics` - Reimplmentation of the Vanilla physics
 - :ref:`plugin-respawn` - Auto respawn the player on death
 - :ref:`plugin-start` - Helper start system for doing handshake and login

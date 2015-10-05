@@ -1,7 +1,7 @@
 .. _plugin-clientinfo:
 
 ***********
-Client Info
+ClientInfo
 ***********
 
 Description

@@ -1,7 +1,7 @@
 """
-Client Info is a central plugin for recording data about the client,
+ClientInfo is a central plugin for recording data about the client,
 e.g. Health, position, and some auxillary information like the player list.
-Plugins subscribing to Client Info's events don't have to independently
+Plugins subscribing to ClientInfo's events don't have to independently
 track this information on their own.
 """
 
