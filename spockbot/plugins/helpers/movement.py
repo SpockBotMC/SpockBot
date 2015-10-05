@@ -8,6 +8,7 @@ Also provides very basic pathfinding
 import logging
 
 from spockbot.plugins.base import PluginBase, pl_announce
+from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
 
 logger = logging.getLogger('spockbot')
@@ -84,6 +85,18 @@ class MovementPlugin(PluginBase):
                          self.movement.move_location))
         else:
             self.path_nodes = self.path.build_list_from_node(nodes)
+
+    def do_work(self):
+        if not self.path_nodes:
+            self.movement.stop()
+            return EVENT_UNREGISTER
+        target = self.path_nodes[0]
+        jumped = False
+        if target.is_jump and self.clientinfo.position.on_ground:
+            self.physics.jump()
+            jumped = True
+        if self.physics.move_target(target) or jumped:
+            self.path_nodes.popleft()
 
     def path_to(self):
         if not self.path_nodes:
