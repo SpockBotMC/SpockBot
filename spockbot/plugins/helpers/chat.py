@@ -9,8 +9,6 @@ from spockbot.plugins.base import PluginBase, pl_announce
 logger = logging.getLogger('spockbot')
 
 
-
-
 class ChatParseError(Exception):
     pass
 
