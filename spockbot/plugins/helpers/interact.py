@@ -235,7 +235,6 @@ class InteractPlugin(PluginBase):
             return False
         pages = (text[0+i:constants.BOOK_CHARS_PER_PAGE+i]
                  for i in range(0, len(text), constants.BOOK_CHARS_PER_PAGE))
-        pages = pages[constants.BOOK_MAXPAGES:]
         self.edit_book(pages)
         if sign:
             self.sign_book(author, title)
@@ -254,7 +253,7 @@ class InteractPlugin(PluginBase):
         self.channels.send("MC|BEdit", self._pack_book(book))
 
     def sign_book(self, author, title):
-        """Sign the book in hand"""
+        """Sign current book in hand"""
         book = self._setup_book()
         if book is None:
             return False
