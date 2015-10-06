@@ -9,20 +9,6 @@ from spockbot.plugins.base import PluginBase, pl_announce
 logger = logging.getLogger('spockbot')
 
 
-translations = {}
-try:
-    with open('en_US.lang', 'r') as lang_file:
-        # the chat data comes in as strings, so we need to
-        # replace all %d, %i, %3$d etc. with %s
-        import re
-        pcts_only = re.compile('%([0-9]\$)?[a-z]')
-        for line in lang_file:
-            if '=' in line:
-                # cut off newline, split some.translation.id=format %s string
-                translation_id, format_str = line[:-1].split('=', 1)
-                translations[translation_id] = pcts_only.sub('%s', format_str)
-except:
-    logger.warn('en_US.lang not loaded, cannot translate chat messages')
 
 
 class ChatParseError(Exception):
@@ -69,6 +55,26 @@ class ChatPlugin(PluginBase):
         super(ChatPlugin, self).__init__(ploader, settings)
         self.chatcore = ChatCore(self.net)
         ploader.provides('Chat', self.chatcore)
+        self.translations = {}
+        self._load_translations()
+
+    def _load_translations(self):
+        try:
+            with open('en_US.lang', 'r') as lang_file:
+                # the chat data comes in as strings, so we need to
+                # replace all %d, %i, %3$d etc. with %s
+                import re
+                pcts_only = re.compile('%([0-9]\$)?[a-z]')
+                for line in lang_file:
+                    if '=' in line:
+                        # cut off newline, split some.
+                        # translation.id=format %s string
+                        trans_id, format_str = line[:-1].split('=', 1)
+                        self.translations[trans_id] = pcts_only.sub('%s',
+                                                                    format_str)
+        except:
+            logger.warn('CHAT: en_US.lang not loaded, '
+                        'cannot translate chat messages')
 
     def handle_chat(self, evt, packet):
         position = packet.data['position']  # where is the text displayed?
@@ -133,7 +139,7 @@ class ChatPlugin(PluginBase):
                 translate_id = chat_data['translate']
                 args = tuple(map(self.render_chat, chat_data.get('with', [])))
                 try:
-                    translate_fmt = translations[translate_id]
+                    translate_fmt = self.translations[translate_id]
                     message = translate_fmt % args
                 except KeyError:  # could not find translate_id
                     message = '<"%s" %s>' % (translate_id, args)

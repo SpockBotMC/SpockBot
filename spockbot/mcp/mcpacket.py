@@ -93,7 +93,7 @@ class Packet(object):
                 o = zlib.compress(o, comp_level)
                 ulen_varint = datautils.pack(MC_VARINT, uncompressed_len)
                 header = datautils.pack(MC_VARINT,
-                                        uncompressed_len + len(ulen_varint))
+                                        len(o) + len(ulen_varint))
                 header += ulen_varint
             return header + o
         elif proto_comp_state == mcdata.PROTO_COMP_OFF:

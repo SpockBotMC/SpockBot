@@ -228,32 +228,51 @@ class InteractPlugin(PluginBase):
     def jump_vehicle(self):
         self.steer_vehicle(jump=True)
 
-    def edit_book(self, pages):
-        book = self.inventory.active_slot
-        # TODO: don't use hard coded id
-        if book.item_id != 386:  # book and quill
+    def write_book(self, text, author="", title="", sign=False):
+        """Write text to the current book in hand, optionally sign the book"""
+        book = self._setup_book()
+        if book is None:
             return False
-        if book.nbt is None:
-            book.nbt = nbt.TagCompound()
+        pages = (text[0+i:constants.BOOK_CHARS_PER_PAGE+i]
+                 for i in range(0, len(text), constants.BOOK_CHARS_PER_PAGE))
+        pages = pages[constants.BOOK_MAXPAGES:]
+        self.edit_book(pages)
+        if sign:
+            self.sign_book(author, title)
+
+    def edit_book(self, pages):
+        """Set the pages of current book in hand"""
+        book = self._setup_book()
+        if book is None:
+            return False
         nbtpages = nbt.TagList(nbt.TagString)
         for i, page in enumerate(pages):
+            if i >= constants.BOOK_MAXPAGES:
+                break
             nbtpages.insert(i, nbt.TagString(page))
         book.nbt["pages"] = nbtpages
-        data = self.channels.encode(((MC_SLOT, "slot"),),
-                                    {"slot": book.get_dict()})
-        self.channels.send("MC|BEdit", data)
+        self.channels.send("MC|BEdit", self._pack_book(book))
 
     def sign_book(self, author, title):
-        book = self.inventory.active_slot
-        # TODO: don't use hard coded id
-        if book.item_id != 386:  # book and quill
+        """Sign the book in hand"""
+        book = self._setup_book()
+        if book is None:
             return False
-        if book.nbt is None:
-            book.nbt = nbt.TagCompound()
         book.nbt["author"] = nbt.TagString(author)
         book.nbt["title"] = nbt.TagString(title)
         # TODO: don't use hard coded id
         book.item_id = 387  # written book
-        data = self.channels.encode(((MC_SLOT, "slot"),),
+        self.channels.send("MC|BSign", self._pack_book(book))
+
+    def _setup_book(self):
+        book = self.inventory.active_slot
+        # TODO: Dont use hard coded ID
+        if book.item_id != 386:  # book and quill
+            return None
+        if book.nbt is None:
+            book.nbt = nbt.TagCompound()
+        return book
+
+    def _pack_book(self, book):
+        return self.channels.encode(((MC_SLOT, "slot"),),
                                     {"slot": book.get_dict()})
-        self.channels.send("MC|BSign", data)
