@@ -9,9 +9,7 @@ import os
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
-
 from cryptography.hazmat.primitives.asymmetric import padding
-
 from spock.mcp.yggdrasil import YggdrasilCore
 from spock.plugins.base import PluginBase
 from spock.utils import pl_announce
@@ -63,22 +61,21 @@ class AuthPlugin(PluginBase):
         return self._username
 
     def set_username(self, username):
-        self.auth.username = username
+        self.ygg.username = username
 
     username = property(get_username, set_username)
 
     def set_password(self, password):
-        self.auth.password = password
+        self.ygg.password = password
 
-    password = property(lambda x: bool(x.auth.password), set_password)
+    password = property(lambda x: bool(x.ygg.password), set_password)
 
     def start_session(self):
         if not self.online_mode:
-            self._username = self.auth.username
+            self._username = self.ygg.username
             return True
         if self.ygg.login():
-            self.selected_profile = self.ygg.selected_profile
-            self._username = self.selected_profile['name']
+            self._username = self.ygg.selected_profile['name']
             return True
         self.event.emit('AUTH_ERR')
         return False
