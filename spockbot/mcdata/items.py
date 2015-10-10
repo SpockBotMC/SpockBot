@@ -53,7 +53,7 @@ def _make_item(item_dict):
 
     cls = type(cls_name, bases, attrs)
     assert not hasattr(sys.modules[__name__], cls_name), \
-        'Biome "%s" already registered at %s' % (cls_name, __name__)
+        'Item "%s" already registered at %s' % (cls_name, __name__)
     setattr(sys.modules[__name__], cls_name, cls)
     return cls
 

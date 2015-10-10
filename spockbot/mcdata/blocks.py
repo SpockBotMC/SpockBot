@@ -135,7 +135,7 @@ def _make_block(block_dict):
 
     cls = type(cls_name, bases, attrs)
     assert not hasattr(sys.modules[__name__], cls_name), \
-        'Biome "%s" already registered at %s' % (cls_name, __name__)
+        'Block "%s" already registered at %s' % (cls_name, __name__)
     setattr(sys.modules[__name__], cls_name, cls)
     return cls
 
