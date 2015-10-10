@@ -1,8 +1,9 @@
+import random
 from collections import defaultdict
 from unittest import TestCase
 
 from spockbot.plugins.core.taskmanager import TaskManager
-from spockbot.plugins.tools.task import Task
+from spockbot.plugins.tools.task import Task, TaskFailed
 
 
 class EventMock(object):
@@ -124,3 +125,87 @@ class TaskManagerTest(TestCase):
         emit_them(levels)
 
         assert done[0]
+
+    def test_failure(self):
+        last_data = ['started']
+
+        def task_with_failure():
+            last_data[0] = yield 'bbbb'
+            raise TaskFailed('Some error!')
+
+        def task_deep_failure():
+            def task_deepest_failure():
+                last_data[0] = yield 'cccc'
+                raise TaskFailed('Low level error!')
+
+            def task_deeper_failure():
+                yield task_deepest_failure()  # error falls through
+
+            try:
+                yield task_deeper_failure()
+            except TaskFailed as error:
+                raise TaskFailed('High level error!').with_error(error)
+
+        def task_with_exception():
+            last_data[0] = yield 'dddd'
+            1/0
+
+        def top_task():
+            try:
+                yield task_with_failure()
+            except TaskFailed as e:
+                self.assertEqual('Some error!', e.message)
+                self.assertEqual(None, e.prev_error)
+                self.assertEqual(1, len(e.tasktrace))
+                self.assertEqual('task_with_failure', e.tasktrace[0].name)
+                self.assertEqual(1, len(e.full_tasktrace))
+                self.assertEqual('task_with_failure',
+                                 e.full_tasktrace[0].name)
+            else:
+                self.fail('TaskFailed not passed into task')
+
+            try:
+                yield task_deep_failure()
+            except TaskFailed as e:
+                self.assertEqual('High level error!', e.message)
+                self.assertEqual('Low level error!', e.prev_error.message)
+                self.assertEqual(None, e.prev_error.prev_error)
+                self.assertEqual(1, len(e.tasktrace))
+                self.assertEqual('task_deep_failure', e.tasktrace[0].name)
+                self.assertEqual(3, len(e.full_tasktrace))
+                self.assertEqual('task_deepest_failure',
+                                 e.full_tasktrace[0].name)
+                self.assertEqual('task_deeper_failure',
+                                 e.full_tasktrace[1].name)
+                self.assertEqual('task_deep_failure',
+                                 e.full_tasktrace[2].name)
+            else:
+                self.fail('TaskFailed not passed through tasks')
+
+            try:
+                yield task_with_exception()
+            except TaskFailed as e:
+                self.assertEqual('An exception was raised', e.message)
+                self.assertEqual(None, e.prev_error)
+                self.assertEqual(1, len(e.tasktrace))
+                self.assertEqual('task_with_exception', e.tasktrace[0].name)
+                self.assertEqual(1, len(e.full_tasktrace))
+                self.assertEqual('task_with_exception',
+                                 e.full_tasktrace[0].name)
+            else:
+                self.fail('Exception not passed into task')
+
+        def emit_and_check(event):
+            data = random.random()
+            self.task_manager.event.emit(event, data)
+            self.assertEqual(event, last_data[0][0])
+            self.assertEqual(data, last_data[0][1])
+
+        task = top_task()
+        ret = self.task_manager.run_task(task)
+        self.assertIsInstance(ret, Task)
+
+        self.assertEqual('started', last_data[0])
+        emit_and_check('bbbb')
+        emit_and_check('cccc')
+        emit_and_check('dddd')

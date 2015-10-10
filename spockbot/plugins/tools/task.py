@@ -12,8 +12,52 @@ def check_key(key, value):
 
 
 class TaskFailed(Exception):
-    def __init__(self, *args):
-        self.args = args
+    def __init__(self, message, *args):
+        self.message = message
+        self.args = (message,) + args
+
+        #: List[Task]: List of all failed tasks since raising this error.
+        # Populated in Task.continue_with().
+        self.tasktrace = []
+
+        #: TaskFailed: The previous error, if any. Provide via with_error().
+        self.prev_error = None
+
+    def with_error(self, prev_error):
+        """
+        Set the previous error and return self.
+
+        When re-throwing a TaskFailed, you can provide a new, more
+        high level failure description and pass along the previously
+        failed tasks to still be able to reconstruct the full history of
+        failed tasks.
+
+        Examples:
+            Re-throw a TaskFailed with a new, more high level description.
+
+            >>> try:
+            ...     raise TaskFailed('Low level', {'some': 1}, 'args')
+            ... except TaskFailed as prev_err:
+            ...     raise TaskFailed('High level').with_error(prev_err)
+
+        Returns:
+            TaskFailed
+        """
+        self.prev_error = prev_error
+        return self
+
+    @property
+    def full_tasktrace(self):
+        """
+        List of all failed tasks caused by this and all previous errors.
+
+        Returns:
+            List[Task]
+        """
+        if self.prev_error:
+            return self.prev_error.tasktrace + self.tasktrace
+        else:
+            return self.tasktrace
 
 
 class TaskCallback(object):
@@ -47,8 +91,12 @@ class Task(object):
         except StopIteration as exception:
             if self.parent:
                 self.parent.on_success(exception.args)
-        except TaskFailed as exception:
-            if self.parent:
+        except BaseException as exception:
+            if not isinstance(exception, TaskFailed):
+                # this task just failed by raising an exception
+                exception = TaskFailed('An exception was raised', exception)
+            exception.tasktrace.append(self)
+            if self.parent:  # xxx makes tasks fail silently by default
                 self.parent.on_error(exception)
         else:
             self.register(response)
@@ -66,8 +114,8 @@ class Task(object):
             self.task_manager.event.reg_event_handler(event, self.on_event)
 
     def on_event(self, event, data):
-        check = self.expected.get(event, lambda *_: False)
-        if check(event, data):  # TODO does check really need event?
+        check = self.expected.get(event, None)
+        if check and check(event, data):  # TODO does check really need event?
             self.continue_with(lambda: self.task.send((event, data)))
         return EVENT_UNREGISTER  # remove this handler
 
