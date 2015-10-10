@@ -40,6 +40,13 @@ def split_words(text):  # TODO lacking a better name
     return [w.lower() for w in text.split(' ')]
 
 
+def find_by(key, *args):
+    for arg in args:
+        if key in arg:
+            return arg[key]
+    return None
+
+
 def snake_case(text):
     return '_'.join(split_words(text))
 
