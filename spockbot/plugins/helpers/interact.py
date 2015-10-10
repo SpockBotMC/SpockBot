@@ -88,13 +88,13 @@ class InteractPlugin(PluginBase):
         self.look(*delta.yaw_pitch)
 
     def look_at(self, pos):
-        delta = pos - self.clientinfo.eye_pos
+        delta = Vector3(pos) - self.clientinfo.eye_pos
         if delta.x or delta.z:
             self.look_at_rel(delta)
         else:  # looking up or down, do not turn head
             self.look(self.clientinfo.position.yaw, delta.yaw_pitch.pitch)
 
-    def _send_dig_block(self, status, pos=None, face=constants.FACE_Y_POS):
+    def _send_dig_block(self, status, pos=None, face=constants.FACE_TOP):
         if status == constants.DIG_START:
             self.dig_pos_dict = pos.floor().get_dict().copy()
         self.net.push_packet('PLAY>Player Digging', {
@@ -103,19 +103,20 @@ class InteractPlugin(PluginBase):
             'face': face,
         })
 
-    def start_digging(self, pos):
+    def start_digging(self, pos, face=constants.FACE_TOP):
+        pos = Vector3(pos)
         if self.auto_look:
             self.look_at(pos.floor() + Vector3(0.5, 0.5, 0.5))
-        self._send_dig_block(constants.DIG_START, pos)
+        self._send_dig_block(status=constants.DIG_START, pos=pos, face=face)
         if self.auto_swing:
             self.swing_arm()
             # TODO send swing animation until done or stopped
 
     def cancel_digging(self):
-        self._send_dig_block(constants.DIG_CANCEL)
+        self._send_dig_block(status=constants.DIG_CANCEL)
 
     def finish_digging(self):
-        self._send_dig_block(constants.DIG_FINISH)
+        self._send_dig_block(status=constants.DIG_FINISH)
 
     def dig_block(self, pos):
         """
@@ -124,7 +125,8 @@ class InteractPlugin(PluginBase):
         self.start_digging(pos)
         self.finish_digging()
 
-    def _send_click_block(self, pos, face=1, cursor_pos=Vector3(8, 8, 8)):
+    def _send_click_block(self, pos, face=constants.FACE_TOP,
+                          cursor_pos=Vector3(8, 8, 8)):
         self.net.push_packet('PLAY>Player Block Placement', {
             'location': pos.floor().get_dict(),
             'direction': face,
@@ -134,8 +136,7 @@ class InteractPlugin(PluginBase):
             'cur_pos_z': int(cursor_pos.z),
         })
 
-    def click_block(self, pos, face=1, cursor_pos=Vector3(8, 8, 8),
-                    look_at_block=True, swing=True):
+    def click_block(self, pos, look_at_block=True, swing=True, **kwargs):
         """
         Click on a block.
         Examples: push button, open window, make redstone ore glow
@@ -145,15 +146,15 @@ class InteractPlugin(PluginBase):
             cursor_pos (Vector3): where to click inside the block,
                 each dimension 0-15
         """
+        pos = Vector3(pos)
         if look_at_block and self.auto_look:
             # TODO look at cursor_pos
             self.look_at(pos.floor() + Vector3(0.5, 0.5, 0.5))
-        self._send_click_block(pos, face, cursor_pos)
+        self._send_click_block(pos, **kwargs)
         if swing and self.auto_swing:
             self.swing_arm()
 
-    def place_block(self, pos, face=1, cursor_pos=Vector3(8, 8, 8),
-                    sneak=True, look_at_block=True, swing=True):
+    def place_block(self, pos, sneak=True, **kwargs):
         """
         Place a block next to ``pos``.
         If the block at ``pos`` is air, place at ``pos``.
@@ -161,8 +162,8 @@ class InteractPlugin(PluginBase):
         sneaking_before = self.sneaking
         if sneak:
             self.sneak()
-        self.click_block(pos, face, cursor_pos, look_at_block, swing)
-        if sneak:
+        self.click_block(pos, **kwargs)
+        if not sneaking_before:
             self.sneak(sneaking_before)
 
     def use_bucket(self, pos):  # TODO
