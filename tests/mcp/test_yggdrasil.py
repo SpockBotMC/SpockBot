@@ -5,7 +5,7 @@ from mock.mock import MagicMock
 
 from six.moves.urllib.error import HTTPError
 
-from spock.mcp.yggdrasil import YggdrasilCore
+from spockbot.mcp.yggdrasil import YggdrasilCore
 
 ygg_auth_error = {'error': 'ForbiddenOperationException',
                   'errorMessage': 'Invalid credentials. Invalid username or '
@@ -21,8 +21,8 @@ ygg_auth_user_pass = {'accessToken': '01234567890123456789012345678901',
                           'name': 'username'}}
 
 
-@mock.patch('spock.mcp.yggdrasil.Request')
-@mock.patch('spock.mcp.yggdrasil.urlopen')
+@mock.patch('spockbot.mcp.yggdrasil.Request')
+@mock.patch('spockbot.mcp.yggdrasil.urlopen')
 def test_request_is_done(urlopen, request):
     decode = urlopen.return_value.read.return_value.decode
     decode.return_value = '{"test": 1}'
@@ -48,8 +48,8 @@ def test_request_is_done(urlopen, request):
     assert res == {'test': 1}
 
 
-@mock.patch('spock.mcp.yggdrasil.Request')
-@mock.patch('spock.mcp.yggdrasil.urlopen')
+@mock.patch('spockbot.mcp.yggdrasil.Request')
+@mock.patch('spockbot.mcp.yggdrasil.urlopen')
 def test_request_raises_error(urlopen, request):
     exception_data = MagicMock()
     exception_data.read.return_value.decode.return_value = '{"error": 1}'

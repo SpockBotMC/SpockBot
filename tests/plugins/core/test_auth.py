@@ -5,7 +5,7 @@ import hashlib
 import mock
 from mock.mock import MagicMock
 
-from spock.plugins.core.auth import AuthPlugin, java_hex_digest
+from spockbot.plugins.core.auth import AuthPlugin, java_hex_digest
 
 
 def test_java_hex_digest():
@@ -15,7 +15,7 @@ def test_java_hex_digest():
     assert positive_hash == '3c363836cf4e16666669a25da280a1865c2d2874'
 
 
-@mock.patch('spock.plugins.core.auth.YggdrasilCore')
+@mock.patch('spockbot.plugins.core.auth.YggdrasilCore')
 def test_auth_init(ygg):
     ploader, settings = MagicMock(), MagicMock()
     auth_plugin = AuthPlugin(ploader, settings)
@@ -71,7 +71,7 @@ def test_online_username():
 
 def test_password():
     auth, ygg = get_mocked_auth_plugin()
-    assert auth.password == False
+    assert auth.password is False
     # Empty password is no password
     auth.password = ''
     assert auth.password is False
@@ -100,7 +100,7 @@ def test_start_session_online_failure():
     assert not auth.username
 
 
-@mock.patch('spock.plugins.core.auth.os.urandom')
+@mock.patch('spockbot.plugins.core.auth.os.urandom')
 def test_get_shared_secret(rnd):
     auth, ygg = get_mocked_auth_plugin()
     assert not rnd.called
@@ -123,4 +123,3 @@ def test_handle_session_error():
     auth.sess_quit = True
     auth.handle_session_error(None, None)
     assert auth.event.kill.called
-

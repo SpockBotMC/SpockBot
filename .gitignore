@@ -1,6 +1,7 @@
 *.py[doc]
 *.log
 *.swp
+.cache
 *~
 config.yaml
 login.py
@@ -17,3 +18,5 @@ xunit-*.xml
 /tags
 packetlog
 /htmlcov/
+_build
+_templates

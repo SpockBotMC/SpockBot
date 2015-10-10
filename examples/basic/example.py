@@ -1,5 +1,5 @@
 """
-Basic example of how to use Spock
+Basic example of how to use spockbot
 
 Instructions:
 - Enter the e-mail for your Minecraft account in the USERNAME field below
@@ -14,11 +14,17 @@ from __future__ import absolute_import
 
 __author__ = 'Cosmo Harrigan'
 
+import logging
+
 # Import the plugins you have created
 from example_plugin import ExamplePlugin
 
-from spock import Client
-from spock.plugins import DefaultPlugins
+from spockbot import Client
+from spockbot.plugins import default_plugins
+
+# Change default log level to DEBUG so we can see extra messages
+logger = logging.getLogger('spockbot')
+logger.setLevel(logging.DEBUG)
 
 # Set the following values:
 USERNAME = ''
@@ -37,7 +43,7 @@ settings = {
 # from a plugin. You can define new plugins that listen for arbitrary events
 # from the game. Furthermore, events can even be periodic timers that trigger a
 # method.
-plugins = DefaultPlugins
+plugins = default_plugins
 plugins.append(('example', ExamplePlugin))
 
 # Instantiate and start the client, which will then run and wait for events to

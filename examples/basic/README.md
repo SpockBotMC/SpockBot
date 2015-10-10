@@ -5,9 +5,10 @@
 - Creating a plugin
 - Receiving chat messages
 - Sending chat commands
+- Using inventory
+- Moving to location
 - Triggering a periodic event using a timer
 - Registering for an event upon startup
-- Changing bot position and orientation
 - Placing blocks
 - Reading blocks
 
