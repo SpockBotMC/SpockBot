@@ -28,8 +28,22 @@ class Info(object):
         return str(self.get_dict())
 
 
+def find_by(key, *args):
+    for arg in args:
+        if key in arg:
+            return arg[key]
+    return None
+
+
 # from http://stackoverflow.com/a/12867228
 re_spaced_caps = re.compile(r'((?<=[a-z0-9])[A-Z]|(?!^)[A-Z](?=[a-z]))')
+
+# from  http://stackoverflow.com/a/3303361
+# Remove invalid characters
+re_invalid_var = re.compile(r'[^0-9a-zA-Z_]')
+
+# Remove leading characters until we find a letter or underscore
+re_invalid_start = re.compile(r'^[^a-zA-Z_]+')
 
 
 def split_words(text):  # TODO lacking a better name
@@ -40,16 +54,16 @@ def split_words(text):  # TODO lacking a better name
     return [w.lower() for w in text.split(' ')]
 
 
-def find_by(key, *args):
-    for arg in args:
-        if key in arg:
-            return arg[key]
-    return None
-
-
 def snake_case(text):
     return '_'.join(split_words(text))
 
 
 def camel_case(text):
     return ''.join(map(str.capitalize, split_words(text)))
+
+
+def clean_var(text):
+    """Turn text into a valid python classname or variable"""
+    text = re_invalid_var.sub('', text)
+    text = re_invalid_start.sub('', text)
+    return text
