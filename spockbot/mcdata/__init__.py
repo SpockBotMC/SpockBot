@@ -8,4 +8,3 @@ def get_item_or_block(find):
         return find_by(find, items.items, blocks.blocks)
     else:  # by name
         return find_by(find, items.items_name, blocks.blocks_name)
-
