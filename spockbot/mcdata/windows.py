@@ -1,10 +1,11 @@
 import sys
 import types
 
-from minecraft_data.v1_8 import find_item_or_block, windows_list
 from minecraft_data.v1_8 import windows as windows_by_id
+from minecraft_data.v1_8 import windows_list
 
-from spockbot.mcdata import constants
+from spockbot.mcdata import constants, get_item_or_block
+from spockbot.mcdata.items import Item
 from spockbot.mcdata.utils import camel_case, snake_case
 
 
@@ -30,31 +31,6 @@ def make_slot_check(wanted):
     return lambda slot: item == slot.item_id and meta in (None, slot.damage)
 
 
-# TODO move to mcdata.items
-
-def apply_variation(item_dict, metadata):
-    if item_dict and metadata is not None and 'variations' in item_dict:
-        for variation in item_dict['variations']:
-            if variation['metadata'] == metadata:
-                # variants provide replacements for some fields
-                item_dict = item_dict.copy()
-                item_dict.update(variation)
-                return item_dict
-    # TODO no matching metadata was found, make it 0? None? leave blank?
-    return item_dict
-
-
-def find_item_dict(item, metadata=None):
-    if metadata is None:  # check for complex types
-        if isinstance(item, Slot):
-            item, metadata = item.item_id, item.damage
-        elif not isinstance(item, (int, str)):
-            # name_or_id is tuple of (item_id, metadata)
-            item, metadata = item
-
-    return apply_variation(find_item_or_block(item), metadata)
-
-
 class Slot(object):
     def __init__(self, window, slot_nr, id=constants.INV_ITEMID_EMPTY,
                  damage=0, amount=0, enchants=None):
@@ -65,26 +41,10 @@ class Slot(object):
         self.amount = amount
         self.nbt = enchants
 
+        self.item = get_item_or_block(self.item_id, self.damage) or Item()
+
     def move_to_window(self, window, slot_nr):
         self.window, self.slot_nr = window, slot_nr
-
-    @property
-    def item_dict(self):
-        # TODO cache find_item_dict?
-        return find_item_dict(self.item_id, self.damage) \
-            or {'name': 'unknown',
-                'id': self.item_id,
-                'metadata': self.damage,
-                'stackSize': 0,
-                }
-
-    @property
-    def max_amount(self):
-        return self.item_dict['stackSize']
-
-    @property
-    def name(self):
-        return self.item_dict['name']
 
     @property
     def is_empty(self):
@@ -103,7 +63,7 @@ class Slot(object):
         #                           % (self, other))
         # if self.nbt != other.nbt: return False
         # TODO implement stacking correctly (NBT data comparison)
-        return self.max_amount != 1
+        return self.item.stack_size != 1
 
     def get_dict(self):
         """ Formats the slot for network packing. """
@@ -127,7 +87,7 @@ class Slot(object):
             return '<empty slot at %i in %s>' % (
                 self.slot_nr, self.window)
         else:
-            attrs_with_name = {'name': self.name}
+            attrs_with_name = {'name': self.item.display_name}
             attrs_with_name.update(self.__dict__)
             return '<Slot: %(amount)ix %(item_id)i:%(damage)i' \
                    ' %(name)s at %(slot_nr)i in %(window)s>' \
@@ -287,7 +247,7 @@ class DropClick(BaseClick):
         # else: cursor not empty, can't drop while holding an item
 
 
-class BaseWindow(object):
+class Window(object):
     """ Base class for all inventory types. """
 
     # the arguments must have the same names as the keys in the packet dict
@@ -355,9 +315,8 @@ def _make_window(window_dict):
     """
     Creates a new class for that window and registers it at this module.
     """
-    window_dict = window_dict.copy()
     cls_name = '%sWindow' % camel_case(str(window_dict['name']))
-    bases = (BaseWindow,)
+    bases = (Window,)
     attrs = {
         '__module__': sys.modules[__name__],
         'name': str(window_dict['name']),
