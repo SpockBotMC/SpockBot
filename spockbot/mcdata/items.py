@@ -31,6 +31,7 @@ class Item(object):
             return
         self.metadata = meta
         if self.metadata in self.variations:
+            # TODO: apply other all possible variations
             self.display_name = self.variations[self.metadata]["display_name"]
 
 

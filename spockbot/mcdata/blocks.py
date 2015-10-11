@@ -89,6 +89,7 @@ class Block(object):
         self.metadata = meta
         # Set data off variations
         if self.metadata in self.variations:
+            # TODO: apply other all possible variations
             self.display_name = self.variations[self.metadata]["display_name"]
         # Set data based off block extentions
         if self.id in _block_exts:
