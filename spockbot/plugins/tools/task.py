@@ -92,12 +92,12 @@ class Task(object):
             if self.parent:
                 self.parent.on_success(exception.args)
         except BaseException as exception:
-            if not isinstance(exception, TaskFailed):
-                # this task just failed by raising an exception
-                exception = TaskFailed('An exception was raised', exception)
-            exception.tasktrace.append(self)
-            if self.parent:  # xxx makes tasks fail silently by default
+            if isinstance(exception, TaskFailed):
+                exception.tasktrace.append(self)
+            if self.parent:
                 self.parent.on_error(exception)
+            else:
+                raise
         else:
             self.register(response)
 

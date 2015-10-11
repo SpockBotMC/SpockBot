@@ -184,14 +184,8 @@ class TaskManagerTest(TestCase):
 
             try:
                 yield task_with_exception()
-            except TaskFailed as e:
-                self.assertEqual('An exception was raised', e.message)
-                self.assertEqual(None, e.prev_error)
-                self.assertEqual(1, len(e.tasktrace))
-                self.assertEqual('task_with_exception', e.tasktrace[0].name)
-                self.assertEqual(1, len(e.full_tasktrace))
-                self.assertEqual('task_with_exception',
-                                 e.full_tasktrace[0].name)
+            except ZeroDivisionError as e:
+                pass  # everything OK
             else:
                 self.fail('Exception not passed into task')
 
