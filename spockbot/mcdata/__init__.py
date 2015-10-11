@@ -3,8 +3,12 @@ from spockbot.mcdata import items
 from spockbot.mcdata.utils import find_by
 
 
-def get_item_or_block(find):
+def get_item_or_block(find, meta=None, init=True):
+    ret = None
     if isinstance(find, int):  # by id
-        return find_by(find, items.items, blocks.blocks)
+        ret = find_by(find, items.items, blocks.blocks)
     else:  # by name
-        return find_by(find, items.items_name, blocks.blocks_name)
+        ret = find_by(find, items.items_name, blocks.blocks_name)
+    if init and ret is not None:
+        return ret(meta)
+    return ret
