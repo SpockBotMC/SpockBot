@@ -18,7 +18,6 @@ def get_biome(biome):
 
 
 def _make_biome(biome_dict):
-    biome_dict = biome_dict.copy()
     name = biome_dict['name'].replace("+", " Plus")  # Extreme Hills+
     nt_name = '%sBiome' % camel_case(str(name))
     # Convert dict to a namedtuple

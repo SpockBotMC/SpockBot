@@ -35,7 +35,6 @@ class Item(object):
 
 
 def _make_item(item_dict):
-    item_dict = item_dict.copy()
     cls_name = '%sItem' % camel_case(str(item_dict['name']))
     bases = (Item,)
     variations = {}

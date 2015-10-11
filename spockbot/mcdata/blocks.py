@@ -103,7 +103,6 @@ def _convert_boundingbox(bb):
 
 
 def _make_block(block_dict):
-    block_dict = block_dict.copy()
     cls_name = '%sBlock' % camel_case(str(block_dict['name']))
     bases = (Block,)
     harvest_tools = []

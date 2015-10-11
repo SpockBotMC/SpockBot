@@ -355,7 +355,6 @@ def _make_window(window_dict):
     """
     Creates a new class for that window and registers it at this module.
     """
-    window_dict = window_dict.copy()
     cls_name = '%sWindow' % camel_case(str(window_dict['name']))
     bases = (Window,)
     attrs = {

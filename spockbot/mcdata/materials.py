@@ -13,7 +13,6 @@ def get_material(name):
 
 
 def _make_material(name, material_dict):
-    material_dict = material_dict.copy()
     eff = {int(k): float(v) for k, v in material_dict.items()}
     eff = defaultdict(lambda: 1.0, eff)
     nt_name = '%sMaterial' % camel_case(str(name))
