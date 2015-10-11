@@ -51,7 +51,7 @@ def iter_recipes(item_id, meta=None):
                 yield recipe
 
 
-def find_recipe(item, meta=None):
+def get_any_recipe(item, meta=None):
     # TODO return small recipes if present
     for matching in iter_recipes(item, meta):
         return matching

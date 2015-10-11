@@ -3,7 +3,7 @@ Craft items.
 """
 from math import ceil
 
-from spockbot.mcdata.recipes import find_recipe, ingredient_positions, \
+from spockbot.mcdata.recipes import get_any_recipe, ingredient_positions, \
     total_ingredient_amounts
 from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools.task import TaskFailed
@@ -25,7 +25,7 @@ class CraftPlugin(PluginBase):
         if recipe:
             item, meta, _ = recipe.result
         else:
-            recipe = find_recipe(item, meta)
+            recipe = get_any_recipe(item, meta)
         if recipe:
             self.taskmanager.run_task(self.craft_task(recipe, amount), parent)
         return recipe

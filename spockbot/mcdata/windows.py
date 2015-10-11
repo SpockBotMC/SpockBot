@@ -287,7 +287,7 @@ class DropClick(BaseClick):
         # else: cursor not empty, can't drop while holding an item
 
 
-class BaseWindow(object):
+class Window(object):
     """ Base class for all inventory types. """
 
     # the arguments must have the same names as the keys in the packet dict
@@ -355,9 +355,8 @@ def _make_window(window_dict):
     """
     Creates a new class for that window and registers it at this module.
     """
-    window_dict = window_dict.copy()
     cls_name = '%sWindow' % camel_case(str(window_dict['name']))
-    bases = (BaseWindow,)
+    bases = (Window,)
     attrs = {
         '__module__': sys.modules[__name__],
         'name': str(window_dict['name']),
