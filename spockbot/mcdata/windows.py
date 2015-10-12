@@ -162,7 +162,7 @@ class BaseClick(object):
 
     def transfer(self, from_slot, to_slot, max_amount):
         transfer_amount = min(max_amount, from_slot.amount,
-                              to_slot.max_amount - to_slot.amount)
+                              to_slot.item.stack_size - to_slot.amount)
         if transfer_amount <= 0:
             return
         self.copy_slot_type(from_slot, to_slot)
