@@ -13,7 +13,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import ciphers
 from cryptography.hazmat.primitives.ciphers import algorithms, modes
 
-from spockbot.mcp import mcdata, mcpacket
+from spockbot.mcp import mcpacket, proto
 from spockbot.mcp.bbuff import BoundBuffer, BufferUnderflowException
 from spockbot.plugins.base import PluginBase, pl_announce
 
@@ -78,8 +78,8 @@ class NetCore(object):
         self.port = None
         self.connected = False
         self.encrypted = False
-        self.proto_state = mcdata.HANDSHAKE_STATE
-        self.comp_state = mcdata.PROTO_COMP_OFF
+        self.proto_state = proto.HANDSHAKE_STATE
+        self.comp_state = proto.PROTO_COMP_OFF
         self.comp_threshold = -1
         self.sbuff = b''
         self.rbuff = BoundBuffer()
@@ -103,12 +103,12 @@ class NetCore(object):
 
     def set_proto_state(self, state):
         self.proto_state = state
-        self.event.emit(mcdata.state_lookup[state] + '_STATE')
+        self.event.emit(proto.state_lookup[state] + '_STATE')
 
     def set_comp_state(self, threshold):
         self.comp_threshold = threshold
         if threshold >= 0:
-            self.comp_state = mcdata.PROTO_COMP_ON
+            self.comp_state = proto.PROTO_COMP_ON
 
     def push(self, packet):
         data = packet.encode(self.comp_state, self.comp_threshold)
@@ -128,7 +128,7 @@ class NetCore(object):
             try:
                 packet = mcpacket.Packet(ident=(
                     self.proto_state,
-                    mcdata.SERVER_TO_CLIENT
+                    proto.SERVER_TO_CLIENT
                 )).decode(self.rbuff, self.comp_state)
             except BufferUnderflowException:
                 self.rbuff.revert()
@@ -249,7 +249,7 @@ class NetPlugin(PluginBase):
 
     # Login Success - Change to Play state
     def handle_login_success(self, name, packet):
-        self.net.set_proto_state(mcdata.PLAY_STATE)
+        self.net.set_proto_state(proto.PLAY_STATE)
 
     # Handle Set Compression packets
     def handle_comp(self, name, packet):

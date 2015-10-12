@@ -1,7 +1,7 @@
 import json
 import struct
 
-from spockbot.mcp import mcdata, nbt
+from spockbot.mcp import nbt, proto
 from spockbot.mcp.bbuff import BoundBuffer
 from spockbot.mcp.proto import (MC_BYTE, MC_CHAT, MC_FLOAT, MC_FP_BYTE,
                                 MC_FP_INT, MC_INT, MC_LONG, MC_META,
@@ -205,8 +205,8 @@ endian = '>'
 
 
 def unpack(data_type, bbuff):
-    if data_type < len(mcdata.data_structs):
-        format = mcdata.data_structs[data_type]
+    if data_type < len(proto.data_structs):
+        format = proto.data_structs[data_type]
         return struct.unpack(endian + format[0], bbuff.recv(format[1]))[0]
     elif data_type == MC_VARINT:
         return unpack_varint(bbuff)
@@ -234,8 +234,8 @@ def unpack(data_type, bbuff):
 
 
 def pack(data_type, data):
-    if data_type < len(mcdata.data_structs):
-        format = mcdata.data_structs[data_type]
+    if data_type < len(proto.data_structs):
+        format = proto.data_structs[data_type]
         return struct.pack(endian + format[0], data)
     elif data_type == MC_VARINT:
         return pack_varint(data)

@@ -2,7 +2,7 @@ import sys
 
 from minecraft_data.v1_8 import blocks_list
 
-from spockbot.mcdata import materials, constants as const
+from spockbot.mcdata import constants as const, materials
 from spockbot.mcdata.utils import BoundingBox
 from spockbot.mcdata.utils import camel_case, find_by
 
