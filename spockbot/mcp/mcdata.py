@@ -498,7 +498,7 @@ packet_structs = {
             # Spawn Mob
             0x0F: (
                 (MC_VARINT, 'eid'),
-                (MC_UBYTE, 'type'),
+                (MC_UBYTE, 'mob_type'),
                 (MC_FP_INT, 'x'),
                 (MC_FP_INT, 'y'),
                 (MC_FP_INT, 'z'),
@@ -721,7 +721,7 @@ packet_structs = {
             # Spawn Global Entity
             0x2C: (
                 (MC_VARINT, 'eid'),
-                (MC_BYTE, 'type'),
+                (MC_BYTE, 'global_type'),
                 (MC_FP_INT, 'x'),
                 (MC_FP_INT, 'y'),
                 (MC_FP_INT, 'z'),
