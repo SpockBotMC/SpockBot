@@ -1,3 +1,4 @@
+from spockbot.mcdata import constants
 from spockbot.mcp import datautils
 from spockbot.mcp import mcdata
 from spockbot.mcp import nbt
@@ -649,7 +650,7 @@ class ExtensionPSTC45:
 class ExtensionPCTS02:
     @staticmethod
     def decode_extra(packet, bbuff):
-        if packet.data['action'] == mcdata.UE_INTERACT_AT:
+        if packet.data['action'] == constants.INTERACT_ENTITY_AT:
             packet.data['target_x'] = datautils.unpack(MC_FLOAT, bbuff)
             packet.data['target_y'] = datautils.unpack(MC_FLOAT, bbuff)
             packet.data['target_z'] = datautils.unpack(MC_FLOAT, bbuff)
@@ -658,7 +659,7 @@ class ExtensionPCTS02:
     @staticmethod
     def encode_extra(packet):
         o = b''
-        if packet.data['action'] == mcdata.UE_INTERACT_AT:
+        if packet.data['action'] == constants.INTERACT_ENTITY_AT:
             o += datautils.pack(MC_FLOAT, packet.data['target_x'])
             o += datautils.pack(MC_FLOAT, packet.data['target_y'])
             o += datautils.pack(MC_FLOAT, packet.data['target_z'])

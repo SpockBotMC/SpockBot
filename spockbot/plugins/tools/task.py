@@ -101,6 +101,19 @@ class Task(object):
         self.parent = parent
         self.expected = {}  # event -> check
 
+    @property
+    def tasktrace(self):
+        """
+        List of all parent tasks up to this one.
+
+        Returns:
+            List[Task]
+        """
+        if self.parent:
+            return self.parent.parents + [self]
+        else:
+            return [self]
+
     def run(self, task_manager):
         self.task_manager = task_manager
         self.continue_with(lambda: next(self.task))

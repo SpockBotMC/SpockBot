@@ -189,17 +189,17 @@ class TaskManagerTest(TestCase):
             else:
                 self.fail('Exception not passed into task')
 
-        def emit_and_check(event):
-            data = random.random()
-            self.task_manager.event.emit(event, data)
-            self.assertEqual(event, last_data[0][0])
-            self.assertEqual(data, last_data[0][1])
-
         task = top_task()
         ret = self.task_manager.run_task(task)
         self.assertIsInstance(ret, Task)
 
         self.assertEqual('started', last_data[0])
-        emit_and_check('bbbb')
-        emit_and_check('cccc')
-        emit_and_check('dddd')
+        self.emit_and_check('bbbb', last_data)
+        self.emit_and_check('cccc', last_data)
+        self.emit_and_check('dddd', last_data)
+
+    def emit_and_check(self, event, last_data):
+        data = random.random()
+        self.task_manager.event.emit(event, data)
+        self.assertEqual(event, last_data[0][0])
+        self.assertEqual(data, last_data[0][1])

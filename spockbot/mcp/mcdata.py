@@ -94,11 +94,6 @@ TL_TIMES = 0x02
 TL_CLEAR = 0x03
 TL_RESET = 0x04
 
-# Serverbound 0x02 Use Entity
-UE_INTERACT = 0x00
-UE_ATTACK = 0x01
-UE_INTERACT_AT = 0x02
-
 # Serverbound 0x16 Client Status
 CL_STATUS_RESPAWN = 0x00
 CL_STATUS_STATS = 0x01
@@ -996,7 +991,7 @@ packet_structs = {
                 (MC_VARINT, 'target'),
                 (MC_VARINT, 'action'),
                 # Extension
-                # UE_INTERACT_AT
+                # INTERACT_ENTITY_AT
                 # MC_FLOAT 'target_x'
                 # MC_FLOAT 'target_y'
                 # MC_FLOAT 'target_z'
