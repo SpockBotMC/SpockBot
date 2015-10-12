@@ -2,54 +2,10 @@ import sys
 
 from minecraft_data.v1_8 import blocks_list
 
-from spockbot.mcdata import materials
+from spockbot.mcdata import constants as const, materials
 from spockbot.mcdata.utils import BoundingBox
 from spockbot.mcdata.utils import camel_case, find_by
 
-
-# Gate
-MCM_GATE_SOUTH = 0x00
-MCM_GATE_WEST = 0x01
-MCM_GATE_NORTH = 0x02
-MCM_GATE_EAST = 0x03
-
-MCM_GATE_CLOSE = 0x00
-MCM_GATE_OPEN = 0x01
-
-MCM_GATE_UNPOWERED = 0x00
-MCM_GATE_POWERED = 0x01
-
-# Door
-MCM_DOOR_WEST = 0x00
-MCM_DOOR_NORTH = 0x01
-MCM_DOOR_EAST = 0x02
-MCM_DOOR_SOUTH = 0x03
-
-MCM_DOOR_CLOSE = 0x00
-MCM_DOOR_OPEN = 0x01
-
-MCM_DOOR_LOWER = 0x00
-MCM_DOOR_UPPER = 0x01
-
-MCM_DOOR_HINGE_LEFT = 0x00
-MCM_DOOR_HINGE_RIGHT = 0x01
-
-
-# Trapdoor
-MCM_TRAPDOOR_WEST = 0x00
-MCM_TRAPDOOR_NORTH = 0x01
-MCM_TRAPDOOR_EAST = 0x02
-MCM_TRAPDOOR_SOUTH = 0x03
-
-MCM_TRAPDOOR_CLOSE = 0x00
-MCM_TRAPDOOR_OPEN = 0x01
-
-MCM_TRAPDOOR_LOWER = 0x00
-MCM_TRAPDOOR_UPPER = 0x01
-
-# Slab
-MCM_SLAB_LOWER = 0x00
-MCM_SLAB_UPPER = 0x01
 
 blocks = {}
 blocks_name = {}
@@ -166,8 +122,8 @@ def _fence_ext(block):
 @block_ext(107, 183, 184, 185, 186, 187)
 def _gate_ext(block):
     block.direction = block.metadata & 0x03
-    block.open = (block.metadata >> 2) & 0x01 == MCM_GATE_OPEN
-    block.powered = block.metadata >> 3 == MCM_GATE_POWERED
+    block.open = (block.metadata >> 2) & 0x01 == const.BLOCK_GATE_OPEN
+    block.powered = block.metadata >> 3 == const.BLOCK_GATE_POWERED
     if block.open:
         block.bounding_box = None
     else:
@@ -177,14 +133,14 @@ def _gate_ext(block):
 @block_ext(64, 71, 193, 194, 195, 196, 197)
 def _door_ext(block):
     block.section = (block.metadata >> 3) & 0x1
-    if block.section == MCM_DOOR_LOWER:
-        block.open = (block.metadata >> 2) & 0x01 == MCM_DOOR_OPEN
+    if block.section == const.BLOCK_DOOR_LOWER:
+        block.open = (block.metadata >> 2) & 0x01 == const.BLOCK_DOOR_OPEN
         block.direction = block.metadata & 0x03
         if not block.open:
             block.bounding_box = BoundingBox(1, 2)
         else:
             block.bounding_box = None
-    elif block.section == MCM_DOOR_UPPER:
+    elif block.section == const.BLOCK_DOOR_UPPER:
         block.hinge = block.metadata & 0x01
         block.bounding_box = None
 
@@ -197,13 +153,13 @@ def _slab_ext(block):
 @block_ext(96, 167)
 def _trapdoor_ext(block):
     block.direction = block.metadata & 0x03
-    block.open = (block.metadata >> 2) & 0x01 == MCM_TRAPDOOR_OPEN
+    block.open = (block.metadata >> 2) & 0x01 == const.BLOCK_TRAPDOOR_OPEN
     block.orientation = (block.metadata >> 3) & 0x1
-    if block.open == MCM_TRAPDOOR_OPEN:
+    if block.open == const.BLOCK_TRAPDOOR_OPEN:
         block.bounding_box = None
-    elif block.orientation == MCM_TRAPDOOR_UPPER:
+    elif block.orientation == const.BLOCK_TRAPDOOR_UPPER:
         block.bounding_box = BoundingBox(1, 1)
-    elif block.orientation == MCM_TRAPDOOR_LOWER:
+    elif block.orientation == const.BLOCK_TRAPDOOR_LOWER:
         block.bounding_box = BoundingBox(1, 0.4)
 
 
