@@ -11,8 +11,8 @@ from spockbot.mcdata.utils import camel_case, snake_case
 
 def make_slot_check(wanted):
     """
-    Creates and returns a function that takes a slot and checks
-    if it matches the wanted item.
+    Creates and returns a function that takes a slot
+    and checks if it matches the wanted item.
 
     Args:
         wanted: function(Slot) or Slot or itemID or (itemID, metadata)
@@ -302,10 +302,7 @@ class Window(object):
 
     @property
     def window_slots(self):
-        """
-        All slots except inventory and hotbar.
-        Useful for searching.
-        """
+        """All slots except inventory and hotbar. Useful for searching."""
         return self.slots[:-constants.INV_SLOTS_PERSISTENT]
 
 

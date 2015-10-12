@@ -63,7 +63,7 @@ class InventoryAsync(object):
         """
         Stores the cursor item or drops it if the inventory is full.
         Returns the slot used to store it, or None if dropped.
-        Tip: look up or down before calling this, so you can
+        Tip: look directly up or down before calling this, so you can
         pick up the dropped item when the inventory frees up again.
         """
         inv = self.inventory
