@@ -13,7 +13,7 @@ This can be disabled by setting the ``auto_swing`` and ``auto_look`` flags.
 """
 from spockbot.mcdata import constants
 from spockbot.mcp import nbt
-from spockbot.mcp.mcdata import MC_SLOT
+from spockbot.mcp.proto import MC_SLOT
 from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.vector import Vector3
 

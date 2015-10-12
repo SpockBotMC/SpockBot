@@ -7,7 +7,7 @@ for demos and tutorials, and illustrates the basic steps for initializing
 a bot.
 """
 
-from spockbot.mcp import mcdata
+from spockbot.mcp import proto
 from spockbot.plugins.base import PluginBase
 
 
@@ -42,9 +42,9 @@ class StartPlugin(PluginBase):
 
     def handshake_and_login_start(self, _, __):
         self.net.push_packet('HANDSHAKE>Handshake', {
-            'protocol_version': mcdata.MC_PROTOCOL_VERSION,
+            'protocol_version': proto.MC_PROTOCOL_VERSION,
             'host': self.net.host,
             'port': self.net.port,
-            'next_state': mcdata.LOGIN_STATE
+            'next_state': proto.LOGIN_STATE
         })
         self.net.push_packet('LOGIN>Login Start', {'name': self.auth.username})

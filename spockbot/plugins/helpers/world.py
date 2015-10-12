@@ -5,13 +5,13 @@ interpret blocks and their metadata more comprehensively. Planned to provide
 light level interpretation based on sky light and time of day
 """
 
-from spockbot.mcp import mcdata
+from spockbot.mcdata import constants as const
 from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools import smpmap
 
 
 class WorldData(smpmap.Dimension):
-    def __init__(self, dimension=mcdata.SMP_OVERWORLD):
+    def __init__(self, dimension=const.SMP_OVERWORLD):
         super(WorldData, self).__init__(dimension)
         self.age = 0
         self.time_of_day = 0

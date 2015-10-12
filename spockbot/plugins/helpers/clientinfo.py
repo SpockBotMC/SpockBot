@@ -5,13 +5,9 @@ Plugins subscribing to ClientInfo's events don't have to independently
 track this information on their own.
 """
 
-from spockbot.mcdata import constants
+from spockbot.mcdata import constants as const
 from spockbot.mcdata.utils import Info
-from spockbot.mcp import mcdata
-from spockbot.mcp.mcdata import (
-    FLG_XPOS_REL, FLG_XROT_REL, FLG_YPOS_REL, FLG_YROT_REL, FLG_ZPOS_REL,
-    GS_GAMEMODE
-)
+
 from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.vector import Vector3
 
@@ -44,8 +40,8 @@ class Abilities(Info):
         self.fly = False
         self.flying = False
         self.creative = False
-        self.flying_speed = constants.PHY_FLY_ACC
-        self.walking_speed = constants.PHY_WLK_ACC
+        self.flying_speed = const.PHY_FLY_ACC
+        self.walking_speed = const.PHY_WLK_ACC
 
 
 class PlayerHealth(Info):
@@ -154,18 +150,18 @@ class ClientInfoPlugin(PluginBase):
         f = packet.data['flags']
         p = self.client_info.position
         d = packet.data
-        p.x = p.x + d['x'] if f & FLG_XPOS_REL else d['x']
-        p.y = p.y + d['y'] if f & FLG_YPOS_REL else d['y']
-        p.z = p.z + d['z'] if f & FLG_ZPOS_REL else d['z']
-        p.yaw = p.yaw + d['yaw'] if f & FLG_YROT_REL else d['yaw']
-        p.pitch = p.pitch + d['pitch'] if f & FLG_XROT_REL else d['pitch']
+        p.x = p.x + d['x'] if f & const.FLG_XPOS_REL else d['x']
+        p.y = p.y + d['y'] if f & const.FLG_YPOS_REL else d['y']
+        p.z = p.z + d['z'] if f & const.FLG_ZPOS_REL else d['z']
+        p.yaw = p.yaw + d['yaw'] if f & const.FLG_YROT_REL else d['yaw']
+        p.pitch = p.pitch + d['pitch'] if f & const.FLG_XROT_REL else d['pitch']  # noqa
         self.event.emit('client_position_update', self.client_info.position)
 
     # Player List Item - Update player list
     def handle_player_list(self, name, packet):
         act = packet.data['action']
         for pl in packet.data['player_list']:
-            if act == mcdata.PL_ADD_PLAYER and pl['uuid'] not in self.uuids:
+            if act == const.PL_ADD_PLAYER and pl['uuid'] not in self.uuids:
                 item = PlayerListItem()
                 item.set_dict(pl)
                 if pl['uuid'] in self.defered_pl:
@@ -175,9 +171,9 @@ class ClientInfoPlugin(PluginBase):
                 self.client_info.player_list[pl['uuid']] = item
                 self.uuids[pl['uuid']] = item
                 self.event.emit('client_add_player', item)
-            elif act in [mcdata.PL_UPDATE_GAMEMODE,
-                         mcdata.PL_UPDATE_LATENCY,
-                         mcdata.PL_UPDATE_DISPLAY]:
+            elif act in [const.PL_UPDATE_GAMEMODE,
+                         const.PL_UPDATE_LATENCY,
+                         const.PL_UPDATE_DISPLAY]:
                 if pl['uuid'] in self.uuids:
                     item = self.uuids[pl['uuid']]
                     item.set_dict(pl)
@@ -189,7 +185,7 @@ class ClientInfoPlugin(PluginBase):
                     defered = self.defered_pl.get(pl['uuid'], [])
                     defered.append(pl)
                     self.defered_pl[pl['uuid']] = defered
-            elif act == mcdata.PL_REMOVE_PLAYER and pl['uuid'] in self.uuids:
+            elif act == const.PL_REMOVE_PLAYER and pl['uuid'] in self.uuids:
                 item = self.uuids[pl['uuid']]
                 del self.client_info.player_list[pl['uuid']]
                 del self.uuids[pl['uuid']]
@@ -197,7 +193,7 @@ class ClientInfoPlugin(PluginBase):
 
     # Change Game State
     def handle_game_state(self, name, packet):
-        if packet.data['reason'] == GS_GAMEMODE:
+        if packet.data['reason'] == const.GS_GAMEMODE:
             self.client_info.game_info.gamemode = packet.data['value']
 
     # Server Difficulty
