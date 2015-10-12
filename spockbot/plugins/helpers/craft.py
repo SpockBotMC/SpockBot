@@ -19,8 +19,8 @@ class CraftPlugin(PluginBase):
 
     def craft(self, item=None, meta=None, amount=1, recipe=None, parent=None):
         """
-        Starts a craft_task. Returns the recipe used for crafting.
-        Either `item` or `recipe` has to be given.
+        Starts a ``craft_task``. Returns the recipe used for crafting.
+        Either ``item`` or ``recipe`` has to be given.
         """
         if recipe:
             item, meta, _ = recipe.result
@@ -32,9 +32,7 @@ class CraftPlugin(PluginBase):
 
     def craft_task(self, recipe, amount=1):
         """
-        Crafts `amount` items with `recipe`.
-        Returns True if all items were crafted, False otherwise.
-        (use `yield from` or `run_task(callback=cb)` to get the return value)
+        A task that crafts ``amount`` items with ``recipe``.
         """
         if not recipe:
             raise TaskFailed('[Craft] No recipe given: %s' % recipe)

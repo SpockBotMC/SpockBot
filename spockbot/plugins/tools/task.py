@@ -8,29 +8,49 @@ def accept(evt, data):
 
 
 def check_key(key, value):
+    """Generates a check function for a certain key-value pair.
+
+    Creates and returns a function that takes two arguments ``(event, data)``
+    and checks ``data[key]`` and ``value`` for equality.
+
+    This is supposed to be used as a check function generator for the
+    ``yield`` statements in tasks.
+
+    Example:
+        Wait for the next ``player_join`` event that has
+        its ``name`` set to ``Bob``, i.e. ``data = {'name': 'Bob'}``.
+
+        >>> def my_task():
+        ...     yield 'player_join', check_key('name', 'Bob')
+    """
     return lambda event, data: data[key] == value
 
 
 class TaskFailed(Exception):
+    """
+    Raising this exception in any task stops it and signalizes the parent task
+    that the task was aborted due to an error.
+
+    Attributes:
+        message (str): Description of the failure
+        tasktrace (List[Task]): List of all failed tasks
+                                since raising this error.
+        prev_error (TaskFailed): The previous error, if any.
+                                 Provide via ``with_error()``.
+    """
     def __init__(self, message, *args):
         self.message = message
         self.args = (message,) + args
-
-        #: List[Task]: List of all failed tasks since raising this error.
-        # Populated in Task.continue_with().
         self.tasktrace = []
-
-        #: TaskFailed: The previous error, if any. Provide via with_error().
         self.prev_error = None
 
     def with_error(self, prev_error):
-        """
-        Set the previous error and return self.
+        """Sets the previous error and returns self.
 
-        When re-throwing a TaskFailed, you can provide a new, more
-        high level failure description and pass along the previously
-        failed tasks to still be able to reconstruct the full history of
-        failed tasks.
+        When re-throwing a TaskFailed, you can provide a new,
+        more high level failure description and pass along the
+        previously failed tasks to still be able to reconstruct
+        the full history of failed tasks.
 
         Examples:
             Re-throw a TaskFailed with a new, more high level description.

@@ -86,9 +86,13 @@ INV_SLOTS_HOTBAR = 9
 # always accessible
 INV_SLOTS_PERSISTENT = INV_SLOTS_INVENTORY + INV_SLOTS_HOTBAR
 
-#########
-# Books #
-#########
+############
+# Interact #
+############
+
+CHAT_POS_CHAT = 0
+CHAT_POS_SYSTEM_MESSAGE = 1
+CHAT_POS_ABOVE_HOTBAR = 2
 
 BOOK_MAXPAGES = 50
 BOOK_CHARS_PER_PAGE = 266
