@@ -8,10 +8,10 @@ import logging
 import zlib
 from time import gmtime, strftime
 
-from spockbot.mcp import datautils, mcdata
+from spockbot.mcp import datautils, proto
 from spockbot.mcp.bbuff import BoundBuffer, BufferUnderflowException
-from spockbot.mcp.mcdata import MC_VARINT
-from spockbot.mcp.mcpacket_extensions import hashed_extensions
+from spockbot.mcp.extensions import hashed_extensions
+from spockbot.mcp.proto import MC_VARINT
 
 
 logger = logging.getLogger('spockbot')
@@ -26,17 +26,17 @@ class PacketDecodeFailure(Exception):
 
 class Packet(object):
     def __init__(self,
-                 ident=[mcdata.HANDSHAKE_STATE, mcdata.CLIENT_TO_SERVER, 0x00],
+                 ident=[proto.HANDSHAKE_STATE, proto.CLIENT_TO_SERVER, 0x00],
                  data=None
                  ):
         if isinstance(ident, basestring):
-            ident = mcdata.packet_str2ident[ident]
+            ident = proto.packet_str2ident[ident]
         self.__ident = list(ident)
         # Quick hack to fake default ident
         if len(self.__ident) == 2:
             self.__ident.append(0x00)
         self.ident = tuple(self.__ident)
-        self.str_ident = mcdata.packet_ident2str[self.ident]
+        self.str_ident = proto.packet_ident2str[self.ident]
         self.data = data if data else {}
 
     def clone(self):
@@ -50,7 +50,7 @@ class Packet(object):
         packet_length = datautils.unpack(MC_VARINT, bbuff)
         packet_data = bbuff.recv(packet_length)
         pbuff = BoundBuffer(packet_data)
-        if proto_comp_state == mcdata.PROTO_COMP_ON:
+        if proto_comp_state == proto.PROTO_COMP_ON:
             body_length = datautils.unpack(MC_VARINT, pbuff)
             if body_length > 0:
                 body_data = zlib.decompress(pbuff.flush(), zlib.MAX_WBITS)
@@ -61,9 +61,9 @@ class Packet(object):
             # Ident
             self.__ident[2] = datautils.unpack(MC_VARINT, pbuff)
             self.ident = tuple(self.__ident)
-            self.str_ident = mcdata.packet_ident2str[self.ident]
+            self.str_ident = proto.packet_ident2str[self.ident]
             # Payload
-            for dtype, name in mcdata.hashed_structs[self.ident]:
+            for dtype, name in proto.hashed_structs[self.ident]:
                 self.data[name] = datautils.unpack(dtype, pbuff)
             # Extension
             if self.ident in hashed_extensions:
@@ -78,13 +78,13 @@ class Packet(object):
         # Ident
         o = datautils.pack(MC_VARINT, self.ident[2])
         # Payload
-        for dtype, name in mcdata.hashed_structs[self.ident]:
+        for dtype, name in proto.hashed_structs[self.ident]:
             o += datautils.pack(dtype, self.data[name])
         # Extension
         if self.ident in hashed_extensions:
             o += hashed_extensions[self.ident].encode_extra(self)
 
-        if proto_comp_state == mcdata.PROTO_COMP_ON:
+        if proto_comp_state == proto.PROTO_COMP_ON:
             uncompressed_len = len(o)
             if uncompressed_len < proto_comp_threshold:
                 header = datautils.pack(MC_VARINT, uncompressed_len + 1)
@@ -96,7 +96,7 @@ class Packet(object):
                                         len(o) + len(ulen_varint))
                 header += ulen_varint
             return header + o
-        elif proto_comp_state == mcdata.PROTO_COMP_OFF:
+        elif proto_comp_state == proto.PROTO_COMP_OFF:
             return datautils.pack(MC_VARINT, len(o)) + o
         else:
             return None
@@ -104,9 +104,9 @@ class Packet(object):
     def __repr__(self):
         s = ('<<<', '>>>')[self.ident[1]]
         f = "[%s] %s (0x%02X, 0x%02X): %-" + str(
-            max([len(i) for i in mcdata.hashed_names.values()]) + 1) + "s%s"
+            max([len(i) for i in proto.hashed_names.values()]) + 1) + "s%s"
         return f % (
             strftime("%H:%M:%S", gmtime()), s, self.ident[0], self.ident[2],
-            mcdata.hashed_names[self.ident],
+            proto.hashed_names[self.ident],
             str(self.data)
         )

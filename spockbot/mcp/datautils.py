@@ -3,11 +3,11 @@ import struct
 
 from spockbot.mcp import mcdata, nbt
 from spockbot.mcp.bbuff import BoundBuffer
-from spockbot.mcp.mcdata import (MC_BYTE, MC_CHAT, MC_FLOAT, MC_FP_BYTE,
-                                 MC_FP_INT, MC_INT, MC_LONG, MC_META,
-                                 MC_POSITION, MC_SHORT, MC_SLOT, MC_STRING,
-                                 MC_UBYTE, MC_ULONG, MC_UUID, MC_VARINT,
-                                 MC_VARLONG)
+from spockbot.mcp.proto import (MC_BYTE, MC_CHAT, MC_FLOAT, MC_FP_BYTE,
+                                MC_FP_INT, MC_INT, MC_LONG, MC_META,
+                                MC_POSITION, MC_SHORT, MC_SLOT, MC_STRING,
+                                MC_UBYTE, MC_ULONG, MC_UUID, MC_VARINT,
+                                MC_VARLONG)
 
 
 def byte_to_hex(byte_str):
