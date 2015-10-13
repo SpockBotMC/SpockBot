@@ -78,7 +78,7 @@ class TickTimer(BaseTimer):
         self.end_tick = self.world.age + self.wait_ticks
 
 
-class TimerCore(object):
+class TimersCore(object):
     def __init__(self, world):
         self.timers = []
         self.persist_timers = []
@@ -111,7 +111,7 @@ class WorldTick(object):
 
 
 @pl_announce('Timers')
-class TimerPlugin(PluginBase):
+class TimersPlugin(PluginBase):
     requires = 'World'
     events = {
         'event_tick': 'tick',
@@ -119,12 +119,12 @@ class TimerPlugin(PluginBase):
     }
 
     def __init__(self, ploader, settings):
-        super(TimerPlugin, self).__init__(ploader, settings)
+        super(TimersPlugin, self).__init__(ploader, settings)
         if not self.world:
             self.world = WorldTick()
             ploader.reg_event_handler('PLAY<Time Update',
                                       self.handle_time_update)
-        self.timer_core = TimerCore(self.world)
+        self.timer_core = TimersCore(self.world)
         ploader.provides('Timers', self.timer_core)
 
     def tick(self, name, data):
