@@ -35,15 +35,32 @@ class ChatCore(object):
 @pl_announce('Chat')
 class ChatPlugin(PluginBase):
     """
-    Emits `chat` events with `{position, raw, text, type, message, name, uuid}`
+    Emits ``chat`` events with
+    ``position, raw, text, type, message, name, uuid``.
 
-    <sort> is None or one of:
-    achievement, admin, announcement, emote, incoming, outgoing, text
+    ``position``: Always one of ``spockbot.mcdata.constants``'s
+    ``CHAT_POS_CHAT, CHAT_POS_SYSTEM_MESSAGE, CHAT_POS_ABOVE_HOTBAR``.
 
-    If <sort> is not None, <name>, <uuid>, <message> are set and an additional
-    `chat_<sort>` event is emitted.
+    ``raw``: Always the JSON dict as received from the server.
 
-    `uuid` contains dashes and is Null if not present.
+    ``text``: The text (without formatting) of the chat message
+    as the vanilla client would display it.
+    Needs ``en_US.lang`` to be present in the active directory,
+    otherwise some but not all messages are translated properly.
+
+    ``type``: None or one of
+    ``achievement, admin, announcement, emote, incoming, outgoing, text``,
+    which are the last part of the corresponding vanilla translation IDs.
+
+    If ``type`` is not None, ``message, name, uuid`` are set and an
+    additional ``chat_<type>`` event is emitted.
+    Otherwise, ``message, name, uuid`` are all None.
+
+    ``message``: The message as it was typed by the sender.
+
+    ``name``: The name of the sender.
+
+    ``uuid``: The UUID of the sender, with dashes.
     """
 
     requires = ('Event', 'Net')
@@ -54,9 +71,9 @@ class ChatPlugin(PluginBase):
         self.chatcore = ChatCore(self.net)
         ploader.provides('Chat', self.chatcore)
         self.translations = {}
-        self._load_translations()
+        self.load_translations()
 
-    def _load_translations(self):
+    def load_translations(self):
         try:
             with open('en_US.lang', 'r') as lang_file:
                 # the chat data comes in as strings, so we need to

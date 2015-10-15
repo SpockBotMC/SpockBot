@@ -127,7 +127,7 @@ class EntitiesPlugin(PluginBase):
         self.ec.entities[packet.data['eid']] = entity
         self.ec.players[packet.data['eid']] = entity
         self.event.emit('entity_spawn', {'entity': entity})
-        self.event.emit('entity_player_spawn', entity)
+        self.event.emit('entity_spawn_player', entity)
 
     def handle_spawn_object(self, event, packet):
         entity = ObjectEntity()
@@ -135,6 +135,7 @@ class EntitiesPlugin(PluginBase):
         self.ec.entities[packet.data['eid']] = entity
         self.ec.objects[packet.data['eid']] = entity
         self.event.emit('entity_spawn', {'entity': entity})
+        self.event.emit('entity_spawn_object', entity)
 
     def handle_spawn_mob(self, event, packet):
         entity = MobEntity()
@@ -142,7 +143,7 @@ class EntitiesPlugin(PluginBase):
         self.ec.entities[packet.data['eid']] = entity
         self.ec.mobs[packet.data['eid']] = entity
         self.event.emit('entity_spawn', {'entity': entity})
-        self.event.emit('entity_mob_spawn', entity)
+        self.event.emit('entity_spawn_mob', entity)
 
     def handle_spawn_painting(self, event, packet):
         entity = PaintingEntity()
@@ -150,6 +151,7 @@ class EntitiesPlugin(PluginBase):
         self.ec.entities[packet.data['eid']] = entity
         self.ec.paintings[packet.data['eid']] = entity
         self.event.emit('entity_spawn', {'entity': entity})
+        self.event.emit('entity_spawn_painting', entity)
 
     def handle_spawn_experience_orb(self, event, packet):
         entity = ExpEntity()
@@ -157,6 +159,7 @@ class EntitiesPlugin(PluginBase):
         self.ec.entities[packet.data['eid']] = entity
         self.ec.exp_orbs[packet.data['eid']] = entity
         self.event.emit('entity_spawn', {'entity': entity})
+        self.event.emit('entity_spawn_exp_orb', entity)
 
     def handle_spawn_global_entity(self, event, packet):
         entity = GlobalEntity()
@@ -164,6 +167,7 @@ class EntitiesPlugin(PluginBase):
         self.ec.entities[packet.data['eid']] = entity
         self.ec.global_entities[packet.data['eid']] = entity
         self.event.emit('entity_spawn', {'entity': entity})
+        self.event.emit('entity_spawn_global', entity)
 
     def handle_destroy_entities(self, event, packet):
         for eid in packet.data['eids']:

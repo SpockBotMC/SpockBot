@@ -6,13 +6,14 @@ Interact with the world:
 - use the held (active) item
 - use/attack entities
 - steer vehicles
+- edit and sign books
 
 By default, the client sends swing and look packets like the vanilla client.
-This can be disabled by setting the auto_swing and auto_look flags.
+This can be disabled by setting the ``auto_swing`` and ``auto_look`` flags.
 """
 from spockbot.mcdata import constants
 from spockbot.mcp import nbt
-from spockbot.mcp.mcdata import MC_SLOT
+from spockbot.mcp.proto import MC_SLOT
 from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.vector import Vector3
 
@@ -151,7 +152,8 @@ class InteractPlugin(PluginBase):
     def place_block(self, pos, face=1, cursor_pos=Vector3(8, 8, 8),
                     sneak=True, look_at_block=True, swing=True):
         """
-        Place a block next to pos. If the block at pos is air, place at pos.
+        Place a block next to ``pos``.
+        If the block at ``pos`` is air, place at ``pos``.
         """
         sneaking_before = self.sneaking
         if sneak:
@@ -188,7 +190,7 @@ class InteractPlugin(PluginBase):
                    action=constants.INTERACT_ENTITY):
         """
         Uses (right-click) an entity to open its window.
-        Setting `cursor_pos` sets `action` to "interact at".
+        Setting ``cursor_pos`` sets ``action`` to "interact at".
         """
         if self.auto_look:
             self.look_at(Vector3(entity))  # TODO look at cursor_pos

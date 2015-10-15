@@ -1,5 +1,4 @@
 # Most of the data formats, structures, and magic values
-
 MC_PROTOCOL_VERSION = 47
 
 SERVER_TO_CLIENT = 0x00
@@ -34,86 +33,6 @@ HANDSHAKE_STATE = 0x00
 STATUS_STATE = 0x01
 LOGIN_STATE = 0x02
 PLAY_STATE = 0x03
-
-SMP_NETHER = -0x01
-SMP_OVERWORLD = 0x00
-SMP_END = 0x01
-
-FLG_XPOS_REL = 0x01
-FLG_YPOS_REL = 0x02
-FLG_ZPOS_REL = 0x04
-FLG_YROT_REL = 0x08
-FLG_XROT_REL = 0x10
-
-GM_SURVIVAL = 0x00
-GM_CREATIVE = 0x01
-GM_ADVENTURE = 0x02
-GM_SPECTATOR = 0x03
-
-# Actions
-# Clientbound 0x38 Player List Item
-PL_ADD_PLAYER = 0x00
-PL_UPDATE_GAMEMODE = 0x01
-PL_UPDATE_LATENCY = 0x02
-PL_UPDATE_DISPLAY = 0x03
-PL_REMOVE_PLAYER = 0x04
-
-# Clientbound 0x3B Scoreboard Objective
-SO_CREATE_BOARD = 0x00
-SO_REMOVE_BOARD = 0x01
-SO_UPDATE_BOARD = 0x02
-
-# Clientbound 0x3C Update Score
-US_UPDATE_SCORE = 0x00
-US_REMOVE_SCORE = 0x01
-
-# Clientbound 0x3E Teams
-TE_CREATE_TEAM = 0x00
-TE_REMOVE_TEAM = 0x01
-TE_UPDATE_TEAM = 0x02
-TE_ADDPLY_TEAM = 0x03
-TE_REMPLY_TEAM = 0x04
-
-# Clientbound 0x42 Combat Event
-CE_ENTER_COMBAT = 0x00
-CE_END_COMBAT = 0x01
-CE_ENTITY_DEAD = 0x02
-
-# Clientbound 0x44 World Border
-WB_SET_SIZE = 0x00
-WB_LERP_SIZE = 0x01
-WB_SET_CENTER = 0x02
-WB_INITIALIZE = 0x03
-WB_SET_WARN_TIME = 0x04
-WB_SET_WARN_BLOCKS = 0x05
-
-# Clientbound 0x45 Title
-TL_TITLE = 0x00
-TL_SUBTITLE = 0x01
-TL_TIMES = 0x02
-TL_CLEAR = 0x03
-TL_RESET = 0x04
-
-# Serverbound 0x02 Use Entity
-UE_INTERACT = 0x00
-UE_ATTACK = 0x01
-UE_INTERACT_AT = 0x02
-
-# Serverbound 0x16 Client Status
-CL_STATUS_RESPAWN = 0x00
-CL_STATUS_STATS = 0x01
-CL_STATUS_INV = 0x02
-
-# Clientbound 0x2B Change Game State
-GS_INVALID_BED = 0x00
-GS_END_RAIN = 0x01
-GS_START_RAIN = 0x02
-GS_GAMEMODE = 0x03
-GS_CREDITS = 0x04
-GS_DEMO_MESSAGE = 0x05
-GS_ARROW = 0x06
-GS_FADE_VALUE = 0x07
-GS_FADE_TIME = 0x08
 
 data_structs = (
     # (struct_suffix, size), #type
@@ -176,7 +95,7 @@ particles = (
     ('mob_appearance', 0),
 )
 
-# Structs formatted for readibility
+# Structs formatted for readability
 # Packed into tuples at end of file
 packet_names = {
     HANDSHAKE_STATE: {
@@ -503,7 +422,7 @@ packet_structs = {
             # Spawn Mob
             0x0F: (
                 (MC_VARINT, 'eid'),
-                (MC_UBYTE, 'type'),
+                (MC_UBYTE, 'mob_type'),
                 (MC_FP_INT, 'x'),
                 (MC_FP_INT, 'y'),
                 (MC_FP_INT, 'z'),
@@ -726,7 +645,7 @@ packet_structs = {
             # Spawn Global Entity
             0x2C: (
                 (MC_VARINT, 'eid'),
-                (MC_BYTE, 'type'),
+                (MC_BYTE, 'global_type'),
                 (MC_FP_INT, 'x'),
                 (MC_FP_INT, 'y'),
                 (MC_FP_INT, 'z'),
@@ -996,7 +915,7 @@ packet_structs = {
                 (MC_VARINT, 'target'),
                 (MC_VARINT, 'action'),
                 # Extension
-                # UE_INTERACT_AT
+                # INTERACT_ENTITY_AT
                 # MC_FLOAT 'target_x'
                 # MC_FLOAT 'target_y'
                 # MC_FLOAT 'target_z'

@@ -11,8 +11,8 @@ from spockbot.mcdata.utils import camel_case, snake_case
 
 def make_slot_check(wanted):
     """
-    Creates and returns a function that takes a slot and checks
-    if it matches the wanted item.
+    Creates and returns a function that takes a slot
+    and checks if it matches the wanted item.
 
     Args:
         wanted: function(Slot) or Slot or itemID or (itemID, metadata)
@@ -83,15 +83,21 @@ class Slot(object):
         return not self.is_empty
 
     def __repr__(self):
+        vals = {
+            'name': self.item.display_name,
+            'max': self.item.stack_size,
+        }
+        vals.update(self.__dict__)
         if self.is_empty:
-            return '<empty slot at %i in %s>' % (
-                self.slot_nr, self.window)
+            s = 'empty'
         else:
-            attrs_with_name = {'name': self.item.display_name}
-            attrs_with_name.update(self.__dict__)
-            return '<Slot: %(amount)ix %(item_id)i:%(damage)i' \
-                   ' %(name)s at %(slot_nr)i in %(window)s>' \
-                   % attrs_with_name
+            s = '%(amount)i/%(max)i %(item_id)i:%(damage)i %(name)s' % vals
+
+        if self.slot_nr != -1:
+            s += ' at %(slot_nr)i' % self.__dict__
+        if self.window:
+            s += ' in %(window)s' % self.__dict__
+        return '<Slot: %s>' % s
 
 
 class SlotCursor(Slot):
@@ -162,7 +168,7 @@ class BaseClick(object):
 
     def transfer(self, from_slot, to_slot, max_amount):
         transfer_amount = min(max_amount, from_slot.amount,
-                              to_slot.max_amount - to_slot.amount)
+                              to_slot.item.stack_size - to_slot.amount)
         if transfer_amount <= 0:
             return
         self.copy_slot_type(from_slot, to_slot)
@@ -302,10 +308,7 @@ class Window(object):
 
     @property
     def window_slots(self):
-        """
-        All slots except inventory and hotbar.
-        Useful for searching.
-        """
+        """All slots except inventory and hotbar. Useful for searching."""
         return self.slots[:-constants.INV_SLOTS_PERSISTENT]
 
 
