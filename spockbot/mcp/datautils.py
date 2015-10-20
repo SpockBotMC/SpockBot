@@ -59,7 +59,7 @@ def unpack_varlong(bbuff):
         shift += 7
     if total >= 1 << 64:
         return None
-    if total & (1 << 64):
+    if total & (1 << 63):
         total -= 1 << 64
     return total
 
