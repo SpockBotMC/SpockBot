@@ -3,6 +3,7 @@
 *.swp
 .cache
 *~
+__pycache__/
 config.yaml
 login.py
 run.py
