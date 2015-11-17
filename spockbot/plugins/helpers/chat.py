@@ -129,11 +129,9 @@ class ChatPlugin(PluginBase):
             name = None
 
         # sender UUID
-        try:  # always at the same place if present
-            test = ''.join(json_data['with'][0]['hoverEvent']['value'])
-            spliter = "id:\""
-            test1 = test[test.index(spliter):]
-            uuid = test1[4:40]
+        try:
+            uuid = ''.join(json_data['with'][0]['hoverEvent']['value'])
+            uuid = uuid[uuid.index("id:\""):][4:40]
         except (IndexError, KeyError, TypeError):
             uuid = None
 
