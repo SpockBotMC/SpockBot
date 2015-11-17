@@ -130,8 +130,8 @@ class ChatPlugin(PluginBase):
 
         # sender UUID
         try:
-            uuid = ''.join(json_data['with'][0]['hoverEvent']['value'])
-            uuid = uuid[uuid.index("id:\""):][4:40]
+            text_with_uuid = json_data['with'][0]['hoverEvent']['value']
+            uuid = text_with_uuid[text_with_uuid.index('id:"'):][4:40]
         except (IndexError, KeyError, TypeError):
             uuid = None
 
