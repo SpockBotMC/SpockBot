@@ -151,9 +151,7 @@ def pack_slot(slot):
     return o
 
 # Metadata is a dictionary list thing that
-# holds metadata about entities. Currently
-# implemented as a list/tuple thing, might
-# switch to dicts
+# holds metadata about entities.
 metadata_lookup = MC_BYTE, MC_SHORT, MC_INT, MC_FLOAT, MC_STRING, MC_SLOT
 
 
