@@ -31,13 +31,12 @@ class StartPlugin(PluginBase):
     def start(self, host=None, port=None):
         self.host = host if host else self.settings['host']
         self.port = port if port else self.settings['port']
+        self.auth.username = self.settings['username']
+        self.auth.password = self.settings['password']
         self.event.event_loop()
 
     def start_session(self, _, __):
-        if 'error' not in self.auth.start_session(
-                self.settings['username'],
-                self.settings['password']
-        ):
+        if self.auth.start_session():
             self.net.connect(self.host, self.port)
 
     def handshake_and_login_start(self, _, __):

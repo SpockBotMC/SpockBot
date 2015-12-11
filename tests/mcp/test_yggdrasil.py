@@ -1,194 +1,258 @@
 from __future__ import unicode_literals
 
-import unittest
-
 import mock
 from mock.mock import MagicMock
 
 from six.moves.urllib.error import HTTPError
 
-from spockbot.mcp.yggdrasil import YggAuth
+from spockbot.mcp.yggdrasil import YggdrasilCore
+
+ygg_auth_error = {'error': 'ForbiddenOperationException',
+                  'errorMessage': 'Invalid credentials. Invalid username or '
+                                  'password.'}
+
+ygg_auth_user_pass = {'accessToken': '01234567890123456789012345678901',
+                      'availableProfiles': [
+                          {'id': '01234567890123456789012345678901',
+                           'name': 'username'}],
+                      'clientToken': '01234567890123456789012345678901',
+                      'selectedProfile': {
+                          'id': '01234567890123456789012345678901',
+                          'name': 'username'}}
 
 
 @mock.patch('spockbot.mcp.yggdrasil.Request')
 @mock.patch('spockbot.mcp.yggdrasil.urlopen')
-class YggAuthRequestTest(unittest.TestCase):
-    def test_request_is_done(self, urlopen, request):
-        decode = urlopen.return_value.read.return_value.decode
-        decode.return_value = '{"test": 1}'
-        ygg = YggAuth()
-        self.assertFalse(urlopen.called)
-        self.assertFalse(request.called)
-        res = ygg._ygg_req('/test', [{'a': 'b'}, 'c', 'd', 'e'])
+def test_request_is_done(urlopen, request):
+    decode = urlopen.return_value.read.return_value.decode
+    decode.return_value = '{"test": 1}'
+    ygg = YggdrasilCore()
+    assert not urlopen.called
+    assert not request.called
+    res = ygg._ygg_req('/test', [{'a': 'b'}, 'c', 'd', 'e'])
 
-        # First create the request
-        request.assert_called_once_with(
-            url='https://authserver.mojang.com/test',
-            data=b'[{"a": "b"}, "c", "d", "e"]',
-            headers={'Content-Type': 'application/json'}
-        )
+    # First create the request
+    request.assert_called_once_with(
+        url='https://authserver.mojang.com/test',
+        data=b'[{"a": "b"}, "c", "d", "e"]',
+        headers={'Content-Type': 'application/json'}
+    )
 
-        # Then send it
-        urlopen.assert_called_once_with(request.return_value)
+    # Then send it
+    urlopen.assert_called_once_with(request.return_value)
 
-        # Read the response
-        self.assertTrue(urlopen.return_value.read.called)
-        self.assertTrue(decode.called)
+    # Read the response
+    assert urlopen.return_value.read.called
+    assert decode.called
 
-        self.assertEqual(res, {'test': 1})
-
-    def test_request_raises_error(self, urlopen, request):
-        exception_data = MagicMock()
-        exception_data.read.return_value.decode.return_value = '{"error": 1}'
-        urlopen.side_effect = HTTPError('', '', '', '', exception_data)
-
-        ygg = YggAuth()
-        self.assertFalse(urlopen.called)
-        self.assertFalse(request.called)
-        res = ygg._ygg_req('/test', {'a': 'b'})
-
-        # Read the response
-        self.assertTrue(exception_data.read.called)
-        self.assertTrue(exception_data.read.return_value.decode.called)
-
-        self.assertEqual(res, {'error': 1})
+    assert res == {'test': 1}
 
 
-@mock.patch('spockbot.mcp.yggdrasil.YggAuth._ygg_req')
-class YggAuthTest(unittest.TestCase):
-    def setUp(self):
-        self.ygg = YggAuth()
-        self.assertFalse(self.ygg.username)
-        self.assertFalse(self.ygg.password)
-        self.assertFalse(self.ygg.client_token)
-        self.assertFalse(self.ygg.access_token)
+@mock.patch('spockbot.mcp.yggdrasil.Request')
+@mock.patch('spockbot.mcp.yggdrasil.urlopen')
+def test_request_raises_error(urlopen, request):
+    exception_data = MagicMock()
+    exception_data.read.return_value.decode.return_value = '{"error": 1}'
+    urlopen.side_effect = HTTPError('', '', '', '', exception_data)
 
-    def test_authenticate_success(self, ygg_req):
-        ygg_req.return_value = {'accessToken': 'myaccess',
-                                'clientToken': 'mytoken'}
+    ygg = YggdrasilCore()
+    assert not urlopen.called
+    assert not request.called
+    res = ygg._ygg_req('/test', {'a': 'b'})
 
-        res = self.ygg.authenticate('user', 'pass', 'clienttoken')
+    # Read the response
+    assert exception_data.read.called
+    assert exception_data.read.return_value.decode.called
 
-        ygg_req.assert_called_once_with('/authenticate', {
-            'agent': {
-                'name': 'Minecraft',
-                'version': 1,
-            },
-            'username': 'user',
-            'password': 'pass',
-            'clientToken': 'clienttoken',
-        })
+    assert res == {'error': 1}
 
-        self.assertEqual(self.ygg.username, 'user')
-        self.assertEqual(self.ygg.password, 'pass')
-        self.assertEqual(self.ygg.client_token, 'mytoken')
-        self.assertEqual(self.ygg.access_token, 'myaccess')
 
-        self.assertEqual(res, ygg_req.return_value)
+def test_yggdrasil_initialization():
+    ygg = YggdrasilCore()
+    assert '' == ygg.username
+    assert '' == ygg.password
+    assert '' == ygg.client_token
+    assert '' == ygg.access_token
 
-    def test_authenticate_failure(self, ygg_req):
-        ygg_req.return_value = {'error': 1}
 
-        res = self.ygg.authenticate('user', 'pass', 'clienttoken')
+def test_authenticate_success():
+    ygg = YggdrasilCore()
+    ygg._ygg_req = ygg_req = mock.MagicMock()
+    ygg_req.return_value = {'accessToken': 'myaccess',
+                            'clientToken': 'mytoken',
+                            'availableProfiles': ['a', 'b'],
+                            'selectedProfile': 'a'}
 
-        ygg_req.assert_called_once_with('/authenticate', {
-            'agent': {
-                'name': 'Minecraft',
-                'version': 1,
-            },
-            'username': 'user',
-            'password': 'pass',
-            'clientToken': 'clienttoken',
-        })
+    ygg.username = 'user'
+    ygg.password = 'pass'
+    ygg.client_token = 'clienttoken'
 
-        self.assertEqual(self.ygg.username, 'user')
-        self.assertEqual(self.ygg.password, 'pass')
-        self.assertEqual(self.ygg.client_token, 'clienttoken')
-        self.assertEqual(self.ygg.access_token, None)
+    res = ygg.authenticate()
 
-        self.assertEqual(res, ygg_req.return_value)
+    ygg_req.assert_called_once_with('/authenticate', {
+        'agent': {
+            'name': 'Minecraft',
+            'version': 1,
+        },
+        'username': 'user',
+        'password': 'pass',
+        'clientToken': 'clienttoken',
+    })
 
-    def test_refresh_success(self, ygg_req):
-        ygg_req.return_value = {'accessToken': 'myaccess',
-                                'clientToken': 'mytoken'}
+    assert ygg.username == 'user'
+    assert ygg.password == 'pass'
+    assert ygg.client_token == 'mytoken'
+    assert ygg.access_token == 'myaccess'
+    assert res
 
-        res = self.ygg.refresh('clienttoken', 'accesstoken')
 
-        ygg_req.assert_called_once_with('/refresh', {
-            'accessToken': 'accesstoken',
-            'clientToken': 'clienttoken',
-        })
+def test_authenticate_failure():
+    ygg = YggdrasilCore()
+    ygg._ygg_req = ygg_req = mock.MagicMock()
+    ygg_req.return_value = {'error': 1}
 
-        self.assertEqual(self.ygg.username, None)
-        self.assertEqual(self.ygg.password, None)
-        self.assertEqual(self.ygg.client_token, 'mytoken')
-        self.assertEqual(self.ygg.access_token, 'myaccess')
+    ygg.username = 'user'
+    ygg.password = 'pass'
+    ygg.client_token = 'clienttoken'
+    res = ygg.authenticate()
 
-        self.assertEqual(res, ygg_req.return_value)
+    ygg_req.assert_called_once_with('/authenticate', {
+        'agent': {
+            'name': 'Minecraft',
+            'version': 1,
+        },
+        'username': 'user',
+        'password': 'pass',
+        'clientToken': 'clienttoken',
+    })
 
-    def test_refresh_failure(self, ygg_req):
-        ygg_req.return_value = {'error': 1}
+    assert ygg.username == 'user'
+    assert ygg.password == 'pass'
+    assert ygg.client_token == 'clienttoken'
+    assert '' == ygg.access_token
+    assert not res
 
-        res = self.ygg.refresh('clienttoken', 'accesstoken')
 
-        ygg_req.assert_called_once_with('/refresh', {
-            'accessToken': 'accesstoken',
-            'clientToken': 'clienttoken',
-        })
+def test_refresh_success():
+    ygg = YggdrasilCore()
+    ygg._ygg_req = ygg_req = mock.MagicMock()
+    ygg_req.return_value = {'accessToken': 'myaccess',
+                            'clientToken': 'mytoken',
+                            'availableProfiles': ['a', 'b'],
+                            'selectedProfile': 'a'}
 
-        self.assertEqual(self.ygg.username, None)
-        self.assertEqual(self.ygg.password, None)
-        self.assertEqual(self.ygg.client_token, 'clienttoken')
-        self.assertEqual(self.ygg.access_token, 'accesstoken')
+    ygg.client_token = 'clienttoken'
+    ygg.access_token = 'accesstoken'
+    res = ygg.refresh()
 
-        self.assertEqual(res, ygg_req.return_value)
+    ygg_req.assert_called_once_with('/refresh', {
+        'accessToken': 'accesstoken',
+        'clientToken': 'clienttoken',
+    })
 
-    def test_signout(self, ygg_req):
-        ygg_req.return_value = {'whatever': 'dict'}
+    assert ygg.client_token == 'mytoken'
+    assert ygg.access_token == 'myaccess'
+    assert '' == ygg.username
+    assert '' == ygg.password
+    assert res
 
-        res = self.ygg.signout('user', 'pass')
 
-        ygg_req.assert_called_once_with('/signout', {
-            'username': 'user',
-            'password': 'pass',
-        })
+def test_refresh_failure():
+    ygg = YggdrasilCore()
+    ygg._ygg_req = ygg_req = mock.MagicMock()
+    ygg_req.return_value = {'error': 1}
 
-        self.assertEqual(self.ygg.username, 'user')
-        self.assertEqual(self.ygg.password, 'pass')
-        self.assertEqual(self.ygg.client_token, None)
-        self.assertEqual(self.ygg.access_token, None)
+    ygg.client_token = 'clienttoken'
+    ygg.access_token = 'accesstoken'
+    res = ygg.refresh()
 
-        self.assertEqual(res, ygg_req.return_value)
+    ygg_req.assert_called_once_with('/refresh', {
+        'accessToken': 'accesstoken',
+        'clientToken': 'clienttoken',
+    })
 
-    def test_invalidate(self, ygg_req):
-        ygg_req.return_value = {'whatever': 'dict'}
+    assert '' == ygg.username
+    assert '' == ygg.password
+    assert ygg.client_token == 'clienttoken'
+    assert ygg.access_token == 'accesstoken'
+    assert not res
 
-        res = self.ygg.invalidate('clienttoken', 'accesstoken')
 
-        ygg_req.assert_called_once_with('/invalidate', {
-            'clientToken': 'clienttoken',
-            'accessToken': 'accesstoken',
-        })
+def test_signout():
+    ygg = YggdrasilCore()
+    ygg._ygg_req = ygg_req = mock.MagicMock()
+    ygg_req.return_value = {'whatever': 'dict'}
 
-        self.assertEqual(self.ygg.username, None)
-        self.assertEqual(self.ygg.password, None)
-        self.assertEqual(self.ygg.client_token, 'clienttoken')
-        self.assertEqual(self.ygg.access_token, 'accesstoken')
+    ygg.username = 'user'
+    ygg.password = 'pass'
+    res = ygg.signout()
 
-        self.assertEqual(res, ygg_req.return_value)
+    ygg_req.assert_called_once_with('/signout', {
+        'username': 'user',
+        'password': 'pass',
+    })
 
-    def test_validate(self, ygg_req):
-        ygg_req.return_value = {'whatever': 'dict'}
+    assert ygg.username == 'user'
+    assert ygg.password == 'pass'
+    assert '' == ygg.client_token
+    assert '' == ygg.access_token
+    assert res
 
-        res = self.ygg.validate('accesstoken')
 
-        ygg_req.assert_called_once_with('/validate', {
-            'accessToken': 'accesstoken',
-        })
+def test_invalidate():
+    ygg = YggdrasilCore()
+    ygg._ygg_req = ygg_req = mock.MagicMock()
+    ygg_req.return_value = {'whatever': 'dict'}
 
-        self.assertEqual(self.ygg.username, None)
-        self.assertEqual(self.ygg.password, None)
-        self.assertEqual(self.ygg.client_token, None)
-        self.assertEqual(self.ygg.access_token, 'accesstoken')
+    ygg.client_token = 'clienttoken'
+    ygg.access_token = 'accesstoken'
+    res = ygg.invalidate()
 
-        self.assertEqual(res, ygg_req.return_value)
+    ygg_req.assert_called_once_with('/invalidate', {
+        'clientToken': 'clienttoken',
+        'accessToken': 'accesstoken',
+    })
+
+    assert '' == ygg.username
+    assert '' == ygg.password
+    assert '' == ygg.client_token
+    assert '' == ygg.access_token
+    assert res
+
+
+def test_validate_success():
+    ygg = YggdrasilCore()
+    ygg._ygg_req = ygg_req = mock.MagicMock()
+    ygg_req.return_value = {}
+
+    ygg.access_token = 'accesstoken'
+    res = ygg.validate()
+
+    ygg_req.assert_called_once_with('/validate', {
+        'accessToken': 'accesstoken',
+    })
+
+    assert '' == ygg.username
+    assert '' == ygg.password
+    assert '' == ygg.client_token
+    assert 'accesstoken' == ygg.access_token
+    assert res
+
+
+def test_validate_error():
+    ygg = YggdrasilCore()
+    ygg._ygg_req = ygg_req = mock.MagicMock()
+    ygg_req.return_value = {'whatever': 'dict'}
+
+    ygg.access_token = 'accesstoken'
+    res = ygg.validate()
+
+    ygg_req.assert_called_once_with('/validate', {
+        'accessToken': 'accesstoken',
+    })
+
+    assert '' == ygg.username
+    assert '' == ygg.password
+    assert '' == ygg.client_token
+    assert 'accesstoken' == ygg.access_token
+    assert not res

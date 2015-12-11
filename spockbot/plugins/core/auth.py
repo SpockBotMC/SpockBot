@@ -18,9 +18,8 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
-from spockbot.mcp import yggdrasil
+from spockbot.mcp.yggdrasil import YggdrasilCore
 from spockbot.plugins.base import PluginBase, pl_announce
-
 
 logger = logging.getLogger('spockbot')
 backend = default_backend()
@@ -36,47 +35,11 @@ def java_hex_digest(digest):
     return d
 
 
-class AuthCore(object):
-    def __init__(self, authenticated, event):
-        self.event = event
-        self.authenticated = authenticated
-        self.username = None
-        self.selected_profile = None
-        self.shared_secret = None
-        self.ygg = yggdrasil.YggAuth()
-
-    def start_session(self, username, password=''):
-        rep = {}
-        if self.authenticated:
-            logger.debug("AUTHCORE: Attempting login with username: %s",
-                         username)
-            rep = self.ygg.authenticate(username, password)
-            if rep is None or 'error' in rep:
-                logger.error('AUTHCORE: Login Unsuccessful, Response: %s', rep)
-                self.event.emit('auth_login_error')
-                return rep
-            if 'selectedProfile' in rep:
-                self.selected_profile = rep['selectedProfile']
-                self.username = rep['selectedProfile']['name']
-                logger.debug("AUTHCORE: Logged in as: %s", self.username)
-                logger.debug("AUTHCORE: Selected Profile: %s",
-                             self.selected_profile)
-            else:
-                self.username = username
-        else:
-            self.username = username
-        return rep
-
-    def gen_shared_secret(self):
-        self.shared_secret = os.urandom(16)
-        return self.shared_secret
-
-
 @pl_announce('Auth')
 class AuthPlugin(PluginBase):
     requires = ('Event', 'Net')
     defaults = {
-        'authenticated': True,
+        'online_mode': False,
         'auth_quit': True,
         'sess_quit': True,
     }
@@ -88,12 +51,42 @@ class AuthPlugin(PluginBase):
 
     def __init__(self, ploader, settings):
         super(AuthPlugin, self).__init__(ploader, settings)
-        self.authenticated = self.settings['authenticated']
-        self.auth_quit = self.settings['auth_quit']
+        self.online_mode = self.settings['online_mode']
         self.sess_quit = self.settings['sess_quit']
-        self.auth = AuthCore(self.authenticated, self.event)
-        self.auth.gen_shared_secret()
-        ploader.provides('Auth', self.auth)
+        self.auth_quit = self.settings['auth_quit']
+        self.ygg = YggdrasilCore()
+        self._shared_secret = None
+        self._username = None
+        ploader.provides('Auth', self)
+
+    def get_username(self):
+        return self._username
+
+    def set_username(self, username):
+        self.ygg.username = username
+
+    username = property(get_username, set_username)
+
+    def set_password(self, password):
+        self.ygg.password = password
+
+    password = property(lambda x: bool(x.ygg.password), set_password)
+
+    def start_session(self):
+        if not self.online_mode:
+            self._username = self.ygg.username
+            return True
+        if self.ygg.login():
+            self._username = self.ygg.selected_profile['name']
+            return True
+        self.event.emit('AUTH_ERR')
+        return False
+
+    def get_shared_secret(self):
+        self._shared_secret = self._shared_secret or os.urandom(16)
+        return self._shared_secret
+
+    shared_secret = property(get_shared_secret)
 
     def handle_auth_error(self, name, data):
         if self.auth_quit:
@@ -106,42 +99,40 @@ class AuthPlugin(PluginBase):
     # Encryption Key Request - Request for client to start encryption
     def handle_encryption_request(self, name, packet):
         pubkey_raw = packet.data['public_key']
-        if self.authenticated:
-            serverid = java_hex_digest(hashlib.sha1(
-                packet.data['server_id'].encode('ascii') +
-                self.auth.shared_secret +
-                pubkey_raw
-            ))
-            logger.debug(
-                "AUTHPLUGIN: Attempting to authenticate session with "
-                "sessionserver.mojang.com")
-            url = "https://sessionserver.mojang.com/session/minecraft/join"
-            data = json.dumps({
-                'accessToken': self.auth.ygg.access_token,
-                'selectedProfile': self.auth.selected_profile,
-                'serverId': serverid,
-            }).encode('utf-8')
-            headers = {'Content-Type': 'application/json'}
-            req = request.Request(url, data, headers)
-            try:
-                rep = request.urlopen(req).read().decode('ascii')
-            except URLError:
-                rep = 'Couldn\'t connect to sessionserver.mojang.com'
-            if rep != "":
-                logger.warning("AUTHPLUGIN: %s", rep)
-                self.event.emit('auth_session_error')
-            else:
-                logger.debug("AUTHPLUGIN: Session authentication successful")
+        if self.online_mode:
+            self.send_request_online(packet)
+        logger.warning("Server in offline mode can't request encryption")
         pubkey = serialization.load_der_public_key(pubkey_raw, backend)
-
-        def encrypt(data):
-            return pubkey.encrypt(data, padding.PKCS1v15())
-
+        encrypt = lambda data: pubkey.encrypt(data, padding.PKCS1v15())
         self.net.push_packet(
             'LOGIN>Encryption Response',
             {
-                'shared_secret': encrypt(self.auth.shared_secret),
+                'shared_secret': encrypt(self.shared_secret),
                 'verify_token': encrypt(packet.data['verify_token']),
             }
         )
-        self.net.enable_crypto(self.auth.shared_secret)
+        self.net.enable_crypto(self.shared_secret)
+
+    def send_request_online(self, packet):
+        pubkey_raw = packet.data['public_key']
+        server_id = java_hex_digest(hashlib.sha1(
+            packet.data['server_id'].encode('ascii')
+            + self.shared_secret
+            + pubkey_raw
+        ))
+        logger.info('Attempting to authenticate session mojang')
+        url = "https://sessionserver.mojang.com/session/minecraft/join"
+        data = json.dumps({
+            'accessToken': self.ygg.access_token,
+            'selectedProfile': self.ygg.selected_profile,
+            'serverId': server_id,
+        }).encode('utf-8')
+        headers = {'Content-Type': 'application/json'}
+        req = request.Request(url, data, headers)
+        try:
+            rep = request.urlopen(req).read().decode('ascii')
+        except URLError:
+            rep = "Couldn't connect to sessionserver.mojang.com"
+        if rep:
+            logger.warning('Mojang session auth response: %s', rep)
+        logger.info('Session authentication successful')
