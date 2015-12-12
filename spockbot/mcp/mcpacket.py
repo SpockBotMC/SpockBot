@@ -52,7 +52,7 @@ class Packet(object):
         pbuff = BoundBuffer(packet_data)
         if proto_comp_state == proto.PROTO_COMP_ON:
             body_length = datautils.unpack(MC_VARINT, pbuff)
-            if body_length > 0:
+            if body_length:
                 body_data = zlib.decompress(pbuff.flush(), zlib.MAX_WBITS)
                 pbuff.write(body_data)
                 pbuff.save()
@@ -68,7 +68,7 @@ class Packet(object):
             # Extension
             if self.ident in hashed_extensions:
                 hashed_extensions[self.ident].decode_extra(self, pbuff)
-            if len(pbuff) > 0:
+            if pbuff:
                 raise PacketDecodeFailure(self, pbuff)
         except BufferUnderflowException:
             raise PacketDecodeFailure(self, pbuff, True)
