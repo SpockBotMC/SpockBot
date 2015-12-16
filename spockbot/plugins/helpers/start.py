@@ -27,8 +27,8 @@ class StartPlugin(PluginBase):
         setattr(ploader, 'start', self.start)
 
     def start(self, host=None, port=None):
-        self.host = host if host else self.settings['host']
-        self.port = port if port else self.settings['port']
+        self.host = host or self.settings['host']
+        self.port = port or self.settings['port']
         self.auth.username = self.settings['username']
         self.auth.password = self.settings['password']
         self.event.event_loop()
