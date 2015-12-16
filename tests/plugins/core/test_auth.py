@@ -5,7 +5,7 @@ import hashlib
 import mock
 from mock.mock import MagicMock
 
-from spockbot.plugins.core.auth import AuthPlugin, AuthCore, java_hex_digest
+from spockbot.plugins.core.auth import AuthCore, AuthPlugin, java_hex_digest
 
 
 def test_java_hex_digest():
@@ -23,7 +23,7 @@ def get_mocked_auth_core():
     auth_core.ygg.password = ''
     auth_core.ygg.username = ''
     auth_core.event = MagicMock()
-    return auth_plugin, ygg_mock
+    return auth_core, ygg_mock
 
 
 def test_offline_username():
