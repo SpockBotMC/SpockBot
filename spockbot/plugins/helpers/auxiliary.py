@@ -9,11 +9,12 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 
-from spockbot.mcp import proto
 from spockbot.mcdata import constants
+from spockbot.mcp import proto
 from spockbot.plugins.base import PluginBase
 
 backend = default_backend()
+
 
 class AuxiliaryPlugin(PluginBase):
     requires = 'Auth', 'Net'
@@ -52,7 +53,7 @@ class AuxiliaryPlugin(PluginBase):
         if self.auth.online_mode:
             self.auth.send_session_auth(pubkey_raw, packet.data['server_id'])
         pubkey = serialization.load_der_public_key(pubkey_raw, backend)
-        encrypt = lambda data: pubkey.encrypt(data, padding.PKCS1v15())
+        encrypt = lambda data: pubkey.encrypt(data, padding.PKCS1v15())  # flake8: noqa
         self.net.push_packet(
             'LOGIN>Encryption Response',
             {

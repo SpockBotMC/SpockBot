@@ -83,7 +83,7 @@ class AuthCore(object):
         req = request.Request(url, data, headers)
         try:
             rep = request.urlopen(
-                req, timeout = self.auth_timeout
+                req, timeout=self.auth_timeout
             ).read().decode('ascii')
         except URLError:
             rep = "Couldn't connect to sessionserver.mojang.com"
@@ -97,7 +97,7 @@ class AuthPlugin(PluginBase):
     requires = 'Event'
     defaults = {
         'online_mode': False,
-        'auth_timeout': 3, # No idea how long this should be, 3s seems good
+        'auth_timeout': 3,  # No idea how long this should be, 3s seems good
         'auth_quit': True,
         'sess_quit': True,
     }
@@ -110,8 +110,10 @@ class AuthPlugin(PluginBase):
         super(AuthPlugin, self).__init__(ploader, settings)
         self.sess_quit = self.settings['sess_quit']
         self.auth_quit = self.settings['auth_quit']
-        ploader.provides('Auth', AuthCore(self.event,
-            self.settings['online_mode'], self.settings['auth_timeout']
+        ploader.provides('Auth', AuthCore(
+            self.event,
+            self.settings['online_mode'],
+            self.settings['auth_timeout']
         ))
 
     def handle_auth_error(self, name, data):
