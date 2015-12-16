@@ -7,15 +7,13 @@ for demos and tutorials, and illustrates the basic steps for initializing
 a bot.
 """
 
-from spockbot.mcp import proto
 from spockbot.plugins.base import PluginBase
 
 
 class StartPlugin(PluginBase):
-    requires = ('Event', 'Net', 'Auth')
+    requires = ('Auth', 'Event', 'Net')
     events = {
-        'event_start': 'start_session',
-        'net_connect': 'handshake_and_login_start',
+        'event_start': 'start_session_and_connect',
     }
     defaults = {
         'username': 'Bot',
@@ -35,15 +33,6 @@ class StartPlugin(PluginBase):
         self.auth.password = self.settings['password']
         self.event.event_loop()
 
-    def start_session(self, _, __):
+    def start_session_and_connect(self, _, __):
         if self.auth.start_session():
             self.net.connect(self.host, self.port)
-
-    def handshake_and_login_start(self, _, __):
-        self.net.push_packet('HANDSHAKE>Handshake', {
-            'protocol_version': proto.MC_PROTOCOL_VERSION,
-            'host': self.net.host,
-            'port': self.net.port,
-            'next_state': proto.LOGIN_STATE
-        })
-        self.net.push_packet('LOGIN>Login Start', {'name': self.auth.username})

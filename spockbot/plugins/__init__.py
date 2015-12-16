@@ -1,7 +1,7 @@
 from spockbot.plugins.core import auth, event, net, taskmanager, ticker, timers
-from spockbot.plugins.helpers import channels, chat, clientinfo, craft, \
-    entities, interact, inventory, keepalive, \
-    movement, pathfinding, physics, respawn, start, world
+from spockbot.plugins.helpers import auxiliary, channels, chat, clientinfo, \
+    craft, entities, interact, inventory, movement, \
+    pathfinding, physics, start, world
 
 core_plugins = [
     ('auth', auth.AuthPlugin),
@@ -12,6 +12,7 @@ core_plugins = [
     ('timers', timers.TimersPlugin),
 ]
 helper_plugins = [
+    ('auxiliary', auxiliary.AuxiliaryPlugin),
     ('channels', channels.ChannelsPlugin),
     ('chat', chat.ChatPlugin),
     ('clientinfo', clientinfo.ClientInfoPlugin),
@@ -19,11 +20,9 @@ helper_plugins = [
     ('entities', entities.EntitiesPlugin),
     ('interact', interact.InteractPlugin),
     ('inventory', inventory.InventoryPlugin),
-    ('keepalive', keepalive.KeepalivePlugin),
     ('movement', movement.MovementPlugin),
     ('pathfinding', pathfinding.PathfindingPlugin),
     ('physics', physics.PhysicsPlugin),
-    ('respawn', respawn.RespawnPlugin),
     ('start', start.StartPlugin),
     ('world', world.WorldPlugin),
 ]
