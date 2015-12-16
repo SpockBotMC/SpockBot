@@ -16,18 +16,18 @@ def test_java_hex_digest():
 
 
 def get_mocked_auth_core():
-    auth_core = AuthCore(MagicMock(), MagicMock(), MagicMock())
+    event_mock = MagicMock()
+    auth_core = AuthCore(event_mock, MagicMock(), MagicMock())
     auth_core.online_mode = False
     auth_core.auth_timeout = 3
     auth_core.ygg = ygg_mock = MagicMock()
     auth_core.ygg.password = ''
     auth_core.ygg.username = ''
-    auth_core.event = MagicMock()
-    return auth_core, ygg_mock
+    return auth_core, event_mock, ygg_mock
 
 
 def test_offline_username():
-    auth, ygg = get_mocked_auth_core()
+    auth, event, ygg = get_mocked_auth_core()
     auth.online_mode = False
     assert auth.username is None
     auth.username = 'Joe'
@@ -39,7 +39,7 @@ def test_offline_username():
 
 
 def test_online_username():
-    auth, ygg = get_mocked_auth_core()
+    auth, event, ygg = get_mocked_auth_core()
     auth.online_mode = True
     assert auth.username is None
     auth.username = 'Joe'
@@ -57,7 +57,7 @@ def test_online_username():
 
 
 def test_password():
-    auth, ygg = get_mocked_auth_core()
+    auth, event, ygg = get_mocked_auth_core()
     assert auth.password is False
     # Empty password is no password
     auth.password = ''
@@ -68,28 +68,27 @@ def test_password():
 
 
 def test_start_session_online_success():
-    auth, ygg = get_mocked_auth_core()
+    auth, event, ygg = get_mocked_auth_core()
     auth.online_mode = True
     ygg.login.return_value = True
     res = auth.start_session()
     assert res
-    assert not auth.__event.called
+    assert not event.called
     assert auth.username
 
 
 def test_start_session_online_failure():
-    auth, ygg = get_mocked_auth_core()
+    auth, event, ygg = get_mocked_auth_core()
     auth.online_mode = True
     ygg.login.return_value = False
     res = auth.start_session()
     assert not res
-    assert auth.__event.emit.called
+    assert event.emit.called
     assert not auth.username
-
 
 @mock.patch('spockbot.plugins.core.auth.os.urandom')
 def test_get_shared_secret(rnd):
-    auth, ygg = get_mocked_auth_core()
+    auth, event, ygg = get_mocked_auth_core()
     assert not rnd.called
     assert not auth._shared_secret
     ss = auth.shared_secret
