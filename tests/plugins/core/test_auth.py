@@ -86,6 +86,7 @@ def test_start_session_online_failure():
     assert event.emit.called
     assert not auth.username
 
+
 @mock.patch('spockbot.plugins.core.auth.os.urandom')
 def test_get_shared_secret(rnd):
     auth, event, ygg = get_mocked_auth_core()
