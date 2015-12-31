@@ -94,9 +94,16 @@ class CartesianVector(BaseVector):
     def zero(self):
         self.vector = [0 for a in self]
 
+    def iceil(self):
+        self.vector = [int(math.ceil(a)) for a in self]
+        return self
+
     def ifloor(self):
         self.vector = [int(math.floor(a)) for a in self]
         return self
+
+    def ceil(self):
+        return self.__class__(*self).iceil()
 
     def floor(self):
         return self.__class__(*self).ifloor()

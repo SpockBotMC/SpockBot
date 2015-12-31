@@ -106,11 +106,8 @@ class PhysicsPlugin(PluginBase):
 
     def get_block_slip(self):
         if self.pos.on_ground:
-            block_pos = self.pos.floor()
-            block_id, meta = self.world.get_block(
-                block_pos.x, block_pos.y - 1, block_pos.z
-            )
-            return blocks.get_block(block_id, meta).slipperiness
+            bpos = self.pos.floor()
+            return blocks.get_block(*self.world.get_block(*bpos)).slipperiness
         return 1
 
     def apply_accel(self):
