@@ -13,12 +13,11 @@ def uncenter_position(pos, bbox):
 
 
 def gen_block_set(block_pos, xr=(-1, 2), yr=(0, 3), zr=(-1, 2)):
-    offsets = (
-        (x, y, z)
+    pos = block_pos.floor()
+    return (
+        pos + Vector3(x, y, z)
         for x in range(*xr) for y in range(*yr) for z in range(*zr)
     )
-    pos = block_pos.floor()
-    return (pos + Vector3(*offset) for offset in offsets)
 
 
 # Axis must be a normalized/unit vector

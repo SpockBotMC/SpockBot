@@ -40,8 +40,6 @@ class MovementCore(object):
 class MovementPlugin(PluginBase):
     requires = ('ClientInfo', 'Event', 'Net', 'Pathfinding', 'Physics')
     events = {
-        'client_tick': 'client_tick',
-        'client_position_update': 'handle_position_update',
         'client_join_game': 'handle_join_game',
     }
 
@@ -50,24 +48,11 @@ class MovementPlugin(PluginBase):
 
         self.flag_pos_reset = False
         self.movement = MovementCore(self)
-        self.connected_to_server = False
-        ploader.provides('Movement', self.movement)
         self.path_nodes = None
-
-    def client_tick(self, name, data):
-        if not self.connected_to_server:
-            return
-        self.net.push_packet('PLAY>Player Position and Look',
-                             self.clientinfo.position.get_dict())
-        if self.flag_pos_reset:
-            self.event.emit('movement_position_reset')
-            self.flag_pos_reset = False
+        ploader.provides('Movement', self.movement)
 
     def handle_join_game(self, name, data):
         self.connected_to_server = True
-
-    def handle_position_update(self, name, data):
-        self.flag_pos_reset = True
 
     def new_path(self, *xyz):
         target = Vector3(*xyz)
