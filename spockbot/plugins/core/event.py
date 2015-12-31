@@ -14,20 +14,42 @@ logger = logging.getLogger('spockbot')
 
 class EventCore(object):
     def __init__(self):
+        self.has_run = False
         self.kill_event = False
         self.event_handlers = defaultdict(list)
         signal.signal(signal.SIGINT, self.kill)
         signal.signal(signal.SIGTERM, self.kill)
 
-    def event_loop(self):
-        self.emit('event_start')
+    def event_loop(self, continuous=True):
+        if continuous:
+            self.run_continuous()
+        else:
+            self.run_once()
+
+    def run_continuous(self):
+        if not self.has_run and not self.kill_event:
+            self.has_run = True
+            self.emit('event_start')
         while not self.kill_event:
             self.emit('event_tick')
         logger.debug('EVENTCORE: Kill called, shutting down')
         self.emit('event_kill')
 
+    def run_once(self):
+        if not self.has_run and not self.kill_event:
+            self.has_run = True
+            self.emit('event_start')
+        if not self.kill_event:
+            self.emit('event_tick')
+        else:
+            logger.debug('EVENTCORE: Kill called, shutting down')
+            self.emit('event_kill')
+
     def reg_event_handler(self, event, handler):
         self.event_handlers[event].append(handler)
+
+    def unreg_event_handler(self, event, handler):
+        self.event_handlers[event].remove(handler)
 
     def emit(self, event, data=None):
         to_remove = []

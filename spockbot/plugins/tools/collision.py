@@ -30,6 +30,9 @@ def check_axis(axis, min_a, max_a, min_b, max_b):
     return axis*overlap
 
 
+# Terribly named class with terribly named methods mostly useful to physics
+# implementations, rarely useful to other things. Much too clever for its own
+# good but reasonably fast for it.
 class MTVTest(object):
     def __init__(self, world, bbox):
         self.world = world
@@ -40,6 +43,9 @@ class MTVTest(object):
         return self.block_collision(test_pos)
 
     def block_collision(self, pos):
+        # This line is confusing. Basically it figures out how many block
+        # coordinates the bounding box currently occupies. It's not clear what
+        # "b" stands for so take your pick: Blocks, Bounds, how-Big-is-the-Box
         b = (pos + self.bbox).ceil() - pos.floor()
         for block_pos in gen_block_set(pos, *zip((0, -1, 0), b)):
             block = blocks.get_block(*self.world.get_block(*block_pos))
