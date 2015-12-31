@@ -139,8 +139,7 @@ class PathfindingPlugin(PluginBase):
         return True
 
     def get_block(self, pos):
-        block_id, meta = self.world.get_block(*pos.vector)
-        return blocks.get_block(block_id, meta)
+        return blocks.get_block(*self.world.get_block(*pos))
 
     def check_for_bbox(self, pos):
         pos = pos.floor()

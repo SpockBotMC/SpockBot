@@ -40,11 +40,9 @@ class MTVTest(object):
         return self.block_collision(test_pos)
 
     def block_collision(self, pos):
-        for block_pos in gen_block_set(pos):
-            block_id, meta = self.world.get_block(
-                block_pos.x, block_pos.y, block_pos.z
-            )
-            block = blocks.get_block(block_id, meta)
+        b = (pos + self.bbox).ceil() - pos.floor()
+        for block_pos in gen_block_set(pos, *zip((0, -1, 0), b)):
+            block = blocks.get_block(*self.world.get_block(*block_pos))
             if not block.bounding_box:
                 continue
             transform_vectors = []
