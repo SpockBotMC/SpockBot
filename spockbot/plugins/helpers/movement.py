@@ -42,7 +42,6 @@ class MovementPlugin(PluginBase):
 
     def __init__(self, ploader, settings):
         super(MovementPlugin, self).__init__(ploader, settings)
-        self.flag_pos_reset = False
         self.movement = MovementCore(self)
         self.path_nodes = None
         ploader.provides('Movement', self.movement)
