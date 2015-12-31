@@ -66,11 +66,11 @@ class PhysicsCore(object):
 
 @pl_announce('Physics')
 class PhysicsPlugin(PluginBase):
-    requires = ('Event', 'ClientInfo', 'World')
+    requires = ('Event', 'ClientInfo', 'Net', 'World')
     events = {
-        'physics_tick': 'tick',
-        'client_position_update': 'stop_physics',
-        'movement_position_reset': 'start_physics',
+        'physics_tick': 'physics_tick',
+        'client_tick': 'client_tick',
+        'client_position_update': 'pause_physics',
     }
 
     def __init__(self, ploader, settings):
@@ -80,21 +80,23 @@ class PhysicsPlugin(PluginBase):
             self.world, BoundingBox(const.PLAYER_WIDTH, const.PLAYER_HEIGHT)
         )
         self.pos = self.clientinfo.position
-        self.pause_physics = False
+        self.skip_tick = False
         self.pc = PhysicsCore(self.pos, self.vec, self.clientinfo.abilities)
         ploader.provides('Physics', self.pc)
 
-    def stop_physics(self, _=None, __=None):
+    def pause_physics(self, _=None, __=None):
         self.vec.zero()
-        self.pause_physics = True
+        self.skip_tick = True
 
-    def start_physics(self, _=None, __=None):
-        self.pause_physics = False
-        self.event.reg_event_handler('physics_tick', self.tick)
+    def client_tick(self, name, data):
+        self.net.push_packet('PLAY>Player Position and Look',
+                             self.clientinfo.position.get_dict())
+        if self.skip_tick:
+            self.skip_tick = False
 
-    def tick(self, _, __):
-        if self.pause_physics:
-            return self.pause_physics
+    def physics_tick(self, _, __):
+        if self.skip_tick:
+            return
         self.apply_accel()
         mtv = self.get_mtv()
         self.apply_vector(mtv)
