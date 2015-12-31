@@ -91,11 +91,10 @@ class PhysicsPlugin(PluginBase):
     def client_tick(self, name, data):
         self.net.push_packet('PLAY>Player Position and Look',
                              self.clientinfo.position.get_dict())
-        if self.skip_tick:
-            self.skip_tick = False
 
     def physics_tick(self, _, __):
         if self.skip_tick:
+            self.skip_tick = False
             return
         self.apply_accel()
         mtv = self.get_mtv()
