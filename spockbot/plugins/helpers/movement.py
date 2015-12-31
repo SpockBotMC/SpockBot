@@ -39,20 +39,13 @@ class MovementCore(object):
 @pl_announce('Movement')
 class MovementPlugin(PluginBase):
     requires = ('ClientInfo', 'Event', 'Net', 'Pathfinding', 'Physics')
-    events = {
-        'client_join_game': 'handle_join_game',
-    }
 
     def __init__(self, ploader, settings):
         super(MovementPlugin, self).__init__(ploader, settings)
-
         self.flag_pos_reset = False
         self.movement = MovementCore(self)
         self.path_nodes = None
         ploader.provides('Movement', self.movement)
-
-    def handle_join_game(self, name, data):
-        self.connected_to_server = True
 
     def new_path(self, *xyz):
         target = Vector3(*xyz)

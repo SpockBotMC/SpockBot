@@ -8,7 +8,7 @@ from spockbot.plugins.base import PluginBase
 class TickerPlugin(PluginBase):
     requires = ('Event', 'Timers')
     events = {
-        'PLAY_STATE': 'start_tickers',
+        'PLAY<Join Game': 'start_tickers',
     }
 
     def start_tickers(self, _, __):
