@@ -39,14 +39,14 @@ settings = {
     },
 }
 
-# Load the plugins. Any functionality that you want to implement must be called
-# from a plugin. You can define new plugins that listen for arbitrary events
-# from the game. Furthermore, events can even be periodic timers that trigger a
-# method.
+# Load the plugins.
+# Any functionality that you want to implement must be called from a plugin.
+# You can define new plugins that listen for arbitrary events from the game.
+# Furthermore, events can even be periodic timers that trigger a method.
 plugins = default_plugins
 plugins.append(('example', ExamplePlugin))
 
-# Instantiate and start the client, which will then run and wait for events to
-# occur
+# Instantiate and start the client, which will then
+# run and wait for events to occur.
 client = Client(plugins=plugins, settings=settings)
 client.start(SERVER, 25565)
