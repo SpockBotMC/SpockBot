@@ -20,10 +20,10 @@ def get_item(item, meta=None, init=True):
 
 
 class Item(object):
-    id = -1,
-    display_name = "Item",
-    stack_size = 0,
-    name = "item",
+    id = -1
+    display_name = "Item"
+    stack_size = 0
+    name = "item"
     variations = {}
 
     def __init__(self, meta=None):

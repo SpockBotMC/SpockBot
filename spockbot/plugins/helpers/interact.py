@@ -211,7 +211,7 @@ class InteractPlugin(PluginBase):
     def mount_vehicle(self, entity):
         self.use_entity(entity)
 
-    def steer_vehicle(self, sideways=0.0, forward=0.0,
+    def steer_vehicle(self, left=0.0, forward=0.0,
                       jump=False, unmount=False):
         flags = 0
         if jump:
@@ -219,7 +219,7 @@ class InteractPlugin(PluginBase):
         if unmount:
             flags += 2
         self.net.push_packet('PLAY>Steer Vehicle', {
-            'sideways': sideways,
+            'sideways': left,
             'forward': forward,
             'flags': flags,
         })

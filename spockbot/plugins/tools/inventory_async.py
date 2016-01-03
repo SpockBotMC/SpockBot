@@ -28,7 +28,7 @@ class InventoryAsync(object):
         # TODO make sure window is not closed while clicking
 
         empty_cursor = old_cursor.is_empty
-        if old_slot.amount == old_slot.max_amount and not empty_cursor \
+        if old_slot.amount == old_slot.item.stack_size and not empty_cursor \
                 or old_slot.is_empty and empty_cursor:
             return  # no need to check
 
