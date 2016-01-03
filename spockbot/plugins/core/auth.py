@@ -52,6 +52,20 @@ class AuthCore(object):
 
     password = property(lambda x: bool(x.ygg.password), set_password)
 
+    def set_client_token(self, client_token):
+        self.ygg.client_token = client_token
+
+    client_token = property(
+        lambda x: bool(x.ygg.client_token), set_client_token
+    )
+
+    def set_auth_token(self, auth_token):
+        self.ygg.auth_token = auth_token
+
+    auth_token = property(
+        lambda x: bool(x.ygg.auth_token), set_auth_token
+    )
+
     def get_shared_secret(self):
         self._shared_secret = self._shared_secret or os.urandom(16)
         return self._shared_secret

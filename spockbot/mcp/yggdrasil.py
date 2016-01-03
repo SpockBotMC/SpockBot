@@ -13,6 +13,9 @@ logger = logging.getLogger()
 
 
 class YggdrasilCore(object):
+    ygg_version = 1
+    ygg_url = 'https://authserver.mojang.com'
+
     def __init__(self, username='', password='', client_token='',
                  access_token=''):
         self.username = username
@@ -35,7 +38,7 @@ class YggdrasilCore(object):
     def _ygg_req(self, endpoint, payload):
         try:
             resp = urlopen(Request(
-                url='https://authserver.mojang.com' + endpoint,
+                url=self.ygg_url + endpoint,
                 data=json.dumps(payload).encode('utf-8'),
                 headers={'Content-Type': 'application/json'})
             )
@@ -57,7 +60,7 @@ class YggdrasilCore(object):
         payload = {
             'agent': {
                 'name': 'Minecraft',
-                'version': 1,
+                'version': self.ygg_version,
             },
             'username': self.username,
             'password': self.password,
