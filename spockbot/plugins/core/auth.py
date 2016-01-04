@@ -48,11 +48,17 @@ class AuthCore(object):
     username = property(get_username, set_username)
 
     def set_password(self, password):
+        if not self.online_mode:
+            logger.warning("PASSWORD PROVIDED WITH ONLINE_MODE == FALSE")
+            logger.warning("YOU PROBABLY DIDN'T WANT TO DO THAT")
         self.ygg.password = password
 
     password = property(lambda x: bool(x.ygg.password), set_password)
 
     def set_client_token(self, client_token):
+        if not self.online_mode:
+            logger.warning("CLIENT TOKEN PROVIDED WITH ONLINE_MODE == FALSE")
+            logger.warning("YOU PROBABLY DIDN'T WANT TO DO THAT")
         self.ygg.client_token = client_token
 
     client_token = property(
@@ -60,6 +66,9 @@ class AuthCore(object):
     )
 
     def set_auth_token(self, auth_token):
+        if not self.online_mode:
+            logger.warning("AUTH TOKEN PROVIDED WITH ONLINE_MODE == FALSE")
+            logger.warning("YOU PROBABLY DIDN'T WANT TO DO THAT")
         self.ygg.auth_token = auth_token
 
     auth_token = property(
@@ -110,7 +119,7 @@ class AuthCore(object):
 class AuthPlugin(PluginBase):
     requires = 'Event'
     defaults = {
-        'online_mode': False,
+        'online_mode': True,
         'auth_timeout': 3,  # No idea how long this should be, 3s seems good
         'auth_quit': True,
         'sess_quit': True,
