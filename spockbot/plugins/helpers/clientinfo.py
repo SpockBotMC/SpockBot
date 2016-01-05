@@ -86,7 +86,7 @@ class ClientInfo(object):
         self.eid = 0
         self.name = ""
         self.uuid = ""
-        self.mount = None
+        self.attached_entity = None
         self.abilities = Abilities()
         self.game_info = GameInfo()
         self.spawn_position = Position()
@@ -138,10 +138,10 @@ class ClientInfoPlugin(PluginBase):
     def handle_attach_entity(self, name, packet):
         eid, v_eid = packet.data['eid'], packet.data['v_eid']
         if eid == self.client_info.eid:
-            self.client_info.mount = v_eid
+            self.client_info.attached_entity = v_eid
             self.event.emit('client_mount', v_eid)
-        elif v_eid == self.client_info.mount and eid == -1:
-            self.client_info.mount = None
+        elif v_eid == self.client_info.attached_entity and eid == -1:
+            self.client_info.attached_entity = None
             self.event.emit('client_unmount', v_eid)
 
     # Spawn Position - Update client Spawn Position state
