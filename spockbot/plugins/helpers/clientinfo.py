@@ -86,6 +86,7 @@ class ClientInfo(object):
         self.eid = 0
         self.name = ""
         self.uuid = ""
+        self.mount = None
         self.abilities = Abilities()
         self.game_info = GameInfo()
         self.spawn_position = Position()
@@ -104,6 +105,7 @@ class ClientInfoPlugin(PluginBase):
     events = {
         'LOGIN<Login Success': 'handle_login_success',
         'PLAY<Join Game': 'handle_join_game',
+        'PLAY<Attach Entity': 'handle_attach_entity',
         'PLAY<Spawn Position': 'handle_spawn_position',
         'PLAY<Update Health': 'handle_update_health',
         'PLAY<Player Position and Look': 'handle_position_update',
@@ -132,6 +134,15 @@ class ClientInfoPlugin(PluginBase):
         self.client_info.eid = packet.data['eid']
         self.client_info.game_info.set_dict(packet.data)
         self.event.emit('client_join_game', self.client_info.game_info)
+
+    def handle_attach_entity(self, name, packet):
+        eid, v_eid = packet.data['eid'], packet.data['v_eid']
+        if eid == self.client_info.eid:
+            self.client_info.mount = v_eid
+            self.event.emit('client_mount', v_eid)
+        elif v_eid == self.client_info.mount and eid == -1:
+            self.client_info.mount = None
+            self.event.emit('client_unmount', v_eid)
 
     # Spawn Position - Update client Spawn Position state
     def handle_spawn_position(self, name, packet):
@@ -171,9 +182,9 @@ class ClientInfoPlugin(PluginBase):
                 self.client_info.player_list[pl['uuid']] = item
                 self.uuids[pl['uuid']] = item
                 self.event.emit('client_add_player', item)
-            elif act in [const.PL_UPDATE_GAMEMODE,
+            elif act in (const.PL_UPDATE_GAMEMODE,
                          const.PL_UPDATE_LATENCY,
-                         const.PL_UPDATE_DISPLAY]:
+                         const.PL_UPDATE_DISPLAY):
                 if pl['uuid'] in self.uuids:
                     item = self.uuids[pl['uuid']]
                     item.set_dict(pl)

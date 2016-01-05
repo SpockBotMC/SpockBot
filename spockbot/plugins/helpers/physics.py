@@ -70,7 +70,9 @@ class PhysicsPlugin(PluginBase):
     events = {
         'physics_tick': 'physics_tick',
         'client_tick': 'client_tick',
-        'client_position_update': 'pause_physics',
+        'client_position_update': 'skip_physics',
+        'client_mount': 'suspend_physics',
+        'client_unmount': 'resume_physics',
     }
 
     def __init__(self, ploader, settings):
@@ -84,9 +86,16 @@ class PhysicsPlugin(PluginBase):
         self.pc = PhysicsCore(self.pos, self.vec, self.clientinfo.abilities)
         ploader.provides('Physics', self.pc)
 
-    def pause_physics(self, _=None, __=None):
+    def skip_physics(self, _=None, __=None):
         self.vec.zero()
         self.skip_tick = True
+
+    def suspend_physics(self, _=None, __=None):
+        self.vec.zero()
+        self.event.unreg_event_handler('physics_tick', self.physics_tick)
+
+    def resume_physics(self, _=None, __=None):
+        self.event.reg_event_handler('physics_tick', self.physics_tick)
 
     def client_tick(self, name, data):
         self.net.push_packet('PLAY>Player Position and Look',
