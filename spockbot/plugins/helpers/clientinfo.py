@@ -138,11 +138,12 @@ class ClientInfoPlugin(PluginBase):
     def handle_attach_entity(self, name, packet):
         eid, v_eid = packet.data['eid'], packet.data['v_eid']
         if eid == self.client_info.eid:
-            self.client_info.attached_entity = v_eid
-            self.event.emit('client_mount', v_eid)
-        elif v_eid == self.client_info.attached_entity and eid == -1:
-            self.client_info.attached_entity = None
-            self.event.emit('client_unmount', v_eid)
+            if v_eid == -1:
+                self.client_info.attached_entity = None
+                self.event.emit('client_unmount', v_eid)
+            else:
+                self.client_info.attached_entity = v_eid
+                self.event.emit('client_mount', v_eid)
 
     # Spawn Position - Update client Spawn Position state
     def handle_spawn_position(self, name, packet):
