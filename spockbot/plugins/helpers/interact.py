@@ -11,6 +11,7 @@ Interact with the world:
 By default, the client sends swing and look packets like the vanilla client.
 This can be disabled by setting the ``auto_swing`` and ``auto_look`` flags.
 """
+import math
 from spockbot.mcdata import constants
 from spockbot.mcp import nbt
 from spockbot.mcp.proto import MC_SLOT
@@ -69,16 +70,18 @@ class InteractPlugin(PluginBase):
     def open_inventory(self):
         self._entity_action(constants.ENTITY_ACTION_OPEN_INVENTORY)
 
-    def look(self, yaw=0.0, pitch=0.0):
-        """
-        Turn the head. Both angles are in degrees.
-        """
-        self.clientinfo.position.pitch = pitch
-        self.clientinfo.position.yaw = yaw
+    def look(self, yaw=0.0, pitch=0.0, radians=False):
+        if radians:
+            self.clientinfo.position.yaw = math.degrees(yaw)
+            self.clientinfo.position.pitch = math.degrees(pitch)
+        else:
+            self.clientinfo.position.yaw = yaw
+            self.clientinfo.position.pitch = pitch
 
-    def look_rel(self, d_yaw=0.0, d_pitch=0.0):
+    def look_rel(self, d_yaw=0.0, d_pitch=0.0, radians=False):
         self.look(self.clientinfo.position.yaw + d_yaw,
-                  self.clientinfo.position.pitch + d_pitch)
+                  self.clientinfo.position.pitch + d_pitch,
+                  radians=radians)
 
     def look_at_rel(self, delta):
         self.look(*delta.yaw_pitch)
