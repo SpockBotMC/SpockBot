@@ -5,6 +5,7 @@ from minecraft_data.v1_8 import windows as windows_by_id
 from minecraft_data.v1_8 import windows_list
 
 from spockbot.mcdata import constants, get_item_or_block
+from spockbot.mcdata.blocks import Block
 from spockbot.mcdata.items import Item
 from spockbot.mcdata.utils import camel_case, snake_case
 
@@ -23,10 +24,17 @@ def make_slot_check(wanted):
     if isinstance(wanted, int):
         item, meta = wanted, None
     elif isinstance(wanted, Slot):
-        item, meta = wanted.item_id, wanted.damage
-        # TODO compare NBT
-    else:  # wanted is list of (id, meta)
-        item, meta = wanted
+        item, meta = wanted.item_id, wanted.damage  # TODO compare NBT
+    elif isinstance(wanted, (Item, Block)):
+        item, meta = wanted.id, wanted.metadata
+    elif isinstance(wanted, str):
+        item_or_block = get_item_or_block(wanted, init=True)
+        item, meta = item_or_block.id, item_or_block.metadata
+    else:  # wanted is (id, meta)
+        try:
+            item, meta = wanted
+        except TypeError:
+            raise ValueError('Illegal args for make_slot_check(): %s' % wanted)
 
     return lambda slot: item == slot.item_id and meta in (None, slot.damage)
 
