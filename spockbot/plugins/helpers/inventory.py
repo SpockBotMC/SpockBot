@@ -223,9 +223,16 @@ class InventoryPlugin(PluginBase):
         self.event.emit('inventory_set_slot', {'slot': slot})
 
     def handle_window_prop(self, event, packet):
-        self.inventory.window.properties[packet.data['property']] = \
-            packet.data['value']
-        self.event.emit('inventory_win_prop', packet.data)
+        window = self.inventory.window
+        prop_id = packet.data['property']
+        prop_name = window.inv_data['properties'][prop_id]
+        window.properties[prop_id] = packet.data['value']
+        self.event.emit('inventory_win_prop', {
+            'window_id': packet.data['window_id'],
+            'property_name': prop_name,
+            'property_id': prop_id,
+            'value': packet.data['value'],
+        })
 
     def handle_confirm_transaction(self, event, packet):
         click = self.last_click

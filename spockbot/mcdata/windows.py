@@ -256,6 +256,10 @@ class DropClick(BaseClick):
 class Window(object):
     """ Base class for all inventory types. """
 
+    name = None
+    inv_type = None
+    inv_data = {}
+
     # the arguments must have the same names as the keys in the packet dict
     def __init__(self, window_id, title, slot_count,
                  inv_type=None, persistent_slots=None, eid=None):
@@ -324,6 +328,7 @@ def _make_window(window_dict):
         '__module__': sys.modules[__name__],
         'name': str(window_dict['name']),
         'inv_type': str(window_dict['id']),
+        'inv_data': window_dict,
     }
 
     # creates function-local index and size variables
