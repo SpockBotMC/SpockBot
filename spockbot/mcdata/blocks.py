@@ -51,6 +51,10 @@ class Block(object):
         if self.id in _block_exts:
             _block_exts[self.id](self)
 
+    def __str__(self):
+        return '%s %i:%i' % (self.display_name, self.id,
+                             getattr(self, 'metadata', 0))
+
 
 def _convert_boundingbox(bb):
     if bb == 'block':

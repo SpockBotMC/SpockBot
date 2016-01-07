@@ -40,7 +40,6 @@ class Slot(object):
         self.damage = damage
         self.amount = amount
         self.nbt = enchants
-
         self.item = get_item_or_block(self.item_id, self.damage) or Item()
 
     def move_to_window(self, window, slot_nr):
@@ -83,20 +82,16 @@ class Slot(object):
         return not self.is_empty
 
     def __repr__(self):
-        vals = {
-            'name': self.item.display_name,
-            'max': self.item.stack_size,
-        }
-        vals.update(self.__dict__)
         if self.is_empty:
             s = 'empty'
         else:
-            s = '%(amount)i/%(max)i %(item_id)i:%(damage)i %(name)s' % vals
+            item = self.item
+            s = '%i/%i %s' % (self.amount, item.stack_size, str(item))
 
         if self.slot_nr != -1:
-            s += ' at %(slot_nr)i' % self.__dict__
+            s += ' at %i' % self.slot_nr
         if self.window:
-            s += ' in %(window)s' % self.__dict__
+            s += ' in %s' % self.window
         return '<Slot: %s>' % s
 
 

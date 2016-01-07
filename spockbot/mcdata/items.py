@@ -34,6 +34,10 @@ class Item(object):
             # TODO: apply other all possible variations
             self.display_name = self.variations[self.metadata]["display_name"]
 
+    def __str__(self):
+        return '%s %i:%i' % (self.display_name, self.id,
+                             getattr(self, 'metadata', 0))
+
 
 def _make_item(item_dict):
     cls_name = '%sItem' % camel_case(str(item_dict['name']))
