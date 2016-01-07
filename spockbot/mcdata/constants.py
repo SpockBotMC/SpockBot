@@ -8,6 +8,7 @@ Some of them can later be extracted from minecraft-data
 ###########
 
 CLIENT_TICK_RATE = 0.05
+PLAYER_EYE_HEIGHT = 1.62
 PLAYER_HEIGHT = 1.80
 PLAYER_WIDTH = 0.6
 

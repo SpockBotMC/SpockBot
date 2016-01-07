@@ -84,11 +84,10 @@ class InteractPlugin(PluginBase):
         self.look(*delta.yaw_pitch)
 
     def look_at(self, pos):
-        delta = pos - self.clientinfo.position
-        delta.y -= constants.PLAYER_HEIGHT
+        delta = pos - self.clientinfo.eye_pos
         if delta.x or delta.z:
             self.look_at_rel(delta)
-        else:
+        else:  # looking up or down, do not turn head
             self.look(self.clientinfo.position.yaw, delta.yaw_pitch.pitch)
 
     def _send_dig_block(self, status, pos=None, face=constants.FACE_Y_POS):
@@ -102,7 +101,7 @@ class InteractPlugin(PluginBase):
 
     def start_digging(self, pos):
         if self.auto_look:
-            self.look_at(pos)  # TODO look at block center
+            self.look_at(pos.floor().iadd(0.5, 0.5, 0.5))
         self._send_dig_block(constants.DIG_START, pos)
         if self.auto_swing:
             self.swing_arm()
@@ -144,7 +143,7 @@ class InteractPlugin(PluginBase):
         """
         if look_at_block and self.auto_look:
             # TODO look at cursor_pos
-            self.look_at(pos)
+            self.look_at(pos.floor().iadd(0.5, 0.5, 0.5))
         self._send_click_block(pos, face, cursor_pos)
         if swing and self.auto_swing:
             self.swing_arm()

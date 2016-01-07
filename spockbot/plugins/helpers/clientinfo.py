@@ -78,8 +78,9 @@ class ClientInfo(object):
         game_info (GameInfo): Information about the current world/server
         spawn_position (Position): Players initial position
         health (PlayerHealth): Player's health, food and saturation
-        position (PlayerPosition): Player's Current position
+        position (PlayerPosition): Player's current position
         player_list (dict): List of all players in the server
+        eye_pos (PlayerPosition): Player's eye position
 
     """
     def __init__(self):
@@ -93,6 +94,10 @@ class ClientInfo(object):
         self.health = PlayerHealth()
         self.position = PlayerPosition()
         self.player_list = {}
+
+    @property
+    def eye_pos(self):
+        return self.position + (0, const.PLAYER_EYE_HEIGHT, 0)
 
     def reset(self):
         """Resets the information in ClientInfo"""
