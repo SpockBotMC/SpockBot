@@ -24,9 +24,10 @@ class ChatCore(object):
         self.net = net
 
     def chat(self, message):
-        while message:
-            msg_part, message = message[:100], message[100:]
-            self.net.push_packet('PLAY>Chat Message', {'message': msg_part})
+        for line in message.split('\n'):
+            while line:
+                part, line = line[:100], line[100:]
+                self.net.push_packet('PLAY>Chat Message', {'message': part})
 
     def whisper(self, player, message):
         self.chat('/tell %s %s' % (player, message))
