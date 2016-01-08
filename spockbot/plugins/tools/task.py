@@ -99,6 +99,7 @@ class Task(object):
         self.name = name or task.__name__
         self.task = task
         self.parent = parent
+        self.last_child = None
         self.expected = {}  # event -> check
 
     @property
@@ -178,4 +179,4 @@ class Task(object):
         else:  # unexpected
             self.expected.clear()
             raise ValueError('Illegal task yield argument of type %s: %s'
-                             % type(response), response)
+                             % (type(response), response))
