@@ -196,15 +196,18 @@ class InteractPlugin(PluginBase):
         """
         if self.auto_look:
             self.look_at(Vector3(entity))  # TODO look at cursor_pos
-        if cursor_pos is not None:
+
+        if cursor_pos is not None and action == constants.INTERACT_ENTITY:
             action = constants.INTERACT_ENTITY_AT
+
         packet = {'target': entity.eid, 'action': action}
         if action == constants.INTERACT_ENTITY_AT:
             packet['target_x'] = cursor_pos.x
             packet['target_y'] = cursor_pos.y
             packet['target_z'] = cursor_pos.z
         self.net.push_packet('PLAY>Use Entity', packet)
-        if self.auto_swing:
+
+        if self.auto_swing and action == constants.ATTACK_ENTITY:
             self.swing_arm()
 
     def attack_entity(self, entity):

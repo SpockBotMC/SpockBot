@@ -115,13 +115,22 @@ class InteractPluginTest(TestCase):
         # TODO deactivate_item
 
     def test_entity(self):
+        # interact entity should not swing arm
         entity = DataDict(eid=234, x=2, y=2 + constants.PLAYER_EYE_HEIGHT, z=4)
-
         self.plug.use_entity(entity)
         self.assertAlmostEqual(ClientInfoMock.position.yaw, -45)
         self.assertAlmostEqual(ClientInfoMock.position.pitch, 0)
-        self.assertEqual(NetMock.datas[-2].action, constants.INTERACT_ENTITY)
-        self.assertEqual(NetMock.datas[-2].target, 234)
+        self.assertEqual(NetMock.datas[-1].action, constants.INTERACT_ENTITY)
+        self.assertEqual(NetMock.datas[-1].target, 234)
+        self.assertEqual(len(NetMock.datas), 1)
+
+        # attack entity should swing arm
+        entity = DataDict(eid=235, x=2, y=2 + constants.PLAYER_EYE_HEIGHT, z=4)
+        self.plug.use_entity(entity, action=constants.ATTACK_ENTITY)
+        self.assertAlmostEqual(ClientInfoMock.position.yaw, -45)
+        self.assertAlmostEqual(ClientInfoMock.position.pitch, 0)
+        self.assertEqual(NetMock.datas[-2].action, constants.ATTACK_ENTITY)
+        self.assertEqual(NetMock.datas[-2].target, 235)
         self.assertEqual(NetMock.idents[-1], 'PLAY>Animation')
 
         self.plug.auto_look = False
