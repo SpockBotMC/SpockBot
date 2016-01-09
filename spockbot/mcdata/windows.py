@@ -199,8 +199,11 @@ class SingleClick(BaseClick):
                 'Clicking with button %s not implemented' % button)
 
     def get_packet(self, inv_plugin):
+        slot_nr = self.slot.slot_nr
+        if self.slot == inv_plugin.cursor_slot:
+            slot_nr = constants.INV_OUTSIDE_WINDOW
         return {
-            'slot': self.slot.slot_nr,
+            'slot': slot_nr,
             'button': self.button,
             'mode': 0,
             'clicked_item': self.slot.get_dict(),
@@ -209,13 +212,19 @@ class SingleClick(BaseClick):
     def apply(self, inv_plugin):
         clicked = self.slot
         cursor = inv_plugin.cursor_slot
-        if self.button == constants.INV_BUTTON_LEFT:
+        if clicked == cursor:
+            if self.button == constants.INV_BUTTON_LEFT:
+                clicked.amount = 0
+            elif self.button == constants.INV_BUTTON_RIGHT:
+                clicked.amount -= 1
+            self.cleanup_if_empty(clicked)
+        elif self.button == constants.INV_BUTTON_LEFT:
             if clicked.stacks_with(cursor):
                 self.transfer(cursor, clicked, cursor.amount)
             else:
                 self.swap_slots(cursor, clicked)
         elif self.button == constants.INV_BUTTON_RIGHT:
-            if cursor.item_id == constants.INV_ITEMID_EMPTY:
+            if cursor.is_empty:
                 # transfer half, round up
                 self.transfer(clicked, cursor, (clicked.amount + 1) // 2)
             elif clicked.is_empty or clicked.stacks_with(cursor):
@@ -233,27 +242,24 @@ class DropClick(BaseClick):
         self.drop_stack = drop_stack
 
     def get_packet(self, inv_plugin):
-        if self.slot == inv_plugin.active_slot:
-            slot_nr = constants.INV_OUTSIDE_WINDOW  # drop cursor slot
-        elif inv_plugin.cursor_slot.item_id != constants.INV_ITEMID_EMPTY:
-            return None  # can't drop while holding an item
-        else:  # default case
-            slot_nr = self.slot.slot_nr
+        if self.slot == inv_plugin.cursor_slot:
+            raise ValueError("Can't drop cursor slot, use SingleClick")
+        if not inv_plugin.cursor_slot.is_empty:
+            raise ValueError("Can't drop other slots: cursor slot is occupied")
+
         return {
-            'slot': slot_nr,
+            'slot': self.slot.slot_nr,
             'button': 1 if self.drop_stack else 0,
             'mode': 4,
             'clicked_item': inv_plugin.cursor_slot.get_dict(),
         }
 
     def apply(self, inv_plugin):
-        if inv_plugin.cursor_slot.is_empty:
-            if self.drop_stack:
-                self.slot.amount = 0
-            else:
-                self.slot.amount -= 1
-            self.cleanup_if_empty(self.slot)
-        # else: cursor not empty, can't drop while holding an item
+        if self.drop_stack:
+            self.slot.amount = 0
+        else:
+            self.slot.amount -= 1
+        self.cleanup_if_empty(self.slot)
 
 
 class Window(object):

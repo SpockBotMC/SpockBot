@@ -86,7 +86,7 @@ class InventoryCore(object):
 
         Args:
             slot (Slot): The clicked slot. Can be ``Slot`` instance or integer.
-                         Set to ``inventory.cursor_slot`` or -999
+                         Set to ``inventory.cursor_slot``
                          for clicking outside the window.
         """
         if isinstance(slot, int):
@@ -96,10 +96,32 @@ class InventoryCore(object):
         return self.send_click(windows.SingleClick(slot, button))
 
     def drop_slot(self, slot=None, drop_stack=False):
-        if slot is None:  # drop held item
-            slot = self.active_slot
+        """
+        Drop one or all items of the slot.
+
+        Does not wait for confirmation from the server. If you want that,
+        use a ``Task`` and ``yield inventory.async.drop_slot()`` instead.
+
+        If ``slot`` is None, drops the ``cursor_slot`` or, if that's empty,
+        the currently held item (``active_slot``).
+
+        Args:
+            slot (Optional[Slot]): The dropped slot. Can be None, integer,
+                                   or ``Slot`` instance.
+
+        Returns:
+            int: The action ID of the click
+        """
+        if slot is None:
+            if self.cursor_slot.is_empty:
+                slot = self.active_slot
+            else:
+                slot = self.cursor_slot
         elif isinstance(slot, int):  # also allow slot nr
             slot = self.window.slots[slot]
+        if slot == self.cursor_slot:
+            # dropping items from cursor is done via normal click
+            return self.click_slot(self.cursor_slot, not drop_stack)
         return self.send_click(windows.DropClick(slot, drop_stack))
 
     def close_window(self):
