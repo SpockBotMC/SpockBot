@@ -12,6 +12,7 @@ By default, the client sends swing and look packets like the vanilla client.
 This can be disabled by setting the ``auto_swing`` and ``auto_look`` flags.
 """
 import math
+
 from spockbot.mcdata import constants
 from spockbot.mcp import nbt
 from spockbot.mcp.proto import MC_SLOT

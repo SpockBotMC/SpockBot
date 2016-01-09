@@ -122,7 +122,6 @@ class InteractPluginTest(TestCase):
         self.assertAlmostEqual(ClientInfoMock.position.pitch, 0)
         self.assertEqual(NetMock.datas[-1].action, constants.INTERACT_ENTITY)
         self.assertEqual(NetMock.datas[-1].target, 234)
-        self.assertEqual(len(NetMock.datas), 1)
 
         # attack entity should swing arm
         entity = DataDict(eid=235, x=2, y=2 + constants.PLAYER_EYE_HEIGHT, z=4)
