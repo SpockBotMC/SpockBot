@@ -3,7 +3,7 @@ from spockbot.mcdata import items
 from spockbot.mcdata.utils import find_by
 
 
-def get_item_or_block(find, meta=None, init=True):
+def get_item_or_block(find, meta=0, init=True):
     ret = None
     if isinstance(find, int):  # by id
         ret = find_by(find, items.items, blocks.blocks)

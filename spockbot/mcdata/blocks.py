@@ -14,7 +14,7 @@ blocks_name = {}
 _block_exts = {}
 
 
-def get_block(block, meta=None, init=True):
+def get_block(block, meta=0, init=True):
     ret = None
     if isinstance(block, int):  # by id
         ret = find_by(block, blocks)

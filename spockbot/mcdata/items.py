@@ -8,7 +8,7 @@ items = {}
 items_name = {}
 
 
-def get_item(item, meta=None, init=True):
+def get_item(item, meta=0, init=True):
     ret = None
     if isinstance(item, int):  # by id
         ret = find_by(item, items)
