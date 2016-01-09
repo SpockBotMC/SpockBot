@@ -36,12 +36,15 @@ class InventoryCore(object):
 
     def find_slot(self, wanted, slots=None):
         """
-        Returns the first slot containing the item or None if not found.
         Searches the given slots or, if not given,
         active hotbar slot, hotbar, inventory, open window in this order.
 
         Args:
             wanted: function(Slot) or Slot or itemID or (itemID, metadata)
+
+        Returns:
+            Optional[Slot]: The first slot containing the item
+                            or None if not found.
         """
         for slot in self.find_slots(wanted, slots):
             return slot
@@ -78,7 +81,15 @@ class InventoryCore(object):
                                   {'slot': slot_or_hotbar_index})
 
     def click_slot(self, slot, right=False):
-        if isinstance(slot, int):  # also allow slot nr
+        """
+        Left-click or right-click the slot.
+
+        Args:
+            slot (Slot): The clicked slot. Can be ``Slot`` instance or integer.
+                         Set to ``inventory.cursor_slot`` or -999
+                         for clicking outside the window.
+        """
+        if isinstance(slot, int):
             slot = self.window.slots[slot]
         button = constants.INV_BUTTON_RIGHT \
             if right else constants.INV_BUTTON_LEFT
@@ -111,7 +122,12 @@ class InventoryCore(object):
     @property
     def inv_slots_preferred(self):
         """
-        The preferred order to search for items or empty slots.
+        List of all available inventory slots in the preferred search order.
+        Does not include the additional slots from the open window.
+
+        1. active slot
+        2. remainder of the hotbar
+        3. remainder of the persistent inventory
         """
         slots = [self.active_slot]
         slots.extend(slot for slot in self.window.hotbar_slots
@@ -265,8 +281,14 @@ class InventoryPlugin(PluginBase):
 
     def send_click(self, click):
         """
-        Returns the click's action ID if the click could be sent,
-        None if the previous click has not been received and confirmed yet.
+        Sends a click to the server if the previous click has been confirmed.
+
+        Args:
+            click (BaseClick): The click to send.
+
+        Returns:
+            the click's action ID if the click could be sent,
+            None if the previous click has not been received and confirmed yet.
         """
         # only send if previous click got confirmed
         if self.last_click:

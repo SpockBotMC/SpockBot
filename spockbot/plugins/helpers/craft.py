@@ -19,8 +19,10 @@ class CraftPlugin(PluginBase):
 
     def craft(self, item=None, meta=None, amount=1, recipe=None, parent=None):
         """
-        Starts a ``craft_task``. Returns the recipe used for crafting.
-        Either ``item`` or ``recipe`` has to be given.
+        Starts a ``craft_task``. Either ``item`` or ``recipe`` has to be given.
+
+        Returns:
+            Optional[Recipe]: The recipe used for crafting.
         """
         if recipe:
             item, meta, _ = recipe.result
