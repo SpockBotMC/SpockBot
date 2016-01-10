@@ -5,6 +5,7 @@ from minecraft_data.v1_8 import windows as windows_by_id
 from minecraft_data.v1_8 import windows_list
 
 from spockbot.mcdata import constants, get_item_or_block
+from spockbot.mcdata.blocks import Block
 from spockbot.mcdata.items import Item
 from spockbot.mcdata.utils import camel_case, snake_case
 
@@ -23,10 +24,17 @@ def make_slot_check(wanted):
     if isinstance(wanted, int):
         item, meta = wanted, None
     elif isinstance(wanted, Slot):
-        item, meta = wanted.item_id, wanted.damage
-        # TODO compare NBT
-    else:  # wanted is list of (id, meta)
-        item, meta = wanted
+        item, meta = wanted.item_id, wanted.damage  # TODO compare NBT
+    elif isinstance(wanted, (Item, Block)):
+        item, meta = wanted.id, wanted.metadata
+    elif isinstance(wanted, str):
+        item_or_block = get_item_or_block(wanted, init=True)
+        item, meta = item_or_block.id, item_or_block.metadata
+    else:  # wanted is (id, meta)
+        try:
+            item, meta = wanted
+        except TypeError:
+            raise ValueError('Illegal args for make_slot_check(): %s' % wanted)
 
     return lambda slot: item == slot.item_id and meta in (None, slot.damage)
 
@@ -40,7 +48,6 @@ class Slot(object):
         self.damage = damage
         self.amount = amount
         self.nbt = enchants
-
         self.item = get_item_or_block(self.item_id, self.damage) or Item()
 
     def move_to_window(self, window, slot_nr):
@@ -83,20 +90,16 @@ class Slot(object):
         return not self.is_empty
 
     def __repr__(self):
-        vals = {
-            'name': self.item.display_name,
-            'max': self.item.stack_size,
-        }
-        vals.update(self.__dict__)
         if self.is_empty:
             s = 'empty'
         else:
-            s = '%(amount)i/%(max)i %(item_id)i:%(damage)i %(name)s' % vals
+            item = self.item
+            s = '%i/%i %s' % (self.amount, item.stack_size, str(item))
 
         if self.slot_nr != -1:
-            s += ' at %(slot_nr)i' % self.__dict__
+            s += ' at %i' % self.slot_nr
         if self.window:
-            s += ' in %(window)s' % self.__dict__
+            s += ' in %s' % self.window
         return '<Slot: %s>' % s
 
 
@@ -196,8 +199,11 @@ class SingleClick(BaseClick):
                 'Clicking with button %s not implemented' % button)
 
     def get_packet(self, inv_plugin):
+        slot_nr = self.slot.slot_nr
+        if self.slot == inv_plugin.cursor_slot:
+            slot_nr = constants.INV_OUTSIDE_WINDOW
         return {
-            'slot': self.slot.slot_nr,
+            'slot': slot_nr,
             'button': self.button,
             'mode': 0,
             'clicked_item': self.slot.get_dict(),
@@ -206,13 +212,19 @@ class SingleClick(BaseClick):
     def apply(self, inv_plugin):
         clicked = self.slot
         cursor = inv_plugin.cursor_slot
-        if self.button == constants.INV_BUTTON_LEFT:
+        if clicked == cursor:
+            if self.button == constants.INV_BUTTON_LEFT:
+                clicked.amount = 0
+            elif self.button == constants.INV_BUTTON_RIGHT:
+                clicked.amount -= 1
+            self.cleanup_if_empty(clicked)
+        elif self.button == constants.INV_BUTTON_LEFT:
             if clicked.stacks_with(cursor):
                 self.transfer(cursor, clicked, cursor.amount)
             else:
                 self.swap_slots(cursor, clicked)
         elif self.button == constants.INV_BUTTON_RIGHT:
-            if cursor.item_id == constants.INV_ITEMID_EMPTY:
+            if cursor.is_empty:
                 # transfer half, round up
                 self.transfer(clicked, cursor, (clicked.amount + 1) // 2)
             elif clicked.is_empty or clicked.stacks_with(cursor):
@@ -230,31 +242,32 @@ class DropClick(BaseClick):
         self.drop_stack = drop_stack
 
     def get_packet(self, inv_plugin):
-        if self.slot == inv_plugin.active_slot:
-            slot_nr = constants.INV_OUTSIDE_WINDOW  # drop cursor slot
-        elif inv_plugin.cursor_slot.item_id != constants.INV_ITEMID_EMPTY:
-            return None  # can't drop while holding an item
-        else:  # default case
-            slot_nr = self.slot.slot_nr
+        if self.slot == inv_plugin.cursor_slot:
+            raise ValueError("Can't drop cursor slot, use SingleClick")
+        if not inv_plugin.cursor_slot.is_empty:
+            raise ValueError("Can't drop other slots: cursor slot is occupied")
+
         return {
-            'slot': slot_nr,
+            'slot': self.slot.slot_nr,
             'button': 1 if self.drop_stack else 0,
             'mode': 4,
             'clicked_item': inv_plugin.cursor_slot.get_dict(),
         }
 
     def apply(self, inv_plugin):
-        if inv_plugin.cursor_slot.is_empty:
-            if self.drop_stack:
-                self.slot.amount = 0
-            else:
-                self.slot.amount -= 1
-            self.cleanup_if_empty(self.slot)
-        # else: cursor not empty, can't drop while holding an item
+        if self.drop_stack:
+            self.slot.amount = 0
+        else:
+            self.slot.amount -= 1
+        self.cleanup_if_empty(self.slot)
 
 
 class Window(object):
     """ Base class for all inventory types. """
+
+    name = None
+    inv_type = None
+    inv_data = {}
 
     # the arguments must have the same names as the keys in the packet dict
     def __init__(self, window_id, title, slot_count,
@@ -324,6 +337,7 @@ def _make_window(window_dict):
         '__module__': sys.modules[__name__],
         'name': str(window_dict['name']),
         'inv_type': str(window_dict['id']),
+        'inv_data': window_dict,
     }
 
     # creates function-local index and size variables

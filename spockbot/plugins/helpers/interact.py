@@ -11,6 +11,8 @@ Interact with the world:
 By default, the client sends swing and look packets like the vanilla client.
 This can be disabled by setting the ``auto_swing`` and ``auto_look`` flags.
 """
+import math
+
 from spockbot.mcdata import constants
 from spockbot.mcp import nbt
 from spockbot.mcp.proto import MC_SLOT
@@ -69,26 +71,27 @@ class InteractPlugin(PluginBase):
     def open_inventory(self):
         self._entity_action(constants.ENTITY_ACTION_OPEN_INVENTORY)
 
-    def look(self, yaw=0.0, pitch=0.0):
-        """
-        Turn the head. Both angles are in degrees.
-        """
-        self.clientinfo.position.pitch = pitch
-        self.clientinfo.position.yaw = yaw
+    def look(self, yaw=0.0, pitch=0.0, radians=False):
+        if radians:
+            self.clientinfo.position.yaw = math.degrees(yaw)
+            self.clientinfo.position.pitch = math.degrees(pitch)
+        else:
+            self.clientinfo.position.yaw = yaw
+            self.clientinfo.position.pitch = pitch
 
-    def look_rel(self, d_yaw=0.0, d_pitch=0.0):
+    def look_rel(self, d_yaw=0.0, d_pitch=0.0, radians=False):
         self.look(self.clientinfo.position.yaw + d_yaw,
-                  self.clientinfo.position.pitch + d_pitch)
+                  self.clientinfo.position.pitch + d_pitch,
+                  radians=radians)
 
     def look_at_rel(self, delta):
         self.look(*delta.yaw_pitch)
 
     def look_at(self, pos):
-        delta = pos - self.clientinfo.position
-        delta.y -= constants.PLAYER_HEIGHT
+        delta = pos - self.clientinfo.eye_pos
         if delta.x or delta.z:
             self.look_at_rel(delta)
-        else:
+        else:  # looking up or down, do not turn head
             self.look(self.clientinfo.position.yaw, delta.yaw_pitch.pitch)
 
     def _send_dig_block(self, status, pos=None, face=constants.FACE_Y_POS):
@@ -102,7 +105,7 @@ class InteractPlugin(PluginBase):
 
     def start_digging(self, pos):
         if self.auto_look:
-            self.look_at(pos)  # TODO look at block center
+            self.look_at(pos.floor().iadd(0.5, 0.5, 0.5))
         self._send_dig_block(constants.DIG_START, pos)
         if self.auto_swing:
             self.swing_arm()
@@ -144,7 +147,7 @@ class InteractPlugin(PluginBase):
         """
         if look_at_block and self.auto_look:
             # TODO look at cursor_pos
-            self.look_at(pos)
+            self.look_at(pos.floor().iadd(0.5, 0.5, 0.5))
         self._send_click_block(pos, face, cursor_pos)
         if swing and self.auto_swing:
             self.swing_arm()
@@ -194,15 +197,18 @@ class InteractPlugin(PluginBase):
         """
         if self.auto_look:
             self.look_at(Vector3(entity))  # TODO look at cursor_pos
-        if cursor_pos is not None:
+
+        if cursor_pos is not None and action == constants.INTERACT_ENTITY:
             action = constants.INTERACT_ENTITY_AT
+
         packet = {'target': entity.eid, 'action': action}
         if action == constants.INTERACT_ENTITY_AT:
             packet['target_x'] = cursor_pos.x
             packet['target_y'] = cursor_pos.y
             packet['target_z'] = cursor_pos.z
         self.net.push_packet('PLAY>Use Entity', packet)
-        if self.auto_swing:
+
+        if self.auto_swing and action == constants.ATTACK_ENTITY:
             self.swing_arm()
 
     def attack_entity(self, entity):

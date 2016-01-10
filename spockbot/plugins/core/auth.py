@@ -48,7 +48,7 @@ class AuthCore(object):
     username = property(get_username, set_username)
 
     def set_password(self, password):
-        if not self.online_mode:
+        if password and not self.online_mode:
             logger.warning("PASSWORD PROVIDED WITH ONLINE_MODE == FALSE")
             logger.warning("YOU PROBABLY DIDN'T WANT TO DO THAT")
         self.ygg.password = password

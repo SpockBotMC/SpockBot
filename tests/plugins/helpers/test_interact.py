@@ -1,7 +1,6 @@
 from unittest import TestCase
 
-from spockbot.mcdata.constants import \
-    ATTACK_ENTITY, INTERACT_ENTITY, PLAYER_HEIGHT
+from spockbot.mcdata import constants
 from spockbot.plugins.helpers.clientinfo import PlayerPosition
 from spockbot.plugins.helpers.interact import InteractPlugin
 from spockbot.vector import Vector3
@@ -53,6 +52,7 @@ class InventoryMock(object):
 class ClientInfoMock(object):
     eid = 123
     position = PlayerPosition(1., 2., 3.)
+    eye_pos = position + (0, constants.PLAYER_EYE_HEIGHT, 0)
 
 
 class InteractPluginTest(TestCase):
@@ -97,7 +97,7 @@ class InteractPluginTest(TestCase):
         self.assertAlmostEqual(ClientInfoMock.position.yaw, -90)
         self.assertAlmostEqual(ClientInfoMock.position.pitch, 0)
 
-        self.plug.look_at(Vector3(0, 2 + PLAYER_HEIGHT, 3))
+        self.plug.look_at(Vector3(0, 2 + constants.PLAYER_EYE_HEIGHT, 3))
         self.assertAlmostEqual(ClientInfoMock.position.yaw, 90)
         self.assertAlmostEqual(ClientInfoMock.position.pitch, 0)
 
@@ -115,32 +115,40 @@ class InteractPluginTest(TestCase):
         # TODO deactivate_item
 
     def test_entity(self):
-        entity = DataDict(eid=234, x=2, y=2 + PLAYER_HEIGHT, z=4)
-
+        # interact entity should not swing arm
+        entity = DataDict(eid=234, x=2, y=2 + constants.PLAYER_EYE_HEIGHT, z=4)
         self.plug.use_entity(entity)
         self.assertAlmostEqual(ClientInfoMock.position.yaw, -45)
         self.assertAlmostEqual(ClientInfoMock.position.pitch, 0)
-        self.assertEqual(NetMock.datas[-2].action, INTERACT_ENTITY)
-        self.assertEqual(NetMock.datas[-2].target, 234)
+        self.assertEqual(NetMock.datas[-1].action, constants.INTERACT_ENTITY)
+        self.assertEqual(NetMock.datas[-1].target, 234)
+
+        # attack entity should swing arm
+        entity = DataDict(eid=235, x=2, y=2 + constants.PLAYER_EYE_HEIGHT, z=4)
+        self.plug.use_entity(entity, action=constants.ATTACK_ENTITY)
+        self.assertAlmostEqual(ClientInfoMock.position.yaw, -45)
+        self.assertAlmostEqual(ClientInfoMock.position.pitch, 0)
+        self.assertEqual(NetMock.datas[-2].action, constants.ATTACK_ENTITY)
+        self.assertEqual(NetMock.datas[-2].target, 235)
         self.assertEqual(NetMock.idents[-1], 'PLAY>Animation')
 
         self.plug.auto_look = False
-        entity = DataDict(eid=345, x=0, y=3 + PLAYER_HEIGHT, z=3)
+        entity = DataDict(eid=345, x=0, y=3 + constants.PLAYER_EYE_HEIGHT, z=3)
         self.plug.attack_entity(entity)
         # different pos, but look shouldn't have changed
         self.assertAlmostEqual(ClientInfoMock.position.yaw, -45)
         self.assertAlmostEqual(ClientInfoMock.position.pitch, 0)
-        self.assertEqual(NetMock.datas[-2].action, ATTACK_ENTITY)
+        self.assertEqual(NetMock.datas[-2].action, constants.ATTACK_ENTITY)
         self.assertEqual(NetMock.datas[-2].target, 345)
         self.assertEqual(NetMock.idents[-1], 'PLAY>Animation')
         self.plug.auto_look = True
 
         self.plug.auto_swing = False
-        entity = DataDict(eid=456, x=2, y=3 + PLAYER_HEIGHT, z=3)
+        entity = DataDict(eid=456, x=2, y=3 + constants.PLAYER_EYE_HEIGHT, z=3)
         self.plug.mount_vehicle(entity)
         self.assertAlmostEqual(ClientInfoMock.position.yaw, -90)
         self.assertAlmostEqual(ClientInfoMock.position.pitch, -45)
-        self.assertEqual(NetMock.datas[-1].action, INTERACT_ENTITY)
+        self.assertEqual(NetMock.datas[-1].action, constants.INTERACT_ENTITY)
         self.assertEqual(NetMock.datas[-1].target, 456)
         self.plug.auto_swing = True
 

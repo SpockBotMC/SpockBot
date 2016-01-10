@@ -8,7 +8,7 @@ items = {}
 items_name = {}
 
 
-def get_item(item, meta=None, init=True):
+def get_item(item, meta=0, init=True):
     ret = None
     if isinstance(item, int):  # by id
         ret = find_by(item, items)
@@ -33,6 +33,10 @@ class Item(object):
         if self.metadata in self.variations:
             # TODO: apply other all possible variations
             self.display_name = self.variations[self.metadata]["display_name"]
+
+    def __str__(self):
+        return '%s %i:%i' % (self.display_name, self.id,
+                             getattr(self, 'metadata', 0))
 
 
 def _make_item(item_dict):

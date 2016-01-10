@@ -6,7 +6,8 @@ from spockbot.plugins.tools.task import TaskFailed, check_key
 
 
 def unpack_slots_list(slots):
-    if len(slots) > 1 or isinstance(slots, int) or hasattr(slots, 'slot_nr'):
+    if len(slots) > 1 or isinstance(slots[0], int) \
+            or hasattr(slots[0], 'slot_nr'):
         return slots
     return slots[0]
 
@@ -15,13 +16,13 @@ class InventoryAsync(object):
     def __init__(self, inventory):
         self.inventory = inventory
 
-    def click_slot(self, slot, *args, **kwargs):
+    def click_slot(self, slot, right=False):
         if isinstance(slot, int):
             slot = self.inventory.window.slots[slot]
         old_slot = slot.copy()
         old_cursor = self.inventory.cursor_slot.copy()
 
-        action_id = self.inventory.click_slot(slot, *args, **kwargs)
+        action_id = self.inventory.click_slot(slot, right)
         if not action_id:
             raise TaskFailed('Click slot failed: not clicked')
         yield 'inventory_click_response', check_key('action_id', action_id)
@@ -38,18 +39,17 @@ class InventoryAsync(object):
             raise TaskFailed('Click slot failed: slot %i did not change (%s)'
                              % (old_slot.slot_nr, old_slot))
 
-    def drop_slot(self, slot=None, *args, **kwargs):
-        # TODO drop_slot is untested
-        old_slot = getattr(slot, 'slot_nr', slot)
+    def drop_slot(self, slot=None, drop_stack=False):
+        old_index = getattr(slot, 'slot_nr', slot)
 
-        action_id = self.inventory.drop_slot(slot, *args, **kwargs)
+        action_id = self.inventory.drop_slot(slot, drop_stack)
         if not action_id:
             raise TaskFailed('Drop slot failed: not clicked')
         yield 'inventory_click_response', check_key('action_id', action_id)
 
-        new_slot = self.inventory.window.slots[old_slot]
-        if old_slot is not None and new_slot.amount > 0:
-            raise TaskFailed('Drop slot failed: slot %i not empty' % old_slot)
+        new_slot = self.inventory.window.slots[old_index]
+        if drop_stack and old_index is not None and new_slot.amount > 0:
+            raise TaskFailed('Drop slot failed: slot %i not empty' % old_index)
 
     def creative_set_slot(self, slot_nr=None, slot_dict=None, slot=None):
         self.inventory.creative_set_slot(slot_nr, slot_dict, slot)
@@ -62,9 +62,11 @@ class InventoryAsync(object):
     def store_or_drop(self):
         """
         Stores the cursor item or drops it if the inventory is full.
-        Returns the slot used to store it, or None if dropped.
         Tip: look directly up or down before calling this, so you can
         pick up the dropped item when the inventory frees up again.
+
+        Returns:
+            Slot: The slot used to store it, or None if dropped.
         """
         inv = self.inventory
         if inv.cursor_slot.is_empty:  # nothing to drop

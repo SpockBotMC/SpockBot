@@ -36,12 +36,15 @@ class InventoryCore(object):
 
     def find_slot(self, wanted, slots=None):
         """
-        Returns the first slot containing the item or None if not found.
         Searches the given slots or, if not given,
         active hotbar slot, hotbar, inventory, open window in this order.
 
         Args:
             wanted: function(Slot) or Slot or itemID or (itemID, metadata)
+
+        Returns:
+            Optional[Slot]: The first slot containing the item
+                            or None if not found.
         """
         for slot in self.find_slots(wanted, slots):
             return slot
@@ -78,17 +81,47 @@ class InventoryCore(object):
                                   {'slot': slot_or_hotbar_index})
 
     def click_slot(self, slot, right=False):
-        if isinstance(slot, int):  # also allow slot nr
+        """
+        Left-click or right-click the slot.
+
+        Args:
+            slot (Slot): The clicked slot. Can be ``Slot`` instance or integer.
+                         Set to ``inventory.cursor_slot``
+                         for clicking outside the window.
+        """
+        if isinstance(slot, int):
             slot = self.window.slots[slot]
         button = constants.INV_BUTTON_RIGHT \
             if right else constants.INV_BUTTON_LEFT
         return self.send_click(windows.SingleClick(slot, button))
 
     def drop_slot(self, slot=None, drop_stack=False):
-        if slot is None:  # drop held item
-            slot = self.active_slot
+        """
+        Drop one or all items of the slot.
+
+        Does not wait for confirmation from the server. If you want that,
+        use a ``Task`` and ``yield inventory.async.drop_slot()`` instead.
+
+        If ``slot`` is None, drops the ``cursor_slot`` or, if that's empty,
+        the currently held item (``active_slot``).
+
+        Args:
+            slot (Optional[Slot]): The dropped slot. Can be None, integer,
+                                   or ``Slot`` instance.
+
+        Returns:
+            int: The action ID of the click
+        """
+        if slot is None:
+            if self.cursor_slot.is_empty:
+                slot = self.active_slot
+            else:
+                slot = self.cursor_slot
         elif isinstance(slot, int):  # also allow slot nr
             slot = self.window.slots[slot]
+        if slot == self.cursor_slot:
+            # dropping items from cursor is done via normal click
+            return self.click_slot(self.cursor_slot, not drop_stack)
         return self.send_click(windows.DropClick(slot, drop_stack))
 
     def close_window(self):
@@ -111,7 +144,12 @@ class InventoryCore(object):
     @property
     def inv_slots_preferred(self):
         """
-        The preferred order to search for items or empty slots.
+        List of all available inventory slots in the preferred search order.
+        Does not include the additional slots from the open window.
+
+        1. active slot
+        2. remainder of the hotbar
+        3. remainder of the persistent inventory
         """
         slots = [self.active_slot]
         slots.extend(slot for slot in self.window.hotbar_slots
@@ -223,9 +261,16 @@ class InventoryPlugin(PluginBase):
         self.event.emit('inventory_set_slot', {'slot': slot})
 
     def handle_window_prop(self, event, packet):
-        self.inventory.window.properties[packet.data['property']] = \
-            packet.data['value']
-        self.event.emit('inventory_win_prop', packet.data)
+        window = self.inventory.window
+        prop_id = packet.data['property']
+        prop_name = window.inv_data['properties'][prop_id]
+        window.properties[prop_id] = packet.data['value']
+        self.event.emit('inventory_win_prop', {
+            'window_id': packet.data['window_id'],
+            'property_name': prop_name,
+            'property_id': prop_id,
+            'value': packet.data['value'],
+        })
 
     def handle_confirm_transaction(self, event, packet):
         click = self.last_click
@@ -258,8 +303,14 @@ class InventoryPlugin(PluginBase):
 
     def send_click(self, click):
         """
-        Returns the click's action ID if the click could be sent,
-        None if the previous click has not been received and confirmed yet.
+        Sends a click to the server if the previous click has been confirmed.
+
+        Args:
+            click (BaseClick): The click to send.
+
+        Returns:
+            the click's action ID if the click could be sent,
+            None if the previous click has not been received and confirmed yet.
         """
         # only send if previous click got confirmed
         if self.last_click:

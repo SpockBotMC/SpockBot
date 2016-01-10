@@ -79,6 +79,20 @@ class TaskFailed(Exception):
         else:
             return self.tasktrace
 
+    def __str__(self):
+        """
+        Newline-separated text with all failed tasks and all previous errors.
+        """
+        s = self.prev_error.failures + '\n' if self.prev_error else ''
+
+        s += '%s' % self.message
+        if self.args[1:]:
+            s += ' %s' % str(self.args[1:])
+
+        for task in self.tasktrace:
+            s += '\n  in %s %s' % (task.task.__name__, task.name)
+        return s
+
 
 class TaskCallback(object):
     def __init__(self, cb=None, eb=None):
@@ -99,6 +113,7 @@ class Task(object):
         self.name = name or task.__name__
         self.task = task
         self.parent = parent
+        self.last_child = None
         self.expected = {}  # event -> check
 
     @property
@@ -178,4 +193,4 @@ class Task(object):
         else:  # unexpected
             self.expected.clear()
             raise ValueError('Illegal task yield argument of type %s: %s'
-                             % type(response), response)
+                             % (type(response), response))
