@@ -82,7 +82,6 @@ class PhysicsPlugin(PluginBase):
             self.world, BoundingBox(const.PLAYER_WIDTH, const.PLAYER_HEIGHT)
         )
         self.pos = self.clientinfo.position
-        self.prev_dict = None
         self.skip_tick = False
         self.pc = PhysicsCore(self.pos, self.vec, self.clientinfo.abilities)
         ploader.provides('Physics', self.pc)
@@ -99,13 +98,8 @@ class PhysicsPlugin(PluginBase):
         self.event.reg_event_handler('physics_tick', self.physics_tick)
 
     def client_tick(self, name, data):
-        current_dict = self.clientinfo.position.get_dict()
-        if self.prev_dict and self.prev_dict['yaw'] == current_dict['yaw'] \
-                and self.prev_dict['pitch'] == current_dict['pitch']:
-            self.net.push_packet('PLAY>Player Position', current_dict)
-        else:
-            self.net.push_packet('PLAY>Player Position and Look', current_dict)
-        self.prev_dict = current_dict
+        self.net.push_packet('PLAY>Player Position and Look',
+                             self.clientinfo.position.get_dict())
 
     def physics_tick(self, _, __):
         if self.skip_tick:
