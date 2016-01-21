@@ -67,6 +67,7 @@ Refer to the `example bot <examples/basic>`__ for instructions on how to
 write a bot and a plugin that provides some common functionality.
 
 Also see `Extra examples <https://github.com/SpockBotMC/SpockBot-Extra/tree/master/examples>`__
+and `Bat bot <https://github.com/Gjum/Bat/blob/master/bat/bat.py>`__
 for additional examples.
 
 Documentation
