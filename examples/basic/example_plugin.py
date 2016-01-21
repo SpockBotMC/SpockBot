@@ -11,10 +11,6 @@ Demonstrates the following functionality:
 - Placing blocks
 - Reading blocks
 """
-
-__author__ = 'Cosmo Harrigan, Morgan Creekmore'
-
-
 import logging
 
 # Import any modules that you need in your plugin
@@ -23,7 +19,7 @@ from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
 
-# Required import
+__author__ = 'Cosmo Harrigan, Morgan Creekmore'
 
 logger = logging.getLogger('spockbot')
 
@@ -70,9 +66,7 @@ class ExamplePlugin(PluginBase):
         self.chat.chat('Bot active')
 
         # Walk to target coordinates
-        self.movement.move_to(TARGET_COORDINATES.x,
-                              TARGET_COORDINATES.y,
-                              TARGET_COORDINATES.z)
+        self.movement.move_to(*TARGET_COORDINATES)
 
     def chat_event_handler(self, name, data):
         """Called when a chat message occurs in the game"""
@@ -99,12 +93,12 @@ class ExamplePlugin(PluginBase):
             self.clientinfo.position.yaw))
 
         # Place a block in front of the player
-        self.interact.place_block(self.clientinfo.position
-                                  + Vector3(-1, 0, -1))
+        self.interact.place_block(
+            self.clientinfo.position + Vector3(-1, 0, -1))
 
         # Read a block under the player
         block_pos = self.clientinfo.position.floor()
         block_id, meta = self.world.get_block(*block_pos)
         block_at = blocks.get_block(block_id, meta)
-        self.chat.chat('Found block %s at %s' % (block_at.display_name,
-                                                 block_pos))
+        self.chat.chat('Found block %s at %s' % (
+            block_at.display_name, block_pos))

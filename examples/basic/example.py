@@ -12,8 +12,6 @@ Instructions:
 """
 from __future__ import absolute_import
 
-__author__ = 'Cosmo Harrigan'
-
 import logging
 
 # Import the plugins you have created
@@ -21,6 +19,8 @@ from example_plugin import ExamplePlugin
 
 from spockbot import Client
 from spockbot.plugins import default_plugins
+
+__author__ = 'Cosmo Harrigan'
 
 # Change default log level to DEBUG so we can see extra messages
 logger = logging.getLogger('spockbot')
@@ -37,8 +37,6 @@ settings = {
         'username': USERNAME,
         'password': PASSWORD,
     },
-    # xxx
-    'auth': {'online_mode': bool(PASSWORD)},
 }
 
 # Load the plugins.
