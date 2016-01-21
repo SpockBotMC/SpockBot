@@ -97,7 +97,7 @@ class ClientInfo(object):
 
     @property
     def eye_pos(self):
-        return self.position + (0, const.PLAYER_EYE_HEIGHT, 0)
+        return self.position + Vector3(0, const.PLAYER_EYE_HEIGHT, 0)
 
     def reset(self):
         """Resets the information in ClientInfo"""

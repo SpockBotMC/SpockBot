@@ -96,7 +96,7 @@ class InteractPlugin(PluginBase):
 
     def _send_dig_block(self, status, pos=None, face=constants.FACE_Y_POS):
         if status == constants.DIG_START:
-            self.dig_pos_dict = pos.get_dict().copy()
+            self.dig_pos_dict = pos.floor().get_dict().copy()
         self.net.push_packet('PLAY>Player Digging', {
             'status': status,
             'location': self.dig_pos_dict,
@@ -105,7 +105,7 @@ class InteractPlugin(PluginBase):
 
     def start_digging(self, pos):
         if self.auto_look:
-            self.look_at(pos.floor().iadd(0.5, 0.5, 0.5))
+            self.look_at(pos.floor() + Vector3(0.5, 0.5, 0.5))
         self._send_dig_block(constants.DIG_START, pos)
         if self.auto_swing:
             self.swing_arm()
@@ -126,7 +126,7 @@ class InteractPlugin(PluginBase):
 
     def _send_click_block(self, pos, face=1, cursor_pos=Vector3(8, 8, 8)):
         self.net.push_packet('PLAY>Player Block Placement', {
-            'location': pos.get_dict(),
+            'location': pos.floor().get_dict(),
             'direction': face,
             'held_item': self.inventory.active_slot.get_dict(),
             'cur_pos_x': int(cursor_pos.x),
@@ -147,7 +147,7 @@ class InteractPlugin(PluginBase):
         """
         if look_at_block and self.auto_look:
             # TODO look at cursor_pos
-            self.look_at(pos.floor().iadd(0.5, 0.5, 0.5))
+            self.look_at(pos.floor() + Vector3(0.5, 0.5, 0.5))
         self._send_click_block(pos, face, cursor_pos)
         if swing and self.auto_swing:
             self.swing_arm()
