@@ -100,13 +100,11 @@ class ExamplePlugin(PluginBase):
 
         # Place a block in front of the player
         self.interact.place_block(self.clientinfo.position
-                                  + Vector3(-1, -1, 0))
+                                  + Vector3(-1, 0, -1))
 
         # Read a block under the player
-        block_pos = self.clientinfo.position
-        block_id, meta = self.world.get_block(block_pos.x,
-                                              block_pos.y,
-                                              block_pos.z)
+        block_pos = self.clientinfo.position.floor()
+        block_id, meta = self.world.get_block(*block_pos)
         block_at = blocks.get_block(block_id, meta)
         self.chat.chat('Found block %s at %s' % (block_at.display_name,
                                                  block_pos))

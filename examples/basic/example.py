@@ -27,7 +27,7 @@ logger = logging.getLogger('spockbot')
 logger.setLevel(logging.DEBUG)
 
 # Set the following values:
-USERNAME = ''
+USERNAME = 'spockbot'
 PASSWORD = ''
 SERVER = 'localhost'
 
@@ -37,6 +37,8 @@ settings = {
         'username': USERNAME,
         'password': PASSWORD,
     },
+    # xxx
+    'auth': {'online_mode': bool(PASSWORD)},
 }
 
 # Load the plugins.
