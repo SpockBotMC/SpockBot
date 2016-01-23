@@ -96,7 +96,7 @@ class EntitiesPlugin(PluginBase):
         'PLAY<Entity Velocity': 'handle_velocity',
         'PLAY<Entity Relative Move': 'handle_relative_move',
         'PLAY<Entity Look': 'handle_set_dict',
-        'PLAY<Entity Look and Relative Move': 'handle_relative_move',
+        'PLAY<Entity Look And Relative Move': 'handle_relative_move',
         'PLAY<Entity Teleport': 'handle_set_dict',
         'PLAY<Entity Head Look': 'handle_set_dict',
         'PLAY<Entity Status': 'handle_set_dict',
