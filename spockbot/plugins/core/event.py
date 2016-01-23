@@ -22,11 +22,11 @@ class EventPlugin(object):
         signal.signal(signal.SIGINT, self.kill)
         signal.signal(signal.SIGTERM, self.kill)
 
-    def event_loop(self, continuous=True):
-        if continuous:
-            self.run_continuous()
-        else:
+    def event_loop(self, once=False):
+        if once:
             self.run_once()
+        else:
+            self.run_continuous()
 
     def run_continuous(self):
         if not self.has_run and not self.kill_event:
