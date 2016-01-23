@@ -12,8 +12,10 @@ from spockbot.plugins.tools.event import EVENT_UNREGISTER
 logger = logging.getLogger('spockbot')
 
 
-class EventCore(object):
-    def __init__(self):
+@pl_announce('Event')
+class EventPlugin(object):
+    def __init__(self, ploader, settings):
+        ploader.provides('Event', self)
         self.has_run = False
         self.kill_event = False
         self.event_handlers = defaultdict(list)
@@ -61,9 +63,3 @@ class EventCore(object):
 
     def kill(self, *args):
         self.kill_event = True
-
-
-@pl_announce('Event')
-class EventPlugin(object):
-    def __init__(self, ploader, settings):
-        ploader.provides('Event', EventCore())
