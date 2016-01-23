@@ -157,7 +157,7 @@ class PhysicsPlugin(PluginBase):
                 if test_vec.dist_sq() <= self.vec.dist_sq() + FP_MAGIC:
                     q.append(current_vector + vector)
         else:
-            logger.warn('Physics failed to generate an MTV, bailing out')
+            logger.debug('Physics failed to generate an MTV, bailing out')
             self.vec.zero()
             return Vector3()
         possible_mtv = [current_vector]
