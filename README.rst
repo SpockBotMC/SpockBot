@@ -51,7 +51,6 @@ Dependencies
 - minecraft_data_
 - six
 
-
 Installation
 ------------
 
@@ -59,6 +58,11 @@ Installation
 
 **Note:**
 The cryptography library has some extra dependencies to install, you can find detailed instructions `here <https://cryptography.io/en/latest/installation/>`__.
+
+Documentation
+-------------
+
+Current docs live here https://spockbot.readthedocs.org
 
 Examples
 --------
@@ -70,10 +74,12 @@ Also see `Extra examples <https://github.com/SpockBotMC/SpockBot-Extra/tree/mast
 and `Bat bot <https://github.com/Gjum/Bat/blob/master/bat/bat.py>`__
 for additional examples.
 
-Documentation
--------------
+Projects Using SpockBot
+-----------------------
 
-Current docs live here https://spockbot.readthedocs.org
+`Gjum/bat <https://github.com/gjum/bat>`__ - High level bot
+
+`opencog/opencog-to-minecraft <https://github.com/opencog/opencog-to-minecraft>`__ - Interface linking Minecraft to OpenCog
 
 Support
 -------
