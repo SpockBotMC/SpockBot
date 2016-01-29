@@ -77,9 +77,8 @@ for additional examples.
 Projects Using SpockBot
 -----------------------
 
-`Gjum/bat <https://github.com/gjum/bat>`__ - High level bot
-
-`opencog/opencog-to-minecraft <https://github.com/opencog/opencog-to-minecraft>`__ - Interface linking Minecraft to OpenCog
+- `Gjum/bat <https://github.com/gjum/bat>`__ - High level bot
+- `opencog/opencog-to-minecraft <https://github.com/opencog/opencog-to-minecraft>`__ - Interface linking Minecraft to OpenCog
 
 Support
 -------
