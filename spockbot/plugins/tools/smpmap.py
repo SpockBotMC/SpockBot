@@ -17,6 +17,7 @@ and so on
 """
 
 import array
+from math import floor
 
 from spockbot.mcp.bbuff import BoundBuffer
 
@@ -150,10 +151,13 @@ class Dimension(object):
             bbuff, data['primary_bitmap'], skylight, data['continuous']
         )
 
-    def get_block(self, x, y, z):
-        x, rx = divmod(x, 16)
-        y, ry = divmod(y, 16)
-        z, rz = divmod(z, 16)
+    def get_block(self, pos_or_x, y=None, z=None):
+        if None in (y, z):  # pos supplied
+            pos_or_x, y, z = pos_or_x
+
+        x, rx = divmod(floor(pos_or_x), 16)
+        y, ry = divmod(floor(y), 16)
+        z, rz = divmod(floor(z), 16)
 
         if (x, z) not in self.columns or y > 0x0F:
             return 0, 0
@@ -163,10 +167,14 @@ class Dimension(object):
         data = chunk.block_data.get(rx, ry, rz)
         return data >> 4, data & 0x0F
 
-    def set_block(self, x, y, z, block_id=None, meta=None, data=None):
-        x, rx = divmod(x, 16)
-        y, ry = divmod(y, 16)
-        z, rz = divmod(z, 16)
+    def set_block(self, pos_or_x, y=None, z=None,
+                  block_id=None, meta=None, data=None):
+        if None in (y, z):  # pos supplied
+            pos_or_x, y, z = pos_or_x
+
+        x, rx = divmod(floor(pos_or_x), 16)
+        y, ry = divmod(floor(y), 16)
+        z, rz = divmod(floor(z), 16)
 
         if y > 0x0F:
             return
@@ -184,10 +192,13 @@ class Dimension(object):
             data = (block_id << 4) | (meta & 0x0F)
         chunk.block_data.set(rx, ry, rz, data)
 
-    def get_light(self, x, y, z):
-        x, rx = divmod(x, 16)
-        y, ry = divmod(y, 16)
-        z, rz = divmod(z, 16)
+    def get_light(self, pos_or_x, y=None, z=None):
+        if None in (y, z):  # pos supplied
+            pos_or_x, y, z = pos_or_x
+
+        x, rx = divmod(floor(pos_or_x), 16)
+        y, ry = divmod(floor(y), 16)
+        z, rz = divmod(floor(z), 16)
 
         if (x, z) not in self.columns or y > 0x0F:
             return 0, 0
@@ -197,10 +208,14 @@ class Dimension(object):
         return chunk.light_block.get(rx, ry, rz), chunk.light_sky.get(rx, ry,
                                                                       rz)
 
-    def set_light(self, x, y, z, light_block=None, light_sky=None):
-        x, rx = divmod(x, 16)
-        y, ry = divmod(y, 16)
-        z, rz = divmod(z, 16)
+    def set_light(self, pos_or_x, y=None, z=None,
+                  light_block=None, light_sky=None):
+        if None in (y, z):  # pos supplied
+            pos_or_x, y, z = pos_or_x
+
+        x, rx = divmod(floor(pos_or_x), 16)
+        y, ry = divmod(floor(y), 16)
+        z, rz = divmod(floor(z), 16)
 
         if y > 0x0F:
             return
@@ -220,8 +235,8 @@ class Dimension(object):
             chunk.light_sky.set(rx, ry, rz, light_sky & 0xF)
 
     def get_biome(self, x, z):
-        x, rx = divmod(x, 16)
-        z, rz = divmod(z, 16)
+        x, rx = divmod(floor(x), 16)
+        z, rz = divmod(floor(z), 16)
 
         if (x, z) not in self.columns:
             return 0
@@ -229,8 +244,8 @@ class Dimension(object):
         return self.columns[(x, z)].biome.get(rx, rz)
 
     def set_biome(self, x, z, data):
-        x, rx = divmod(x, 16)
-        z, rz = divmod(z, 16)
+        x, rx = divmod(floor(x), 16)
+        z, rz = divmod(floor(z), 16)
 
         if (x, z) in self.columns:
             column = self.columns[(x, z)]
