@@ -46,22 +46,22 @@ class WorldPlugin(PluginBase):
         self.world = WorldData()
         ploader.provides('World', self.world)
 
-    # Time Update - Update World Time
     def handle_time_update(self, name, packet):
+        """Time Update - Update World Time"""
         self.world.update_time(packet.data)
         self.event.emit('world_time_update', packet.data)
 
-    # Join Game/Respawn - New Dimension
     def handle_new_dimension(self, name, packet):
+        """Join Game/Respawn - New Dimension"""
         self.world.new_dimension(packet.data['dimension'])
         self.event.emit('world_new_dimension', packet.data['dimension'])
 
-    # Chunk Data - Update World state
     def handle_chunk_data(self, name, packet):
+        """Chunk Data - Update World state"""
         self.world.unpack_column(packet.data)
 
-    # Multi Block Change - Update multiple blocks
     def handle_multi_block_change(self, name, packet):
+        """Multi Block Change - Update multiple blocks"""
         chunk_x = packet.data['chunk_x'] * 16
         chunk_z = packet.data['chunk_z'] * 16
         for block in packet.data['blocks']:
@@ -78,15 +78,15 @@ class WorldPlugin(PluginBase):
                 'block_data': block['block_data'],
             })
 
-    # Block Change - Update a single block
     def handle_block_change(self, name, packet):
+        """Block Change - Update a single block"""
         p = packet.data['location']
         block_data = packet.data['block_data']
         self.world.set_block(p['x'], p['y'], p['z'], data=block_data)
         self.event.emit('world_block_update', packet.data)
 
-    # Map Chunk Bulk - Update World state
     def handle_map_chunk_bulk(self, name, packet):
+        """Map Chunk Bulk - Update World state"""
         self.world.unpack_bulk(packet.data)
 
     def handle_disconnect(self, name, data):
