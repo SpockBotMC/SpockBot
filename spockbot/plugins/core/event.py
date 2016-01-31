@@ -1,10 +1,10 @@
 """
 Provides the core event loop
 """
-import copy
 import logging
 import signal
 from collections import defaultdict
+from copy import deepcopy
 
 from spockbot.plugins.base import pl_announce
 from spockbot.plugins.tools.event import EVENT_UNREGISTER
@@ -56,10 +56,15 @@ class EventPlugin(object):
     def emit(self, event, data=None):
         # the handler list of this event can change during handler execution,
         # so we loop over a copy
-        for handler in self.event_handlers[event][:]:
-            d = data.clone() if hasattr(data, 'clone') else copy.deepcopy(data)
-            if handler(event, d) == EVENT_UNREGISTER:
-                self.event_handlers[event].remove(handler)
+        try:
+            for handler in self.event_handlers[event][:]:
+                d = data.clone() if hasattr(data, 'clone') else deepcopy(data)
+                if handler(event, d) == EVENT_UNREGISTER:
+                    self.event_handlers[event].remove(handler)
+        except:
+            logger.debug('EVENTCORE: Exception while emitting %s %s',
+                         event, data)
+            raise
 
     def kill(self, *args):
         self.kill_event = True
