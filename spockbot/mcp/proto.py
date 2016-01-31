@@ -154,7 +154,7 @@ packet_names = {
             0x14: 'Entity',
             0x15: 'Entity Relative Move',
             0x16: 'Entity Look',
-            0x17: 'Entity Look and Relative Move',
+            0x17: 'Entity Look And Relative Move',
             0x18: 'Entity Teleport',
             0x19: 'Entity Head Look',
             0x1A: 'Entity Status',
@@ -480,7 +480,7 @@ packet_structs = {
                 (MC_BYTE, 'pitch'),
                 (MC_BOOL, 'on_ground'),
             ),
-            # Entity Look and Relative Move
+            # Entity Look And Relative Move
             0x17: (
                 (MC_VARINT, 'eid'),
                 (MC_FP_BYTE, 'dx'),

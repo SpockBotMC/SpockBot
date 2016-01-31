@@ -17,6 +17,7 @@ and so on
 """
 
 import array
+from math import floor
 
 from spockbot.mcp.bbuff import BoundBuffer
 
@@ -27,6 +28,69 @@ DIMENSION_END = 0x01
 
 def mapshort2id(data):
     return data >> 4, data & 0x0F
+
+
+class BlockEntityData(object):
+    def __init__(self, nbt):
+        self.nbt = nbt
+
+    def __getattr__(self, key):
+        return getattr(self.nbt, key)
+
+    def __str__(self):
+        return str(self.nbt)
+
+    def __repr__(self):
+        return repr(self.nbt)
+
+
+class SpawnerData(BlockEntityData):
+    pass  # TODO get entity class from mcdata?
+
+
+class CommandBlockData(BlockEntityData):
+    pass
+
+
+class BeaconData(BlockEntityData):
+    pass
+
+
+class HeadData(BlockEntityData):
+    pass
+
+
+class FlowerPotData(BlockEntityData):
+    def __init__(self, nbt):
+        super(FlowerPotData, self).__init__(nbt)
+        self.block = nbt['Item'].value, nbt['Data'].value
+        # TODO get block instance from mcdata?
+
+
+class BannerData(BlockEntityData):
+    pass
+
+
+class SignData(BlockEntityData):
+    def __init__(self, line_data):
+        super(SignData, self).__init__(self)
+        self.lines = [line_data['line_%i' % (i + 1)] for i in range(4)]
+
+    def __str__(self):
+        return 'Sign%s' % str(self.lines)
+
+    def __repr__(self):
+        return '<SignData %s>' % repr(self.lines)
+
+
+block_entities = {
+    1: SpawnerData,
+    2: CommandBlockData,
+    3: BeaconData,
+    4: HeadData,
+    5: FlowerPotData,
+    6: BannerData,
+}
 
 
 class ChunkData(object):
@@ -131,6 +195,9 @@ class Dimension(object):
         self.dimension = dimension
         self.columns = {}  # chunk columns are address by a tuple (x, z)
 
+        # BlockEntityData subclass instances, adressed by (x,y,z)
+        self.block_entities = {}
+
     def unpack_bulk(self, data):
         bbuff = BoundBuffer(data['data'])
         skylight = data['sky_light']
@@ -150,10 +217,13 @@ class Dimension(object):
             bbuff, data['primary_bitmap'], skylight, data['continuous']
         )
 
-    def get_block(self, x, y, z):
-        x, rx = divmod(x, 16)
-        y, ry = divmod(y, 16)
-        z, rz = divmod(z, 16)
+    def get_block(self, pos_or_x, y=None, z=None):
+        if None in (y, z):  # pos supplied
+            pos_or_x, y, z = pos_or_x
+
+        x, rx = divmod(floor(pos_or_x), 16)
+        y, ry = divmod(floor(y), 16)
+        z, rz = divmod(floor(z), 16)
 
         if (x, z) not in self.columns or y > 0x0F:
             return 0, 0
@@ -163,10 +233,14 @@ class Dimension(object):
         data = chunk.block_data.get(rx, ry, rz)
         return data >> 4, data & 0x0F
 
-    def set_block(self, x, y, z, block_id=None, meta=None, data=None):
-        x, rx = divmod(x, 16)
-        y, ry = divmod(y, 16)
-        z, rz = divmod(z, 16)
+    def set_block(self, pos_or_x, y=None, z=None,
+                  block_id=None, meta=None, data=None):
+        if None in (y, z):  # pos supplied
+            pos_or_x, y, z = pos_or_x
+
+        x, rx = divmod(floor(pos_or_x), 16)
+        y, ry = divmod(floor(y), 16)
+        z, rz = divmod(floor(z), 16)
 
         if y > 0x0F:
             return
@@ -184,10 +258,41 @@ class Dimension(object):
             data = (block_id << 4) | (meta & 0x0F)
         chunk.block_data.set(rx, ry, rz, data)
 
-    def get_light(self, x, y, z):
-        x, rx = divmod(x, 16)
-        y, ry = divmod(y, 16)
-        z, rz = divmod(z, 16)
+    def get_block_entity_data(self, pos_or_x, y=None, z=None):
+        """
+        Access block entity data.
+
+        Returns:
+            BlockEntityData subclass instance or
+            None if no block entity data is stored for that location.
+        """
+        if None not in (y, z):  # x y z supplied
+            pos_or_x = pos_or_x, y, z
+        coord_tuple = tuple(floor(c) for c in pos_or_x)
+        return self.block_entities.get(coord_tuple, None)
+
+    def set_block_entity_data(self, pos_or_x, y=None, z=None, data=None):
+        """
+        Update block entity data.
+
+        Returns:
+            Old data if block entity data was already stored for that location,
+            None otherwise.
+        """
+        if None not in (y, z):  # x y z supplied
+            pos_or_x = pos_or_x, y, z
+        coord_tuple = tuple(floor(c) for c in pos_or_x)
+        old_data = self.block_entities.get(coord_tuple, None)
+        self.block_entities[coord_tuple] = data
+        return old_data
+
+    def get_light(self, pos_or_x, y=None, z=None):
+        if None in (y, z):  # pos supplied
+            pos_or_x, y, z = pos_or_x
+
+        x, rx = divmod(floor(pos_or_x), 16)
+        y, ry = divmod(floor(y), 16)
+        z, rz = divmod(floor(z), 16)
 
         if (x, z) not in self.columns or y > 0x0F:
             return 0, 0
@@ -197,10 +302,14 @@ class Dimension(object):
         return chunk.light_block.get(rx, ry, rz), chunk.light_sky.get(rx, ry,
                                                                       rz)
 
-    def set_light(self, x, y, z, light_block=None, light_sky=None):
-        x, rx = divmod(x, 16)
-        y, ry = divmod(y, 16)
-        z, rz = divmod(z, 16)
+    def set_light(self, pos_or_x, y=None, z=None,
+                  light_block=None, light_sky=None):
+        if None in (y, z):  # pos supplied
+            pos_or_x, y, z = pos_or_x
+
+        x, rx = divmod(floor(pos_or_x), 16)
+        y, ry = divmod(floor(y), 16)
+        z, rz = divmod(floor(z), 16)
 
         if y > 0x0F:
             return
@@ -220,8 +329,8 @@ class Dimension(object):
             chunk.light_sky.set(rx, ry, rz, light_sky & 0xF)
 
     def get_biome(self, x, z):
-        x, rx = divmod(x, 16)
-        z, rz = divmod(z, 16)
+        x, rx = divmod(floor(x), 16)
+        z, rz = divmod(floor(z), 16)
 
         if (x, z) not in self.columns:
             return 0
@@ -229,8 +338,8 @@ class Dimension(object):
         return self.columns[(x, z)].biome.get(rx, rz)
 
     def set_biome(self, x, z, data):
-        x, rx = divmod(x, 16)
-        z, rz = divmod(z, 16)
+        x, rx = divmod(floor(x), 16)
+        z, rz = divmod(floor(z), 16)
 
         if (x, z) in self.columns:
             column = self.columns[(x, z)]

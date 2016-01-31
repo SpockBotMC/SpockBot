@@ -3,8 +3,7 @@ Craft items.
 """
 from math import ceil
 
-from spockbot.mcdata.recipes import get_any_recipe, ingredient_positions, \
-    total_ingredient_amounts
+from spockbot.mcdata.recipes import get_any_recipe
 from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools.task import TaskFailed
 
@@ -67,7 +66,7 @@ class CraftPlugin(PluginBase):
         storage_slots = inv.window.persistent_slots
 
         # check ingredients for recipe
-        total_amounts_needed = total_ingredient_amounts(recipe)
+        total_amounts_needed = recipe.total_ingredient_amounts
         for ingredient, needed in total_amounts_needed.items():
             needed *= craft_times
             stored = inv.total_stored(ingredient, storage_slots)
@@ -76,7 +75,7 @@ class CraftPlugin(PluginBase):
                                  % ('%s:%s' % ingredient, stored, needed))
 
         # put ingredients into crafting grid
-        for ingredient, p in ingredient_positions(recipe).items():
+        for ingredient, p in recipe.ingredient_positions.items():
             for (x, y, ingredient_amount) in p:
                 slot = grid_slots[x + y * grid_width]
                 for i in range(ingredient_amount * craft_times):
@@ -101,7 +100,7 @@ class CraftPlugin(PluginBase):
         while amount > crafted_amt + inv.cursor_slot.amount:
             yield inv.async.click_slot(result_slot)
             # TODO check that cursor is non-empty, otherwise we did not craft
-            result_stack_size = inv.cursor_slot.stack_size
+            result_stack_size = inv.cursor_slot.item.stack_size
             if inv.cursor_slot.amount in (prev_cursor_amt, result_stack_size):
                 # cursor full, put away
                 crafted_amt += inv.cursor_slot.amount
