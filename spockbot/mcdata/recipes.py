@@ -10,17 +10,22 @@ class Recipe(object):
     def __init__(self, raw):
         self.result = reformat_item(raw['result'], None)
         if 'ingredients' in raw:
-            self.ingredients = [reformat_item(item, 0) for item in raw['ingredients']]
+            self.ingredients = [reformat_item(item, 0)
+                                for item in raw['ingredients']]
             self.in_shape = None
             self.out_shape = None
         else:
             self.in_shape = reformat_shape(raw['inShape'])
             self.out_shape = reformat_shape(raw['outShape']) \
                 if 'outShape' in raw else None
-            self.ingredients = [item for row in self.in_shape for item in row]  # flatten
+            self.ingredients = [item for row in self.in_shape for item in row]
 
     @property
     def total_ingredient_amounts(self):
+        """
+        Returns:
+            dict: In the form { (item_id, metadata) -> amount }
+        """
         totals = defaultdict(int)
         for id, meta, amount in self.ingredients:
             totals[(id, meta)] += amount
@@ -30,7 +35,7 @@ class Recipe(object):
     def ingredient_positions(self):
         """
         Returns:
-            dict: In the form { (item_id, metadata) -> [ (x, y, amount), ... ] }
+            dict: In the form { (item_id, metadata) -> [(x, y, amount), ...] }
         """
         positions = defaultdict(list)
         for y, row in enumerate(self.in_shape):

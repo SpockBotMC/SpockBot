@@ -26,6 +26,8 @@ class PluginLoaderMock(object):
             return NetMock()
         elif requirement == 'Channels':
             return True
+        elif requirement == 'Event':
+            return True
         else:
             raise AssertionError('Unexpected requirement %s' % requirement)
 
