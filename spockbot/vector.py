@@ -161,7 +161,10 @@ class Vector3(CartesianVector):
             try:
                 xyz = obj.x, obj.y, obj.z
             except AttributeError:
-                xyz = obj['x'], obj['y'], obj['z']
+                try:
+                    xyz = obj['x'], obj['y'], obj['z']
+                except TypeError:
+                    xyz = tuple(obj[:3])
         elif l == 0:
             xyz = (0, 0, 0)
         elif l != 3:
