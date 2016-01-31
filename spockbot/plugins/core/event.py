@@ -52,17 +52,12 @@ class EventCore(object):
         self.event_handlers[event].remove(handler)
 
     def emit(self, event, data=None):
-        to_remove = []
-        # reversed, because handlers can register themselves
-        # for the same event they handle, and the new handler
-        # is appended to the end of the iterated handler list
-        # and immediately run, so an infinite loop can be created
-        for handler in reversed(self.event_handlers[event]):
+        # the handler list of this event can change during handler execution,
+        # so we loop over a copy
+        for handler in self.event_handlers[event][:]:
             d = data.clone() if hasattr(data, 'clone') else copy.deepcopy(data)
             if handler(event, d) == EVENT_UNREGISTER:
-                to_remove.append(handler)
-        for handler in to_remove:
-            self.event_handlers[event].remove(handler)
+                self.event_handlers[event].remove(handler)
 
     def kill(self, *args):
         self.kill_event = True
