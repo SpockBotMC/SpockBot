@@ -8,6 +8,7 @@ light level interpretation based on sky light and time of day
 from spockbot.mcdata import constants as const
 from spockbot.plugins.base import PluginBase, pl_announce
 from spockbot.plugins.tools import smpmap
+from spockbot.vector import Vector3
 
 
 class WorldData(smpmap.Dimension):
@@ -38,6 +39,8 @@ class WorldPlugin(PluginBase):
         'PLAY<Multi Block Change': 'handle_multi_block_change',
         'PLAY<Block Change': 'handle_block_change',
         'PLAY<Map Chunk Bulk': 'handle_map_chunk_bulk',
+        'PLAY<Update Sign': 'handle_update_sign',
+        'PLAY<Update Block Entity': 'handle_update_block_entity',
         'net_disconnect': 'handle_disconnect',
     }
 
@@ -88,6 +91,27 @@ class WorldPlugin(PluginBase):
     def handle_map_chunk_bulk(self, name, packet):
         """Map Chunk Bulk - Update World state"""
         self.world.unpack_bulk(packet.data)
+
+    def handle_update_sign(self, event, packet):
+        location = Vector3(packet.data['location'])
+        sign_data = smpmap.SignData(packet.data)
+        old_data = self.world.set_block_entity_data(location, data=sign_data)
+        self.event.emit('world_block_entity_data', {
+            'location': location,
+            'data': sign_data,
+            'old_data': old_data,
+        })
+
+    def handle_update_block_entity(self, event, packet):
+        location = Vector3(packet.data['location'])
+        block_entity_class = smpmap.block_entities[packet.data['action']]
+        data = block_entity_class(packet.data['nbt'])
+        old_data = self.world.set_block_entity_data(location, data=data)
+        self.event.emit('world_block_entity_data', {
+            'location': location,
+            'data': data,
+            'old_data': old_data,
+        })
 
     def handle_disconnect(self, name, data):
         self.world.reset()

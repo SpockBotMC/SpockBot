@@ -30,6 +30,69 @@ def mapshort2id(data):
     return data >> 4, data & 0x0F
 
 
+class BlockEntityData(object):
+    def __init__(self, nbt):
+        self.nbt = nbt
+
+    def __getattr__(self, key):
+        return getattr(self.nbt, key)
+
+    def __str__(self):
+        return str(self.nbt)
+
+    def __repr__(self):
+        return repr(self.nbt)
+
+
+class SpawnerData(BlockEntityData):
+    pass  # TODO get entity class from mcdata?
+
+
+class CommandBlockData(BlockEntityData):
+    pass
+
+
+class BeaconData(BlockEntityData):
+    pass
+
+
+class HeadData(BlockEntityData):
+    pass
+
+
+class FlowerPotData(BlockEntityData):
+    def __init__(self, nbt):
+        super(FlowerPotData, self).__init__(nbt)
+        self.block = nbt['Item'].value, nbt['Data'].value
+        # TODO get block instance from mcdata?
+
+
+class BannerData(BlockEntityData):
+    pass
+
+
+class SignData(BlockEntityData):
+    def __init__(self, line_data):
+        super(SignData, self).__init__(self)
+        self.lines = [line_data['line_%i' % (i + 1)] for i in range(4)]
+
+    def __str__(self):
+        return 'Sign%s' % str(self.lines)
+
+    def __repr__(self):
+        return '<SignData %s>' % repr(self.lines)
+
+
+block_entities = {
+    1: SpawnerData,
+    2: CommandBlockData,
+    3: BeaconData,
+    4: HeadData,
+    5: FlowerPotData,
+    6: BannerData,
+}
+
+
 class ChunkData(object):
     length = 16 * 16 * 16
     ty = 'B'
@@ -132,6 +195,9 @@ class Dimension(object):
         self.dimension = dimension
         self.columns = {}  # chunk columns are address by a tuple (x, z)
 
+        # BlockEntityData subclass instances, adressed by (x,y,z)
+        self.block_entities = {}
+
     def unpack_bulk(self, data):
         bbuff = BoundBuffer(data['data'])
         skylight = data['sky_light']
@@ -191,6 +257,34 @@ class Dimension(object):
         if data is None:
             data = (block_id << 4) | (meta & 0x0F)
         chunk.block_data.set(rx, ry, rz, data)
+
+    def get_block_entity_data(self, pos_or_x, y=None, z=None):
+        """
+        Access block entity data.
+
+        Returns:
+            BlockEntityData subclass instance or
+            None if no block entity data is stored for that location.
+        """
+        if None not in (y, z):  # x y z supplied
+            pos_or_x = pos_or_x, y, z
+        coord_tuple = tuple(floor(c) for c in pos_or_x)
+        return self.block_entities.get(coord_tuple, None)
+
+    def set_block_entity_data(self, pos_or_x, y=None, z=None, data=None):
+        """
+        Update block entity data.
+
+        Returns:
+            Old data if block entity data was already stored for that location,
+            None otherwise.
+        """
+        if None not in (y, z):  # x y z supplied
+            pos_or_x = pos_or_x, y, z
+        coord_tuple = tuple(floor(c) for c in pos_or_x)
+        old_data = self.block_entities.get(coord_tuple, None)
+        self.block_entities[coord_tuple] = data
+        return old_data
 
     def get_light(self, pos_or_x, y=None, z=None):
         if None in (y, z):  # pos supplied
