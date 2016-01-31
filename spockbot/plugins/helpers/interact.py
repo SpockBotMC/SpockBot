@@ -6,6 +6,7 @@ Interact with the world:
 - use the held (active) item
 - use/attack entities
 - steer vehicles
+- place and write signs
 - edit and sign books
 
 By default, the client sends swing and look packets like the vanilla client.
@@ -17,12 +18,13 @@ from spockbot.mcdata import constants
 from spockbot.mcp import nbt
 from spockbot.mcp.proto import MC_SLOT
 from spockbot.plugins.base import PluginBase, pl_announce
+from spockbot.plugins.tools.event import EVENT_UNREGISTER
 from spockbot.vector import Vector3
 
 
 @pl_announce('Interact')
 class InteractPlugin(PluginBase):
-    requires = ('ClientInfo', 'Inventory', 'Net', 'Channels')
+    requires = ('ClientInfo', 'Event', 'Inventory', 'Net', 'Channels')
 
     def __init__(self, ploader, settings):
         super(InteractPlugin, self).__init__(ploader, settings)
@@ -173,6 +175,25 @@ class InteractPlugin(PluginBase):
         in http://wiki.vg/Protocol#Player_Block_Placement
         """
         raise NotImplementedError(self.use_bucket.__doc__)
+
+    def place_sign(self, pos, lines=[], **place_block_kwargs):
+        """
+        Place a sign block and write on it.
+        """
+        if self.inventory.active_slot.item_id != 323:
+            raise ValueError('Must hold sign to place, not "%s"'
+                             % self.inventory.active_slot.item)
+
+        def write_sign_text(event, packet):
+            data = {'location': packet.data['location']}
+            for i in range(4):
+                data['line_%i' % (i + 1)] = lines[i] if i < len(lines) else ''
+
+            self.net.push_packet('PLAY>Update Sign', data)
+            return EVENT_UNREGISTER
+
+        self.event.reg_event_handler('PLAY<Sign Editor Open', write_sign_text)
+        self.place_block(pos, **place_block_kwargs)
 
     def activate_item(self):
         """
