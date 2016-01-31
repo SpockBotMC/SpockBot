@@ -158,7 +158,10 @@ class Vector3(CartesianVector):
         l = len(xyz)
         if l == 1:
             obj = xyz[0]
-            xyz = obj.x, obj.y, obj.z
+            try:
+                xyz = obj.x, obj.y, obj.z
+            except AttributeError:
+                xyz = obj['x'], obj['y'], obj['z']
         elif l == 0:
             xyz = (0, 0, 0)
         elif l != 3:
