@@ -62,6 +62,8 @@ class WorldPlugin(PluginBase):
     def handle_chunk_data(self, name, packet):
         """Chunk Data - Update World state"""
         self.world.unpack_column(packet.data)
+        location = packet.data['chunk_x'], packet.data['chunk_z']
+        self.event.emit('world_chunk_update', {'location': location})
 
     def handle_multi_block_change(self, name, packet):
         """Multi Block Change - Update multiple blocks"""
@@ -96,6 +98,9 @@ class WorldPlugin(PluginBase):
     def handle_map_chunk_bulk(self, name, packet):
         """Map Chunk Bulk - Update World state"""
         self.world.unpack_bulk(packet.data)
+        for meta in packet.data['metadata']:
+            location = meta['chunk_x'], meta['chunk_z']
+            self.event.emit('world_chunk_update', {'location': location})
 
     def handle_update_sign(self, event, packet):
         location = Vector3(packet.data['location'])
