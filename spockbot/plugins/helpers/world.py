@@ -86,11 +86,12 @@ class WorldPlugin(PluginBase):
 
     def handle_block_change(self, name, packet):
         """Block Change - Update a single block"""
-        p = packet.data['location']
+        pos = packet.data['location']
         block_data = packet.data['block_data']
-        old_data = self.world.set_block(p['x'], p['y'], p['z'], data=block_data)
+        old_data = self.world.set_block(pos['x'], pos['y'], pos['z'],
+                                        data=block_data)
         self.event.emit('world_block_update', {
-            'location': p,
+            'location': pos,
             'block_data': block_data,
             'old_data': old_data,
         })
