@@ -71,7 +71,7 @@ class WorldPlugin(PluginBase):
             x = block['x'] + chunk_x
             z = block['z'] + chunk_z
             y = block['y']
-            self.world.set_block(x, y, z, data=block['block_data'])
+            old_data = self.world.set_block(x, y, z, data=block['block_data'])
             self.event.emit('world_block_update', {
                 'location': {
                     'x': x,
@@ -79,14 +79,19 @@ class WorldPlugin(PluginBase):
                     'z': z,
                 },
                 'block_data': block['block_data'],
+                'old_data': old_data,
             })
 
     def handle_block_change(self, name, packet):
         """Block Change - Update a single block"""
         p = packet.data['location']
         block_data = packet.data['block_data']
-        self.world.set_block(p['x'], p['y'], p['z'], data=block_data)
-        self.event.emit('world_block_update', packet.data)
+        old_data = self.world.set_block(p['x'], p['y'], p['z'], data=block_data)
+        self.event.emit('world_block_update', {
+            'location': p,
+            'block_data': block_data,
+            'old_data': old_data,
+        })
 
     def handle_map_chunk_bulk(self, name, packet):
         """Map Chunk Bulk - Update World state"""
