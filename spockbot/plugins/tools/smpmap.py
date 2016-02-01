@@ -256,7 +256,10 @@ class Dimension(object):
 
         if data is None:
             data = (block_id << 4) | (meta & 0x0F)
+
+        old_data = chunk.block_data.get(rx, ry, rz)
         chunk.block_data.set(rx, ry, rz, data)
+        return old_data >> 4, old_data & 0x0F
 
     def get_block_entity_data(self, pos_or_x, y=None, z=None):
         """
