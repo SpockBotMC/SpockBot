@@ -62,6 +62,8 @@ class WorldPlugin(PluginBase):
     def handle_chunk_data(self, name, packet):
         """Chunk Data - Update World state"""
         self.world.unpack_column(packet.data)
+        location = packet.data['chunk_x'], packet.data['chunk_z']
+        self.event.emit('world_chunk_update', {'location': location})
 
     def handle_multi_block_change(self, name, packet):
         """Multi Block Change - Update multiple blocks"""
@@ -71,7 +73,7 @@ class WorldPlugin(PluginBase):
             x = block['x'] + chunk_x
             z = block['z'] + chunk_z
             y = block['y']
-            self.world.set_block(x, y, z, data=block['block_data'])
+            old_data = self.world.set_block(x, y, z, data=block['block_data'])
             self.event.emit('world_block_update', {
                 'location': {
                     'x': x,
@@ -79,18 +81,27 @@ class WorldPlugin(PluginBase):
                     'z': z,
                 },
                 'block_data': block['block_data'],
+                'old_data': old_data,
             })
 
     def handle_block_change(self, name, packet):
         """Block Change - Update a single block"""
-        p = packet.data['location']
+        pos = packet.data['location']
         block_data = packet.data['block_data']
-        self.world.set_block(p['x'], p['y'], p['z'], data=block_data)
-        self.event.emit('world_block_update', packet.data)
+        old_data = self.world.set_block(pos['x'], pos['y'], pos['z'],
+                                        data=block_data)
+        self.event.emit('world_block_update', {
+            'location': pos,
+            'block_data': block_data,
+            'old_data': old_data,
+        })
 
     def handle_map_chunk_bulk(self, name, packet):
         """Map Chunk Bulk - Update World state"""
         self.world.unpack_bulk(packet.data)
+        for meta in packet.data['metadata']:
+            location = meta['chunk_x'], meta['chunk_z']
+            self.event.emit('world_chunk_update', {'location': location})
 
     def handle_update_sign(self, event, packet):
         location = Vector3(packet.data['location'])
