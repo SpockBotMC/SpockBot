@@ -170,6 +170,7 @@ class NetPlugin(PluginBase):
         'SOCKET_ERR': 'handle_err',
         'SOCKET_HUP': 'handle_hup',
         'PLAY<Disconnect': 'handle_disconnect',
+        'LOGIN<Disconnect': 'handle_login_disconnect',
         'HANDSHAKE>Handshake': 'handle_handshake',
         'LOGIN<Login Success': 'handle_login_success',
         'LOGIN<Set Compression': 'handle_comp',
@@ -258,6 +259,13 @@ class NetPlugin(PluginBase):
     def handle_disconnect(self, name, packet):
         logger.debug("NETPLUGIN: Disconnected: %s", packet.data['reason'])
         self.event.emit('net_disconnect', packet.data['reason'])
+
+    def handle_login_disconnect(self, name, packet):
+
+        reason = packet.data.get('json_data', {}).get('text', '???')
+
+        logger.debug("NETPLUGIN: Disconnected: %s", reason)
+        self.event.emit('net_disconnect', reason)
 
     # Kill event - Try to shutdown the socket politely
     def handle_kill(self, name, data):
