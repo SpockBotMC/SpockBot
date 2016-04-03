@@ -17,7 +17,6 @@ and so on
 """
 
 import array
-from math import floor
 
 from spockbot.mcp.bbuff import BoundBuffer
 
@@ -221,10 +220,9 @@ class Dimension(object):
         if None in (y, z):  # pos supplied
             pos_or_x, y, z = pos_or_x
 
-        x, rx = divmod(floor(pos_or_x), 16)
-        y, ry = divmod(floor(y), 16)
-        z, rz = divmod(floor(z), 16)
-
+        x, rx = divmod(int(pos_or_x), 16)
+        y, ry = divmod(int(y), 16)
+        z, rz = divmod(int(z), 16)
         if (x, z) not in self.columns or y > 0x0F:
             return 0, 0
         chunk = self.columns[(x, z)].chunks[y]
@@ -238,9 +236,9 @@ class Dimension(object):
         if None in (y, z):  # pos supplied
             pos_or_x, y, z = pos_or_x
 
-        x, rx = divmod(floor(pos_or_x), 16)
-        y, ry = divmod(floor(y), 16)
-        z, rz = divmod(floor(z), 16)
+        x, rx = divmod(int(pos_or_x), 16)
+        y, ry = divmod(int(y), 16)
+        z, rz = divmod(int(z), 16)
 
         if y > 0x0F:
             return
@@ -271,7 +269,7 @@ class Dimension(object):
         """
         if None not in (y, z):  # x y z supplied
             pos_or_x = pos_or_x, y, z
-        coord_tuple = tuple(floor(c) for c in pos_or_x)
+        coord_tuple = tuple(int(c) for c in pos_or_x)
         return self.block_entities.get(coord_tuple, None)
 
     def set_block_entity_data(self, pos_or_x, y=None, z=None, data=None):
@@ -284,7 +282,7 @@ class Dimension(object):
         """
         if None not in (y, z):  # x y z supplied
             pos_or_x = pos_or_x, y, z
-        coord_tuple = tuple(floor(c) for c in pos_or_x)
+        coord_tuple = tuple(int(c) for c in pos_or_x)
         old_data = self.block_entities.get(coord_tuple, None)
         self.block_entities[coord_tuple] = data
         return old_data
@@ -293,9 +291,9 @@ class Dimension(object):
         if None in (y, z):  # pos supplied
             pos_or_x, y, z = pos_or_x
 
-        x, rx = divmod(floor(pos_or_x), 16)
-        y, ry = divmod(floor(y), 16)
-        z, rz = divmod(floor(z), 16)
+        x, rx = divmod(int(pos_or_x), 16)
+        y, ry = divmod(int(y), 16)
+        z, rz = divmod(int(z), 16)
 
         if (x, z) not in self.columns or y > 0x0F:
             return 0, 0
@@ -310,9 +308,9 @@ class Dimension(object):
         if None in (y, z):  # pos supplied
             pos_or_x, y, z = pos_or_x
 
-        x, rx = divmod(floor(pos_or_x), 16)
-        y, ry = divmod(floor(y), 16)
-        z, rz = divmod(floor(z), 16)
+        x, rx = divmod(int(pos_or_x), 16)
+        y, ry = divmod(int(y), 16)
+        z, rz = divmod(int(z), 16)
 
         if y > 0x0F:
             return
@@ -332,8 +330,8 @@ class Dimension(object):
             chunk.light_sky.set(rx, ry, rz, light_sky & 0xF)
 
     def get_biome(self, x, z):
-        x, rx = divmod(floor(x), 16)
-        z, rz = divmod(floor(z), 16)
+        x, rx = divmod(int(x), 16)
+        z, rz = divmod(int(z), 16)
 
         if (x, z) not in self.columns:
             return 0
@@ -341,8 +339,8 @@ class Dimension(object):
         return self.columns[(x, z)].biome.get(rx, rz)
 
     def set_biome(self, x, z, data):
-        x, rx = divmod(floor(x), 16)
-        z, rz = divmod(floor(z), 16)
+        x, rx = divmod(int(x), 16)
+        z, rz = divmod(int(z), 16)
 
         if (x, z) in self.columns:
             column = self.columns[(x, z)]

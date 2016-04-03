@@ -15,6 +15,8 @@ at least a slow timer if you do stuff on ``event_tick`` and
 expect it to be emitted frequently.
 """
 
+from __future__ import absolute_import
+
 import logging
 import select
 
