@@ -5,7 +5,6 @@ Coordinates with the Timers plugin to honor wall-clock timers
 """
 
 import logging
-import select
 import socket
 import time
 
@@ -36,44 +35,11 @@ class AESCipher(object):
         return self.decryptifier.update(data)
 
 
-class SelectSocket(socket.socket):
-    """
-    Provides an asynchronous socket with a poll method built on
-    top of select.select for cross-platform compatiability
-    """
-    def __init__(self, timer):
-        super(SelectSocket, self).__init__(socket.AF_INET, socket.SOCK_STREAM)
-        self.sending = False
-        self.timer = timer
-
-    def poll(self):
-        flags = []
-        if self.sending:
-            self.sending = False
-            slist = [(self,), (self,), (self,)]
-        else:
-            slist = [(self,), (), (self,)]
-        timeout = self.timer.get_timeout()
-        if timeout >= 0:
-            slist.append(timeout)
-        try:
-            rlist, wlist, xlist = select.select(*slist)
-        except select.error as e:
-            logger.error("SELECTSOCKET: Socket Error: %s", str(e))
-            rlist, wlist, xlist = [], [], []
-        if rlist:
-            flags.append('SOCKET_RECV')
-        if wlist:
-            flags.append('SOCKET_SEND')
-        if xlist:
-            flags.append('SOCKET_ERR')
-        return flags
-
-
 class NetCore(object):
-    def __init__(self, sock, event):
+    def __init__(self, sock, event, select):
         self.sock = sock
         self.event = event
+        self.select = select
         self.host = None
         self.port = None
         self.connected = False
@@ -84,21 +50,24 @@ class NetCore(object):
         self.sbuff = b''
         self.rbuff = BoundBuffer()
 
+    def reset(self, sock):
+        self.__init__(sock, self.event, self.select)
+
     def connect(self, host='localhost', port=25565):
         self.host = host
         self.port = port
         try:
-            logger.debug("NETCORE: Attempting to connect to host: %s port: %s",
+            logger.debug('NETCORE: Attempting to connect to host: %s port: %s',
                          host, port)
             # Set the connect to be a blocking operation
             self.sock.setblocking(True)
-            self.sock.connect((self.host, self.port))
+            self.sock.connect((host, port))
             self.sock.setblocking(False)
             self.connected = True
-            self.event.emit('net_connect', (self.host, self.port))
-            logger.debug("NETCORE: Connected to host: %s port: %s", host, port)
+            self.event.emit('net_connect', (host, port))
+            logger.debug('NETCORE: Connected to host: %s port: %s', host, port)
         except socket.error as error:
-            logger.error("NETCORE: Error on Connect")
+            logger.error('NETCORE: Error on Connect')
             self.event.emit('SOCKET_ERR', error)
 
     def set_proto_state(self, state):
@@ -115,7 +84,7 @@ class NetCore(object):
         self.sbuff += (self.cipher.encrypt(data) if self.encrypted else data)
         self.event.emit(packet.ident, packet)
         self.event.emit(packet.str_ident, packet)
-        self.sock.sending = True
+        self.select.schedule_sending(self.sock)
 
     def push_packet(self, ident, data):
         self.push(mcpacket.Packet(ident, data))
@@ -152,21 +121,19 @@ class NetCore(object):
         self.cipher = None
         self.encrypted = False
 
-    def reset(self, sock):
-        self.__init__(sock, self.event)
-
 
 @pl_announce('Net')
 class NetPlugin(PluginBase):
-    requires = ('Event', 'Timers')
+    requires = ('Event', 'Select', 'Timers')
     defaults = {
         'bufsize': 4096,
         'sock_quit': True,
     }
     events = {
         'event_tick': 'tick',
-        'SOCKET_RECV': 'handle_recv',
-        'SOCKET_SEND': 'handle_send',
+        'select_recv': 'handle_recv',
+        'select_send': 'handle_send',
+        'select_err': 'handle_err',
         'SOCKET_ERR': 'handle_err',
         'SOCKET_HUP': 'handle_hup',
         'PLAY<Disconnect': 'handle_disconnect',
@@ -182,15 +149,15 @@ class NetPlugin(PluginBase):
         super(NetPlugin, self).__init__(ploader, settings)
         self.bufsize = self.settings['bufsize']
         self.sock_quit = self.settings['sock_quit']
-        self.sock = SelectSocket(self.timers)
-        self.net = NetCore(self.sock, self.event)
+        self.sock = None
+        self.net = NetCore(self.sock, self.event, self.select)
+        self.reset_sock()
         self.sock_dead = False
         ploader.provides('Net', self.net)
 
     def tick(self, name, data):
         if self.net.connected:
-            for flag in self.sock.poll():
-                self.event.emit(flag)
+            self.net.select.poll()
         else:
             timeout = self.timers.get_timeout()
             if timeout == -1:
@@ -198,9 +165,9 @@ class NetPlugin(PluginBase):
             else:
                 time.sleep(timeout)
 
-    # SOCKET_RECV - Socket is ready to recieve data
-    def handle_recv(self, name, data):
-        if self.net.connected:
+    def handle_recv(self, name, fileno):
+        """Socket is ready to recieve data"""
+        if self.net.connected and fileno == self.net.sock.fileno():
             try:
                 data = self.sock.recv(self.bufsize)
                 if not data:
@@ -210,67 +177,73 @@ class NetPlugin(PluginBase):
             except socket.error as error:
                 self.event.emit('SOCKET_ERR', error)
 
-    # SOCKET_SEND - Socket is ready to send data and Send buffer contains
-    # data to send
-    def handle_send(self, name, data):
-        if self.net.connected:
+    def handle_send(self, name, fileno):
+        """Socket is ready to send data and send buffer has data to send"""
+        if self.net.connected and fileno == self.net.sock.fileno():
             try:
                 sent = self.sock.send(self.net.sbuff)
                 self.net.sbuff = self.net.sbuff[sent:]
                 if self.net.sbuff:
-                    self.sock.sending = True
+                    self.net.select.schedule_sending(self.sock)
             except socket.error as error:
                 self.event.emit('SOCKET_ERR', error)
 
-    # SOCKET_ERR - Socket Error has occured
-    def handle_err(self, name, data):
-        self.sock.close()
-        self.sock = SelectSocket(self.timers)
-        self.net.reset(self.sock)
-        logger.error("NETPLUGIN: Socket Error: %s", data)
-        self.event.emit('net_disconnect', data)
-        if self.sock_quit and not self.event.kill_event:
-            self.sock_dead = True
-            self.event.kill()
+    def handle_select_err(self, name, fileno):
+        if self.net.connected and fileno == self.net.sock.fileno():
+            self.event.emit('SOCKET_ERR', 'select error')
 
-    # SOCKET_HUP - Socket has hung up
+    def handle_err(self, name, error):
+        """Socket Error has occured"""
+        logger.error('NETPLUGIN: Socket Error: %s', error)
+        self.reset_sock()
+        self.event.emit('net_disconnect', error)
+        self.check_quit()
+
     def handle_hup(self, name, data):
-        self.sock.close()
-        self.sock = SelectSocket(self.timers)
+        """Socket has hung up"""
+        logger.error('NETPLUGIN: Socket has hung up')
+        self.reset_sock()
+        self.event.emit('net_disconnect', 'Socket Hung Up')
+        self.check_quit()
+
+    def reset_sock(self):
+        if self.sock:
+            self.sock.close()
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.net.select.register_socket(self.sock)
         self.net.reset(self.sock)
-        logger.error("NETPLUGIN: Socket has hung up")
-        self.event.emit('net_disconnect', "Socket Hung Up")
+
+    def check_quit(self):
         if self.sock_quit and not self.event.kill_event:
             self.sock_dead = True
             self.event.kill()
 
-    # Handshake - Change to whatever the next state is going to be
     def handle_handshake(self, name, packet):
+        """Change to whatever the next state is going to be"""
         self.net.set_proto_state(packet.data['next_state'])
 
-    # Login Success - Change to Play state
     def handle_login_success(self, name, packet):
+        """Change to Play state"""
         self.net.set_proto_state(proto.PLAY_STATE)
 
-    # Handle Set Compression packets
     def handle_comp(self, name, packet):
+        """Handle Set Compression packets"""
         self.net.set_comp_state(packet.data['threshold'])
 
     def handle_disconnect(self, name, packet):
-        logger.debug("NETPLUGIN: Disconnected: %s", packet.data['reason'])
+        logger.debug('NETPLUGIN: Disconnected: %s', packet.data['reason'])
         self.event.emit('net_disconnect', packet.data['reason'])
 
     def handle_login_disconnect(self, name, packet):
-
         reason = packet.data.get('json_data', {}).get('text', '???')
-
         logger.debug("NETPLUGIN: Disconnected: %s", reason)
         self.event.emit('net_disconnect', reason)
 
-    # Kill event - Try to shutdown the socket politely
     def handle_kill(self, name, data):
+        """Try to shutdown the socket politely"""
         if self.net.connected:
-            logger.debug("NETPLUGIN: Kill event received, closing socket")
+            logger.debug('NETPLUGIN: Kill event received, closing socket')
             if not self.sock_dead:
                 self.sock.shutdown(socket.SHUT_WR)
             self.sock.close()
+            self.net.select.unregister_socket(self.net.sock)

@@ -1,4 +1,5 @@
-from spockbot.plugins.core import auth, event, net, taskmanager, ticker, timers
+from spockbot.plugins.core import auth, event, net, select, \
+    taskmanager, ticker, timers
 from spockbot.plugins.helpers import auxiliary, channels, chat, clientinfo, \
     craft, entities, interact, inventory, movement, \
     pathfinding, physics, start, world
@@ -7,6 +8,7 @@ core_plugins = [
     ('auth', auth.AuthPlugin),
     ('event', event.EventPlugin),
     ('net', net.NetPlugin),
+    ('select', select.SelectPlugin),
     ('taskmanager', taskmanager.TaskManager),
     ('ticker', ticker.TickerPlugin),
     ('timers', timers.TimersPlugin),
