@@ -23,7 +23,7 @@ def extension(state, direction, packet_id):
 
 # Login SERVER_TO_CLIENT 0x01 Encryption Request
 @extension(proto.LOGIN_STATE, proto.SERVER_TO_CLIENT, 0x01)
-class ExtensionLSTC01:
+class ExtensionEncryptionRequest:
     @staticmethod
     def decode_extra(packet, bbuff):
         length = datautils.unpack(MC_VARINT, bbuff)
@@ -43,7 +43,7 @@ class ExtensionLSTC01:
 
 # Login CLIENT_TO_SERVER 0x01 Encryption Response
 @extension(proto.LOGIN_STATE, proto.CLIENT_TO_SERVER, 0x01)
-class ExtensionLCTS01:
+class ExtensionEncryptionResponse:
     @staticmethod
     def decode_extra(packet, bbuff):
         length = datautils.unpack(MC_VARINT, bbuff)
@@ -61,9 +61,9 @@ class ExtensionLCTS01:
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x0E Spawn Object
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x0E)
-class ExtensionPSTC0E:
+# Play  SERVER_TO_CLIENT 0x00 Spawn Object
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x00)
+class ExtensionSpawnObject:
     @staticmethod
     def decode_extra(packet, bbuff):
         if packet.data['obj_data']:
@@ -81,78 +81,76 @@ class ExtensionPSTC0E:
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x13 Destroy Entities
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x13)
-class ExtensionPSTC13:
+# Play  SERVER_TO_CLIENT 0x07 Statistics
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x07)
+class ExtensionStatistics:
     @staticmethod
     def decode_extra(packet, bbuff):
-        count = datautils.unpack(MC_VARINT, bbuff)
-        packet.data['eids'] = [
-            datautils.unpack(MC_VARINT, bbuff) for i in range(count)
-            ]
+        packet.data['entries'] = [
+            [
+                datautils.unpack(MC_STRING, bbuff),
+                datautils.unpack(MC_VARINT, bbuff)
+            ] for _ in range(datautils.unpack(MC_VARINT, bbuff))]
         return packet
 
     @staticmethod
     def encode_extra(packet):
-        o = datautils.pack(MC_VARINT, len(packet.data['eids']))
-        for eid in packet.data['eids']:
-            o += datautils.pack(MC_VARINT, eid)
+        o = datautils.pack(MC_VARINT, len(packet.data['entries']))
+        for entry in packet.data['entries']:
+            o += datautils.pack(MC_STRING, entry[0])
+            o += datautils.pack(MC_VARINT, entry[1])
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x20 Entity Properties
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x20)
-class ExtensionPSTC20:
+# Play  SERVER_TO_CLIENT 0x09 Update Block Entity
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x09)
+class ExtensionUpdateBlockEntity:
     @staticmethod
     def decode_extra(packet, bbuff):
-        packet.data['properties'] = []
-        for i in range(datautils.unpack(MC_INT, bbuff)):
-            prop = {
-                'key': datautils.unpack(MC_STRING, bbuff),
-                'value': datautils.unpack(MC_DOUBLE, bbuff),
-                'modifiers': [],
-            }
-            for j in range(datautils.unpack(MC_VARINT, bbuff)):
-                prop['modifiers'].append({
-                    'uuid': datautils.unpack(MC_UUID, bbuff),
-                    'amount': datautils.unpack(MC_DOUBLE, bbuff),
-                    'operation': datautils.unpack(MC_BYTE, bbuff),
-                })
-            packet.data['properties'].append(prop)
+        tag_type = datautils.unpack(MC_BYTE, bbuff)
+        if tag_type == nbt.TAG_COMPOUND:
+            name = nbt.TagString(buffer=bbuff).value
+            nbt_data = nbt.TagCompound(buffer=bbuff)
+            nbt_data.name = name
+            packet.data['nbt'] = nbt_data
+        else:
+            assert (tag_type == nbt.TAG_END)
+            packet.data['nbt'] = None
         return packet
 
     @staticmethod
     def encode_extra(packet):
-        o = datautils.pack(MC_INT, len(packet.data['properties']))
-        for prop in packet.data['properties']:
-            o += datautils.pack(MC_STRING, prop['key'])
-            o += datautils.pack(MC_DOUBLE, prop['value'])
-            o += datautils.pack(MC_SHORT, len(prop['modifiers']))
-            for modifier in prop['modifiers']:
-                o += datautils.pack(MC_UUID, modifier['uuid'])
-                o += datautils.pack(MC_DOUBLE, modifier['amount'])
-                o += datautils.pack(MC_BYTE, modifier['operation'])
-        return o
+        bbuff = BoundBuffer()
+        if packet.data['nbt'] is None:
+            packet.data['nbt'] = nbt._TagEnd()
+        nbt.TagByte(packet.data['nbt'].id)._render_buffer(bbuff)
+        if packet.data['nbt'].id == nbt.TAG_COMPOUND:
+            nbt.TagString(packet.data['nbt'].name)._render_buffer(bbuff)
+            packet.data['nbt']._render_buffer(bbuff)
+        return bbuff.flush()
 
 
-# Play  SERVER_TO_CLIENT 0x21 Chunk Data
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x21)
-class ExtensionPSTC21:
+# Play  SERVER_TO_CLIENT 0x0E Tab-Complete
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x0E)
+class ExtensionTabCompleteServer:
     @staticmethod
     def decode_extra(packet, bbuff):
-        packet.data['data'] = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
+        packet.data['matches'] = [
+            datautils.unpack(MC_STRING, bbuff)
+            for i in range(datautils.unpack(MC_VARINT, bbuff))]
         return packet
 
     @staticmethod
     def encode_extra(packet):
-        o = datautils.pack(MC_VARINT, len(packet.data['data']))
-        o += packet.data['data']
+        o = datautils.pack(MC_VARINT, len(packet.data['matches']))
+        for match in packet.data['matches']:
+            o += datautils.pack(MC_STRING, match)
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x22 Multi Block Change
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x22)
-class ExtensionPSTC22:
+# Play  SERVER_TO_CLIENT 0x10 Multi Block Change
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x10)
+class ExtensionMultiBlockChange:
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['blocks'] = []
@@ -179,38 +177,58 @@ class ExtensionPSTC22:
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x26 Map Chunk Bulk
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x26)
-class ExtensionPSTC26:
+# Play  SERVER_TO_CLIENT 0x13 Open Window
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x13)
+class ExtensionOpenWindow:
     @staticmethod
     def decode_extra(packet, bbuff):
-        sky_light = datautils.unpack(MC_BOOL, bbuff)
-        count = datautils.unpack(MC_VARINT, bbuff)
-        packet.data['sky_light'] = sky_light
-        packet.data['metadata'] = [
-            {
-                'chunk_x': datautils.unpack(MC_INT, bbuff),
-                'chunk_z': datautils.unpack(MC_INT, bbuff),
-                'primary_bitmap': datautils.unpack(MC_USHORT, bbuff),
-            } for _ in range(count)]
+        if packet.data['inv_type'] == 'EntityHorse':
+            packet.data['eid'] = datautils.unpack(MC_INT, bbuff)
+        return packet
+
+    @staticmethod
+    def encode_extra(packet):
+        if packet.data['inv_type'] == 'EntityHorse':
+            return datautils.pack(MC_INT, packet.data['eid'])
+
+
+# Play  SERVER_TO_CLIENT 0x14 Window Items
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x14)
+class ExtensionWindowItems:
+    @staticmethod
+    def decode_extra(packet, bbuff):
+        packet.data['slots'] = [
+            datautils.unpack(MC_SLOT, bbuff)
+            for i in range(datautils.unpack(MC_SHORT, bbuff))]
+        return packet
+
+    @staticmethod
+    def encode_extra(packet):
+        o = datautils.pack(MC_SHORT, len(packet.data['slots']))
+        for slot in packet.data['slots']:
+            o += datautils.pack(MC_SLOT, slot)
+        return o
+
+
+# Play  SERVER_TO_CLIENT 0x18 Plugin Message
+# Play  CLIENT_TO_SERVER 0x09 Plugin Message
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x18)
+@extension(proto.PLAY_STATE, proto.CLIENT_TO_SERVER, 0x09)
+class ExtensionPluginMessage:
+    @staticmethod
+    def decode_extra(packet, bbuff):
         packet.data['data'] = bbuff.flush()
         return packet
 
     @staticmethod
     def encode_extra(packet):
-        o = datautils.pack(MC_BOOL, packet.data['sky_light'])
-        o += datautils.pack(MC_VARINT, packet.data['metadata'])
-        for metadata in packet.data['metadata']:
-            o += datautils.pack(MC_INT, metadata['chunk_x'])
-            o += datautils.pack(MC_INT, metadata['chunk_z'])
-            o += datautils.pack(MC_USHORT, metadata['primary_bitmap'])
-        o += packet.data['data']
+        o = packet.data['data']
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x27 Explosion
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x27)
-class ExtensionPSTC27:
+# Play  SERVER_TO_CLIENT 0x1C Explosion
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x1C)
+class ExtensionExplosion:
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['blocks'] = [
@@ -233,9 +251,24 @@ class ExtensionPSTC27:
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x2A Particle
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x2A)
-class ExtensionPSTC2A:
+# Play  SERVER_TO_CLIENT 0x20 Chunk Data
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x20)
+class ExtensionChunkData:
+    @staticmethod
+    def decode_extra(packet, bbuff):
+        packet.data['data'] = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
+        return packet
+
+    @staticmethod
+    def encode_extra(packet):
+        o = datautils.pack(MC_VARINT, len(packet.data['data']))
+        o += packet.data['data']
+        return o
+
+
+# Play  SERVER_TO_CLIENT 0x22 Particle
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x22)
+class ExtensionParticle:
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['data'] = [
@@ -251,43 +284,10 @@ class ExtensionPSTC2A:
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x2D Open Window
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x2D)
-class ExtensionPSTC2D:
-    @staticmethod
-    def decode_extra(packet, bbuff):
-        if packet.data['inv_type'] == 'EntityHorse':
-            packet.data['eid'] = datautils.unpack(MC_INT, bbuff)
-        return packet
-
-    @staticmethod
-    def encode_extra(packet):
-        if packet.data['inv_type'] == 'EntityHorse':
-            return datautils.pack(MC_INT, packet.data['eid'])
-
-
-# Play  SERVER_TO_CLIENT 0x30 Window Items
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x30)
-class ExtensionPSTC30:
-    @staticmethod
-    def decode_extra(packet, bbuff):
-        packet.data['slots'] = [
-            datautils.unpack(MC_SLOT, bbuff)
-            for i in range(datautils.unpack(MC_SHORT, bbuff))]
-        return packet
-
-    @staticmethod
-    def encode_extra(packet):
-        o = datautils.pack(MC_SHORT, len(packet.data['slots']))
-        for slot in packet.data['slots']:
-            o += datautils.pack(MC_SLOT, slot)
-        return o
-
-
 # TODO: Actually decode the map data into a useful format
-# Play  SERVER_TO_CLIENT 0x34 Maps
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x34)
-class ExtensionPSTC34:
+# Play  SERVER_TO_CLIENT 0x24 Map
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x24)
+class ExtensionMap:
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['icons'] = []
@@ -327,60 +327,36 @@ class ExtensionPSTC34:
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x35 Update Block Entity
-# Play  SERVER_TO_CLIENT 0x49 Update Entity NBT
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x35)
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x49)
-class ExtensionUpdateNBT:
+# Play  SERVER_TO_CLIENT 0x2C Combat Event
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x2C)
+class ExtensionCombatEvent:
     @staticmethod
     def decode_extra(packet, bbuff):
-        tag_type = datautils.unpack(MC_BYTE, bbuff)
-        if tag_type == nbt.TAG_COMPOUND:
-            name = nbt.TagString(buffer=bbuff).value
-            nbt_data = nbt.TagCompound(buffer=bbuff)
-            nbt_data.name = name
-            packet.data['nbt'] = nbt_data
-        else:
-            assert (tag_type == nbt.TAG_END)
-            packet.data['nbt'] = None
+        if packet.data['event'] == const.CE_END_COMBAT:
+            packet.data['duration'] = datautils.unpack(MC_VARINT, bbuff)
+            packet.data['eid'] = datautils.unpack(MC_INT, bbuff)
+        if packet.data['event'] == const.CE_ENTITY_DEAD:
+            packet.data['player_id'] = datautils.unpack(MC_VARINT, bbuff)
+            packet.data['eid'] = datautils.unpack(MC_INT, bbuff)
+            packet.data['message'] = datautils.unpack(MC_STRING, bbuff)
         return packet
 
     @staticmethod
     def encode_extra(packet):
-        bbuff = BoundBuffer()
-        if packet.data['nbt'] is None:
-            packet.data['nbt'] = nbt._TagEnd()
-        nbt.TagByte(packet.data['nbt'].id)._render_buffer(bbuff)
-        if packet.data['nbt'].id == nbt.TAG_COMPOUND:
-            nbt.TagString(packet.data['nbt'].name)._render_buffer(bbuff)
-            packet.data['nbt']._render_buffer(bbuff)
-        return bbuff.flush()
-
-
-# Play  SERVER_TO_CLIENT 0x37 Statistics
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x37)
-class ExtensionPSTC37:
-    @staticmethod
-    def decode_extra(packet, bbuff):
-        packet.data['entries'] = [
-            [
-                datautils.unpack(MC_STRING, bbuff),
-                datautils.unpack(MC_VARINT, bbuff)
-            ] for _ in range(datautils.unpack(MC_VARINT, bbuff))]
-        return packet
-
-    @staticmethod
-    def encode_extra(packet):
-        o = datautils.pack(MC_VARINT, len(packet.data['entries']))
-        for entry in packet.data['entries']:
-            o += datautils.pack(MC_STRING, entry[0])
-            o += datautils.pack(MC_VARINT, entry[1])
+        o = b''
+        if packet.data['event'] == const.CE_END_COMBAT:
+            o += datautils.pack(MC_VARINT, packet.data['duration'])
+            o += datautils.pack(MC_INT, packet.data['eid'])
+        if packet.data['event'] == const.CE_ENTITY_DEAD:
+            o += datautils.pack(MC_VARINT, packet.data['player_id'])
+            o += datautils.pack(MC_INT, packet.data['eid'])
+            o += datautils.pack(MC_STRING, packet.data['message'])
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x38 Player List Item
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x38)
-class ExtensionPSTC38:
+# Play  SERVER_TO_CLIENT 0x2D Player List Item
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x2D)
+class ExtensionPlayerListItem:
     @staticmethod
     def decode_extra(packet, bbuff):
         act = packet.data['action']
@@ -435,147 +411,28 @@ class ExtensionPSTC38:
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x3A Tab-Complete
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x3A)
-class ExtensionPSTC3A:
+# Play  SERVER_TO_CLIENT 0x30 Destroy Entities
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x30)
+class ExtensionDestroyEntities:
     @staticmethod
     def decode_extra(packet, bbuff):
-        packet.data['matches'] = [
-            datautils.unpack(MC_STRING, bbuff)
-            for i in range(datautils.unpack(MC_VARINT, bbuff))]
+        count = datautils.unpack(MC_VARINT, bbuff)
+        packet.data['eids'] = [
+            datautils.unpack(MC_VARINT, bbuff) for i in range(count)
+            ]
         return packet
 
     @staticmethod
     def encode_extra(packet):
-        o = datautils.pack(MC_VARINT, len(packet.data['matches']))
-        for match in packet.data['matches']:
-            o += datautils.pack(MC_STRING, match)
+        o = datautils.pack(MC_VARINT, len(packet.data['eids']))
+        for eid in packet.data['eids']:
+            o += datautils.pack(MC_VARINT, eid)
         return o
 
 
-# Play  SERVER_TO_CLIENT 0x3B Scoreboard Objective
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x3B)
-class ExtensionPSTC3B:
-    @staticmethod
-    def decode_extra(packet, bbuff):
-        act = packet.data['action']
-        if act in [const.SO_CREATE_BOARD, const.SO_UPDATE_BOARD]:
-            packet.data['obj_val'] = datautils.unpack(MC_STRING, bbuff)
-            packet.data['type'] = datautils.unpack(MC_STRING, bbuff)
-        return packet
-
-    @staticmethod
-    def encode_extra(packet):
-        o = b''
-        act = packet.data['action']
-        if act in [const.SO_CREATE_BOARD, const.SO_UPDATE_BOARD]:
-            o += datautils.pack(MC_STRING, packet.data['obj_val'])
-            o += datautils.pack(MC_STRING, packet.data['type'])
-        return o
-
-
-# Play  SERVER_TO_CLIENT 0x3C Update Score
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x3C)
-class ExtensionPSTC3C:
-    @staticmethod
-    def decode_extra(packet, bbuff):
-        if packet.data['action'] == const.US_UPDATE_SCORE:
-            packet.data['value'] = datautils.unpack(MC_VARINT, bbuff)
-        return packet
-
-    @staticmethod
-    def encode_extra(packet):
-        o = b''
-        if packet.data['action'] == const.US_UPDATE_SCORE:
-            o += datautils.pack(MC_VARINT, packet.data['value'])
-        return o
-
-
-# Play  SERVER_TO_CLIENT 0x3E Teams
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x3E)
-class ExtensionPSTC3E:
-    @staticmethod
-    def decode_extra(packet, bbuff):
-        act = packet.data['action']
-        if act in [const.TE_CREATE_TEAM, const.TE_UPDATE_TEAM]:
-            packet.data['display_name'] = datautils.unpack(MC_STRING, bbuff)
-            packet.data['team_prefix'] = datautils.unpack(MC_STRING, bbuff)
-            packet.data['team_suffix'] = datautils.unpack(MC_STRING, bbuff)
-            packet.data['friendly_fire'] = datautils.unpack(MC_BYTE, bbuff)
-            packet.data['name_visibility'] = datautils.unpack(MC_STRING, bbuff)
-            packet.data['color'] = datautils.unpack(MC_BYTE, bbuff)
-        if act in [const.TE_CREATE_TEAM, const.TE_ADDPLY_TEAM,
-                   const.TE_REMPLY_TEAM]:
-            packet.data['players'] = [
-                datautils.unpack(MC_STRING, bbuff)
-                for _ in range(datautils.unpack(MC_VARINT, bbuff))]
-        return packet
-
-    @staticmethod
-    def encode_extra(packet):
-        act = packet.data['action']
-        o = b''
-        if act in [const.TE_CREATE_TEAM, const.TE_UPDATE_TEAM]:
-            o += datautils.pack(MC_STRING, packet.data['display_name'])
-            o += datautils.pack(MC_STRING, packet.data['team_prefix'])
-            o += datautils.pack(MC_STRING, packet.data['team_suffix'])
-            o += datautils.pack(MC_BYTE, packet.data['friendly_fire'])
-            o += datautils.pack(MC_STRING, packet.data['name_visibility'])
-            o += datautils.pack(MC_BYTE, packet.data['color'])
-        if act in [const.TE_CREATE_TEAM, const.TE_ADDPLY_TEAM,
-                   const.TE_REMPLY_TEAM]:
-            o += datautils.pack(MC_VARINT, len(packet.data['players']))
-            for player in packet.data['players']:
-                o += datautils.pack(MC_STRING, player)
-        return o
-
-
-# Play  SERVER_TO_CLIENT 0x3F Plugin Message
-# Play  CLIENT_TO_SERVER 0x17 Plugin Message
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x3F)
-@extension(proto.PLAY_STATE, proto.CLIENT_TO_SERVER, 0x17)
-class ExtensionPluginMessage:
-    @staticmethod
-    def decode_extra(packet, bbuff):
-        packet.data['data'] = bbuff.flush()
-        return packet
-
-    @staticmethod
-    def encode_extra(packet):
-        o = packet.data['data']
-        return o
-
-
-# Play  SERVER_TO_CLIENT 0x42 Combat Event
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x42)
-class ExtensionPSTC42:
-    @staticmethod
-    def decode_extra(packet, bbuff):
-        if packet.data['event'] == const.CE_END_COMBAT:
-            packet.data['duration'] = datautils.unpack(MC_VARINT, bbuff)
-            packet.data['eid'] = datautils.unpack(MC_INT, bbuff)
-        if packet.data['event'] == const.CE_ENTITY_DEAD:
-            packet.data['player_id'] = datautils.unpack(MC_VARINT, bbuff)
-            packet.data['eid'] = datautils.unpack(MC_INT, bbuff)
-            packet.data['message'] = datautils.unpack(MC_STRING, bbuff)
-        return packet
-
-    @staticmethod
-    def encode_extra(packet):
-        o = b''
-        if packet.data['event'] == const.CE_END_COMBAT:
-            o += datautils.pack(MC_VARINT, packet.data['duration'])
-            o += datautils.pack(MC_INT, packet.data['eid'])
-        if packet.data['event'] == const.CE_ENTITY_DEAD:
-            o += datautils.pack(MC_VARINT, packet.data['player_id'])
-            o += datautils.pack(MC_INT, packet.data['eid'])
-            o += datautils.pack(MC_STRING, packet.data['message'])
-        return o
-
-
-# Play  SERVER_TO_CLIENT 0x44 World Border
-@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x44)
-class ExtensionPSTC44:
+# Play  SERVER_TO_CLIENT 0x35 World Border
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x35)
+class ExtensionWorldBorder:
     @staticmethod
     def decode_extra(packet, bbuff):
         act = packet.data['action']
@@ -618,9 +475,105 @@ class ExtensionPSTC44:
         return o
 
 
+# Play  SERVER_TO_CLIENT 0x3F Scoreboard Objective
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x3F)
+class ExtensionScoreboardObjective:
+    @staticmethod
+    def decode_extra(packet, bbuff):
+        act = packet.data['action']
+        if act in [const.SO_CREATE_BOARD, const.SO_UPDATE_BOARD]:
+            packet.data['obj_val'] = datautils.unpack(MC_STRING, bbuff)
+            packet.data['type'] = datautils.unpack(MC_STRING, bbuff)
+        return packet
+
+    @staticmethod
+    def encode_extra(packet):
+        o = b''
+        act = packet.data['action']
+        if act in [const.SO_CREATE_BOARD, const.SO_UPDATE_BOARD]:
+            o += datautils.pack(MC_STRING, packet.data['obj_val'])
+            o += datautils.pack(MC_STRING, packet.data['type'])
+        return o
+
+
+# Play  SERVER_TO_CLIENT 0x40 Set Passengers
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x40)
+class ExtensionSetPassengers:
+    @staticmethod
+    def decode_extra(packet, bbuff):
+        count = datautils.unpack(MC_VARINT, bbuff)
+        packet.data['eids'] = [
+            datautils.unpack(MC_VARINT, bbuff) for i in range(count)
+            ]
+        return packet
+
+    @staticmethod
+    def encode_extra(packet):
+        o = datautils.pack(MC_VARINT, len(packet.data['eids']))
+        for eid in packet.data['eids']:
+            o += datautils.pack(MC_VARINT, eid)
+        return o
+
+
+# Play  SERVER_TO_CLIENT 0x41 Teams
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x41)
+class ExtensionTeams:
+    @staticmethod
+    def decode_extra(packet, bbuff):
+        act = packet.data['action']
+        if act in [const.TE_CREATE_TEAM, const.TE_UPDATE_TEAM]:
+            packet.data['display_name'] = datautils.unpack(MC_STRING, bbuff)
+            packet.data['team_prefix'] = datautils.unpack(MC_STRING, bbuff)
+            packet.data['team_suffix'] = datautils.unpack(MC_STRING, bbuff)
+            packet.data['friendly_fire'] = datautils.unpack(MC_BYTE, bbuff)
+            packet.data['name_visibility'] = datautils.unpack(MC_STRING, bbuff)
+            packet.data['color'] = datautils.unpack(MC_BYTE, bbuff)
+        if act in [const.TE_CREATE_TEAM, const.TE_ADDPLY_TEAM,
+                   const.TE_REMPLY_TEAM]:
+            packet.data['players'] = [
+                datautils.unpack(MC_STRING, bbuff)
+                for _ in range(datautils.unpack(MC_VARINT, bbuff))]
+        return packet
+
+    @staticmethod
+    def encode_extra(packet):
+        act = packet.data['action']
+        o = b''
+        if act in [const.TE_CREATE_TEAM, const.TE_UPDATE_TEAM]:
+            o += datautils.pack(MC_STRING, packet.data['display_name'])
+            o += datautils.pack(MC_STRING, packet.data['team_prefix'])
+            o += datautils.pack(MC_STRING, packet.data['team_suffix'])
+            o += datautils.pack(MC_BYTE, packet.data['friendly_fire'])
+            o += datautils.pack(MC_STRING, packet.data['name_visibility'])
+            o += datautils.pack(MC_BYTE, packet.data['color'])
+        if act in [const.TE_CREATE_TEAM, const.TE_ADDPLY_TEAM,
+                   const.TE_REMPLY_TEAM]:
+            o += datautils.pack(MC_VARINT, len(packet.data['players']))
+            for player in packet.data['players']:
+                o += datautils.pack(MC_STRING, player)
+        return o
+
+
+# Play  SERVER_TO_CLIENT 0x42 Update Score
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x42)
+class ExtensionUpdateScore:
+    @staticmethod
+    def decode_extra(packet, bbuff):
+        if packet.data['action'] == const.US_UPDATE_SCORE:
+            packet.data['value'] = datautils.unpack(MC_VARINT, bbuff)
+        return packet
+
+    @staticmethod
+    def encode_extra(packet):
+        o = b''
+        if packet.data['action'] == const.US_UPDATE_SCORE:
+            o += datautils.pack(MC_VARINT, packet.data['value'])
+        return o
+
+
 # Play  SERVER_TO_CLIENT 0x45 Title
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x45)
-class ExtensionPSTC45:
+class ExtensionTitle:
     @staticmethod
     def decode_extra(packet, bbuff):
         act = packet.data['action']
@@ -645,9 +598,62 @@ class ExtensionPSTC45:
         return o
 
 
-# Play  CLIENT_TO_SERVER 0x02 Use Entity
-@extension(proto.PLAY_STATE, proto.CLIENT_TO_SERVER, 0x02)
-class ExtensionPCTS02:
+# Play  SERVER_TO_CLIENT 0x4B Entity Properties
+@extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x4B)
+class ExtensionEntityProperties:
+    @staticmethod
+    def decode_extra(packet, bbuff):
+        packet.data['properties'] = []
+        for i in range(datautils.unpack(MC_INT, bbuff)):
+            prop = {
+                'key': datautils.unpack(MC_STRING, bbuff),
+                'value': datautils.unpack(MC_DOUBLE, bbuff),
+                'modifiers': [],
+            }
+            for j in range(datautils.unpack(MC_VARINT, bbuff)):
+                prop['modifiers'].append({
+                    'uuid': datautils.unpack(MC_UUID, bbuff),
+                    'amount': datautils.unpack(MC_DOUBLE, bbuff),
+                    'operation': datautils.unpack(MC_BYTE, bbuff),
+                })
+            packet.data['properties'].append(prop)
+        return packet
+
+    @staticmethod
+    def encode_extra(packet):
+        o = datautils.pack(MC_INT, len(packet.data['properties']))
+        for prop in packet.data['properties']:
+            o += datautils.pack(MC_STRING, prop['key'])
+            o += datautils.pack(MC_DOUBLE, prop['value'])
+            o += datautils.pack(MC_SHORT, len(prop['modifiers']))
+            for modifier in prop['modifiers']:
+                o += datautils.pack(MC_UUID, modifier['uuid'])
+                o += datautils.pack(MC_DOUBLE, modifier['amount'])
+                o += datautils.pack(MC_BYTE, modifier['operation'])
+        return o
+
+
+# TODO: Set has_position True for encode based on prescence of 'block_loc'?
+# Play  CLIENT_TO_SERVER 0x01 Tab-Complete
+@extension(proto.PLAY_STATE, proto.CLIENT_TO_SERVER, 0x01)
+class ExtensionTabCompleteClient:
+    @staticmethod
+    def decode_extra(packet, bbuff):
+        if packet.data['has_position']:
+            packet.data['block_loc'] = datautils.unpack(MC_POSITION, bbuff)
+        return packet
+
+    @staticmethod
+    def encode_extra(packet):
+        o = b''
+        if packet.data['has_position']:
+            datautils.pack(MC_POSITION, packet.data['block_loc'])
+        return o
+
+
+# Play  CLIENT_TO_SERVER 0x0A Use Entity
+@extension(proto.PLAY_STATE, proto.CLIENT_TO_SERVER, 0x0A)
+class ExtensionUseEntity:
     @staticmethod
     def decode_extra(packet, bbuff):
         if packet.data['action'] == const.INTERACT_ENTITY_AT:
@@ -663,22 +669,4 @@ class ExtensionPCTS02:
             o += datautils.pack(MC_FLOAT, packet.data['target_x'])
             o += datautils.pack(MC_FLOAT, packet.data['target_y'])
             o += datautils.pack(MC_FLOAT, packet.data['target_z'])
-        return o
-
-
-# ToDo: Set has_position True for encode based on prescence of 'block_loc'?
-# Play  CLIENT_TO_SERVER 0x14 Tab-Complete
-@extension(proto.PLAY_STATE, proto.CLIENT_TO_SERVER, 0x14)
-class ExtensionPCTS14:
-    @staticmethod
-    def decode_extra(packet, bbuff):
-        if packet.data['has_position']:
-            packet.data['block_loc'] = datautils.unpack(MC_POSITION, bbuff)
-        return packet
-
-    @staticmethod
-    def encode_extra(packet):
-        o = b''
-        if packet.data['has_position']:
-            datautils.pack(MC_POSITION, packet.data['block_loc'])
         return o

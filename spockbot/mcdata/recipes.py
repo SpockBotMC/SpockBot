@@ -1,6 +1,6 @@
 from collections import defaultdict, namedtuple
 
-from minecraft_data.v1_8 import recipes as raw_recipes
+from minecraft_data.v1_9 import recipes as raw_recipes
 
 
 RecipeItem = namedtuple('RecipeItem', 'id meta amount')

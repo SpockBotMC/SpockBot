@@ -2,7 +2,7 @@ import sys
 
 from collections import namedtuple
 
-from minecraft_data.v1_8 import biomes_list
+from minecraft_data.v1_9 import biomes_list
 
 from spockbot.mcdata.utils import camel_case, find_by, snake_case
 

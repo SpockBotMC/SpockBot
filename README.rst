@@ -1,9 +1,9 @@
 SpockBot
 ========
 
-|Build Status| |Docs Status| |Coverage Status|
+|pypi| |Build Status| |Docs Status| |Coverage Status|
 
-SpockBot currently supports Minecraft 1.8.8
+SpockBot currently supports Minecraft 1.9.2
 
 Minecraft bot framework written in Python, currently under heavy development.
 
@@ -11,6 +11,7 @@ Minecraft bot framework written in Python, currently under heavy development.
 - Map stuff lives in `spockbot/mcmap <spockbot/mcmap>`__
 - Data stuff lives in `spockbot/mcdata <spockbot/mcdata>`__
 - Core client stuff lives in `spockbot/plugins/core <spockbot/plugins/core>`__
+- Standalone functions and classes lives in `spockbot/plugins/tools <spockbot/plugins/tools>`__
 - Helpful client stuff lives in `spockbot/plugins/helpers <spockbot/plugins/helpers>`__
 
 Client could loosely be called "event-driven". By default plugins
@@ -84,7 +85,7 @@ Support
 -------
 
 | ``#spockbot`` on Freenode
-| gamingrobot or nickelpro in ``#mcdevs`` on Freenode
+| gamingrobot, nickelpro or Gjum in ``#mcdevs`` on Freenode
 
 Contributing
 ------------
@@ -109,6 +110,8 @@ This project is licensed under the MIT License which can be found in `LICENSE <L
 
 The NBT parser and the original protocol implementation came from other projects, relevant legal information and attribution can be found in `LEGAL <LEGAL.md>`__
 
+.. |pypi| image:: https://img.shields.io/pypi/v/spockbot.svg
+   :target: https://pypi.python.org/pypi/spockbot
 .. |Build Status| image:: https://travis-ci.org/SpockBotMC/SpockBot.svg
    :target: https://travis-ci.org/SpockBotMC/SpockBot
 .. |Coverage Status| image:: https://coveralls.io/repos/SpockBotMC/SpockBot/badge.svg?branch=master&service=github

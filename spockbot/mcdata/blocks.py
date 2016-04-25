@@ -1,6 +1,6 @@
 import sys
 
-from minecraft_data.v1_8 import blocks_list
+from minecraft_data.v1_9 import blocks_list
 
 from spockbot.mcdata import constants as const, materials
 from spockbot.mcdata.utils import BoundingBox

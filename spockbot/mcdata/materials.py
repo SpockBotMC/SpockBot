@@ -1,7 +1,7 @@
 import sys
 from collections import defaultdict, namedtuple
 
-from minecraft_data.v1_8 import materials as materials_by_name
+from minecraft_data.v1_9 import materials as materials_by_name
 
 from spockbot.mcdata.utils import camel_case, find_by
 

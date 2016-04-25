@@ -1,6 +1,6 @@
 import sys
 
-from minecraft_data.v1_8 import items_list
+from minecraft_data.v1_9 import items_list
 
 from spockbot.mcdata.utils import camel_case, find_by
 
