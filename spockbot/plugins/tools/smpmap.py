@@ -17,9 +17,12 @@ and so on
 """
 
 import array
+import struct
 from math import floor
 
 from spockbot.mcp.bbuff import BoundBuffer
+from spockbot.mcp.datautils import unpack_varint
+
 
 
 DIMENSION_NETHER = -0x01
@@ -134,9 +137,46 @@ class BiomeData(ChunkData):
 
 
 class ChunkDataShort(ChunkData):
-    """ A 16x16x16 array for storing block IDs/Metadata. """
+    """ A 16x16x16 array for storing block IDs and metadata. """
     length = 16 * 16 * 16 * 2
-    ty = 'H'
+    ty = 'H'  # protocol allows larger block types
+
+    def unpack(self, buff):
+        block_bits = buff.read(1)[0]
+        uses_palette = block_bits > 0
+
+        if uses_palette:
+            palette_len = unpack_varint(buff)
+            palette = [unpack_varint(buff) for i in range(palette_len)]
+        else:  # use global palette
+            block_bits = 13
+
+        data_longs = unpack_varint(buff)
+        block_data = [struct.unpack('>Q', buff.read(8))[0]
+                      for i in range(data_longs)]
+
+        self.fill()
+        blocks = self.data
+        max_value = (1 << block_bits) - 1
+        for i in range(4096):
+            start_long = (i * block_bits) // 64
+            start_offset = (i * block_bits) % 64
+            end_long = ((i + 1) * block_bits - 1) // 64
+            if start_long == end_long:
+                block = (block_data[start_long] >> start_offset) & max_value
+            else:
+                end_offset = 64 - start_offset
+                block = (block_data[start_long] >> start_offset
+                         | block_data[end_long] << end_offset
+                         ) & max_value
+
+            if uses_palette:  # convert to global palette
+                blocks[i] = palette[block]
+            else:
+                blocks[i] = block
+
+    def pack(self):
+        raise NotImplementedError('1.9 block data packing not implemented')
 
 
 class ChunkDataNibble(ChunkData):
