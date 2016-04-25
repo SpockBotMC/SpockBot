@@ -24,7 +24,6 @@ from spockbot.mcp.bbuff import BoundBuffer
 from spockbot.mcp.datautils import unpack_varint
 
 
-
 DIMENSION_NETHER = -0x01
 DIMENSION_OVERWOLD = 0x00
 DIMENSION_END = 0x01
@@ -166,9 +165,8 @@ class ChunkDataShort(ChunkData):
                 block = (block_data[start_long] >> start_offset) & max_value
             else:
                 end_offset = 64 - start_offset
-                block = (block_data[start_long] >> start_offset
-                         | block_data[end_long] << end_offset
-                         ) & max_value
+                block = (block_data[start_long] >> start_offset |
+                         block_data[end_long] << end_offset) & max_value
 
             if uses_palette:  # convert to global palette
                 blocks[i] = palette[block]
