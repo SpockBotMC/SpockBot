@@ -11,8 +11,8 @@ Minecraft bot framework written in Python, currently under heavy development.
 - Map stuff lives in `spockbot/mcmap <spockbot/mcmap>`__
 - Data stuff lives in `spockbot/mcdata <spockbot/mcdata>`__
 - Core client stuff lives in `spockbot/plugins/core <spockbot/plugins/core>`__
-- Standalone functions and classes lives in `spockbot/plugins/tools <spockbot/plugins/tools>`__
 - Helpful client stuff lives in `spockbot/plugins/helpers <spockbot/plugins/helpers>`__
+- Stuff used by multiple plugins lives in `spockbot/plugins/tools <spockbot/plugins/tools>`__
 
 Client could loosely be called "event-driven". By default plugins
 register handler functions to handle events that may or may not be

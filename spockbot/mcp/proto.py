@@ -559,9 +559,10 @@ packet_structs = {
                 (MC_INT, 'chunk_x'),
                 (MC_INT, 'chunk_z'),
                 (MC_BOOL, 'continuous'),
-                (MC_USHORT, 'primary_bitmap'),
+                (MC_VARINT, 'primary_bitmap'),
                 # Extension
                 # byte string 'data'
+                # byte string 'biomes'
             ),
             # Effect
             0x21: (
@@ -1126,14 +1127,14 @@ hashed_names = {
     for state in packet_names
     for direction in packet_names[state]
     for packet_id in packet_names[state][direction]
-    }
+}
 hashed_structs = {
     (state, direction, packet_id):
         packet_structs[state][direction][packet_id]
     for state in packet_structs
     for direction in packet_structs[state]
     for packet_id in packet_structs[state][direction]
-    }
+}
 
 state_lookup = 'HANDSHAKE', 'STATUS', 'LOGIN', 'PLAY'
 
@@ -1144,7 +1145,7 @@ packet_ident2str = {
     for state in packet_structs
     for direction in packet_structs[state]
     for packet_id in packet_structs[state][direction]
-    }
+}
 packet_str2ident = {v: k for k, v in packet_ident2str.items()}
 
 # Pack the protocol more efficiently

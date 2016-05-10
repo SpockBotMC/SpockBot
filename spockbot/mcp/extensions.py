@@ -24,6 +24,7 @@ def extension(state, direction, packet_id):
 # Login SERVER_TO_CLIENT 0x01 Encryption Request
 @extension(proto.LOGIN_STATE, proto.SERVER_TO_CLIENT, 0x01)
 class ExtensionEncryptionRequest:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         length = datautils.unpack(MC_VARINT, bbuff)
@@ -44,6 +45,7 @@ class ExtensionEncryptionRequest:
 # Login CLIENT_TO_SERVER 0x01 Encryption Response
 @extension(proto.LOGIN_STATE, proto.CLIENT_TO_SERVER, 0x01)
 class ExtensionEncryptionResponse:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         length = datautils.unpack(MC_VARINT, bbuff)
@@ -64,6 +66,7 @@ class ExtensionEncryptionResponse:
 # Play  SERVER_TO_CLIENT 0x00 Spawn Object
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x00)
 class ExtensionSpawnObject:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         if packet.data['obj_data']:
@@ -84,6 +87,7 @@ class ExtensionSpawnObject:
 # Play  SERVER_TO_CLIENT 0x07 Statistics
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x07)
 class ExtensionStatistics:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['entries'] = [
@@ -105,6 +109,7 @@ class ExtensionStatistics:
 # Play  SERVER_TO_CLIENT 0x09 Update Block Entity
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x09)
 class ExtensionUpdateBlockEntity:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         tag_type = datautils.unpack(MC_BYTE, bbuff)
@@ -133,6 +138,7 @@ class ExtensionUpdateBlockEntity:
 # Play  SERVER_TO_CLIENT 0x0E Tab-Complete
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x0E)
 class ExtensionTabCompleteServer:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['matches'] = [
@@ -151,6 +157,7 @@ class ExtensionTabCompleteServer:
 # Play  SERVER_TO_CLIENT 0x10 Multi Block Change
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x10)
 class ExtensionMultiBlockChange:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['blocks'] = []
@@ -180,6 +187,7 @@ class ExtensionMultiBlockChange:
 # Play  SERVER_TO_CLIENT 0x13 Open Window
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x13)
 class ExtensionOpenWindow:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         if packet.data['inv_type'] == 'EntityHorse':
@@ -195,6 +203,7 @@ class ExtensionOpenWindow:
 # Play  SERVER_TO_CLIENT 0x14 Window Items
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x14)
 class ExtensionWindowItems:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['slots'] = [
@@ -215,6 +224,7 @@ class ExtensionWindowItems:
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x18)
 @extension(proto.PLAY_STATE, proto.CLIENT_TO_SERVER, 0x09)
 class ExtensionPluginMessage:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['data'] = bbuff.flush()
@@ -229,6 +239,7 @@ class ExtensionPluginMessage:
 # Play  SERVER_TO_CLIENT 0x1C Explosion
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x1C)
 class ExtensionExplosion:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['blocks'] = [
@@ -254,9 +265,17 @@ class ExtensionExplosion:
 # Play  SERVER_TO_CLIENT 0x20 Chunk Data
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x20)
 class ExtensionChunkData:
+
     @staticmethod
     def decode_extra(packet, bbuff):
-        packet.data['data'] = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
+        data = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
+        """if packet.data['continuous']:
+            # get all the data but the last 256 bytes
+            packet.data['data'] = data[:-256]
+            # get only the last 256 bytes
+            packet.data['biomes'] = data[-256:]
+        else:"""
+        packet.data['data'] = data
         return packet
 
     @staticmethod
@@ -269,6 +288,7 @@ class ExtensionChunkData:
 # Play  SERVER_TO_CLIENT 0x22 Particle
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x22)
 class ExtensionParticle:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['data'] = [
@@ -288,6 +308,7 @@ class ExtensionParticle:
 # Play  SERVER_TO_CLIENT 0x24 Map
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x24)
 class ExtensionMap:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['icons'] = []
@@ -330,6 +351,7 @@ class ExtensionMap:
 # Play  SERVER_TO_CLIENT 0x2C Combat Event
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x2C)
 class ExtensionCombatEvent:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         if packet.data['event'] == const.CE_END_COMBAT:
@@ -357,6 +379,7 @@ class ExtensionCombatEvent:
 # Play  SERVER_TO_CLIENT 0x2D Player List Item
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x2D)
 class ExtensionPlayerListItem:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         act = packet.data['action']
@@ -414,12 +437,13 @@ class ExtensionPlayerListItem:
 # Play  SERVER_TO_CLIENT 0x30 Destroy Entities
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x30)
 class ExtensionDestroyEntities:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         count = datautils.unpack(MC_VARINT, bbuff)
         packet.data['eids'] = [
             datautils.unpack(MC_VARINT, bbuff) for i in range(count)
-            ]
+        ]
         return packet
 
     @staticmethod
@@ -433,6 +457,7 @@ class ExtensionDestroyEntities:
 # Play  SERVER_TO_CLIENT 0x35 World Border
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x35)
 class ExtensionWorldBorder:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         act = packet.data['action']
@@ -478,6 +503,7 @@ class ExtensionWorldBorder:
 # Play  SERVER_TO_CLIENT 0x3F Scoreboard Objective
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x3F)
 class ExtensionScoreboardObjective:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         act = packet.data['action']
@@ -499,12 +525,13 @@ class ExtensionScoreboardObjective:
 # Play  SERVER_TO_CLIENT 0x40 Set Passengers
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x40)
 class ExtensionSetPassengers:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         count = datautils.unpack(MC_VARINT, bbuff)
         packet.data['eids'] = [
             datautils.unpack(MC_VARINT, bbuff) for i in range(count)
-            ]
+        ]
         return packet
 
     @staticmethod
@@ -518,6 +545,7 @@ class ExtensionSetPassengers:
 # Play  SERVER_TO_CLIENT 0x41 Teams
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x41)
 class ExtensionTeams:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         act = packet.data['action']
@@ -557,6 +585,7 @@ class ExtensionTeams:
 # Play  SERVER_TO_CLIENT 0x42 Update Score
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x42)
 class ExtensionUpdateScore:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         if packet.data['action'] == const.US_UPDATE_SCORE:
@@ -574,6 +603,7 @@ class ExtensionUpdateScore:
 # Play  SERVER_TO_CLIENT 0x45 Title
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x45)
 class ExtensionTitle:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         act = packet.data['action']
@@ -601,6 +631,7 @@ class ExtensionTitle:
 # Play  SERVER_TO_CLIENT 0x4B Entity Properties
 @extension(proto.PLAY_STATE, proto.SERVER_TO_CLIENT, 0x4B)
 class ExtensionEntityProperties:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         packet.data['properties'] = []
@@ -637,6 +668,7 @@ class ExtensionEntityProperties:
 # Play  CLIENT_TO_SERVER 0x01 Tab-Complete
 @extension(proto.PLAY_STATE, proto.CLIENT_TO_SERVER, 0x01)
 class ExtensionTabCompleteClient:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         if packet.data['has_position']:
@@ -654,6 +686,7 @@ class ExtensionTabCompleteClient:
 # Play  CLIENT_TO_SERVER 0x0A Use Entity
 @extension(proto.PLAY_STATE, proto.CLIENT_TO_SERVER, 0x0A)
 class ExtensionUseEntity:
+
     @staticmethod
     def decode_extra(packet, bbuff):
         if packet.data['action'] == const.INTERACT_ENTITY_AT:
