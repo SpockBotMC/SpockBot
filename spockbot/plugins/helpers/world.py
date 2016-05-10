@@ -12,7 +12,6 @@ from spockbot.vector import Vector3
 
 
 class WorldData(smpmap.Dimension):
-
     def __init__(self, dimension=const.SMP_OVERWORLD):
         super(WorldData, self).__init__(dimension)
         self.age = 0

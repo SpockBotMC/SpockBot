@@ -3,11 +3,11 @@ import struct
 
 from spockbot.mcp import nbt, proto
 from spockbot.mcp.bbuff import BoundBuffer
-from spockbot.mcp.proto import (MC_BYTE, MC_CHAT, MC_FLOAT, MC_FP_BYTE,
-                                MC_FP_INT, MC_INT, MC_LONG, MC_META,
-                                MC_POSITION, MC_SHORT, MC_SLOT, MC_STRING,
-                                MC_UBYTE, MC_ULONG, MC_UUID, MC_VARINT,
-                                MC_VARLONG)
+from spockbot.mcp.proto import (MC_BOOL, MC_BYTE, MC_CHAT, MC_FLOAT,
+                                MC_FP_BYTE, MC_FP_INT, MC_INT, MC_LONG,
+                                MC_META, MC_POSITION, MC_SHORT, MC_SLOT,
+                                MC_STRING, MC_UBYTE, MC_ULONG, MC_UUID,
+                                MC_VARINT, MC_VARLONG)
 
 
 def byte_to_hex(byte_str):
@@ -152,32 +152,39 @@ def pack_slot(slot):
 
 # Metadata is a dictionary list thing that
 # holds metadata about entities.
-metadata_lookup = MC_BYTE, MC_SHORT, MC_INT, MC_FLOAT, MC_STRING, MC_SLOT
+metadata_lookup = [
+    MC_BYTE, MC_VARINT, MC_FLOAT, MC_STRING, MC_CHAT, MC_SLOT, MC_BOOL]
 
 
 def unpack_metadata(bbuff):
     metadata = {}
-    head = unpack(MC_UBYTE, bbuff)
-    while head != 0x7F:
-        key = head & 0x1F  # Lower 5 bits
-        typ = head >> 5  # Upper 3 bits
-        assert key not in metadata, 'k=%s t=%s' % (key, typ)
+    index = unpack(MC_UBYTE, bbuff)
+    while index != 0xFF:
+        typ = unpack(MC_BYTE, bbuff)
+        assert index not in metadata, 'index=%s type=%s' % (index, typ)
         if 0 <= typ < len(metadata_lookup):
             val = unpack(metadata_lookup[typ], bbuff)
-        elif typ == 6:
-            x = unpack(MC_INT, bbuff)
-            y = unpack(MC_INT, bbuff)
-            z = unpack(MC_INT, bbuff)
-            val = [x, y, z]
-        elif typ == 7:
+        elif typ == 7:  # Rotation
             pitch = unpack(MC_FLOAT, bbuff)
             yaw = unpack(MC_FLOAT, bbuff)
             roll = unpack(MC_FLOAT, bbuff)
             val = [pitch, yaw, roll]
+        elif typ == 8:  # Position
+            val = unpack(MC_POSITION, bbuff)
+        elif typ == 9:  # OptPosition
+            if(unpack(MC_BOOL, bbuff)):
+                val = unpack(MC_POSITION, bbuff)
+        elif typ == 10:  # Direction
+            val = unpack(MC_VARINT, bbuff)
+        elif typ == 11:  # OptUUID
+            if(unpack(MC_BOOL, bbuff)):
+                val = unpack(MC_UUID, bbuff)
+        elif typ == 12:  # BlockId
+            val = unpack(MC_VARINT, bbuff)
         else:
             return None
-        metadata[key] = (typ, val)
-        head = unpack(MC_UBYTE, bbuff)
+        metadata[index] = (typ, val)
+        index = unpack(MC_UBYTE, bbuff)
     return metadata
 
 
