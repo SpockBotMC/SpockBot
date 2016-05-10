@@ -268,14 +268,7 @@ class ExtensionChunkData:
 
     @staticmethod
     def decode_extra(packet, bbuff):
-        data = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
-        """if packet.data['continuous']:
-            # get all the data but the last 256 bytes
-            packet.data['data'] = data[:-256]
-            # get only the last 256 bytes
-            packet.data['biomes'] = data[-256:]
-        else:"""
-        packet.data['data'] = data
+        packet.data['data'] = bbuff.recv(datautils.unpack(MC_VARINT, bbuff))
         return packet
 
     @staticmethod

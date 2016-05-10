@@ -12,6 +12,7 @@ from spockbot.vector import Vector3
 
 
 class WorldData(smpmap.Dimension):
+
     def __init__(self, dimension=const.SMP_OVERWORLD):
         super(WorldData, self).__init__(dimension)
         self.age = 0
@@ -38,7 +39,6 @@ class WorldPlugin(PluginBase):
         'PLAY<Chunk Data': 'handle_chunk_data',
         'PLAY<Multi Block Change': 'handle_multi_block_change',
         'PLAY<Block Change': 'handle_block_change',
-        'PLAY<Map Chunk Bulk': 'handle_map_chunk_bulk',
         'PLAY<Update Sign': 'handle_update_sign',
         'PLAY<Update Block Entity': 'handle_update_block_entity',
         'net_disconnect': 'handle_disconnect',
@@ -95,13 +95,6 @@ class WorldPlugin(PluginBase):
             'block_data': block_data,
             'old_data': old_data,
         })
-
-    def handle_map_chunk_bulk(self, name, packet):
-        """Map Chunk Bulk - Update World state"""
-        self.world.unpack_bulk(packet.data)
-        for meta in packet.data['metadata']:
-            location = meta['chunk_x'], meta['chunk_z']
-            self.event.emit('world_chunk_update', {'location': location})
 
     def handle_update_sign(self, event, packet):
         location = Vector3(packet.data['location'])
