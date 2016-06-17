@@ -22,10 +22,8 @@ from math import floor
 
 from spockbot.mcp import datautils
 from spockbot.mcp.bbuff import BoundBuffer
-from spockbot.mcp.proto import (MC_BOOL, MC_BYTE, MC_CHAT, MC_DOUBLE,
-                                MC_FLOAT, MC_INT, MC_POSITION, MC_SHORT,
-                                MC_SLOT, MC_STRING, MC_UBYTE, MC_USHORT,
-                                MC_UUID, MC_VARINT, MC_VARLONG)
+from spockbot.mcp.proto import (MC_VARINT)
+
 
 DIMENSION_NETHER = -0x01
 DIMENSION_OVERWOLD = 0x00
@@ -144,36 +142,42 @@ class ChunkDataShort(ChunkData):
     ty = 'H'  # protocol allows larger block types
 
     def unpack(self, buff):
+        """
+        Unpacks the block and light data from a buffer.
+        See also http://wiki.vg/SMP_Map_Format
+        """
         block_bits = buff.read(1)[0]
-        uses_palette = block_bits > 0
-
-        if uses_palette:
-            palette_len = datautils.unpack(MC_VARINT, buff)
-            palette = [datautils.unpack(MC_VARINT, buff)
-                       for i in range(palette_len)]
-        else:  # use global palette
+        if block_bits < 4:
+            block_bits = 4
+        if block_bits > 8:
             block_bits = 13
+
+        palette_len = datautils.unpack(MC_VARINT, buff)
+        palette = None
+        if palette_len:
+            palette = [datautils.unpack(MC_VARINT, buff)
+                       for _ in range(palette_len)]
+        # else: use global palette
 
         data_longs = datautils.unpack(MC_VARINT, buff)
         block_data = [struct.unpack('>Q', buff.read(8))[0]
-                      for i in range(data_longs)]
+                      for _ in range(data_longs)]
 
         self.fill()
         if data_longs > 0:
-            max_value = (1 << block_bits) - 1
+            max_val = (1 << block_bits) - 1
             for i in range(4096):
                 start_long = (i * block_bits) // 64
                 start_offset = (i * block_bits) % 64
                 end_long = ((i + 1) * block_bits - 1) // 64
                 if start_long == end_long:
-                    block = (
-                        block_data[start_long] >> start_offset) & max_value
+                    block = (block_data[start_long] >> start_offset) & max_val
                 else:
                     end_offset = 64 - start_offset
                     block = (block_data[start_long] >> start_offset |
-                             block_data[end_long] << end_offset) & max_value
+                             block_data[end_long] << end_offset) & max_val
 
-                if uses_palette:  # convert to global palette
+                if palette:  # convert to global palette
                     self.data[i] = palette[block]
                 else:
                     self.data[i] = block
