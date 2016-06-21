@@ -22,7 +22,7 @@ from math import floor
 
 from spockbot.mcp import datautils
 from spockbot.mcp.bbuff import BoundBuffer
-from spockbot.mcp.proto import (MC_VARINT)
+from spockbot.mcp.proto import (MC_VARINT, MC_BYTE)
 
 
 DIMENSION_NETHER = -0x01
@@ -139,14 +139,14 @@ class BiomeData(ChunkData):
 class ChunkDataShort(ChunkData):
     """ A 16x16x16 array for storing block IDs and metadata. """
     length = 16 * 16 * 16 * 2
-    ty = 'H'  # protocol allows larger block types
+    ty = 'H'
 
     def unpack(self, buff):
         """
-        Unpacks the block and light data from a buffer.
+        Unpacks the block data from a buffer.
         See also http://wiki.vg/SMP_Map_Format
         """
-        block_bits = buff.read(1)[0]
+        block_bits = datautils.unpack(MC_BYTE, buff)
         if block_bits < 4:
             block_bits = 4
         if block_bits > 8:
@@ -220,17 +220,14 @@ class ChunkColumn(object):
         self.biome = BiomeData()
 
     def unpack(self, buff, mask, skylight=True, continuous=True):
-        # In the protocol, each section is packed sequentially (i.e. attributes
-        # pertaining to the same chunk are *not* grouped)
-        chunk_idx = [i for i in range(16) if mask & (1 << i)]
-        for i in chunk_idx:
+        for i in range(16):
+            if not (mask & (1 << i)):
+                continue
             if self.chunks[i] is None:
                 self.chunks[i] = Chunk()
             self.chunks[i].block_data.unpack(buff)
-        for i in chunk_idx:
             self.chunks[i].light_block.unpack(buff)
-        if skylight:
-            for i in chunk_idx:
+            if skylight:
                 self.chunks[i].light_sky.unpack(buff)
         if continuous:
             self.biome.unpack(buff)
