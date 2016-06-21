@@ -138,7 +138,8 @@ class InteractPlugin(PluginBase):
             'cur_pos_z': int(cursor_pos.z),
         })
 
-    def click_block(self, pos, look_at_block=True, swing=True, hand=0, **kwargs):
+    def click_block(self, pos, look_at_block=True, swing=True, hand=0,
+                    **kwargs):
         """
         Click on a block.
         Examples: push button, open window, make redstone ore glow

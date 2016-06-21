@@ -2,6 +2,7 @@ import sys
 import types
 
 from minecraft_data.v1_9 import windows_list
+
 from spockbot.mcdata import constants, get_item_or_block
 from spockbot.mcdata.blocks import Block
 from spockbot.mcdata.items import Item

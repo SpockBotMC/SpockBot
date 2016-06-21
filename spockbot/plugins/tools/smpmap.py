@@ -22,7 +22,7 @@ from math import floor
 
 from spockbot.mcp import datautils
 from spockbot.mcp.bbuff import BoundBuffer
-from spockbot.mcp.proto import (MC_VARINT, MC_BYTE)
+from spockbot.mcp.proto import (MC_BYTE, MC_VARINT)
 
 
 DIMENSION_NETHER = -0x01
