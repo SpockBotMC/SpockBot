@@ -37,8 +37,8 @@ class InteractPlugin(PluginBase):
         self.auto_swing = True  # move arm when clicking
         self.auto_look = True  # look at clicked things
 
-    def swing_arm(self):
-        self.net.push_packet('PLAY>Animation', {})
+    def swing_arm(self, hand=0):
+        self.net.push_packet('PLAY>Animation', {'hand': hand})
 
     def _entity_action(self, action, jump_boost=100):
         entity_id = self.clientinfo.eid
@@ -105,13 +105,13 @@ class InteractPlugin(PluginBase):
             'face': face,
         })
 
-    def start_digging(self, pos, face=constants.FACE_TOP):
+    def start_digging(self, pos, face=constants.FACE_TOP, hand=0):
         pos = Vector3(pos)
         if self.auto_look:
             self.look_at(pos.floor() + Vector3(0.5, 0.5, 0.5))
         self._send_dig_block(status=constants.DIG_START, pos=pos, face=face)
         if self.auto_swing:
-            self.swing_arm()
+            self.swing_arm(hand)
             # TODO send swing animation until done or stopped
 
     def cancel_digging(self):
@@ -128,17 +128,17 @@ class InteractPlugin(PluginBase):
         self.finish_digging()
 
     def _send_click_block(self, pos, face=constants.FACE_TOP,
-                          cursor_pos=Vector3(8, 8, 8)):
+                          cursor_pos=Vector3(8, 8, 8), hand=0):
         self.net.push_packet('PLAY>Player Block Placement', {
             'location': pos.floor().get_dict(),
             'direction': face,
-            'held_item': self.inventory.active_slot.get_dict(),
+            'hand': hand,
             'cur_pos_x': int(cursor_pos.x),
             'cur_pos_y': int(cursor_pos.y),
             'cur_pos_z': int(cursor_pos.z),
         })
 
-    def click_block(self, pos, look_at_block=True, swing=True, **kwargs):
+    def click_block(self, pos, look_at_block=True, swing=True, hand=0, **kwargs):
         """
         Click on a block.
         Examples: push button, open window, make redstone ore glow
@@ -148,13 +148,14 @@ class InteractPlugin(PluginBase):
             cursor_pos (Vector3): where to click inside the block,
                 each dimension 0-15
         """
+        print('click:', locals())
         pos = Vector3(pos)
         if look_at_block and self.auto_look:
             # TODO look at cursor_pos
             self.look_at(pos.floor() + Vector3(0.5, 0.5, 0.5))
         self._send_click_block(pos, **kwargs)
         if swing and self.auto_swing:
-            self.swing_arm()
+            self.swing_arm(hand)
 
     def place_block(self, pos, sneak=True, **kwargs):
         """
@@ -231,7 +232,7 @@ class InteractPlugin(PluginBase):
         self.net.push_packet('PLAY>Use Entity', packet)
 
         if self.auto_swing and action == constants.ATTACK_ENTITY:
-            self.swing_arm()
+            self.swing_arm(hand=0)
 
     def attack_entity(self, entity):
         self.use_entity(entity, action=constants.ATTACK_ENTITY)
