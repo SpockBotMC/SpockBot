@@ -1,9 +1,7 @@
 import sys
 import types
 
-from minecraft_data.v1_9 import windows as windows_by_id
 from minecraft_data.v1_9 import windows_list
-
 from spockbot.mcdata import constants, get_item_or_block
 from spockbot.mcdata.blocks import Block
 from spockbot.mcdata.items import Item
@@ -270,36 +268,30 @@ class Window(object):
     inv_data = {}
 
     # the arguments must have the same names as the keys in the packet dict
-    def __init__(self, window_id, title, slot_count,
-                 inv_type=None, persistent_slots=None, eid=None):
+    def __init__(self, window_id, title, storage_slots,
+                 inv_type=None, eid=None):
         assert not inv_type or inv_type == self.inv_type, \
             'inv_type differs: %s instead of %s' % (inv_type, self.inv_type)
-        self.is_storage = slot_count > 0  # same after re-opening window
-        if not self.is_storage:  # get number of temporary slots
-            window_dict = windows_by_id[inv_type]
-            if 'slots' in window_dict:
-                slot_count = max(slot['index'] + slot.get('size', 1)
-                                 for slot in window_dict['slots'])
+        self.is_storage = storage_slots > 0
         self.window_id = window_id
         self.title = title
         self.eid = eid  # used for horses
 
-        # window slots vary, but always end with main inventory and hotbar
-        # create own slots, ...
-        self.slots = [Slot(self, slot_nr) for slot_nr in range(slot_count)]
-        # ... append persistent slots (main inventory and hotbar)
-        if persistent_slots is None:
-            for slot_nr in range(constants.INV_SLOTS_PERSISTENT):
-                self.slots.append(Slot(self, slot_nr + slot_count))
-        else:  # persistent slots have to be moved from other inventory
-            moved_slots = persistent_slots[-constants.INV_SLOTS_PERSISTENT:]
-            for slot_nr, moved_slot in enumerate(moved_slots):
-                moved_slot.move_to_window(self, slot_nr + slot_count)
-                self.slots.append(moved_slot)
-
-        # additional info dependent on inventory type,
+        # additional info depending on inventory type,
         # dynamically updated by server
         self.properties = {}
+
+        # storage_slots will be 0 if the window has no storage slots.
+        # for chests, this value can be different depending on the chest size.
+        # if it is > 0, it does not include the omnipresent player inv slots,
+        # but still might include non-persistent "GUI only" slots.
+        # also, the player inv has 9 storage_slots plus offhand, but still
+        # gets only storage_slots = 9, thus we always use the max() of both.
+        slot_count = max(storage_slots + constants.INV_SLOTS_PERSISTENT,
+                         max(slot['index'] + slot.get('size', 1)
+                             for slot in self.inv_data['slots']))
+
+        self.slots = [Slot(self, slot_nr) for slot_nr in range(slot_count)]
 
     def __repr__(self):
         return '%s(window_id=%i, title=%s, slot_count=%i)' % (
@@ -308,16 +300,8 @@ class Window(object):
 
     @property
     def persistent_slots(self):
-        return self.slots[-constants.INV_SLOTS_PERSISTENT:]
-
-    @property
-    def inventory_slots(self):
-        return self.slots[
-            -constants.INV_SLOTS_PERSISTENT:-constants.INV_SLOTS_HOTBAR]
-
-    @property
-    def hotbar_slots(self):
-        return self.slots[-constants.INV_SLOTS_HOTBAR:]
+        """inventory and hotbar"""
+        return self.inventory_slots + self.hotbar_slots
 
     @property
     def window_slots(self):
@@ -340,25 +324,40 @@ def _make_window(window_dict):
         'inv_data': window_dict,
     }
 
-    # creates function-local index and size variables
-    def make_slot_method(index, size=1):
-        if size == 1:
-            return lambda self: self.slots[index]
-        else:
-            return lambda self: self.slots[index:(index + size)]
-
-    for slots in window_dict.get('slots', []):
+    def make_slots_method(slots):
         index = slots['index']
         size = slots.get('size', 1)
-        attr_name = snake_case(str(slots['name']))
-        attr_name += '_slot' if size == 1 else '_slots'
-        slots_method = make_slot_method(index, size)
-        slots_method.__name__ = attr_name
-        attrs[attr_name] = property(slots_method)
+        name = snake_case(str(slots['name']))
+        name += '_slot' if size == 1 else '_slots'
+        if size == 1:
+            slots_method = lambda self: self.slots[index]
+        else:
+            slots_method = lambda self: self.slots[index:(index + size)]
+        slots_method.__name__ = name
+        attrs[name] = property(slots_method)
+
+    window_slots = window_dict.get('slots', [])
+    for slots in window_slots:
+        make_slots_method(slots)
+
+    slot_count = max(slot['index'] + slot.get('size', 1)
+                     for slot in window_slots) if window_slots else 0
+
+    for name, size in (
+            ('inventory_slots', constants.INV_SLOTS_INVENTORY),
+            ('hotbar_slots', constants.INV_SLOTS_HOTBAR)):
+        if name not in attrs:
+            # add at the end
+            d = {'index': slot_count, 'size': size, 'name': name}
+            window_slots.append(d)
+            make_slots_method(d)
+            slot_count += size
+    window_dict['slots'] = window_slots
 
     for i, prop_name in enumerate(window_dict.get('properties', [])):
         def make_prop_method(i):
             return lambda self: self.properties[i]
+
         prop_method = make_prop_method(i)
         prop_name = snake_case(str(prop_name))
         prop_method.__name__ = prop_name

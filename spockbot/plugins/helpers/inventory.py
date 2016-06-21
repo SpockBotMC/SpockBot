@@ -206,15 +206,13 @@ class InventoryPlugin(PluginBase):
 
     def handle_open_window(self, event, packet):
         inv_type = windows.inv_types[packet.data['inv_type']]
-        self.inventory.window = inv_type(
-            persistent_slots=self.inventory.window.slots, **packet.data)
+        self.inventory.window = inv_type(**packet.data)
         self.is_synchronized = False
         self.event.reg_event_handler('inventory_synced', self.emit_open_window)
 
     def handle_close_window(self, event, packet):
         closed_window = self.inventory.window
-        self.inventory.window = windows.PlayerWindow(
-            persistent_slots=closed_window.slots)
+        self.inventory.window = windows.PlayerWindow()
         self.event.emit('inventory_close_window', {'window': closed_window})
 
     def handle_set_slot(self, event, packet):
