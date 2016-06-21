@@ -126,14 +126,14 @@ class ChatPlugin(PluginBase):
             name = json_data['with'][0]
             if isinstance(name, dict):
                 name = name.get('text', '') + ''.join(name.get('extra', ''))
-        except (IndexError, KeyError, TypeError):
+        except (IndexError, KeyError, TypeError, AttributeError):
             name = None
 
         # sender UUID
         try:
             text_with_uuid = json_data['with'][0]['hoverEvent']['value']
             uuid = text_with_uuid[text_with_uuid.index('id:"'):][4:40]
-        except (IndexError, KeyError, TypeError):
+        except (IndexError, KeyError, TypeError, AttributeError):
             uuid = None
 
         event_data = {
